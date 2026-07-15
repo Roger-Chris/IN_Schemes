@@ -30,11 +30,20 @@ class EmploymentOption {
 
 class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   final _formKey = GlobalKey<FormState>();
-  
+  bool _isLocating = false;
+
   // Controllers
   final _nameController = TextEditingController();
-  final _addressController = TextEditingController();
+  final _houseController = TextEditingController();
+  final _streetController = TextEditingController();
+  final _areaController = TextEditingController();
+  final _villageController = TextEditingController();
   final _pinController = TextEditingController();
+  final _disabilityController = TextEditingController();
+  final _fundingController = TextEditingController();
+  final _regNumbersController = TextEditingController();
+  final _latitudeController = TextEditingController();
+  final _longitudeController = TextEditingController();
 
   DateTime? _selectedDob;
   String? _selectedGender = 'Female';
@@ -44,6 +53,13 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   String _selectedCommunity = 'General';
   String _selectedEmployment = 'Student';
   String? _selectedIncomeRange = 'Under ₹1.5 Lakhs';
+
+  bool _isVeteran = false;
+  bool _hasDisability = false;
+  bool _existingBusiness = false;
+  String _selectedQualification = 'Undergraduate';
+  String _selectedBusinessStage = 'Idea';
+  String _selectedBusinessIndustry = 'Technology';
 
   final Map<String, List<String>> _districtsByState = {
     'Tamil Nadu': ['Chennai', 'Coimbatore', 'Madurai', 'Trichy', 'Salem'],
@@ -66,56 +82,56 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     EmploymentOption(
       title: 'Student',
       icon: Icons.school_outlined,
-      iconColor: Color(0xFF2563EB), // Blue 600
-      iconBgColor: Color(0xFFDBEAFE), // Blue 100
+      iconColor: Color(0xFF2563EB),
+      iconBgColor: Color(0xFFDBEAFE),
     ),
     EmploymentOption(
       title: 'Farmer',
       icon: Icons.agriculture_outlined,
-      iconColor: Color(0xFF16A34A), // Green 600
-      iconBgColor: Color(0xFFDCFCE7), // Green 100
+      iconColor: Color(0xFF16A34A),
+      iconBgColor: Color(0xFFDCFCE7),
     ),
     EmploymentOption(
       title: 'Salaried',
       icon: Icons.business_center_outlined,
-      iconColor: Color(0xFF7C3AED), // Purple 600
-      iconBgColor: Color(0xFFF3E8FF), // Purple 100
+      iconColor: Color(0xFF7C3AED),
+      iconBgColor: Color(0xFFF3E8FF),
     ),
     EmploymentOption(
       title: 'Self-employed',
       icon: Icons.person_outline,
-      iconColor: Color(0xFFD97706), // Amber 600
-      iconBgColor: Color(0xFFFEF3C7), // Amber 100
+      iconColor: Color(0xFFD97706),
+      iconBgColor: Color(0xFFFEF3C7),
     ),
     EmploymentOption(
       title: 'Business Owner',
       icon: Icons.storefront_outlined,
-      iconColor: Color(0xFF0F172A), // Slate 900
-      iconBgColor: Color(0xFFF1F5F9), // Slate 100
+      iconColor: Color(0xFF0F172A),
+      iconBgColor: Color(0xFFF1F5F9),
     ),
     EmploymentOption(
       title: 'Homemaker',
       icon: Icons.home_outlined,
-      iconColor: Color(0xFFE11D48), // Rose 600
-      iconBgColor: Color(0xFFFFE4E6), // Rose 100
+      iconColor: Color(0xFFE11D48),
+      iconBgColor: Color(0xFFFFE4E6),
     ),
     EmploymentOption(
       title: 'Unemployed',
       icon: Icons.search_outlined,
-      iconColor: Color(0xFFDC2626), // Red 600
-      iconBgColor: Color(0xFFFEE2E2), // Red 100
+      iconColor: Color(0xFFDC2626),
+      iconBgColor: Color(0xFFFEE2E2),
     ),
     EmploymentOption(
       title: 'Retired',
       icon: Icons.directions_walk,
-      iconColor: Color(0xFF0D9488), // Teal 600
-      iconBgColor: Color(0xFFCCFBF1), // Teal 100
+      iconColor: Color(0xFF0D9488),
+      iconBgColor: Color(0xFFCCFBF1),
     ),
     EmploymentOption(
       title: 'Other',
       icon: Icons.more_horiz_outlined,
-      iconColor: Color(0xFF475569), // Slate 600
-      iconBgColor: Color(0xFFE2E8F0), // Slate 200
+      iconColor: Color(0xFF475569),
+      iconBgColor: Color(0xFFE2E8F0),
     ),
   ];
 
@@ -123,48 +139,72 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final provider = Provider.of<AppProvider>(context, listen: false);
-      final profile = provider.profile;
-      
-      _nameController.text = profile.name;
-      _addressController.text = profile.address;
-      _pinController.text = profile.pinCode;
-      
-      setState(() {
-        _selectedDob = profile.dob;
-        if (profile.gender.isNotEmpty) _selectedGender = profile.gender;
-        if (profile.state.isNotEmpty) _selectedState = profile.state;
-        
-        // Safety check state exists in dictionary keys
-        if (!_districtsByState.containsKey(_selectedState)) {
-          _selectedState = 'Tamil Nadu';
-        }
-        
-        if (profile.district.isNotEmpty && (_districtsByState[_selectedState] ?? []).contains(profile.district)) {
-          _selectedDistrict = profile.district;
-        } else {
-          _selectedDistrict = _districtsByState[_selectedState]!.first;
-        }
-        
-        if (profile.city.isNotEmpty && (_districtsByState[_selectedState] ?? []).contains(profile.city)) {
-          _selectedCity = profile.city;
-        } else {
-          _selectedCity = _selectedDistrict;
-        }
-        
-        if (profile.community.isNotEmpty) _selectedCommunity = profile.community;
-        if (profile.employmentStatus.isNotEmpty) _selectedEmployment = profile.employmentStatus;
-        
-        _selectedIncomeRange = _mapIncomeToRange(profile.annualIncome);
-      });
+      _loadProfileData();
+    });
+  }
+
+  void _loadProfileData() {
+    final provider = Provider.of<AppProvider>(context, listen: false);
+    final profile = provider.profile;
+
+    _nameController.text = profile.name;
+    _houseController.text = profile.house;
+    _streetController.text = profile.street;
+    _areaController.text = profile.area;
+    _villageController.text = profile.village;
+    _pinController.text = profile.pinCode;
+    _disabilityController.text = profile.disability == 'None' ? '' : profile.disability;
+    _fundingController.text = profile.fundingRequired > 0 ? profile.fundingRequired.toString() : '';
+    _regNumbersController.text = profile.registrationNumbers;
+
+    setState(() {
+      _selectedDob = profile.dob;
+      if (profile.gender.isNotEmpty) _selectedGender = profile.gender;
+      if (profile.state.isNotEmpty) _selectedState = profile.state;
+
+      if (!_districtsByState.containsKey(_selectedState)) {
+        _selectedState = 'Tamil Nadu';
+      }
+
+      if (profile.district.isNotEmpty && (_districtsByState[_selectedState] ?? []).contains(profile.district)) {
+        _selectedDistrict = profile.district;
+      } else {
+        _selectedDistrict = _districtsByState[_selectedState]!.first;
+      }
+
+      if (profile.city.isNotEmpty && (_districtsByState[_selectedState] ?? []).contains(profile.city)) {
+        _selectedCity = profile.city;
+      } else {
+        _selectedCity = _selectedDistrict;
+      }
+
+      if (profile.community.isNotEmpty) _selectedCommunity = profile.community;
+      if (profile.employmentStatus.isNotEmpty) _selectedEmployment = profile.employmentStatus;
+
+      _isVeteran = profile.veteran;
+      _hasDisability = profile.disability != 'None' && profile.disability.isNotEmpty;
+      _existingBusiness = profile.existingBusiness;
+      if (profile.qualification.isNotEmpty) _selectedQualification = profile.qualification;
+      if (profile.businessStage.isNotEmpty) _selectedBusinessStage = profile.businessStage;
+      if (profile.businessIndustry.isNotEmpty) _selectedBusinessIndustry = profile.businessIndustry;
+
+      _selectedIncomeRange = _mapIncomeToRange(profile.annualIncome);
     });
   }
 
   @override
   void dispose() {
     _nameController.dispose();
-    _addressController.dispose();
+    _houseController.dispose();
+    _streetController.dispose();
+    _areaController.dispose();
+    _villageController.dispose();
     _pinController.dispose();
+    _disabilityController.dispose();
+    _fundingController.dispose();
+    _regNumbersController.dispose();
+    _latitudeController.dispose();
+    _longitudeController.dispose();
     super.dispose();
   }
 
@@ -220,7 +260,145 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     }
   }
 
-  void _saveProfile() {
+  Future<void> _useCurrentLocation() async {
+    final provider = Provider.of<AppProvider>(context, listen: false);
+    final hasUserEnteredText = _houseController.text.isNotEmpty ||
+        _streetController.text.isNotEmpty ||
+        _areaController.text.isNotEmpty ||
+        _villageController.text.isNotEmpty ||
+        _pinController.text.isNotEmpty ||
+        (_selectedState != null && _selectedState != 'Tamil Nadu') ||
+        (_selectedDistrict != null && _selectedDistrict != 'Chennai') ||
+        (_selectedCity != null && _selectedCity != 'Chennai');
+
+    if (hasUserEnteredText) {
+      final shouldOverwrite = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          backgroundColor: AppConstants.surfaceColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: const BorderSide(color: AppConstants.cardBorderColor),
+          ),
+          title: Text(
+            'Overwrite details?',
+            style: GoogleFonts.poppins(
+              fontWeight: FontWeight.bold,
+              color: const Color(0xFF0F172A),
+            ),
+          ),
+          content: Text(
+            'You have already entered some address details. Do you want to overwrite them with your current location?',
+            style: GoogleFonts.inter(
+              color: const Color(0xFF64748B),
+              fontSize: 13,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(
+                'Cancel',
+                style: GoogleFonts.inter(
+                  color: const Color(0xFF64748B),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF0D47A1),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              onPressed: () => Navigator.pop(context, true),
+              child: Text(
+                'Overwrite',
+                style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+      if (shouldOverwrite != true) {
+        return;
+      }
+    }
+
+    setState(() {
+      _isLocating = true;
+    });
+
+    try {
+      final locData = await provider.fetchLocationAndPopulate();
+
+      if (locData != null) {
+        _houseController.text = locData['house'] ?? '';
+        _streetController.text = locData['street'] ?? '';
+        _areaController.text = locData['area'] ?? '';
+        _villageController.text = locData['village'] ?? '';
+        _pinController.text = locData['pinCode'] ?? '';
+        _latitudeController.text = (locData['latitude'] ?? '').toString();
+        _longitudeController.text = (locData['longitude'] ?? '').toString();
+
+        setState(() {
+          final stateVal = locData['state'] as String;
+          if (stateVal.isNotEmpty) {
+            _selectedState = stateVal;
+            if (!_districtsByState.containsKey(_selectedState)) {
+              _districtsByState[_selectedState!] = [locData['district'] ?? ''];
+            }
+          }
+
+          final distVal = locData['district'] as String;
+          if (distVal.isNotEmpty) {
+            _selectedDistrict = distVal;
+            if (!(_districtsByState[_selectedState] ?? []).contains(_selectedDistrict)) {
+              _districtsByState[_selectedState!] = [_selectedDistrict!, ...?_districtsByState[_selectedState]];
+            }
+          }
+
+          final cityVal = locData['city'] as String;
+          if (cityVal.isNotEmpty) {
+            _selectedCity = cityVal;
+            if (!(_districtsByState[_selectedState] ?? []).contains(_selectedCity)) {
+              _districtsByState[_selectedState!] = [_selectedCity!, ...?_districtsByState[_selectedState]];
+            }
+          }
+        });
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Location fetched and populated successfully!'),
+            backgroundColor: AppConstants.successColor,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to fetch location: $e'),
+            backgroundColor: AppConstants.errorColor,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLocating = false;
+        });
+      }
+    }
+  }
+
+  void _saveProfile() async {
     if (!_formKey.currentState!.validate()) {
       return;
     }
@@ -232,7 +410,11 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
       name: _nameController.text.trim(),
       dob: _selectedDob,
       gender: _selectedGender ?? 'Female',
-      address: _addressController.text.trim(),
+      house: _houseController.text.trim(),
+      street: _streetController.text.trim(),
+      area: _areaController.text.trim(),
+      village: _villageController.text.trim(),
+      address: '${_houseController.text.trim()}, ${_streetController.text.trim()}, ${_areaController.text.trim()}',
       state: _selectedState ?? 'Tamil Nadu',
       district: _selectedDistrict ?? '',
       city: _selectedCity ?? '',
@@ -240,29 +422,40 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
       community: _selectedCommunity,
       employmentStatus: _selectedEmployment,
       annualIncome: income,
+      veteran: _isVeteran,
+      disability: _hasDisability ? _disabilityController.text.trim() : 'None',
+      qualification: _selectedQualification,
+      existingBusiness: _existingBusiness,
+      businessStage: _selectedBusinessStage,
+      businessIndustry: _selectedBusinessIndustry,
+      fundingRequired: double.tryParse(_fundingController.text.trim()) ?? 0.0,
+      registrationNumbers: _regNumbersController.text.trim(),
+      profileCompleted: true,
     );
 
-    provider.updateProfile(updatedProfile);
+    await provider.updateProfile(updatedProfile);
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Profile saved successfully!'),
-        backgroundColor: AppConstants.successColor,
-      ),
-    );
-
-    if (widget.fromEligibilityCheck) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (_) => const EligibilityResultsScreen(),
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Profile saved successfully!'),
+          backgroundColor: AppConstants.successColor,
         ),
       );
-    } else {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (_) => const MainTabsContainer(),
-        ),
-      );
+
+      if (widget.fromEligibilityCheck) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (_) => const EligibilityResultsScreen(),
+          ),
+        );
+      } else {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (_) => const MainTabsContainer(),
+          ),
+        );
+      }
     }
   }
 
@@ -270,18 +463,18 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     return InputDecoration(
       hintText: hint,
       hintStyle: GoogleFonts.inter(
-        fontSize: 14,
-        color: const Color(0xFF94A3B8), // Slate 400
+        fontSize: 13,
+        color: const Color(0xFF94A3B8),
       ),
       suffixIcon: suffixIcon,
-      contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
+      contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
-        borderSide: const BorderSide(color: Color(0xFFCBD5E1)), // Slate 300
+        borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
-        borderSide: const BorderSide(color: Color(0xFF0D47A1)), // Royal Blue
+        borderSide: const BorderSide(color: Color(0xFF0D47A1)),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
@@ -300,7 +493,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
       style: GoogleFonts.inter(
         fontSize: 12,
         fontWeight: FontWeight.bold,
-        color: const Color(0xFF1E293B), // Slate 800
+        color: const Color(0xFF1E293B),
       ),
     );
   }
@@ -314,12 +507,14 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
           size: 20,
         ),
         const SizedBox(width: 8),
-        Text(
-          title,
-          style: GoogleFonts.poppins(
-            fontSize: 14,
-            fontWeight: FontWeight.bold,
-            color: const Color(0xFF0D47A1), // Royal Blue
+        Expanded(
+          child: Text(
+            title,
+            style: GoogleFonts.poppins(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: const Color(0xFF0D47A1),
+            ),
           ),
         ),
       ],
@@ -337,7 +532,6 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
         key: _formKey,
         child: Stack(
           children: [
-            // 1. Top background image with map overlay
             Positioned(
               top: 0,
               left: 0,
@@ -349,8 +543,6 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                 alignment: Alignment.topCenter,
               ),
             ),
-            
-            // 2. Fading gradient overlay (prevent black gradient tint)
             Positioned(
               top: 0,
               left: 0,
@@ -369,8 +561,6 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                 ),
               ),
             ),
-
-            // 3. Scrollable Content
             Positioned.fill(
               child: SafeArea(
                 child: SingleChildScrollView(
@@ -378,48 +568,93 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                   child: Column(
                     children: [
                       const SizedBox(height: 16),
-                      
-                      // Brand Logo
                       Image.asset(
                         'assets/images/Logo.png',
                         height: 64,
                         fit: BoxFit.contain,
                       ),
                       const SizedBox(height: 12),
-                      
-                      // Title
                       Text(
                         'Complete Your Profile',
                         style: GoogleFonts.poppins(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
-                          color: const Color(0xFF0F172A), // Slate 900
+                          color: const Color(0xFF0F172A),
                         ),
                       ),
                       const SizedBox(height: 6),
-                      
-                      // Subtitle
                       Text(
                         'Help us build your eligibility profile to\nfind the most relevant schemes for you.',
                         textAlign: TextAlign.center,
                         style: GoogleFonts.inter(
                           fontSize: 11.5,
-                          color: const Color(0xFF64748B), // Slate 500
+                          color: const Color(0xFF64748B),
                           height: 1.4,
                         ),
                       ),
-                      const SizedBox(height: 24),
-                      
-                      // Form Card
+                      const SizedBox(height: 8),
+                      // Profile Completion Percentage Bar
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFEFF6FF),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Column(
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'Profile Completion',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                    color: const Color(0xFF1E3A8A),
+                                  ),
+                                ),
+                                Text(
+                                  '${provider.profileCompletionPercentage}%',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                    color: const Color(0xFF1E3A8A),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            LinearProgressIndicator(
+                              value: provider.profileCompletionPercentage / 100,
+                              backgroundColor: Colors.blue.shade100,
+                              valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF0D47A1)),
+                              minHeight: 6,
+                              borderRadius: BorderRadius.circular(3),
+                            ),
+                            if (provider.missingProfileSections.isNotEmpty) ...[
+                              const SizedBox(height: 6),
+                              Text(
+                                'Missing: ${provider.missingProfileSections.join(', ')}',
+                                style: GoogleFonts.inter(
+                                  fontSize: 10,
+                                  color: Colors.redAccent.shade700,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ]
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
                       Container(
                         padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: const Color(0xFFE2E8F0)), // Slate 200
-                          boxShadow: [
-                            const BoxShadow(
-                              color: Color(0x05000000), // 2% opacity
+                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Color(0x05000000),
                               blurRadius: 10,
                               offset: Offset(0, 4),
                             ),
@@ -431,8 +666,6 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                             // SECTION 1: Personal Information
                             _buildSectionHeader('Personal Information', Icons.person_outline),
                             const SizedBox(height: 16),
-                            
-                            // Full Name (Separate Row)
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -447,8 +680,6 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                               ],
                             ),
                             const SizedBox(height: 16),
-                            
-                            // Date of Birth & Gender Row
                             Row(
                               children: [
                                 Expanded(
@@ -520,8 +751,6 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                               ],
                             ),
                             const SizedBox(height: 16),
-                            
-                            // Mobile Number (Separate Row)
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -531,7 +760,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                                   width: double.infinity,
                                   padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFFF1F5F9), // Grayed out background
+                                    color: const Color(0xFFF1F5F9),
                                     borderRadius: BorderRadius.circular(10),
                                     border: Border.all(color: const Color(0xFFE2E8F0)),
                                   ),
@@ -539,7 +768,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                                     provider.mobileNumber.isNotEmpty ? '+91 ${provider.mobileNumber}' : '+91 98765 43210',
                                     style: GoogleFonts.inter(
                                       fontSize: 14,
-                                      color: const Color(0xFF64748B), // Slate 500
+                                      color: const Color(0xFF64748B),
                                       fontWeight: FontWeight.w500,
                                     ),
                                     overflow: TextOverflow.ellipsis,
@@ -547,26 +776,105 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                                 ),
                               ],
                             ),
+                            const SizedBox(height: 24),
+                            const Divider(color: Color(0xFFF1F5F9), thickness: 1.5),
                             const SizedBox(height: 16),
-                            
-                            // Address Row
-                            _buildInputLabel('Address'),
-                            const SizedBox(height: 6),
-                            TextFormField(
-                              controller: _addressController,
-                              style: GoogleFonts.inter(fontSize: 14, color: const Color(0xFF1E293B)),
-                              decoration: _getInputDecoration(
-                                'House No., Street, Locality',
-                                suffixIcon: const Icon(
-                                  Icons.location_on_outlined,
-                                  color: Color(0xFF64748B),
-                                  size: 18,
+
+                            // SECTION 2: Address with Use Current Location
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(
+                                  child: _buildSectionHeader('Address Details', Icons.location_on_outlined),
                                 ),
-                              ),
+                                Flexible(
+                                  child: TextButton.icon(
+                                    onPressed: _isLocating ? null : _useCurrentLocation,
+                                    icon: _isLocating
+                                        ? const SizedBox(
+                                            width: 14,
+                                            height: 14,
+                                            child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF0D47A1)),
+                                          )
+                                        : const Icon(Icons.my_location, size: 14, color: Color(0xFF0D47A1)),
+                                    label: Text(
+                                      _isLocating ? 'Locating...' : 'Use Current Location',
+                                      style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.bold, color: const Color(0xFF0D47A1)),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                )
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      _buildInputLabel('House No.'),
+                                      const SizedBox(height: 6),
+                                      TextFormField(
+                                        controller: _houseController,
+                                        style: GoogleFonts.inter(fontSize: 14, color: const Color(0xFF1E293B)),
+                                        decoration: _getInputDecoration('E.g. 42-A'),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      _buildInputLabel('Street'),
+                                      const SizedBox(height: 6),
+                                      TextFormField(
+                                        controller: _streetController,
+                                        style: GoogleFonts.inter(fontSize: 14, color: const Color(0xFF1E293B)),
+                                        decoration: _getInputDecoration('E.g. Park Street'),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ),
                             const SizedBox(height: 16),
-                            
-                            // State & District Row
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      _buildInputLabel('Area / Locality'),
+                                      const SizedBox(height: 6),
+                                      TextFormField(
+                                        controller: _areaController,
+                                        style: GoogleFonts.inter(fontSize: 14, color: const Color(0xFF1E293B)),
+                                        decoration: _getInputDecoration('E.g. T. Nagar'),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      _buildInputLabel('Village (Optional)'),
+                                      const SizedBox(height: 6),
+                                      TextFormField(
+                                        controller: _villageController,
+                                        style: GoogleFonts.inter(fontSize: 14, color: const Color(0xFF1E293B)),
+                                        decoration: _getInputDecoration('Enter village'),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
                             Row(
                               children: [
                                 Expanded(
@@ -626,21 +934,19 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                               ],
                             ),
                             const SizedBox(height: 16),
-                            
-                            // City/Village & PIN Code Row
                             Row(
                               children: [
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      _buildInputLabel('City / Village'),
+                                      _buildInputLabel('City / Town'),
                                       const SizedBox(height: 6),
                                       DropdownButtonFormField<String>(
                                         isExpanded: true,
                                         initialValue: _selectedCity,
                                         style: GoogleFonts.inter(fontSize: 14, color: const Color(0xFF1E293B)),
-                                        decoration: _getInputDecoration('Select city / village'),
+                                        decoration: _getInputDecoration('Select city'),
                                         items: (_districtsByState[_selectedState] ?? []).map((c) {
                                           return DropdownMenuItem(value: c, child: Text(c));
                                         }).toList(),
@@ -663,10 +969,10 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                                         keyboardType: TextInputType.number,
                                         maxLength: 6,
                                         style: GoogleFonts.inter(fontSize: 14, color: const Color(0xFF1E293B)),
-                                        decoration: _getInputDecoration('Enter PIN code').copyWith(counterText: ''),
+                                        decoration: _getInputDecoration('Enter PIN').copyWith(counterText: ''),
                                         validator: (val) {
                                           if (val == null || val.isEmpty) return 'Required';
-                                          if (val.length != 6 || int.tryParse(val) == null) return 'Enter 6-digit PIN';
+                                          if (val.length != 6 || int.tryParse(val) == null) return 'Invalid';
                                           return null;
                                         },
                                       ),
@@ -676,117 +982,271 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                               ],
                             ),
                             const SizedBox(height: 24),
-                            
                             const Divider(color: Color(0xFFF1F5F9), thickness: 1.5),
                             const SizedBox(height: 16),
-                            
-                            // SECTION 2: Social Details
-                            _buildSectionHeader('Social Details', Icons.people_outline),
+
+                            // SECTION 3: Social & Special Categories
+                            _buildSectionHeader('Social & Special Details', Icons.people_outline),
                             const SizedBox(height: 16),
-                            
                             _buildInputLabel('Category / Community'),
                             const SizedBox(height: 6),
                             DropdownButtonFormField<String>(
                               isExpanded: true,
                               initialValue: _selectedCommunity,
                               style: GoogleFonts.inter(fontSize: 14, color: const Color(0xFF1E293B)),
-                              decoration: _getInputDecoration('Select category / community'),
+                              decoration: _getInputDecoration('Select category'),
                               items: _communityOptions.map((opt) {
                                 return DropdownMenuItem(value: opt, child: Text(opt));
                               }).toList(),
                               onChanged: (val) {
-                                if (val != null) {
-                                  setState(() {
-                                    _selectedCommunity = val;
-                                  });
-                                }
+                                if (val != null) setState(() => _selectedCommunity = val);
                               },
                             ),
+                            const SizedBox(height: 16),
+                            // Veteran & Disability Row
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: CheckboxListTile(
+                                    contentPadding: EdgeInsets.zero,
+                                    title: Text('Veteran Status', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600)),
+                                    value: _isVeteran,
+                                    onChanged: (val) {
+                                      if (val != null) setState(() => _isVeteran = val);
+                                    },
+                                    controlAffinity: ListTileControlAffinity.leading,
+                                  ),
+                                ),
+                                Expanded(
+                                  child: CheckboxListTile(
+                                    contentPadding: EdgeInsets.zero,
+                                    title: Text('Disability', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600)),
+                                    value: _hasDisability,
+                                    onChanged: (val) {
+                                      if (val != null) {
+                                        setState(() {
+                                          _hasDisability = val;
+                                          if (!val) _disabilityController.clear();
+                                        });
+                                      }
+                                    },
+                                    controlAffinity: ListTileControlAffinity.leading,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            if (_hasDisability) ...[
+                              const SizedBox(height: 12),
+                              _buildInputLabel('Describe Disability'),
+                              const SizedBox(height: 6),
+                              TextFormField(
+                                controller: _disabilityController,
+                                style: GoogleFonts.inter(fontSize: 14, color: const Color(0xFF1E293B)),
+                                decoration: _getInputDecoration('Enter details (e.g. Visual 40%)'),
+                              ),
+                            ],
                             const SizedBox(height: 24),
-                            
                             const Divider(color: Color(0xFFF1F5F9), thickness: 1.5),
                             const SizedBox(height: 16),
-                            
-                            // SECTION 3: Employment
-                            _buildSectionHeader('Employment', Icons.business_center_outlined),
+
+                            // SECTION 4: Education & Employment
+                            _buildSectionHeader('Education & Employment', Icons.school_outlined),
                             const SizedBox(height: 16),
-                            
-                            _buildInputLabel('Employment Status'),
-                            const SizedBox(height: 6),
-                            DropdownButtonFormField<String>(
-                              isExpanded: true,
-                              initialValue: _selectedEmployment,
-                              style: GoogleFonts.inter(fontSize: 14, color: const Color(0xFF1E293B)),
-                              decoration: _getInputDecoration('Select employment status'),
-                              items: _employmentOptions.map((opt) {
-                                return DropdownMenuItem<String>(
-                                  value: opt.title,
-                                  child: Row(
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Container(
-                                        width: 24,
-                                        height: 24,
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          color: opt.iconBgColor,
-                                        ),
-                                        alignment: Alignment.center,
-                                        child: Icon(
-                                          opt.icon,
-                                          color: opt.iconColor,
-                                          size: 14,
-                                        ),
+                                      _buildInputLabel('Qualification'),
+                                      const SizedBox(height: 6),
+                                      DropdownButtonFormField<String>(
+                                        isExpanded: true,
+                                        initialValue: _selectedQualification,
+                                        style: GoogleFonts.inter(fontSize: 14, color: const Color(0xFF1E293B)),
+                                        decoration: _getInputDecoration('Select qualification'),
+                                        items: const [
+                                          DropdownMenuItem(value: 'School', child: Text('School')),
+                                          DropdownMenuItem(value: 'Diploma', child: Text('Diploma')),
+                                          DropdownMenuItem(value: 'Undergraduate', child: Text('Undergraduate')),
+                                          DropdownMenuItem(value: 'Postgraduate', child: Text('Postgraduate')),
+                                          DropdownMenuItem(value: 'Ph.D.', child: Text('Ph.D.')),
+                                        ],
+                                        onChanged: (val) {
+                                          if (val != null) setState(() => _selectedQualification = val);
+                                        },
                                       ),
-                                      const SizedBox(width: 8),
-                                      Text(opt.title),
                                     ],
                                   ),
-                                );
-                              }).toList(),
-                              onChanged: (val) {
-                                if (val != null) {
-                                  setState(() {
-                                    _selectedEmployment = val;
-                                  });
-                                }
-                              },
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      _buildInputLabel('Employment Status'),
+                                      const SizedBox(height: 6),
+                                      DropdownButtonFormField<String>(
+                                        isExpanded: true,
+                                        initialValue: _selectedEmployment,
+                                        style: GoogleFonts.inter(fontSize: 14, color: const Color(0xFF1E293B)),
+                                        decoration: _getInputDecoration('Select employment'),
+                                        items: _employmentOptions.map((opt) {
+                                          return DropdownMenuItem<String>(
+                                            value: opt.title,
+                                            child: Text(opt.title),
+                                          );
+                                        }).toList(),
+                                        onChanged: (val) {
+                                          if (val != null) setState(() => _selectedEmployment = val);
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ),
                             const SizedBox(height: 24),
-                            
                             const Divider(color: Color(0xFFF1F5F9), thickness: 1.5),
                             const SizedBox(height: 16),
-                            
-                            // SECTION 4: Financial
-                            _buildSectionHeader('Financial', Icons.currency_rupee),
+
+                            // SECTION 5: Business Details
+                            _buildSectionHeader('Business Details', Icons.storefront_outlined),
                             const SizedBox(height: 16),
-                            
-                            _buildInputLabel('Annual Family Income'),
-                            const SizedBox(height: 6),
-                            
-                            DropdownButtonFormField<String>(
-                              initialValue: _selectedIncomeRange,
-                              style: GoogleFonts.inter(fontSize: 14, color: const Color(0xFF1E293B)),
-                              decoration: _getInputDecoration('Select annual income range'),
-                              items: const [
-                                DropdownMenuItem(value: 'Under ₹1.5 Lakhs', child: Text('Under ₹1.5 Lakhs')),
-                                DropdownMenuItem(value: '₹1.5 Lakhs - ₹3 Lakhs', child: Text('₹1.5 Lakhs - ₹3 Lakhs')),
-                                DropdownMenuItem(value: '₹3 Lakhs - ₹5 Lakhs', child: Text('₹3 Lakhs - ₹5 Lakhs')),
-                                DropdownMenuItem(value: '₹5 Lakhs - ₹8 Lakhs', child: Text('₹5 Lakhs - ₹8 Lakhs')),
-                                DropdownMenuItem(value: 'Above ₹8 Lakhs', child: Text('Above ₹8 Lakhs')),
-                              ],
+                            SwitchListTile(
+                              contentPadding: EdgeInsets.zero,
+                              title: Text('Existing Business / Entrepreneur', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600)),
+                              value: _existingBusiness,
                               onChanged: (val) {
-                                if (val != null) setState(() => _selectedIncomeRange = val);
+                                setState(() => _existingBusiness = val);
                               },
+                              activeThumbColor: const Color(0xFF0D47A1),
+                            ),
+                            AnimatedSize(
+                              duration: const Duration(milliseconds: 300),
+                              curve: Curves.easeInOut,
+                              child: _existingBusiness
+                                  ? Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        const SizedBox(height: 12),
+                                        Row(
+                                          children: [
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  _buildInputLabel('Business Stage'),
+                                                  const SizedBox(height: 6),
+                                                  DropdownButtonFormField<String>(
+                                                    isExpanded: true,
+                                                    initialValue: _selectedBusinessStage,
+                                                    style: GoogleFonts.inter(fontSize: 14, color: const Color(0xFF1E293B)),
+                                                    decoration: _getInputDecoration('Select stage'),
+                                                    items: const [
+                                                      DropdownMenuItem(value: 'Idea', child: Text('Idea')),
+                                                      DropdownMenuItem(value: 'Prototype', child: Text('Prototype')),
+                                                      DropdownMenuItem(value: 'Registered', child: Text('Registered')),
+                                                      DropdownMenuItem(value: 'Operational', child: Text('Operational')),
+                                                      DropdownMenuItem(value: 'Expansion', child: Text('Expansion')),
+                                                    ],
+                                                    onChanged: (val) {
+                                                      if (val != null) setState(() => _selectedBusinessStage = val);
+                                                    },
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            const SizedBox(width: 12),
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  _buildInputLabel('Industry Sector'),
+                                                  const SizedBox(height: 6),
+                                                  DropdownButtonFormField<String>(
+                                                    isExpanded: true,
+                                                    initialValue: _selectedBusinessIndustry,
+                                                    style: GoogleFonts.inter(fontSize: 14, color: const Color(0xFF1E293B)),
+                                                    decoration: _getInputDecoration('Select industry'),
+                                                    items: const [
+                                                      DropdownMenuItem(value: 'Technology', child: Text('Technology')),
+                                                      DropdownMenuItem(value: 'Agriculture', child: Text('Agriculture')),
+                                                      DropdownMenuItem(value: 'Manufacturing', child: Text('Manufacturing')),
+                                                      DropdownMenuItem(value: 'Healthcare', child: Text('Healthcare')),
+                                                      DropdownMenuItem(value: 'Retail / Services', child: Text('Retail / Services')),
+                                                    ],
+                                                    onChanged: (val) {
+                                                      if (val != null) setState(() => _selectedBusinessIndustry = val);
+                                                    },
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 16),
+                                        Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            _buildInputLabel('Funding Required (₹)'),
+                                            const SizedBox(height: 6),
+                                            TextFormField(
+                                              controller: _fundingController,
+                                              keyboardType: TextInputType.number,
+                                              style: GoogleFonts.inter(fontSize: 14, color: const Color(0xFF1E293B)),
+                                              decoration: _getInputDecoration('Enter funding required'),
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 16),
+                                        Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            _buildInputLabel('Annual Income (₹)'),
+                                            const SizedBox(height: 6),
+                                            DropdownButtonFormField<String>(
+                                              isExpanded: true,
+                                              initialValue: _selectedIncomeRange,
+                                              style: GoogleFonts.inter(fontSize: 13.5, color: const Color(0xFF1E293B)),
+                                              decoration: _getInputDecoration('Select income range'),
+                                              items: const [
+                                                DropdownMenuItem(value: 'Under ₹1.5 Lakhs', child: Text('Below ₹1.5 Lakh')),
+                                                DropdownMenuItem(value: '₹1.5 Lakhs - ₹3 Lakhs', child: Text('₹1.5 Lakh - ₹3 Lakh')),
+                                                DropdownMenuItem(value: '₹3 Lakhs - ₹5 Lakhs', child: Text('₹3 Lakh - ₹5 Lakh')),
+                                                DropdownMenuItem(value: '₹5 Lakhs - ₹8 Lakhs', child: Text('₹5 Lakh - ₹8 Lakh')),
+                                                DropdownMenuItem(value: 'Above ₹8 Lakhs', child: Text('Above ₹8 Lakh')),
+                                              ],
+                                              onChanged: (val) {
+                                                if (val != null) setState(() => _selectedIncomeRange = val);
+                                              },
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 16),
+                                        Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            _buildInputLabel('Registration Numbers (GST/UDYAM/PAN)'),
+                                            const SizedBox(height: 6),
+                                            TextFormField(
+                                              controller: _regNumbersController,
+                                              style: GoogleFonts.inter(fontSize: 14, color: const Color(0xFF1E293B)),
+                                              decoration: _getInputDecoration('E.g. GSTIN / UDYAM Reg No.'),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    )
+                                  : const SizedBox.shrink(),
                             ),
                             const SizedBox(height: 24),
-                            
-                            // Save & Continue Button
                             SizedBox(
                               width: double.infinity,
                               height: 50,
                               child: ElevatedButton(
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF0D47A1), // Royal Blue
+                                  backgroundColor: const Color(0xFF0D47A1),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(10),
                                   ),
@@ -817,7 +1277,6 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                           ],
                         ),
                       ),
-                      
                       const SizedBox(height: 32),
                     ],
                   ),
@@ -829,5 +1288,4 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
       ),
     );
   }
-
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'providers/app_state_provider.dart';
 import 'screens/splash_screen.dart';
 import 'screens/home_screen.dart';
@@ -10,7 +11,14 @@ import 'screens/profile_screen.dart';
 import 'screens/notifications_screen.dart';
 import 'utils/constants.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Supabase.initialize(
+    url: 'https://houpzsxmwemoztpuigmo.supabase.co',
+    publishableKey: 'sb_publishable_SwlgaGsCt5N-97WwEq7tQw_aNT25VUI',
+  );
+
   runApp(
     ChangeNotifierProvider(
       create: (_) => AppProvider(),

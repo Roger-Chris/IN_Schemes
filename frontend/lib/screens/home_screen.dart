@@ -724,6 +724,9 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildCheckEligibilityCardSection(BuildContext context, AppProvider provider) {
+    final completion = provider.profileCompletionPercentage;
+    final isCompleted = provider.profile.profileCompleted;
+    
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       padding: const EdgeInsets.all(16),
@@ -744,12 +747,16 @@ class HomeScreen extends StatelessWidget {
           Container(
             width: 40,
             height: 40,
-            decoration: const BoxDecoration(
-              color: Color(0xFFDBEAFE),
+            decoration: BoxDecoration(
+              color: isCompleted ? const Color(0xFFDCFCE7) : const Color(0xFFDBEAFE),
               shape: BoxShape.circle,
             ),
             alignment: Alignment.center,
-            child: const Icon(Icons.assignment_turned_in_outlined, color: Color(0xFF2563EB), size: 20),
+            child: Icon(
+              isCompleted ? Icons.check_circle_outline : Icons.assignment_turned_in_outlined, 
+              color: isCompleted ? const Color(0xFF16A34A) : const Color(0xFF2563EB), 
+              size: 20,
+            ),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -757,16 +764,18 @@ class HomeScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Continue Eligibility Check',
+                  isCompleted ? 'Profile Status: $completion% Complete' : 'Continue Profile Setup',
                   style: GoogleFonts.inter(
                     fontWeight: FontWeight.bold,
                     fontSize: 13,
-                    color: const Color(0xFF2563EB),
+                    color: isCompleted ? const Color(0xFF16A34A) : const Color(0xFF2563EB),
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'Complete your profile to find schemes you are eligible for.',
+                  isCompleted 
+                      ? 'Your profile is fully updated for scheme recommendations.' 
+                      : 'Complete your profile to find schemes you are eligible for.',
                   style: GoogleFonts.inter(
                     fontSize: 10.5,
                     color: const Color(0xFF64748B),
@@ -778,10 +787,9 @@ class HomeScreen extends StatelessWidget {
           const SizedBox(width: 8),
           ElevatedButton(
             onPressed: () {
-              provider.startWizard();
               Navigator.of(context).push(
                 MaterialPageRoute(
-                  builder: (_) => const ProfileSetupScreen(fromEligibilityCheck: true),
+                  builder: (_) => const ProfileSetupScreen(),
                 ),
               );
             },
@@ -798,7 +806,7 @@ class HomeScreen extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'Continue',
+                  isCompleted ? 'View' : 'Continue',
                   style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(width: 4),

@@ -1,22 +1,26 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:google_sign_in/google_sign_in.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
 import '../models/user_profile.dart';
 import '../models/scheme_model.dart';
 import '../engine/recommendation_engine.dart';
+import '../services/auth_service.dart';
 
 class AppProvider with ChangeNotifier {
   bool _isLoggedIn = false;
   bool _isGuest = false;
   String _mobileNumber = '';
   String _selectedLanguage = 'en'; // 'en', 'hi'
-  int _currentTabIndex = 0; // Bottom Navigation: 0: Home, 1: Categories, 2: Search, 3: FindMySchemes, 4: Profile
+  int _currentTabIndex =
+      0; // Bottom Navigation: 0: Home, 1: Categories, 2: Search, 3: FindMySchemes, 4: Profile
   UserProfile _profile = UserProfile();
   List<String> _bookmarkedIds = [];
   List<String> _recentlyViewedIds = [];
   String _searchQuery = '';
-  
+
   // Active Filters state
   Map<String, dynamic> _filters = {
     'state': 'Tamil Nadu',
@@ -35,18 +39,21 @@ class AppProvider with ChangeNotifier {
     {
       'title': 'National Entrepreneurs\' Day Celebration',
       'date': '16-Jan-2026',
-      'content': 'Prime Minister launches a new seed grant portal for tech startups and students.'
+      'content':
+          'Prime Minister launches a new seed grant portal for tech startups and students.',
     },
     {
       'title': 'Tamil Nadu MSME Department Subsidy Hike',
       'date': '04-Jul-2026',
-      'content': 'NEEDS scheme subsidy ceiling raised to ₹75 Lakhs for women and minority entrepreneurs.'
+      'content':
+          'NEEDS scheme subsidy ceiling raised to ₹75 Lakhs for women and minority entrepreneurs.',
     },
     {
       'title': 'Mudra Loan Shishu Limit Extended',
       'date': '29-May-2026',
-      'content': 'Collateral-free micro loans under Shishu category increased to ₹1 Lakh.'
-    }
+      'content':
+          'Collateral-free micro loans under Shishu category increased to ₹1 Lakh.',
+    },
   ];
 
   // Mock Notifications
@@ -56,26 +63,79 @@ class AppProvider with ChangeNotifier {
       'title': 'New Scheme Added',
       'body': 'StartupTN Seed Grant details updated. Check eligibility now.',
       'time': '10 minutes ago',
-      'read': false
+      'read': false,
     },
     {
       'id': '2',
       'title': 'Application Deadline',
-      'body': 'NEEDS Tamil Nadu application cycle ends on August 31st. Complete your profile.',
+      'body':
+          'NEEDS Tamil Nadu application cycle ends on August 31st. Complete your profile.',
       'time': '2 hours ago',
-      'read': false
+      'read': false,
     },
     {
       'id': '3',
       'title': 'Profile Reminder',
-      'body': 'Complete your profile setup to receive 100% accurate scheme matches.',
+      'body':
+          'Complete your profile setup to receive 100% accurate scheme matches.',
       'time': '1 day ago',
-      'read': true
-    }
+      'read': true,
+    },
   ];
 
   AppProvider() {
     _loadState();
+    _setupAuthListener();
+  }
+
+  void _setupAuthListener() {
+    Supabase.instance.client.auth.onAuthStateChange.listen((data) async {
+      final Session? session = data.session;
+      final AuthChangeEvent event = data.event;
+
+      if (session != null &&
+          (event == AuthChangeEvent.signedIn ||
+              event == AuthChangeEvent.tokenRefreshed)) {
+        _isLoggedIn = true;
+        _isGuest = false;
+        final user = session.user;
+        _mobileNumber = user.phone ?? '';
+
+        // Initialize user profile from Supabase user info
+        _profile = UserProfile(
+          name: user.userMetadata?['full_name'] ??
+              user.userMetadata?['name'] ??
+              'Google User',
+          email: user.email ?? '',
+          mobile: user.phone ?? '',
+        );
+
+        // Sync/Update profile in public.users table
+        try {
+          await Supabase.instance.client.from('users').upsert({
+            'id': user.id,
+            'full_name': _profile.name,
+            'phone': _profile.mobile,
+            'profile_photo_url': user.userMetadata?['avatar_url'] ?? '',
+            'is_active': true,
+          });
+        } catch (e) {
+          debugPrint('Error syncing profile to public.users: $e');
+        }
+
+        await _saveProfile();
+        notifyListeners();
+      } else if (event == AuthChangeEvent.signedOut) {
+        _isLoggedIn = false;
+        _isGuest = false;
+        _mobileNumber = '';
+        _profile = UserProfile();
+        _bookmarkedIds.clear();
+        _recentlyViewedIds.clear();
+        _currentTabIndex = 0;
+        notifyListeners();
+      }
+    });
   }
 
   // Getters
@@ -104,7 +164,9 @@ class AppProvider with ChangeNotifier {
 
   // Recently viewed schemes list
   List<Scheme> get recentlyViewedSchemes {
-    return Scheme.seedData.where((s) => _recentlyViewedIds.contains(s.id)).toList();
+    return Scheme.seedData
+        .where((s) => _recentlyViewedIds.contains(s.id))
+        .toList();
   }
 
   // Load state from SharedPreferences (for session continue support)
@@ -112,24 +174,29 @@ class AppProvider with ChangeNotifier {
     try {
       final prefs = await SharedPreferences.getInstance();
       _selectedLanguage = prefs.getString('language') ?? 'en';
-      _isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
       _isGuest = prefs.getBool('isGuest') ?? false;
-      _mobileNumber = prefs.getString('mobileNumber') ?? '';
       _currentTabIndex = prefs.getInt('currentTabIndex') ?? 0;
-      
+
       final profileStr = prefs.getString('userProfile');
       if (profileStr != null) {
         _profile = UserProfile.fromJson(jsonDecode(profileStr));
       }
-      
+
       _bookmarkedIds = prefs.getStringList('bookmarks') ?? [];
       _recentlyViewedIds = prefs.getStringList('recentlyViewed') ?? [];
-      
+
       // Initialize filters based on loaded profile
       _filters['state'] = _profile.state;
       _filters['community'] = _profile.community;
       _filters['gender'] = _profile.gender;
-      
+
+      final session = Supabase.instance.client.auth.currentSession;
+      if (session != null) {
+        _isLoggedIn = true;
+        _isGuest = false;
+        _mobileNumber = session.user.phone ?? '';
+      }
+
       notifyListeners();
     } catch (e) {
       debugPrint('Error loading state: $e');
@@ -144,9 +211,7 @@ class AppProvider with ChangeNotifier {
 
   Future<void> _saveLoginState() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('isLoggedIn', _isLoggedIn);
     await prefs.setBool('isGuest', _isGuest);
-    await prefs.setString('mobileNumber', _mobileNumber);
   }
 
   // Setters & Actions
@@ -170,23 +235,13 @@ class AppProvider with ChangeNotifier {
 
   Future<bool> loginWithGoogle() async {
     try {
-      await GoogleSignIn.instance.initialize(
-        clientId: '1033361761527-n9759fh7qsur1c6g142f2tceo62g9o3t.apps.googleusercontent.com',
-      );
-      final account = await GoogleSignIn.instance.authenticate();
-      _isLoggedIn = true;
-      _isGuest = false;
-      _mobileNumber = ''; // Google sign in does not provide mobile number by default
-      _profile = UserProfile(
-        name: account.displayName ?? 'Google User',
-        email: account.email,
-      );
-      notifyListeners();
-      await _saveLoginState();
-      await _saveProfile();
-      return true;
+      final response = await AuthService.signInWithGoogle();
+      if (response.user != null) {
+        return true;
+      }
     } catch (e) {
       debugPrint('Error signing in with Google: $e');
+      rethrow;
     }
     return false;
   }
@@ -202,6 +257,21 @@ class AppProvider with ChangeNotifier {
   }
 
   void logout() async {
+    await Supabase.instance.client.auth.signOut();
+
+    final prefs = await SharedPreferences.getInstance();
+    final lang = prefs.getString('language');
+    final onboarding = prefs.getBool('onboardingCompleted');
+
+    await prefs.clear();
+
+    if (lang != null) {
+      await prefs.setString('language', lang);
+    }
+    if (onboarding != null) {
+      await prefs.setBool('onboardingCompleted', onboarding);
+    }
+
     _isLoggedIn = false;
     _isGuest = false;
     _mobileNumber = '';
@@ -210,20 +280,9 @@ class AppProvider with ChangeNotifier {
     _recentlyViewedIds.clear();
     _currentTabIndex = 0;
     notifyListeners();
-
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.clear();
   }
 
-  void updateProfile(UserProfile updated) {
-    _profile = updated;
-    // Keep filters in sync
-    _filters['state'] = _profile.state;
-    _filters['community'] = _profile.community;
-    _filters['gender'] = _profile.gender;
-    notifyListeners();
-    _saveProfile();
-  }
+
 
   void updateTabIndex(int index) async {
     _currentTabIndex = index;
@@ -343,5 +402,163 @@ class AppProvider with ChangeNotifier {
       notifications[idx]['read'] = true;
       notifyListeners();
     }
+  }
+
+  // Completion calculation
+  int get profileCompletionPercentage {
+    int totalFields = 6;
+    int filledFields = 0;
+
+    if (_profile.mobile.isNotEmpty) filledFields++;
+    if (_profile.dob != null) filledFields++;
+    if (_profile.address.isNotEmpty) filledFields++;
+    if (_profile.existingBusiness) filledFields++;
+    if (_profile.qualification.isNotEmpty) filledFields++;
+    if (_profile.profileCompleted) filledFields++;
+
+    return ((filledFields / totalFields) * 100).round();
+  }
+
+  List<String> get missingProfileSections {
+    final missing = <String>[];
+    if (_profile.mobile.isEmpty) missing.add('Phone');
+    if (_profile.address.isEmpty) missing.add('Address');
+    if (!_profile.existingBusiness) missing.add('Business');
+    return missing;
+  }
+
+  // Sync profile details
+  Future<void> updateProfile(UserProfile updated) async {
+    _profile = updated;
+    _filters['state'] = _profile.state;
+    _filters['community'] = _profile.community;
+    _filters['gender'] = _profile.gender;
+    notifyListeners();
+    await _saveProfile();
+
+    if (_isLoggedIn) {
+      final user = Supabase.instance.client.auth.currentUser;
+      if (user != null) {
+        try {
+          // 1. Sync users table
+          await Supabase.instance.client.from('users').upsert({
+            'id': user.id,
+            'full_name': _profile.name,
+            'phone': _profile.mobile,
+            'profile_photo_url': user.userMetadata?['avatar_url'] ?? '',
+            'is_active': true,
+            'dob': _profile.dob?.toIso8601String(),
+            'gender': _profile.gender,
+            'disability': _profile.disability,
+            'veteran': _profile.veteran,
+            'house': _profile.house,
+            'street': _profile.street,
+            'area': _profile.area,
+            'village': _profile.village,
+            'pin': _profile.pinCode,
+            'state': _profile.state,
+            'district': _profile.district,
+            'city': _profile.city,
+            'qualification': _profile.qualification,
+            'employment': _profile.employmentStatus,
+            'annual_income': _profile.annualIncome,
+            'community': _profile.community,
+            'language': _profile.language,
+            'notifications': _profile.notificationsEnabled,
+            'theme': _profile.theme,
+            'profile_completed': _profile.profileCompleted,
+          });
+
+          // 2. Sync startup_profiles table if they have business details
+          final existingStartups = await Supabase.instance.client
+              .from('startup_profiles')
+              .select('id')
+              .eq('user_id', user.id)
+              .limit(1);
+
+          final Map<String, dynamic> startupData = {
+            'user_id': user.id,
+            'profile_name': '${_profile.name} Business',
+            'industry': _profile.businessIndustry.isNotEmpty ? _profile.businessIndustry : 'Technology',
+            'applicant_type': _profile.employmentStatus.isNotEmpty ? _profile.employmentStatus : 'Student',
+            'business_stage': _profile.businessStage.isNotEmpty ? _profile.businessStage : 'Idea',
+            'business_registered': _profile.existingBusiness,
+            'funding_required_amount': _profile.fundingRequired,
+            'registration_numbers': _profile.registrationNumbers,
+            'is_active': true,
+          };
+
+          if (existingStartups.isNotEmpty) {
+            startupData['id'] = existingStartups.first['id'];
+          }
+
+          await Supabase.instance.client.from('startup_profiles').upsert(startupData);
+        } catch (e) {
+          debugPrint('Error syncing profile updates: $e');
+        }
+      }
+    }
+  }
+
+  // Location/GPS Helper
+  Future<Map<String, dynamic>?> fetchLocationAndPopulate() async {
+    try {
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          throw 'Location permissions are denied';
+        }
+      }
+      
+      if (permission == LocationPermission.deniedForever) {
+        throw 'Location permissions are permanently denied';
+      }
+
+      final position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+
+      final placemarks = await placemarkFromCoordinates(
+        position.latitude,
+        position.longitude,
+      );
+
+      if (placemarks.isNotEmpty) {
+        final placemark = placemarks.first;
+        
+        final locData = {
+          'house': placemark.subThoroughfare ?? '',
+          'street': placemark.thoroughfare ?? '',
+          'area': placemark.subLocality ?? placemark.name ?? '',
+          'village': placemark.subLocality != null && placemark.name != null && placemark.subLocality != placemark.name ? placemark.name : '',
+          'state': placemark.administrativeArea ?? '',
+          'district': placemark.subAdministrativeArea ?? '',
+          'city': placemark.locality ?? placemark.subLocality ?? '',
+          'pinCode': placemark.postalCode ?? '',
+          'latitude': position.latitude,
+          'longitude': position.longitude,
+        };
+
+        _profile = _profile.copyWith(
+          house: locData['house'] as String,
+          street: locData['street'] as String,
+          area: locData['area'] as String,
+          village: locData['village'] as String,
+          state: locData['state'] as String,
+          district: locData['district'] as String,
+          city: locData['city'] as String,
+          pinCode: locData['pinCode'] as String,
+        );
+
+        notifyListeners();
+        await _saveProfile();
+        return locData;
+      }
+    } catch (e) {
+      debugPrint('Error fetching location: $e');
+      rethrow;
+    }
+    return null;
   }
 }

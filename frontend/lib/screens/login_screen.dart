@@ -16,12 +16,51 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _phoneController = TextEditingController();
-  
   bool _isLoading = false;
   String? _phoneError;
 
   @override
+  void initState() {
+    super.initState();
+    final provider = Provider.of<AppProvider>(context, listen: false);
+    provider.addListener(_onAuthChanged);
+    // If already logged in, redirect immediately
+    if (provider.isLoggedIn) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _redirectToHome();
+      });
+    }
+  }
+
+  void _onAuthChanged() {
+    final provider = Provider.of<AppProvider>(context, listen: false);
+    if (provider.isLoggedIn && mounted) {
+      _redirectToHome();
+    }
+  }
+
+  void _redirectToHome() {
+    final provider = Provider.of<AppProvider>(context, listen: false);
+    if (provider.profile.profileCompleted) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => const MainTabsContainer(),
+        ),
+      );
+    } else {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => const ProfileSetupScreen(),
+        ),
+      );
+    }
+  }
+
+  @override
   void dispose() {
+    try {
+      Provider.of<AppProvider>(context, listen: false).removeListener(_onAuthChanged);
+    } catch (_) {}
     _phoneController.dispose();
     super.dispose();
   }
@@ -124,7 +163,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   fontSize: 9.5,
                                   color: const Color(0xFF64748B), // Slate 500
                                   height: 1.3,
-                                ),
+                                  ),
                               ),
                               
                               const Spacer(flex: 1),
@@ -372,27 +411,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         });
                         try {
                           final provider = Provider.of<AppProvider>(context, listen: false);
-                          final success = await provider.loginWithGoogle();
-                          if (success && mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Successfully logged in with Google!'),
-                                backgroundColor: AppConstants.successColor,
-                              ),
-                            );
-                            Navigator.of(context).pushReplacement(
-                              MaterialPageRoute(
-                                builder: (_) => const ProfileSetupScreen(),
-                              ),
-                            );
-                          } else if (mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Google Sign-In failed or was cancelled.'),
-                                backgroundColor: AppConstants.errorColor,
-                              ),
-                            );
-                          }
+                          await provider.loginWithGoogle();
                         } catch (e) {
                           if (mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(

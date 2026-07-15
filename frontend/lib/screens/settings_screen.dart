@@ -129,6 +129,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const SizedBox(height: 24),
           
+          // Logout Option
+          _buildLogoutTile(context, provider),
+          const SizedBox(height: 24),
+
           // 3. Danger Zone Section
           const Text('Danger Zone', style: TextStyle(fontSize: 14, color: AppConstants.errorColor, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
           const SizedBox(height: 10),
@@ -203,6 +207,29 @@ class _SettingsScreenState extends State<SettingsScreen> {
         subtitle: Text(subtitle, style: const TextStyle(color: AppConstants.secondaryText, fontSize: 11)),
         trailing: const Icon(Icons.delete_forever, color: AppConstants.errorColor, size: 20),
         onTap: onTap,
+      ),
+    );
+  }
+
+  Widget _buildLogoutTile(BuildContext context, AppProvider provider) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 4),
+      decoration: BoxDecoration(
+        color: AppConstants.surfaceColor,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppConstants.cardBorderColor),
+      ),
+      child: ListTile(
+        title: const Text('Logout', style: TextStyle(color: AppConstants.primaryText, fontWeight: FontWeight.bold, fontSize: 14)),
+        subtitle: const Text('Sign out of your account securely', style: TextStyle(color: AppConstants.secondaryText, fontSize: 11)),
+        trailing: const Icon(Icons.logout, color: AppConstants.primaryColor, size: 20),
+        onTap: () async {
+          provider.logout();
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (_) => const LoginScreen()),
+            (route) => false,
+          );
+        },
       ),
     );
   }
