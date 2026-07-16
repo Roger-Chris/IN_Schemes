@@ -1,8 +1,11 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'language_selection_screen.dart';
+import '../providers/app_state_provider.dart';
 import '../utils/constants.dart';
+import '../main.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -43,11 +46,21 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     // Auto navigate after 3.2 seconds
     Timer(const Duration(milliseconds: 3200), () {
       if (mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (_) => const LanguageSelectionScreen(),
-          ),
-        );
+        final provider = Provider.of<AppProvider>(context, listen: false);
+        if (provider.isLoggedIn || provider.isGuest) {
+          provider.updateTabIndex(0); // Ensure home page is the first page shown
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (_) => const MainTabsContainer(),
+            ),
+          );
+        } else {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (_) => const LanguageSelectionScreen(),
+            ),
+          );
+        }
       }
     });
   }

@@ -157,15 +157,18 @@ class AppProvider with ChangeNotifier {
     await prefs.setString('language', lang);
   }
 
-  void login(String mobile) {
+  void login(String mobile) async {
     _isLoggedIn = true;
     _isGuest = false;
     _mobileNumber = mobile;
+    _currentTabIndex = 0;
     // Default initial profile
     _profile = UserProfile(mobile: mobile);
     notifyListeners();
-    _saveLoginState();
-    _saveProfile();
+    await _saveLoginState();
+    await _saveProfile();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('currentTabIndex', 0);
   }
 
   Future<bool> loginWithGoogle() async {
@@ -177,6 +180,7 @@ class AppProvider with ChangeNotifier {
       _isLoggedIn = true;
       _isGuest = false;
       _mobileNumber = ''; // Google sign in does not provide mobile number by default
+      _currentTabIndex = 0;
       _profile = UserProfile(
         name: account.displayName ?? 'Google User',
         email: account.email,
@@ -184,6 +188,8 @@ class AppProvider with ChangeNotifier {
       notifyListeners();
       await _saveLoginState();
       await _saveProfile();
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt('currentTabIndex', 0);
       return true;
     } catch (e) {
       debugPrint('Error signing in with Google: $e');
@@ -191,14 +197,17 @@ class AppProvider with ChangeNotifier {
     return false;
   }
 
-  void continueAsGuest() {
+  void continueAsGuest() async {
     _isLoggedIn = false;
     _isGuest = true;
     _mobileNumber = '';
+    _currentTabIndex = 0;
     _profile = UserProfile(name: 'Guest User');
     notifyListeners();
-    _saveLoginState();
-    _saveProfile();
+    await _saveLoginState();
+    await _saveProfile();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('currentTabIndex', 0);
   }
 
   void logout() async {
