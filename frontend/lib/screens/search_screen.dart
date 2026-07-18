@@ -429,9 +429,6 @@ class _SearchScreenState extends State<SearchScreen> {
             ),
           ),
 
-          // Active filter chips row
-          _buildFilterChipsRow(provider),
-
           const SizedBox(height: 12),
 
           // Scrollable area combining Recent Searches, Popular Searches, and Results
@@ -728,83 +725,6 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 
-  Widget _buildFilterChipsRow(AppProvider provider) {
-    final filters = provider.filters;
-    final List<MapEntry<String, String>> activeChips = [];
-
-    filters.forEach((key, val) {
-      if (val != null && val != 'All' && val != false) {
-        String label = val.toString();
-        if (key == 'state') label = 'State: $val';
-        if (key == 'district') label = 'District: $val';
-        if (key == 'ministry') label = 'Ministry: $val';
-        if (key == 'department') label = 'Dept: $val';
-        if (key == 'schemeStatus') label = 'Status: $val';
-        if (key == 'onlineOffline') label = 'Type: $val';
-        if (key == 'schemeType') {
-          label = val == 'Central Government' ? 'Central Scheme' : 'State Scheme';
-        }
-        activeChips.add(MapEntry(key, label));
-      }
-    });
-
-    if (activeChips.isEmpty) return const SizedBox.shrink();
-
-    return Container(
-      height: 32,
-      margin: const EdgeInsets.only(bottom: 12),
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        children: [
-          ...activeChips.map((chip) => Container(
-                margin: const EdgeInsets.only(right: 8),
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  border: Border.all(color: const Color(0xFFE2E8F0)),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      chip.value,
-                      style: GoogleFonts.inter(
-                        fontSize: 10.5,
-                        color: const Color(0xFF475569),
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    GestureDetector(
-                      onTap: () {
-                        provider.updateFilter(chip.key, 'All');
-                      },
-                      child: const Icon(Icons.close, size: 12, color: Color(0xFF94A3B8)),
-                    ),
-                  ],
-                ),
-              )),
-          GestureDetector(
-            onTap: () => provider.clearFilters(),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              alignment: Alignment.center,
-              child: Text(
-                'Clear All',
-                style: GoogleFonts.inter(
-                  fontSize: 11,
-                  fontWeight: FontWeight.bold,
-                  color: const Color(0xFF2563EB),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildPopularSearchCard(BuildContext context, PopularSearchItem item, AppProvider provider) {
     return Container(

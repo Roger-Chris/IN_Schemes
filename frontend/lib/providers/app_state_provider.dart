@@ -222,21 +222,27 @@ class AppProvider with ChangeNotifier {
     await prefs.setString('language', lang);
   }
 
-  void login(String mobile) {
+  void login(String mobile) async {
     _isLoggedIn = true;
     _isGuest = false;
     _mobileNumber = mobile;
+    _currentTabIndex = 0;
     // Default initial profile
     _profile = UserProfile(mobile: mobile);
     notifyListeners();
-    _saveLoginState();
-    _saveProfile();
+    await _saveLoginState();
+    await _saveProfile();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('currentTabIndex', 0);
   }
 
   Future<bool> loginWithGoogle() async {
     try {
       final response = await AuthService.signInWithGoogle();
       if (response.user != null) {
+        _currentTabIndex = 0;
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setInt('currentTabIndex', 0);
         return true;
       }
     } catch (e) {
@@ -246,14 +252,17 @@ class AppProvider with ChangeNotifier {
     return false;
   }
 
-  void continueAsGuest() {
+  void continueAsGuest() async {
     _isLoggedIn = false;
     _isGuest = true;
     _mobileNumber = '';
+    _currentTabIndex = 0;
     _profile = UserProfile(name: 'Guest User');
     notifyListeners();
-    _saveLoginState();
-    _saveProfile();
+    await _saveLoginState();
+    await _saveProfile();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('currentTabIndex', 0);
   }
 
   void logout() async {
