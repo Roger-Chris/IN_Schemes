@@ -74,6 +74,13 @@ flutter:
     - assets/images/user_avatar.png
     - assets/images/search_banner.png
     - assets/images/eligibility_banner.png
+    - assets/images/support_agent.png
+    - assets/images/mode selection bg.png
+    - assets/images/companion intro bg.png
+    - assets/images/compoanion bot.png
+
+
+
 
   # To add assets to your application, add an assets section, like this:
   # assets:
