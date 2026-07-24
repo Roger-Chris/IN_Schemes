@@ -8,8 +8,14 @@ import '../models/user_profile.dart';
 import '../models/scheme_model.dart';
 import '../engine/recommendation_engine.dart';
 import '../services/auth_service.dart';
+import '../services/profile_service.dart';
 
 class AppProvider with ChangeNotifier {
+  bool _isLoading = false;
+  String? _error;
+
+  bool get isLoading => _isLoading;
+  String? get error => _error;
   bool _isLoggedIn = false;
   bool _isGuest = false;
   String _mobileNumber = '';
@@ -101,30 +107,7 @@ class AppProvider with ChangeNotifier {
         final user = session.user;
         _mobileNumber = user.phone ?? '';
 
-        // Initialize user profile from Supabase user info
-        _profile = UserProfile(
-          name: user.userMetadata?['full_name'] ??
-              user.userMetadata?['name'] ??
-              'Google User',
-          email: user.email ?? '',
-          mobile: user.phone ?? '',
-        );
-
-        // Sync/Update profile in public.users table
-        try {
-          await Supabase.instance.client.from('users').upsert({
-            'id': user.id,
-            'full_name': _profile.name,
-            'phone': _profile.mobile,
-            'profile_photo_url': user.userMetadata?['avatar_url'] ?? '',
-            'is_active': true,
-          });
-        } catch (e) {
-          debugPrint('Error syncing profile to public.users: $e');
-        }
-
-        await _saveProfile();
-        notifyListeners();
+        await loadProfile();
       } else if (event == AuthChangeEvent.signedOut) {
         _isLoggedIn = false;
         _isGuest = false;
@@ -195,6 +178,7 @@ class AppProvider with ChangeNotifier {
         _isLoggedIn = true;
         _isGuest = false;
         _mobileNumber = session.user.phone ?? '';
+        loadProfile();
       }
 
       notifyListeners();
@@ -401,7 +385,7 @@ class AppProvider with ChangeNotifier {
       mobile: _mobileNumber,
     );
     notifyListeners();
-    _saveProfile();
+    updateProfile(_profile);
   }
 
   // Notification action
@@ -438,75 +422,79 @@ class AppProvider with ChangeNotifier {
 
   // Sync profile details
   Future<void> updateProfile(UserProfile updated) async {
-    _profile = updated;
+    await saveProfile(updated);
+  }
+
+  Future<void> loadProfile() async {
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user == null) return;
+
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      final fetched = await ProfileService.fetchProfile(user.id);
+      if (fetched != null) {
+        _profile = fetched;
+        _mobileNumber = _profile.mobile;
+        _filters['state'] = _profile.state;
+        _filters['community'] = _profile.community;
+        _filters['gender'] = _profile.gender;
+        await _saveProfile();
+      } else {
+        // Create default profile
+        final defaultProfile = UserProfile(
+          name: user.userMetadata?['full_name'] ??
+              user.userMetadata?['name'] ??
+              'Google User',
+          email: user.email ?? '',
+          mobile: user.phone ?? '',
+          googleUserId: user.id,
+          provider: 'google',
+        );
+        await ProfileService.createProfile(user.id, defaultProfile);
+        _profile = defaultProfile;
+        _mobileNumber = _profile.mobile;
+        await _saveProfile();
+      }
+    } catch (e) {
+      _error = e.toString();
+      debugPrint('Error loading profile: $e');
+      rethrow;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> saveProfile(UserProfile updatedProfile) async {
+    final user = Supabase.instance.client.auth.currentUser;
+    _isLoading = true;
+    _error = null;
+    _profile = updatedProfile;
     _filters['state'] = _profile.state;
     _filters['community'] = _profile.community;
     _filters['gender'] = _profile.gender;
     notifyListeners();
-    await _saveProfile();
 
-    if (_isLoggedIn) {
-      final user = Supabase.instance.client.auth.currentUser;
+    try {
       if (user != null) {
-        try {
-          // 1. Sync users table
-          await Supabase.instance.client.from('users').upsert({
-            'id': user.id,
-            'full_name': _profile.name,
-            'phone': _profile.mobile,
-            'profile_photo_url': user.userMetadata?['avatar_url'] ?? '',
-            'is_active': true,
-            'dob': _profile.dob?.toIso8601String(),
-            'gender': _profile.gender,
-            'disability': _profile.disability,
-            'veteran': _profile.veteran,
-            'house': _profile.house,
-            'street': _profile.street,
-            'area': _profile.area,
-            'village': _profile.village,
-            'pin': _profile.pinCode,
-            'state': _profile.state,
-            'district': _profile.district,
-            'city': _profile.city,
-            'qualification': _profile.qualification,
-            'employment': _profile.employmentStatus,
-            'annual_income': _profile.annualIncome,
-            'community': _profile.community,
-            'language': _profile.language,
-            'notifications': _profile.notificationsEnabled,
-            'theme': _profile.theme,
-            'profile_completed': _profile.profileCompleted,
-          });
-
-          // 2. Sync startup_profiles table if they have business details
-          final existingStartups = await Supabase.instance.client
-              .from('startup_profiles')
-              .select('id')
-              .eq('user_id', user.id)
-              .limit(1);
-
-          final Map<String, dynamic> startupData = {
-            'user_id': user.id,
-            'profile_name': '${_profile.name} Business',
-            'industry': _profile.businessIndustry.isNotEmpty ? _profile.businessIndustry : 'Technology',
-            'applicant_type': _profile.employmentStatus.isNotEmpty ? _profile.employmentStatus : 'Student',
-            'business_stage': _profile.businessStage.isNotEmpty ? _profile.businessStage : 'Idea',
-            'business_registered': _profile.existingBusiness,
-            'funding_required_amount': _profile.fundingRequired,
-            'registration_numbers': _profile.registrationNumbers,
-            'is_active': true,
-          };
-
-          if (existingStartups.isNotEmpty) {
-            startupData['id'] = existingStartups.first['id'];
-          }
-
-          await Supabase.instance.client.from('startup_profiles').upsert(startupData);
-        } catch (e) {
-          debugPrint('Error syncing profile updates: $e');
-        }
+        await ProfileService.updateProfile(user.id, updatedProfile);
       }
+      await _saveProfile();
+    } catch (e) {
+      _error = e.toString();
+      debugPrint('Error saving profile: $e');
+      rethrow;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
+  }
+
+  Future<void> refreshProfile() async {
+    await loadProfile();
   }
 
   // Location/GPS Helper

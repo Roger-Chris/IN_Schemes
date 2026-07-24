@@ -34,6 +34,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
 
   // Controllers
   final _nameController = TextEditingController();
+  final _mobileController = TextEditingController();
   final _houseController = TextEditingController();
   final _streetController = TextEditingController();
   final _areaController = TextEditingController();
@@ -148,6 +149,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     final profile = provider.profile;
 
     _nameController.text = profile.name;
+    _mobileController.text = profile.mobile.isNotEmpty ? profile.mobile : provider.mobileNumber;
     _houseController.text = profile.house;
     _streetController.text = profile.street;
     _areaController.text = profile.area;
@@ -195,6 +197,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   @override
   void dispose() {
     _nameController.dispose();
+    _mobileController.dispose();
     _houseController.dispose();
     _streetController.dispose();
     _areaController.dispose();
@@ -408,6 +411,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
 
     final updatedProfile = provider.profile.copyWith(
       name: _nameController.text.trim(),
+      mobile: _mobileController.text.trim(),
       dob: _selectedDob,
       gender: _selectedGender ?? 'Female',
       house: _houseController.text.trim(),
@@ -756,23 +760,18 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                               children: [
                                 _buildInputLabel('Mobile Number'),
                                 const SizedBox(height: 6),
-                                Container(
-                                  width: double.infinity,
-                                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFF1F5F9),
-                                    borderRadius: BorderRadius.circular(10),
-                                    border: Border.all(color: const Color(0xFFE2E8F0)),
-                                  ),
-                                  child: Text(
-                                    provider.mobileNumber.isNotEmpty ? '+91 ${provider.mobileNumber}' : '+91 98765 43210',
-                                    style: GoogleFonts.inter(
-                                      fontSize: 14,
-                                      color: const Color(0xFF64748B),
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
+                                TextFormField(
+                                  controller: _mobileController,
+                                  keyboardType: TextInputType.phone,
+                                  style: GoogleFonts.inter(fontSize: 14, color: const Color(0xFF1E293B)),
+                                  decoration: _getInputDecoration('Enter mobile number'),
+                                  validator: (val) {
+                                    if (val == null || val.trim().isEmpty) return 'Required';
+                                    if (val.trim().length != 10 || double.tryParse(val.trim()) == null) {
+                                      return 'Please enter a valid 10-digit number';
+                                    }
+                                    return null;
+                                  },
                                 ),
                               ],
                             ),
