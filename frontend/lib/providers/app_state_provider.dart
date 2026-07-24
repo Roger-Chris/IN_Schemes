@@ -20,12 +20,15 @@ class AppProvider with ChangeNotifier {
   bool _isGuest = false;
   String _mobileNumber = '';
   String _selectedLanguage = 'en'; // 'en', 'hi'
+  String _navigationMode = 'regular'; // 'regular', 'companion'
   int _currentTabIndex =
       0; // Bottom Navigation: 0: Home, 1: Categories, 2: Search, 3: FindMySchemes, 4: Profile
   UserProfile _profile = UserProfile();
   List<String> _bookmarkedIds = [];
   List<String> _recentlyViewedIds = [];
+  List<Map<String, dynamic>> _downloadedDocs = [];
   String _searchQuery = '';
+
 
   // Active Filters state
   Map<String, dynamic> _filters = {
@@ -66,26 +69,70 @@ class AppProvider with ChangeNotifier {
   final List<Map<String, dynamic>> notifications = [
     {
       'id': '1',
-      'title': 'New Scheme Added',
-      'body': 'StartupTN Seed Grant details updated. Check eligibility now.',
-      'time': '10 minutes ago',
+      'title': 'PM Vidyalaxmi Education Loan Scheme',
+      'body': 'A new scheme for students to provide collateral-free education loans for higher studies.',
+      'time': '2h ago',
       'read': false,
+      'category': 'new_schemes',
+      'tag': 'Education',
+      'isNew': true,
     },
     {
       'id': '2',
-      'title': 'Application Deadline',
-      'body':
-          'NEEDS Tamil Nadu application cycle ends on August 31st. Complete your profile.',
-      'time': '2 hours ago',
+      'title': 'PM Vishwakarma Yojana',
+      'body': 'Financial support for traditional artisans and craftspeople to upgrade their skills and tools.',
+      'time': '1d ago',
       'read': false,
+      'category': 'new_schemes',
+      'tag': 'Skill Development',
+      'isNew': true,
     },
     {
       'id': '3',
-      'title': 'Profile Reminder',
-      'body':
-          'Complete your profile setup to receive 100% accurate scheme matches.',
-      'time': '1 day ago',
-      'read': true,
+      'title': 'Post Matric Scholarship Scheme',
+      'body': 'Last date to apply is approaching',
+      'time': '10m ago',
+      'read': false,
+      'category': 'reminders',
+      'deadline': '31 May 2024',
+      'daysLeft': '5 days left',
+    },
+    {
+      'id': '4',
+      'title': 'PM Internship Scheme',
+      'body': 'Application window will close soon',
+      'time': '3h ago',
+      'read': false,
+      'category': 'reminders',
+      'deadline': '15 Jun 2024',
+      'daysLeft': '20 days left',
+    },
+    {
+      'id': '5',
+      'title': 'New Update on Ayushman Bharat Yojana',
+      'body': 'Changes in empanelment process for hospitals. Check full details.',
+      'time': '1d ago',
+      'read': false,
+      'category': 'updates',
+      'iconType': 'emblem',
+    },
+    {
+      'id': '6',
+      'title': 'Income Limit Revised for Several Schemes',
+      'body': 'Revised income criteria effective from 1st April 2024 for multiple schemes.',
+      'time': '2d ago',
+      'read': false,
+      'category': 'updates',
+      'iconType': 'bank',
+    },
+    {
+      'id': '7',
+      'title': 'Complete Your Profile',
+      'body': 'Add your income details to find schemes you are eligible for.',
+      'time': '5h ago',
+      'read': false,
+      'category': 'profile',
+      'progress': 70,
     },
   ];
 
@@ -126,6 +173,7 @@ class AppProvider with ChangeNotifier {
   bool get isGuest => _isGuest;
   String get mobileNumber => _mobileNumber;
   String get selectedLanguage => _selectedLanguage;
+  String get navigationMode => _navigationMode;
   int get currentTabIndex => _currentTabIndex;
   UserProfile get profile => _profile;
   List<String> get bookmarkedIds => _bookmarkedIds;
@@ -157,16 +205,40 @@ class AppProvider with ChangeNotifier {
     try {
       final prefs = await SharedPreferences.getInstance();
       _selectedLanguage = prefs.getString('language') ?? 'en';
+      _navigationMode = prefs.getString('navigationMode') ?? 'regular';
       _isGuest = prefs.getBool('isGuest') ?? false;
       _currentTabIndex = prefs.getInt('currentTabIndex') ?? 0;
+
 
       final profileStr = prefs.getString('userProfile');
       if (profileStr != null) {
         _profile = UserProfile.fromJson(jsonDecode(profileStr));
       }
 
-      _bookmarkedIds = prefs.getStringList('bookmarks') ?? [];
-      _recentlyViewedIds = prefs.getStringList('recentlyViewed') ?? [];
+      _bookmarkedIds = prefs.getStringList('bookmarks') ?? ['POST_MATRIC', 'PM_MATRU_VANDANA', 'PM_AWAS'];
+      _recentlyViewedIds = prefs.getStringList('recentlyViewed') ?? ['NSP_PORTAL', 'PM_EDRIVE', 'AYUSHMAN_BHARAT', 'MUDRA'];
+
+      final downloadedDocsStr = prefs.getString('downloadedDocs');
+      if (downloadedDocsStr != null) {
+        _downloadedDocs = List<Map<String, dynamic>>.from(jsonDecode(downloadedDocsStr));
+      } else {
+        _downloadedDocs = [
+          {
+            'id': 'POST_MATRIC_GUIDE',
+            'title': 'Post Matric Scholarship Scheme – Information Guide',
+            'size': '1.2 MB',
+            'date': 'Downloaded on 20 May 2024',
+            'fileType': 'PDF',
+          },
+          {
+            'id': 'PMAY_ELIGIBILITY',
+            'title': 'PMAY (Urban) – Eligibility & Benefits',
+            'size': '0.8 MB',
+            'date': 'Downloaded on 12 Jun 2024',
+            'fileType': 'PDF',
+          },
+        ];
+      }
 
       // Initialize filters based on loaded profile
       _filters['state'] = _profile.state;
@@ -205,6 +277,14 @@ class AppProvider with ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('language', lang);
   }
+
+  void changeNavigationMode(String mode) async {
+    _navigationMode = mode;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('navigationMode', mode);
+  }
+
 
   void login(String mobile) async {
     _isLoggedIn = true;
@@ -557,5 +637,36 @@ class AppProvider with ChangeNotifier {
       rethrow;
     }
     return null;
+  }
+
+  List<Map<String, dynamic>> get downloadedDocs => _downloadedDocs;
+
+  Future<void> _saveDownloadedDocs() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('downloadedDocs', jsonEncode(_downloadedDocs));
+  }
+
+  void downloadDoc(String id, String title, String size) {
+    if (!_downloadedDocs.any((doc) => doc['id'] == id)) {
+      final now = DateTime.now();
+      final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      final dateStr = 'Downloaded on ${now.day} ${months[now.month - 1]} ${now.year}';
+      
+      _downloadedDocs.add({
+        'id': id,
+        'title': title,
+        'size': size,
+        'date': dateStr,
+        'fileType': 'PDF',
+      });
+      _saveDownloadedDocs();
+      notifyListeners();
+    }
+  }
+
+  void removeDownloadedDoc(String id) {
+    _downloadedDocs.removeWhere((doc) => doc['id'] == id);
+    _saveDownloadedDocs();
+    notifyListeners();
   }
 }

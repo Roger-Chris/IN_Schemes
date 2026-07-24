@@ -116,5 +116,15 @@ Open your terminal in the `frontend/` directory and execute:
 
 4. **Build a production web bundle (optional):**
    ```bash
-   flutter build web --release
-   ```
+    flutter build web --release
+    ```
+
+---
+
+## 📱 UX & Screen Architecture
+
+The detailed user experience design, screen interactions, and navigation flow mapping all 33 screens of the application are documented in the [UX.md](file:///c:/Projects/IN_Schemes/UX.md) specification file. This includes:
+- Authentication & Onboarding flow
+- AI Companion conversational and voice ecosystem
+- Profile completion and progressive eligibility updates
+- Document checklist and OCR assistance workflows

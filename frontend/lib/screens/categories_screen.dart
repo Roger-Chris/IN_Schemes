@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../providers/app_state_provider.dart';
 import 'search_results_screen.dart';
+import 'notifications_screen.dart';
 
 class CategoryItem {
   final String title;
@@ -249,6 +250,57 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
           fit: BoxFit.contain,
         ),
         actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: GestureDetector(
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+                );
+              },
+              child: Stack(
+                clipBehavior: Clip.none,
+                alignment: Alignment.center,
+                children: [
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFEFF6FF),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.notifications_none_outlined,
+                      color: Color(0xFF0D47A1),
+                      size: 24,
+                    ),
+                  ),
+                  if (provider.notifications.where((n) => !n['read']).isNotEmpty)
+                    Positioned(
+                      right: 2,
+                      top: 2,
+                      child: Container(
+                        padding: const EdgeInsets.all(2),
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFEF4444),
+                          shape: BoxShape.circle,
+                        ),
+                        constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                        alignment: Alignment.center,
+                        child: Text(
+                          '${provider.notifications.where((n) => !n['read']).length}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 8.5,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
           // User profile avatar
           Padding(
             padding: const EdgeInsets.only(right: 16.0),
@@ -369,7 +421,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                         crossAxisCount: 3,
                         crossAxisSpacing: 10,
                         mainAxisSpacing: 12,
-                        childAspectRatio: 0.85, // Slightly larger card height
+                        childAspectRatio: 0.78, // Adjusted to prevent vertical title overflow on small screens
                       ),
                       itemCount: filteredCategories.length,
                       itemBuilder: (context, index) {

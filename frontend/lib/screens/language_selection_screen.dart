@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../providers/app_state_provider.dart';
-import 'login_screen.dart';
+import 'navigation_mode_screen.dart';
+
+
 
 class LanguageOption {
   final String code;
@@ -311,7 +313,7 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
                           provider.changeLanguage(_selectedLang);
                           Navigator.of(context).pushReplacement(
                             MaterialPageRoute(
-                              builder: (_) => const LoginScreen(),
+                              builder: (_) => const NavigationModeScreen(),
                             ),
                           );
                         },

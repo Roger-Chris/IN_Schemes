@@ -6,6 +6,7 @@ import '../providers/app_state_provider.dart';
 import '../utils/constants.dart';
 import '../widgets/filter_panel.dart';
 import 'scheme_details_screen.dart';
+import 'notifications_screen.dart';
 
 class PopularSearchItem {
   final String title;
@@ -271,6 +272,57 @@ class _SearchScreenState extends State<SearchScreen> {
           fit: BoxFit.contain,
         ),
         actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: GestureDetector(
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+                );
+              },
+              child: Stack(
+                clipBehavior: Clip.none,
+                alignment: Alignment.center,
+                children: [
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFEFF6FF),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.notifications_none_outlined,
+                      color: Color(0xFF0D47A1),
+                      size: 24,
+                    ),
+                  ),
+                  if (provider.notifications.where((n) => !n['read']).isNotEmpty)
+                    Positioned(
+                      right: 2,
+                      top: 2,
+                      child: Container(
+                        padding: const EdgeInsets.all(2),
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFEF4444),
+                          shape: BoxShape.circle,
+                        ),
+                        constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                        alignment: Alignment.center,
+                        child: Text(
+                          '${provider.notifications.where((n) => !n['read']).length}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 8.5,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
           // User profile avatar
           Padding(
             padding: const EdgeInsets.only(right: 16.0),

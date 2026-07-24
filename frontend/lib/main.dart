@@ -8,7 +8,7 @@ import 'screens/home_screen.dart';
 import 'screens/categories_screen.dart';
 import 'screens/search_screen.dart';
 import 'screens/profile_screen.dart';
-import 'screens/notifications_screen.dart';
+import 'screens/saved_schemes_screen.dart';
 import 'utils/constants.dart';
 
 void main() async {
@@ -91,7 +91,6 @@ class MainTabsContainer extends StatelessWidget {
     IconData activeIcon,
     String label,
     AppProvider provider,
-    int unreadCount,
   ) {
     final isSelected = provider.currentTabIndex == index;
     final color = isSelected ? const Color(0xFF0D47A1) : const Color(0xFF64748B);
@@ -101,37 +100,6 @@ class MainTabsContainer extends StatelessWidget {
       color: color,
       size: 24,
     );
-
-    // Add badge for notifications
-    if (index == 3 && unreadCount > 0) {
-      iconWidget = Stack(
-        clipBehavior: Clip.none,
-        children: [
-          iconWidget,
-          Positioned(
-            right: -6,
-            top: -6,
-            child: Container(
-              padding: const EdgeInsets.all(2),
-              decoration: const BoxDecoration(
-                color: Color(0xFFEF4444),
-                shape: BoxShape.circle,
-              ),
-              constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
-              alignment: Alignment.center,
-              child: Text(
-                '$unreadCount',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 8.5,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ),
-        ],
-      );
-    }
 
     return Expanded(
       child: GestureDetector(
@@ -165,11 +133,9 @@ class MainTabsContainer extends StatelessWidget {
       const HomeScreen(),
       const CategoriesScreen(),
       const SearchScreen(),
-      const NotificationsScreen(),
+      const SavedSchemesScreen(),
       const ProfileScreen(),
     ];
-
-    final unreadCount = provider.notifications.where((n) => !n['read']).length;
 
     return Container(
       decoration: const BoxDecoration(
@@ -197,11 +163,11 @@ class MainTabsContainer extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildNavItem(0, Icons.home_outlined, Icons.home, 'Home', provider, unreadCount),
-                _buildNavItem(1, Icons.grid_view_outlined, Icons.grid_view, 'Categories', provider, unreadCount),
-                _buildNavItem(2, Icons.search, Icons.search_sharp, 'Search', provider, unreadCount),
-                _buildNavItem(3, Icons.notifications_none, Icons.notifications, 'Notifications', provider, unreadCount),
-                _buildNavItem(4, Icons.person_outline, Icons.person, 'Profile', provider, unreadCount),
+                _buildNavItem(0, Icons.home_outlined, Icons.home, 'Home', provider),
+                _buildNavItem(1, Icons.grid_view_outlined, Icons.grid_view, 'Categories', provider),
+                _buildNavItem(2, Icons.search, Icons.search_sharp, 'Search', provider),
+                _buildNavItem(3, Icons.bookmark_border, Icons.bookmark, 'Saved', provider),
+                _buildNavItem(4, Icons.person_outline, Icons.person, 'Profile', provider),
               ],
             ),
           ),
