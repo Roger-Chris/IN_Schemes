@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'login_screen.dart';
+import 'package:provider/provider.dart';
+import '../providers/app_state_provider.dart';
+import '../main.dart';
+import 'profile_setup_screen.dart';
 
 
 class CompanionIntroScreen extends StatefulWidget {
@@ -656,11 +659,20 @@ class _CompanionIntroScreenState extends State<CompanionIntroScreen> {
                         elevation: 0,
                       ),
                       onPressed: () {
-                        Navigator.of(context).pushReplacement(
-                          MaterialPageRoute(
-                            builder: (_) => const LoginScreen(),
-                          ),
-                        );
+                        final provider = Provider.of<AppProvider>(context, listen: false);
+                        if (provider.profile.profileCompleted) {
+                          Navigator.of(context).pushReplacement(
+                            MaterialPageRoute(
+                              builder: (_) => const MainTabsContainer(),
+                            ),
+                          );
+                        } else {
+                          Navigator.of(context).pushReplacement(
+                            MaterialPageRoute(
+                              builder: (_) => const ProfileSetupScreen(),
+                            ),
+                          );
+                        }
                       },
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,

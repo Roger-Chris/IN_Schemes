@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../providers/app_state_provider.dart';
 import '../utils/constants.dart';
-import 'profile_setup_screen.dart';
+import 'navigation_mode_screen.dart';
 
 class OtpScreen extends StatefulWidget {
   final String phoneNumber;
@@ -109,10 +109,10 @@ class _OtpScreenState extends State<OtpScreen> {
         final provider = Provider.of<AppProvider>(context, listen: false);
         provider.login(widget.phoneNumber);
 
-        // Redirect to profile setup
+        // Redirect to Navigation Mode (part of the onboarding flow)
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
-            builder: (_) => const ProfileSetupScreen(),
+            builder: (_) => const NavigationModeScreen(),
           ),
         );
       }

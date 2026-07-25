@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../providers/app_state_provider.dart';
-import 'navigation_mode_screen.dart';
-
-
+import '../widgets/floating_logo.dart';
+import 'login_screen.dart';
 
 class LanguageOption {
   final String code;
@@ -39,104 +38,31 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
       code: 'en',
       nativeTitle: 'English',
       englishTitle: 'English',
-      circleText: 'En',
-      circleBgColor: Color(0xFFEFF6FF),
-      circleTextColor: Color(0xFF1D4ED8),
-    ),
-    LanguageOption(
-      code: 'hi',
-      nativeTitle: 'हिंदी',
-      englishTitle: 'Hindi',
-      circleText: 'हिं',
-      circleBgColor: Color(0xFFEFF6FF),
-      circleTextColor: Color(0xFF1D4ED8),
+      circleText: 'EN',
+      circleBgColor: Color(0xFFEFF6FF), // Blue 50
+      circleTextColor: Color(0xFF1D4ED8), // Blue 700
     ),
     LanguageOption(
       code: 'ta',
       nativeTitle: 'தமிழ்',
       englishTitle: 'Tamil',
       circleText: 'தமிழ்',
-      circleBgColor: Color(0xFFECFDF5),
-      circleTextColor: Color(0xFF047857),
+      circleBgColor: Color(0xFFECFDF5), // Emerald 50
+      circleTextColor: Color(0xFF047857), // Emerald 700
     ),
     LanguageOption(
-      code: 'te',
-      nativeTitle: 'తెలుగు',
-      englishTitle: 'Telugu',
-      circleText: 'తెలు',
-      circleBgColor: Color(0xFFF5F3FF),
-      circleTextColor: Color(0xFF6D28D9),
-    ),
-    LanguageOption(
-      code: 'bn',
-      nativeTitle: 'বাংলা',
-      englishTitle: 'Bengali',
-      circleText: 'বাংলা',
-      circleBgColor: Color(0xFFFEF3C7),
-      circleTextColor: Color(0xFFD97706),
-    ),
-    LanguageOption(
-      code: 'mr',
-      nativeTitle: 'मराठी',
-      englishTitle: 'Marathi',
-      circleText: 'मर',
-      circleBgColor: Color(0xFFFEE2E2),
-      circleTextColor: Color(0xFFB91C1C),
-    ),
-    LanguageOption(
-      code: 'gu',
-      nativeTitle: 'ગુજરાતી',
-      englishTitle: 'Gujarati',
-      circleText: 'ગુજ',
-      circleBgColor: Color(0xFFE6FFFA),
-      circleTextColor: Color(0xFF0D9488),
-    ),
-    LanguageOption(
-      code: 'kn',
-      nativeTitle: 'ಕನ್ನಡ',
-      englishTitle: 'Kannada',
-      circleText: 'ಕನ್ನ',
-      circleBgColor: Color(0xFFEFF6FF),
-      circleTextColor: Color(0xFF1D4ED8),
-    ),
-    LanguageOption(
-      code: 'pa',
-      nativeTitle: 'ਪੰਜਾਬੀ',
-      englishTitle: 'Punjabi',
-      circleText: 'ਪੰਜਾ',
-      circleBgColor: Color(0xFFFDF2F8),
-      circleTextColor: Color(0xFFBE185D),
-    ),
-    LanguageOption(
-      code: 'or',
-      nativeTitle: 'ଓଡ଼ିଆ',
-      englishTitle: 'Odia',
-      circleText: 'ଓଡ଼ି',
-      circleBgColor: Color(0xFFECFDF5),
-      circleTextColor: Color(0xFF047857),
-    ),
-    LanguageOption(
-      code: 'as',
-      nativeTitle: 'অসমীয়া',
-      englishTitle: 'Assamese',
-      circleText: 'অস',
-      circleBgColor: Color(0xFFF5F3FF),
-      circleTextColor: Color(0xFF6D28D9),
-    ),
-    LanguageOption(
-      code: 'sa',
-      nativeTitle: 'संस्कृतम्',
-      englishTitle: 'Sanskrit',
-      circleText: 'संस्कृ',
-      circleBgColor: Color(0xFFFEF3C7),
-      circleTextColor: Color(0xFFD97706),
+      code: 'hi',
+      nativeTitle: 'हिंदी',
+      englishTitle: 'Hindi',
+      circleText: 'हिंदी',
+      circleBgColor: Color(0xFFF5F3FF), // Purple 50
+      circleTextColor: Color(0xFF6D28D9), // Purple 700
     ),
   ];
 
   @override
   void initState() {
     super.initState();
-    // Default language from provider
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final provider = Provider.of<AppProvider>(context, listen: false);
       setState(() {
@@ -154,166 +80,162 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<AppProvider>(context, listen: false);
-    final size = MediaQuery.of(context).size;
-    
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: Colors.white,
       body: Stack(
         children: [
-          // 1. Top background image with map
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            height: size.height * 0.35,
+          // 1. Background Image from Asset
+          Positioned.fill(
             child: Image.asset(
-              'assets/images/splash_screen.png',
+              'assets/images/Login_bg.webp',
               fit: BoxFit.cover,
-              alignment: Alignment.topCenter,
-            ),
-          ),
-          
-          // 2. Gradient overlay to fade background into clean background color
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            height: size.height * 0.35,
-            child: Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Color(0x00F8FAFC),
-                    Color(0xFFF8FAFC),
-                  ],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                ),
-              ),
             ),
           ),
 
-          // 3. Scrollable content
+          // 2. Main content structure (No scrolling)
           Positioned.fill(
             child: SafeArea(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const SizedBox(height: 16),
+                    const Spacer(flex: 2),
+
+                    // 3. Isolated Floating Logo
+                    const FloatingLogo(),
                     
-                    // Small Brand Logo
-                    Image.asset(
-                      'assets/images/Logo.png',
-                      height: 100,
-                      fit: BoxFit.contain,
+                    const Spacer(flex: 2),
+                    
+                    // 4. Title & Subtitle
+                    Column(
+                      children: [
+                        RichText(
+                          textAlign: TextAlign.center,
+                          text: TextSpan(
+                            style: GoogleFonts.poppins(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xFF1E293B), // Slate 800
+                            ),
+                            children: const [
+                              TextSpan(text: 'Choose Your '),
+                              TextSpan(
+                                text: 'Language',
+                                style: TextStyle(
+                                  color: Color(0xFF2563EB), // Premium Blue Accent
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Select your preferred language to explore government schemes in your language.',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.inter(
+                            fontSize: 13,
+                            color: const Color(0xFF64748B), // Slate 500
+                            height: 1.4,
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 12),
-                    
-                    // Title
-                    Text(
-                      'Choose Your Language',
-                      style: GoogleFonts.poppins(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xFF0F172A), // Slate 900
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    
-                    // Subtitle
-                    Text(
-                      'Select your preferred language to explore government schemes in your language.',
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.inter(
-                        fontSize: 10.5,
-                        color: const Color(0xFF64748B), // Slate 500
-                        height: 1.4,
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    
-                    // 12-language Grid (6 rows of 2 columns)
-                    GridView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: _languages.length,
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        childAspectRatio: 2.3,
-                        mainAxisSpacing: 10,
-                        crossAxisSpacing: 10,
-                      ),
-                      itemBuilder: (context, index) {
-                        final option = _languages[index];
+
+                    const Spacer(flex: 2),
+
+                    // 5. Restricted Language List (English, Tamil, Hindi)
+                    Column(
+                      children: _languages.map((option) {
                         final isSelected = _selectedLang == option.code;
-                        return _buildLanguageItem(option, isSelected);
-                      },
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 12.0),
+                          child: _buildLanguageItem(option, isSelected),
+                        );
+                      }).toList(),
                     ),
-                    const SizedBox(height: 20),
-                    
-                    // Info Box
+
+                    const Spacer(flex: 1),
+
+                    // 6. Info Box Card
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
                         color: const Color(0xFFEFF6FF), // Blue 50
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: const Color(0xFFDBEAFE)), // Blue 100
+                        border: Border.all(color: const Color(0xFFBFDBFE)), // Blue 200
                       ),
                       child: Row(
                         children: [
-                          const Icon(
-                            Icons.verified_outlined,
-                            color: Color(0xFF1D4ED8), // Blue 700
-                            size: 24,
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Color(0xFFDBEAFE),
+                            ),
+                            child: const Icon(
+                              Icons.language,
+                              color: Color(0xFF2563EB), // Blue 600
+                              size: 20,
+                            ),
                           ),
                           const SizedBox(width: 12),
                           Expanded(
-                             child: Column(
-                               crossAxisAlignment: CrossAxisAlignment.start,
-                               children: [
-                                 Text(
-                                   'Your Language, Your Experience',
-                                   style: GoogleFonts.inter(
-                                     fontSize: 13,
-                                     fontWeight: FontWeight.bold,
-                                     color: const Color(0xFF1E3A8A), // Blue 900
-                                   ),
-                                 ),
-                                 const SizedBox(height: 2),
-                                 Text(
-                                   'You can change the language anytime from the app settings.',
-                                   style: GoogleFonts.inter(
-                                     fontSize: 11,
-                                     color: const Color(0xFF1D4ED8), // Blue 700
-                                   ),
-                                 ),
-                               ],
-                             ),
-                           ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Your Language, Your Experience',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.bold,
+                                    color: const Color(0xFF1E3A8A), // Blue 900
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  'Change it anytime from Settings.',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 11,
+                                    color: const Color(0xFF1D4ED8), // Blue 700
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 24),
-                    
-                    // Continue Button
-                    SizedBox(
-                      width: double.infinity,
-                      height: 56,
+
+                    const Spacer(flex: 2),
+
+                    // 7. Continue Button
+                    Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF2563EB).withOpacity(0.2),
+                            blurRadius: 12,
+                            offset: const Offset(0, 6),
+                          ),
+                        ],
+                      ),
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF0D47A1), // Royal Blue
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
+                            borderRadius: BorderRadius.circular(16),
                           ),
+                          padding: const EdgeInsets.symmetric(vertical: 16),
                           elevation: 0,
                         ),
                         onPressed: () {
                           provider.changeLanguage(_selectedLang);
                           Navigator.of(context).pushReplacement(
                             MaterialPageRoute(
-                              builder: (_) => const NavigationModeScreen(),
+                              builder: (_) => const LoginScreen(),
                             ),
                           );
                         },
@@ -338,7 +260,8 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 20),
+
+                    const Spacer(flex: 1),
                   ],
                 ),
               ),
@@ -352,55 +275,56 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
   Widget _buildLanguageItem(LanguageOption option, bool isSelected) {
     return InkWell(
       onTap: () => _onLanguageSelected(option.code),
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(16),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF0D47A1) : Colors.white,
-          borderRadius: BorderRadius.circular(12),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isSelected ? const Color(0xFF0D47A1) : const Color(0xFFE2E8F0), // Slate 200
-            width: 1,
+            color: isSelected ? const Color(0xFF3B82F6) : const Color(0xFFE2E8F0), // Blue 500 or Slate 200
+            width: isSelected ? 2 : 1.2,
           ),
           boxShadow: isSelected
               ? [
-                  const BoxShadow(
-                    color: Color(0x330D47A1), // 20% opacity
-                    blurRadius: 6,
-                    offset: Offset(0, 3),
+                  BoxShadow(
+                    color: const Color(0xFF3B82F6).withOpacity(0.08),
+                    blurRadius: 10,
+                    offset: const Offset(0, 3),
                   ),
                 ]
               : [
-                  const BoxShadow(
-                    color: Color(0x05000000), // 2% opacity
-                    blurRadius: 3,
-                    offset: Offset(0, 1),
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.01),
+                    blurRadius: 4,
+                    offset: const Offset(0, 1),
                   ),
                 ],
         ),
         child: Row(
           children: [
-            if (option.code != 'en' && !isSelected) ...[
-              Container(
-                width: 38,
-                height: 38,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: option.circleBgColor,
-                ),
-                alignment: Alignment.center,
-                child: Text(
-                  option.circleText,
-                  style: TextStyle(
-                    fontSize: option.circleText.length > 3 ? 9 : 12,
-                    fontWeight: FontWeight.bold,
-                    color: option.circleTextColor,
-                  ),
+            // Colored circle with native symbol/text
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: option.circleBgColor,
+              ),
+              alignment: Alignment.center,
+              child: Text(
+                option.circleText,
+                style: TextStyle(
+                  fontSize: option.circleText.length > 3 ? 10 : 13,
+                  fontWeight: FontWeight.bold,
+                  color: option.circleTextColor,
                 ),
               ),
-              const SizedBox(width: 10),
-            ],
+            ),
+            const SizedBox(width: 14),
+            
+            // Language names
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -411,33 +335,44 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
                     style: GoogleFonts.poppins(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
-                      color: isSelected ? Colors.white : const Color(0xFF1E293B), // Slate 800
+                      color: const Color(0xFF0F172A), // Slate 900
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 1),
+                  const SizedBox(height: 2),
                   Text(
                     option.englishTitle,
                     style: GoogleFonts.inter(
                       fontSize: 11,
-                      color: isSelected ? const Color(0xCCFFFFFF) : const Color(0xFF64748B), // Slate 500 (80% opacity for white)
+                      color: const Color(0xFF64748B), // Slate 500
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
             ),
-            if (isSelected)
-              const Icon(
-                Icons.check_circle,
-                color: Colors.white,
-                size: 22,
-              ),
+
+            // Selection indicator (Checked circle vs empty circle)
+            isSelected
+                ? const Icon(
+                    Icons.check_circle,
+                    color: Color(0xFF2563EB),
+                    size: 22,
+                  )
+                : Container(
+                    width: 22,
+                    height: 22,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: const Color(0xFFCBD5E1), // Slate 300
+                        width: 1.5,
+                      ),
+                    ),
+                  ),
           ],
         ),
       ),
     );
   }
 }
+
+

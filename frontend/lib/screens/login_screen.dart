@@ -3,9 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../providers/app_state_provider.dart';
 import '../utils/constants.dart';
-import '../main.dart';
 import 'otp_screen.dart';
-import 'profile_setup_screen.dart';
+import 'navigation_mode_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -40,20 +39,11 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _redirectToHome() {
-    final provider = Provider.of<AppProvider>(context, listen: false);
-    if (provider.profile.profileCompleted) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (_) => const MainTabsContainer(),
-        ),
-      );
-    } else {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (_) => const ProfileSetupScreen(),
-        ),
-      );
-    }
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(
+        builder: (_) => const NavigationModeScreen(),
+      ),
+    );
   }
 
   @override
@@ -497,7 +487,7 @@ class _LoginScreenState extends State<LoginScreen> {
         provider.continueAsGuest();
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
-            builder: (_) => const MainTabsContainer(),
+            builder: (_) => const NavigationModeScreen(),
           ),
         );
       },
