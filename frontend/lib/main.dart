@@ -82,8 +82,15 @@ class InSchemesApp extends StatelessWidget {
 }
 
 // Wrapper for Persistent Bottom Navigation Tabs Container
-class MainTabsContainer extends StatelessWidget {
+class MainTabsContainer extends StatefulWidget {
   const MainTabsContainer({super.key});
+
+  @override
+  State<MainTabsContainer> createState() => _MainTabsContainerState();
+}
+
+class _MainTabsContainerState extends State<MainTabsContainer> {
+  final GlobalKey<SearchScreenState> searchTabKey = GlobalKey<SearchScreenState>();
 
   Widget _buildNavItem(
     int index,
@@ -104,7 +111,10 @@ class MainTabsContainer extends StatelessWidget {
     return Expanded(
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
-        onTap: () => provider.updateTabIndex(index),
+        onTap: () {
+          provider.updateTabIndex(index);
+          searchTabKey.currentState?.resetToIdle();
+        },
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -132,7 +142,7 @@ class MainTabsContainer extends StatelessWidget {
     final List<Widget> tabs = [
       const HomeScreen(),
       const CategoriesScreen(),
-      const SearchScreen(),
+      SearchScreen(key: searchTabKey),
       const SavedSchemesScreen(),
       const ProfileScreen(),
     ];

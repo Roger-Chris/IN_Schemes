@@ -8,6 +8,7 @@ import '../models/user_profile.dart';
 import '../models/scheme_model.dart';
 import '../engine/recommendation_engine.dart';
 import '../services/auth_service.dart';
+import '../services/scheme_repository.dart';
 
 class AppProvider with ChangeNotifier {
   bool _isLoggedIn = false;
@@ -22,6 +23,12 @@ class AppProvider with ChangeNotifier {
   List<String> _recentlyViewedIds = [];
   List<Map<String, dynamic>> _downloadedDocs = [];
   String _searchQuery = '';
+
+  // ── Scheme data (loaded from Supabase via SchemeRepository) ──────────
+  List<Scheme> _allSchemes = [];
+  List<MapEntry<Scheme, RecommendationResult>> _recommendedSchemes = [];
+  bool _schemesLoading = false;
+  String? _schemesError;
 
 
   // Active Filters state
@@ -200,21 +207,53 @@ class AppProvider with ChangeNotifier {
   Map<String, dynamic> get wizardAnswers => _wizardAnswers;
   int get wizardStep => _wizardStep;
 
-  // Recommendations calculated on-the-fly based on current profile details
-  List<MapEntry<Scheme, RecommendationResult>> get recommendedSchemes {
-    return RecommendationEngine.getRecommendations(_profile, Scheme.seedData);
-  }
+  // Scheme loading state
+  bool get schemesLoading => _schemesLoading;
+  String? get schemesError => _schemesError;
+  List<Scheme> get allSchemes => _allSchemes;
+
+  // Recommended schemes (ranked by RecommendationEngine against cached list)
+  List<MapEntry<Scheme, RecommendationResult>> get recommendedSchemes =>
+      _recommendedSchemes;
 
   // Bookmarked schemes list
   List<Scheme> get bookmarkedSchemes {
-    return Scheme.seedData.where((s) => _bookmarkedIds.contains(s.id)).toList();
+    return _allSchemes
+        .where((s) =>
+            _bookmarkedIds.contains(s.id) ||
+            _bookmarkedIds.contains(s.schemeCode))
+        .toList();
   }
 
   // Recently viewed schemes list
   List<Scheme> get recentlyViewedSchemes {
-    return Scheme.seedData
-        .where((s) => _recentlyViewedIds.contains(s.id))
+    return _allSchemes
+        .where((s) =>
+            _recentlyViewedIds.contains(s.id) ||
+            _recentlyViewedIds.contains(s.schemeCode))
         .toList();
+  }
+
+  // Load (or reload) all schemes and recompute recommendations
+  Future<void> loadSchemes({bool forceRefresh = false}) async {
+    if (_schemesLoading) return;
+    if (forceRefresh) SchemeRepository.instance.clearCache();
+
+    _schemesLoading = true;
+    _schemesError = null;
+    notifyListeners();
+
+    try {
+      _allSchemes = await SchemeRepository.instance.getAllSchemes();
+      _recommendedSchemes =
+          RecommendationEngine.getRecommendations(_profile, _allSchemes);
+    } catch (e) {
+      _schemesError = e.toString();
+      debugPrint('[AppProvider] loadSchemes error: $e');
+    } finally {
+      _schemesLoading = false;
+      notifyListeners();
+    }
   }
 
   // Load state from SharedPreferences (for session continue support)
@@ -270,6 +309,9 @@ class AppProvider with ChangeNotifier {
       }
 
       notifyListeners();
+
+      // Kick off scheme load after state is set
+      loadSchemes();
     } catch (e) {
       debugPrint('Error loading state: $e');
     }

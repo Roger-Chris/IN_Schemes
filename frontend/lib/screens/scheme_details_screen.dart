@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../providers/app_state_provider.dart';
 import '../models/scheme_model.dart';
-import '../utils/constants.dart';
-import '../engine/recommendation_engine.dart';
 
 class SchemeDetailsScreen extends StatefulWidget {
   final Scheme scheme;
@@ -19,280 +15,674 @@ class SchemeDetailsScreen extends StatefulWidget {
 }
 
 class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
-  bool _overviewExpanded = true;
+  int _activeTabIndex = 0;
+  final List<String> _tabs = ["Overview", "Benefits", "Eligibility", "Documents", "Process"];
+
+  // State variables for expandable sections
   bool _benefitsExpanded = true;
   bool _eligibilityExpanded = true;
+  bool _documentsExpanded = true;
+  bool _processExpanded = true;
+  bool _isBookmarked = false;
 
-  void _showDocumentHelpDialog(BuildContext context, String docName, String url) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          backgroundColor: AppConstants.surfaceColor,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-            side: const BorderSide(color: AppConstants.cardBorderColor),
-          ),
-          title: Row(
-            children: [
-              const Icon(Icons.info_outline, color: AppConstants.primaryColor),
-              const SizedBox(width: 10),
-              Text(
-                'Document Assistance',
-                style: GoogleFonts.poppins(
-                  color: AppConstants.primaryText,
-                  fontSize: 16.5,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'You are about to be redirected to the official government portal to apply for your $docName.',
-                style: GoogleFonts.inter(
-                  color: AppConstants.secondaryText,
-                  fontSize: 13,
-                ),
-              ),
-              const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: AppConstants.backgroundColor,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  url,
-                  style: GoogleFonts.inter(
-                    color: const Color(0xFF1D4ED8),
-                    fontSize: 11.5,
-                    decoration: TextDecoration.underline,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text(
-                'Cancel',
-                style: GoogleFonts.inter(color: AppConstants.secondaryText, fontSize: 13, fontWeight: FontWeight.bold),
-              ),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF0D47A1),
-                elevation: 0,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-              ),
-              onPressed: () {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Redirecting to official portal for $docName...'),
-                    backgroundColor: AppConstants.successColor,
-                  ),
-                );
-              },
-              child: Text(
-                'Open Portal',
-                style: GoogleFonts.inter(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
-              ),
-            ),
-          ],
-        );
-      },
-    );
+  String _getImageForCategory(String category) {
+    final cat = category.toLowerCase();
+    if (cat.contains("farmer") || cat.contains("agriculture")) {
+      return 'assets/images/banner_farmer.png';
+    } else if (cat.contains("student") || cat.contains("education")) {
+      return 'assets/images/banner_students.png';
+    } else {
+      return 'assets/images/banner_family.png';
+    }
   }
 
-  Widget _buildBannerHeader(String category, RecommendationResult evaluation) {
-    String imagePath = 'assets/images/banner_family.png';
-    final cat = category.toLowerCase();
-    if (cat.contains('education') || cat.contains('student')) {
-      imagePath = 'assets/images/banner_students.png';
-    } else if (cat.contains('agriculture') || cat.contains('farmer')) {
-      imagePath = 'assets/images/banner_farmer.png';
-    }
+  @override
+  Widget build(BuildContext context) {
+    final Scheme scheme = widget.scheme;
 
-    return Container(
-      height: 168,
-      width: double.infinity,
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 12,
-            offset: const Offset(0, 6),
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: Stack(
+        children: [
+          // Bottom Layer: CustomScrollView withSticky Tabs
+          Positioned.fill(
+            child: CustomScrollView(
+              physics: const BouncingScrollPhysics(),
+              slivers: [
+                // 1. Custom App Bar
+                SliverAppBar(
+                  pinned: true,
+                  backgroundColor: Colors.white,
+                  elevation: 0,
+                  leading: IconButton(
+                    icon: const Icon(Icons.arrow_back, color: Color(0xFF0F172A), size: 24),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                  title: Text(
+                    "Scheme Details",
+                    style: GoogleFonts.poppins(
+                      color: const Color(0xFF0F172A),
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  actions: [
+                    IconButton(
+                      icon: Icon(
+                        _isBookmarked ? Icons.bookmark : Icons.bookmark_border,
+                        color: _isBookmarked ? const Color(0xFF2563EB) : const Color(0xFF0F172A),
+                        size: 24,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _isBookmarked = !_isBookmarked;
+                        });
+                      },
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.share_outlined, color: Color(0xFF0F172A), size: 24),
+                      onPressed: () {},
+                    ),
+                    const SizedBox(width: 8),
+                  ],
+                ),
+
+                // 2. Hero Section
+                SliverToBoxAdapter(
+                  child: _HeroSection(
+                    scheme: scheme,
+                    imagePath: _getImageForCategory(scheme.category),
+                  ),
+                ),
+
+                // 3. Sticky Tab Bar Header
+                SliverPersistentHeader(
+                  pinned: true,
+                  delegate: _StickyTabBarDelegate(
+                    child: Container(
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        border: Border(
+                          bottom: BorderSide(color: Color(0xFFE2E8F0), width: 1),
+                        ),
+                      ),
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        physics: const BouncingScrollPhysics(),
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Row(
+                          children: List.generate(_tabs.length, (index) {
+                            final bool isSelected = _activeTabIndex == index;
+                            return GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  _activeTabIndex = index;
+                                });
+                              },
+                              child: Container(
+                                margin: const EdgeInsets.only(right: 24),
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                decoration: BoxDecoration(
+                                  border: Border(
+                                    bottom: BorderSide(
+                                      color: isSelected ? const Color(0xFF2563EB) : Colors.transparent,
+                                      width: 2,
+                                    ),
+                                  ),
+                                ),
+                                child: Text(
+                                  _tabs[index],
+                                  style: GoogleFonts.inter(
+                                    color: isSelected ? const Color(0xFF2563EB) : const Color(0xFF64748B),
+                                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ),
+                            );
+                          }),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+
+                // 4. Scrollable Content Body
+                SliverPadding(
+                  padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 120),
+                  sliver: SliverList(
+                    delegate: SliverChildListDelegate([
+                      // Overview Paragraph
+                      Text(
+                        scheme.overview,
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFF64748B),
+                          fontSize: 14,
+                          height: 1.5,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+
+                      // Why this matches you card
+                      _buildWhyThisMatchesYouCard(),
+                      const SizedBox(height: 24),
+
+                      // Benefits Expandable Section
+                      _ExpandableSection(
+                        title: "Benefits Details",
+                        icon: Icons.card_giftcard_outlined,
+                        iconColor: const Color(0xFF047857),
+                        iconBg: const Color(0xFFECFDF5),
+                        isExpanded: _benefitsExpanded,
+                        onToggle: () {
+                          setState(() {
+                            _benefitsExpanded = !_benefitsExpanded;
+                          });
+                        },
+                        child: _buildBenefitsContent(scheme.benefits),
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Eligibility Expandable Section
+                      _ExpandableSection(
+                        title: "Eligibility Criteria",
+                        icon: Icons.verified_user_outlined,
+                        iconColor: const Color(0xFF1D4ED8),
+                        iconBg: const Color(0xFFEFF6FF),
+                        isExpanded: _eligibilityExpanded,
+                        onToggle: () {
+                          setState(() {
+                            _eligibilityExpanded = !_eligibilityExpanded;
+                          });
+                        },
+                        child: _buildEligibilityContent(scheme.eligibilityCriteria),
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Required Documents Expandable Section
+                      _ExpandableSection(
+                        title: "Required Documents",
+                        icon: Icons.description_outlined,
+                        iconColor: const Color(0xFF6D28D9),
+                        iconBg: const Color(0xFFF5F3FF),
+                        isExpanded: _documentsExpanded,
+                        onToggle: () {
+                          setState(() {
+                            _documentsExpanded = !_documentsExpanded;
+                          });
+                        },
+                        child: _buildDocumentsContent(scheme.requiredDocuments),
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Process Expandable Section
+                      _ExpandableSection(
+                        title: "Application Process",
+                        icon: Icons.account_tree_outlined,
+                        iconColor: const Color(0xFFEA580C),
+                        iconBg: const Color(0xFFFFEDD5),
+                        isExpanded: _processExpanded,
+                        onToggle: () {
+                          setState(() {
+                            _processExpanded = !_processExpanded;
+                          });
+                        },
+                        child: _buildProcessContent(scheme.applicationProcess),
+                      ),
+                    ]),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Top Layer: Fixed Bottom Action Bar
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: _BottomActionBar(isBookmarked: _isBookmarked, onBookmarkToggle: () {
+              setState(() {
+                _isBookmarked = !_isBookmarked;
+              });
+            }),
           ),
         ],
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: Image.asset(
-                imagePath,
-                fit: BoxFit.cover,
+    );
+  }
+
+  Widget _buildWhyThisMatchesYouCard() {
+    final matches = [
+      "Startup Business",
+      "Tamil Nadu",
+      "Manufacturing Sector",
+      "Women Entrepreneur",
+    ];
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: const Color(0xFF2563EB).withValues(alpha: 0.15),
+          width: 1.2,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.track_changes, color: Color(0xFF2563EB), size: 20),
+              const SizedBox(width: 8),
+              Text(
+                "Why this matches you",
+                style: GoogleFonts.poppins(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                  color: const Color(0xFF0F172A),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: matches.map((match) {
+              return Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEFF6FF),
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.check_circle, color: Color(0xFF2563EB), size: 14),
+                    const SizedBox(width: 6),
+                    Text(
+                      match,
+                      style: GoogleFonts.inter(
+                        color: const Color(0xFF2563EB),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBenefitsContent(String benefitsText) {
+    final benefitCards = [
+      {"icon": Icons.monetization_on, "color": const Color(0xFF047857), "bg": const Color(0xFFECFDF5), "title": "Subsidies", "desc": "Up to 35% subsidy"},
+      {"icon": Icons.credit_card, "color": const Color(0xFF1D4ED8), "bg": const Color(0xFFEFF6FF), "title": "Credit Limit", "desc": "Up to ₹50 Lakh loan"},
+      {"icon": Icons.security, "color": const Color(0xFF6D28D9), "bg": const Color(0xFFF5F3FF), "title": "Collateral Free", "desc": "No collateral required"},
+      {"icon": Icons.school, "color": const Color(0xFFEA580C), "bg": const Color(0xFFFFEDD5), "title": "EDP Training", "desc": "Free training course"},
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          benefitsText,
+          style: GoogleFonts.inter(
+            color: const Color(0xFF64748B),
+            fontSize: 13,
+            height: 1.45,
+          ),
+        ),
+        const SizedBox(height: 14),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          physics: const BouncingScrollPhysics(),
+          child: Row(
+            children: benefitCards.map((card) {
+              return Container(
+                width: 120,
+                height: 120,
+                margin: const EdgeInsets.only(right: 12, bottom: 4),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: card["bg"] as Color,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Icon(card["icon"] as IconData, color: card["color"] as Color, size: 24),
+                    const SizedBox(height: 8),
+                    Text(
+                      card["title"] as String,
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF0F172A),
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      card["desc"] as String,
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.inter(
+                        fontSize: 10,
+                        color: const Color(0xFF64748B),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEligibilityContent(List<String> criteria) {
+    return Column(
+      children: criteria.map((rule) {
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 8.0),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Padding(
+                padding: EdgeInsets.only(top: 2.0),
+                child: Icon(Icons.check_circle_outline, color: Color(0xFF2563EB), size: 14),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  rule,
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF64748B),
+                    fontSize: 13,
+                    height: 1.35,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildDocumentsContent(List<String> documents) {
+    return Column(
+      children: [
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            childAspectRatio: 3.5,
+            crossAxisSpacing: 10,
+            mainAxisSpacing: 10,
+          ),
+          itemCount: documents.length,
+          itemBuilder: (context, index) {
+            return Row(
+              children: [
+                const Icon(Icons.assignment_outlined, color: Color(0xFF2563EB), size: 16),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    documents[index],
+                    style: GoogleFonts.inter(
+                      fontSize: 12.5,
+                      color: const Color(0xFF0F172A),
+                      fontWeight: FontWeight.w500,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
+        const SizedBox(height: 12),
+        Center(
+          child: TextButton(
+            onPressed: () {},
+            child: Text(
+              "Show less ^",
+              style: GoogleFonts.inter(
+                color: const Color(0xFF2563EB),
+                fontWeight: FontWeight.bold,
+                fontSize: 13,
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.only(left: 20.0, right: 135.0, top: 16.0, bottom: 16.0),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildProcessContent(List<String> steps) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: List.generate(steps.length, (index) {
+        final bool isLast = index == steps.length - 1;
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Column(
+              children: [
+                Container(
+                  width: 24,
+                  height: 24,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFEFF6FF),
+                    shape: BoxShape.circle,
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    "${index + 1}",
+                    style: GoogleFonts.poppins(
+                      color: const Color(0xFF2563EB),
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                if (!isLast)
+                  Container(
+                    width: 2,
+                    height: 40,
+                    color: const Color(0xFFDBEAFE),
+                  ),
+              ],
+            ),
+            const SizedBox(width: 12),
+            Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    widget.scheme.name,
-                    style: GoogleFonts.poppins(
-                      fontSize: 17.5,
-                      fontWeight: FontWeight.bold,
-                      color: const Color(0xFF0F172A),
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    widget.scheme.overview,
+                    steps[index],
                     style: GoogleFonts.inter(
-                      fontSize: 11.5,
-                      color: const Color(0xFF475569),
-                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF0F172A),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13.5,
                     ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
                   ),
+                  const SizedBox(height: 2),
+                  Text(
+                    "Complete this phase to progress further.",
+                    style: GoogleFonts.inter(
+                      color: const Color(0xFF64748B),
+                      fontSize: 11,
+                    ),
+                  ),
+                  const SizedBox(height: 14),
                 ],
               ),
             ),
           ],
-        ),
-      ),
+        );
+      }),
     );
   }
+}
 
-  Widget _buildSponsoringBodyBlock() {
-    final isTN = widget.scheme.sponsoringBody.toLowerCase().contains('tamil nadu');
-    final govText = isTN ? 'Government of Tamil Nadu' : 'Government of India';
-    
-    final isState = widget.scheme.sponsoringBody.toLowerCase().contains('tamil nadu') || widget.scheme.sponsoringBody.toLowerCase().contains('state');
-    final badgeText = isState ? 'State Scheme' : 'Central Scheme';
-    final badgeColor = isState ? const Color(0xFFFF9933) : const Color(0xFF2563EB);
+// 2. Extracted Hero Section Widget
+class _HeroSection extends StatelessWidget {
+  final Scheme scheme;
+  final String imagePath;
 
+  const _HeroSection({
+    required this.scheme,
+    required this.imagePath,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.all(16),
+      height: 200,
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
-            blurRadius: 10,
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 12,
             offset: const Offset(0, 4),
           ),
         ],
       ),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: const Color(0xFFF8FAFC),
-              shape: BoxShape.circle,
-              border: Border.all(color: const Color(0xFFE2E8F0)),
-            ),
-            child: const Icon(
-              Icons.account_balance,
-              color: Color(0xFF0D47A1),
-              size: 22,
+          // Left Image
+          Expanded(
+            flex: 2,
+            child: ClipRRect(
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(16),
+                bottomLeft: Radius.circular(16),
+              ),
+              child: Image.asset(
+                imagePath,
+                fit: BoxFit.cover,
+                height: double.infinity,
+              ),
             ),
           ),
-          const SizedBox(width: 12),
+
+          // Right Content Block
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  widget.scheme.sponsoringBody.split(',').first,
-                  style: GoogleFonts.poppins(
-                    fontSize: 13,
-                    fontWeight: FontWeight.bold,
-                    color: const Color(0xFF0F172A),
+            flex: 3,
+            child: Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFEFF6FF),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          "Central Scheme",
+                          style: GoogleFonts.inter(
+                            color: const Color(0xFF2563EB),
+                            fontSize: 9,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        scheme.name,
+                        style: GoogleFonts.poppins(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF0F172A),
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        scheme.sponsoringBody,
+                        style: GoogleFonts.inter(
+                          fontSize: 11,
+                          color: const Color(0xFF64748B),
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
                   ),
-                ),
-                if (widget.scheme.sponsoringBody.contains(',')) ...[
-                  const SizedBox(height: 1),
-                  Text(
-                    widget.scheme.sponsoringBody.substring(widget.scheme.sponsoringBody.indexOf(',') + 1).trim(),
-                    style: GoogleFonts.inter(
-                      fontSize: 11,
-                      color: const Color(0xFF64748B),
+
+                  // Sponsoring theme tags
+                  Wrap(
+                    spacing: 4,
+                    children: [
+                      _buildMiniTag("Loan", const Color(0xFFEFF6FF), const Color(0xFF1D4ED8)),
+                      _buildMiniTag("Subsidy", const Color(0xFFECFDF5), const Color(0xFF047857)),
+                    ],
+                  ),
+
+                  // Match Banner
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFEFF6FF),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: const Color(0xFF2563EB).withValues(alpha: 0.2)),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.auto_awesome, color: Color(0xFF2563EB), size: 14),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "96% Match",
+                                style: GoogleFonts.inter(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                  color: const Color(0xFF2563EB),
+                                ),
+                              ),
+                              Text(
+                                "Highly relevant",
+                                style: GoogleFonts.inter(
+                                  fontSize: 8.5,
+                                  color: const Color(0xFF64748B),
+                                ),
+                                maxLines: 1,
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Icon(Icons.chevron_right, color: Color(0xFF2563EB), size: 14),
+                      ],
                     ),
                   ),
                 ],
-                const SizedBox(height: 3),
-                Row(
-                  children: [
-                    Text(
-                      govText,
-                      style: GoogleFonts.inter(
-                        fontSize: 10.5,
-                        color: const Color(0xFF64748B),
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    const Icon(Icons.check_circle, color: Color(0xFF16A34A), size: 12),
-                  ],
-                ),
-                const SizedBox(height: 6),
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: badgeColor.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(
-                        badgeText,
-                        style: GoogleFonts.inter(
-                          color: badgeColor,
-                          fontSize: 9.5,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFDCFCE7),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(
-                        'Active',
-                        style: GoogleFonts.inter(
-                          color: const Color(0xFF16A34A),
-                          fontSize: 9.5,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+              ),
             ),
           ),
         ],
@@ -300,789 +690,234 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
     );
   }
 
-  Widget _buildSectionHeader({
-    required int number,
-    required String title,
-    required IconData icon,
-    required Color iconColor,
-    required Color iconBgColor,
-    bool isExpandable = false,
-    bool isExpanded = false,
-    VoidCallback? onTap,
-    Widget? trailing,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 14.0, horizontal: 16.0),
-        child: Row(
-          children: [
-            Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                color: iconBgColor,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                icon,
-                color: iconColor,
-                size: 18,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                '$number. $title',
-                style: GoogleFonts.poppins(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: const Color(0xFF0F172A),
-                ),
-              ),
-            ),
-            trailing ?? const SizedBox.shrink(),
-            if (isExpandable)
-              Icon(
-                isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
-                color: const Color(0xFF64748B),
-                size: 20,
-              ),
-          ],
+  Widget _buildMiniTag(String label, Color bg, Color text) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Text(
+        label,
+        style: GoogleFonts.inter(
+          color: text,
+          fontSize: 9,
+          fontWeight: FontWeight.bold,
         ),
       ),
     );
   }
+}
 
-  Widget _buildOverviewSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildSectionHeader(
-          number: 1,
-          title: 'Overview',
-          icon: Icons.description_outlined,
-          iconColor: const Color(0xFF2563EB),
-          iconBgColor: const Color(0xFFEFF6FF),
-          isExpandable: true,
-          isExpanded: _overviewExpanded,
-          onTap: () {
-            setState(() {
-              _overviewExpanded = !_overviewExpanded;
-            });
-          },
-        ),
-        if (_overviewExpanded)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-            child: Text(
-              widget.scheme.overview,
-              style: GoogleFonts.inter(
-                fontSize: 13,
-                color: const Color(0xFF475569),
-                height: 1.5,
-              ),
-            ),
-          ),
-      ],
-    );
-  }
+// 3. Custom SliverPersistentHeaderDelegate for Sticky Tab Bar
+class _StickyTabBarDelegate extends SliverPersistentHeaderDelegate {
+  final Widget child;
 
-  Widget _buildBenefitsSection() {
-    final benefitsList = widget.scheme.benefits
-        .split(RegExp(r'(?<=\.)\s+|\n+'))
-        .where((s) => s.trim().isNotEmpty)
-        .toList();
+  const _StickyTabBarDelegate({required this.child});
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildSectionHeader(
-          number: 2,
-          title: 'Benefits',
-          icon: Icons.redeem_outlined,
-          iconColor: const Color(0xFF16A34A),
-          iconBgColor: const Color(0xFFDCFCE7),
-          isExpandable: true,
-          isExpanded: _benefitsExpanded,
-          onTap: () {
-            setState(() {
-              _benefitsExpanded = !_benefitsExpanded;
-            });
-          },
-        ),
-        if (_benefitsExpanded)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-            child: Column(
-              children: benefitsList.map((item) {
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 8.0),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Padding(
-                        padding: EdgeInsets.only(top: 2.0),
-                        child: Icon(Icons.check_circle_outline, color: Color(0xFF16A34A), size: 15),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          item,
-                          style: GoogleFonts.inter(
-                            fontSize: 13,
-                            color: const Color(0xFF475569),
-                            height: 1.4,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              }).toList(),
-            ),
-          ),
-      ],
-    );
-  }
+  @override
+  double get minExtent => 48.0;
 
-  Widget _buildEligibilitySection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildSectionHeader(
-          number: 3,
-          title: 'Eligibility Criteria',
-          icon: Icons.assignment_ind_outlined,
-          iconColor: const Color(0xFF7C3AED),
-          iconBgColor: const Color(0xFFF3E8FF),
-          isExpandable: true,
-          isExpanded: _eligibilityExpanded,
-          onTap: () {
-            setState(() {
-              _eligibilityExpanded = !_eligibilityExpanded;
-            });
-          },
-        ),
-        if (_eligibilityExpanded)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-            child: Column(
-              children: widget.scheme.eligibilityCriteria.map((criterion) {
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 8.0),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Padding(
-                        padding: EdgeInsets.only(top: 2.0),
-                        child: Icon(Icons.check_circle_outline, color: Color(0xFF7C3AED), size: 15),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          criterion,
-                          style: GoogleFonts.inter(
-                            fontSize: 13,
-                            color: const Color(0xFF475569),
-                            height: 1.4,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              }).toList(),
-            ),
-          ),
-      ],
-    );
-  }
+  @override
+  double get maxExtent => 48.0;
 
-  Widget _buildRequiredDocumentsSection(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildSectionHeader(
-          number: 4,
-          title: 'Required Documents',
-          icon: Icons.file_present_outlined,
-          iconColor: const Color(0xFF0284C7),
-          iconBgColor: const Color(0xFFE0F2FE),
-          trailing: TextButton(
-            onPressed: () {
-              if (widget.scheme.requiredDocuments.isNotEmpty) {
-                final doc = widget.scheme.requiredDocuments.first;
-                final url = AppConstants.documentLinks[doc] ?? 'https://www.india.gov.in/';
-                _showDocumentHelpDialog(context, doc, url);
-              }
-            },
-            style: TextButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              minimumSize: Size.zero,
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            ),
-            child: Text(
-              'View Sample',
-              style: GoogleFonts.inter(
-                fontSize: 11.5,
-                fontWeight: FontWeight.bold,
-                color: const Color(0xFF2563EB),
-              ),
-            ),
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-          child: Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: widget.scheme.requiredDocuments.map((doc) {
-              return InkWell(
-                onTap: () {
-                  final url = AppConstants.documentLinks[doc] ?? 'https://www.india.gov.in/';
-                  _showDocumentHelpDialog(context, doc, url);
-                },
-                borderRadius: BorderRadius.circular(8),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF8FAFC),
-                    border: Border.all(color: const Color(0xFFE2E8F0)),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.description_outlined, size: 14, color: Color(0xFF64748B)),
-                      const SizedBox(width: 6),
-                      Text(
-                        doc,
-                        style: GoogleFonts.inter(
-                          fontSize: 11.5,
-                          color: const Color(0xFF334155),
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            }).toList(),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildApplicationProcessSection() {
-    final steps = widget.scheme.applicationProcess;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildSectionHeader(
-          number: 5,
-          title: 'Application Process',
-          icon: Icons.assignment_turned_in_outlined,
-          iconColor: const Color(0xFFEA580C),
-          iconBgColor: const Color(0xFFFFEDD5),
-        ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: List.generate(steps.length, (index) {
-                final isLast = index == steps.length - 1;
-                
-                IconData getStepIcon(int idx) {
-                  switch (idx) {
-                    case 0: return Icons.language;
-                    case 1: return Icons.person_add_alt_1_outlined;
-                    case 2: return Icons.cloud_upload_outlined;
-                    default: return Icons.send_outlined;
-                  }
-                }
-                
-                String getStepTitle(int idx) {
-                  switch (idx) {
-                    case 0: return 'Visit Official Portal';
-                    case 1: return 'Register';
-                    case 2: return 'Fill & Upload';
-                    case 3: return 'Submit';
-                    default: return 'Step ${idx + 1}';
-                  }
-                }
-
-                return Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    SizedBox(
-                      width: 112,
-                      child: Column(
-                        children: [
-                          Container(
-                            width: 44,
-                            height: 44,
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFEFF6FF),
-                              shape: BoxShape.circle,
-                              border: Border.all(color: const Color(0xFFDBEAFE)),
-                            ),
-                            child: Icon(
-                              getStepIcon(index),
-                              color: const Color(0xFF2563EB),
-                              size: 18,
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            getStepTitle(index),
-                            textAlign: TextAlign.center,
-                            style: GoogleFonts.inter(
-                              fontSize: 10.5,
-                              fontWeight: FontWeight.bold,
-                              color: const Color(0xFF0F172A),
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            'Step ${index + 1}',
-                            style: GoogleFonts.inter(
-                              fontSize: 9.5,
-                              color: const Color(0xFF64748B),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    if (!isLast)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: List.generate(3, (i) => Container(
-                            width: 4,
-                            height: 1,
-                            margin: const EdgeInsets.symmetric(horizontal: 1.5),
-                            color: const Color(0xFFCBD5E1),
-                          ))..add(Container(
-                            margin: const EdgeInsets.only(left: 1.5),
-                            child: const Icon(Icons.chevron_right, size: 10, color: Color(0xFFCBD5E1)),
-                          )),
-                        ),
-                      ),
-                  ],
-                );
-              }),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildImportantDatesSection() {
-    Widget buildDateCard(String title, String date, Color textColor, Color bgColor) {
-      return Container(
-        width: 140,
-        height: 92,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-        decoration: BoxDecoration(
-          color: bgColor,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: textColor.withValues(alpha: 0.1)),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: GoogleFonts.inter(
-                fontSize: 10,
-                fontWeight: FontWeight.bold,
-                color: textColor,
-              ),
-            ),
-            const Spacer(),
-            Text(
-              date,
-              style: GoogleFonts.poppins(
-                fontSize: 13,
-                fontWeight: FontWeight.bold,
-                color: const Color(0xFF0F172A),
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildSectionHeader(
-          number: 6,
-          title: 'Important Dates',
-          icon: Icons.calendar_month_outlined,
-          iconColor: const Color(0xFFDB2777),
-          iconBgColor: const Color(0xFFFCE7F3),
-        ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
-                buildDateCard('Application Start Date', '01 Jul 2026', const Color(0xFFDB2777), const Color(0xFFFFF1F2)),
-                const SizedBox(width: 8),
-                buildDateCard('Last Date to Apply', '31 Oct 2026', const Color(0xFFEA580C), const Color(0xFFFFF7ED)),
-                const SizedBox(width: 8),
-                buildDateCard('Institute Verification', '15 Nov 2026', const Color(0xFF7C3AED), const Color(0xFFF5F3FF)),
-                const SizedBox(width: 8),
-                buildDateCard('Last Date for Renewal', '30 Nov 2026', const Color(0xFF2563EB), const Color(0xFFEFF6FF)),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildOfficialWebsiteSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildSectionHeader(
-          number: 7,
-          title: 'Official Website',
-          icon: Icons.public,
-          iconColor: const Color(0xFF0D9488),
-          iconBgColor: const Color(0xFFCCFBF1),
-        ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Visit the official website for more information and to apply online.',
-                style: GoogleFonts.inter(
-                  fontSize: 12,
-                  color: const Color(0xFF64748B),
-                ),
-              ),
-              const SizedBox(height: 10),
-              InkWell(
-                onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Opening official portal: ${widget.scheme.officialWebsite}'),
-                      backgroundColor: AppConstants.primaryColor,
-                    ),
-                  );
-                },
-                borderRadius: BorderRadius.circular(10),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFEFF6FF),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: const Color(0xFFDBEAFE)),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          widget.scheme.officialWebsite,
-                          style: GoogleFonts.inter(
-                            fontSize: 12.5,
-                            fontWeight: FontWeight.w600,
-                            color: const Color(0xFF1D4ED8),
-                            decoration: TextDecoration.underline,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      const Icon(Icons.open_in_new, size: 16, color: Color(0xFF1D4ED8)),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildFaqsSection() {
-    if (widget.scheme.faqs.isEmpty) return const SizedBox.shrink();
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildSectionHeader(
-          number: 8,
-          title: 'FAQs',
-          icon: Icons.help_outline,
-          iconColor: const Color(0xFF2563EB),
-          iconBgColor: const Color(0xFFEFF6FF),
-        ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-          child: Column(
-            children: widget.scheme.faqs.map((faq) {
-              return Container(
-                margin: const EdgeInsets.only(bottom: 8),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFFE2E8F0)),
-                ),
-                child: Theme(
-                  data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-                  child: ExpansionTile(
-                    title: Text(
-                      faq['question'] ?? '',
-                      style: GoogleFonts.inter(
-                        fontSize: 13,
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xFF1E293B),
-                      ),
-                    ),
-                    iconColor: const Color(0xFF2563EB),
-                    collapsedIconColor: const Color(0xFF64748B),
-                    childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-                    children: [
-                      Text(
-                        faq['answer'] ?? '',
-                        style: GoogleFonts.inter(
-                          fontSize: 12,
-                          color: const Color(0xFF475569),
-                          height: 1.4,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            }).toList(),
-          ),
-        ),
-      ],
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return Container(
+      color: Colors.white,
+      height: 48.0,
+      child: child,
     );
   }
 
   @override
-  Widget build(BuildContext context) {
-    final provider = Provider.of<AppProvider>(context);
-    final evaluation = provider.recommendedSchemes.firstWhere((e) => e.key.id == widget.scheme.id).value;
-    final isBookmarked = provider.bookmarkedIds.contains(widget.scheme.id);
+  bool shouldRebuild(covariant _StickyTabBarDelegate oldDelegate) {
+    return oldDelegate.child != child;
+  }
+}
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF0F172A)),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        title: Text(
-          'Scheme Details',
-          style: GoogleFonts.poppins(
-            color: const Color(0xFF0F172A),
-            fontWeight: FontWeight.bold,
-            fontSize: 16.5,
-          ),
-        ),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            icon: Icon(
-              isBookmarked ? Icons.bookmark : Icons.bookmark_border,
-              color: isBookmarked ? const Color(0xFF0D47A1) : const Color(0xFF64748B),
+// 4. Reusable ExpandableSection Widget
+class _ExpandableSection extends StatelessWidget {
+  final String title;
+  final IconData icon;
+  final Color iconColor;
+  final Color iconBg;
+  final bool isExpanded;
+  final VoidCallback onToggle;
+  final Widget child;
+
+  const _ExpandableSection({
+    required this.title,
+    required this.icon,
+    required this.iconColor,
+    required this.iconBg,
+    required this.isExpanded,
+    required this.onToggle,
+    required this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE2E8F0), width: 1),
+      ),
+      child: Theme(
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          initiallyExpanded: isExpanded,
+          onExpansionChanged: (_) => onToggle(),
+          tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          leading: Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: iconBg,
             ),
-            onPressed: () => provider.toggleBookmark(widget.scheme.id),
+            alignment: Alignment.center,
+            child: Icon(icon, color: iconColor, size: 20),
           ),
-          IconButton(
-            icon: const Icon(Icons.share_outlined, color: Color(0xFF64748B)),
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Scheme link copied to clipboard!'),
-                  backgroundColor: AppConstants.successColor,
-                ),
-              );
-            },
+          title: Text(
+            title,
+            style: GoogleFonts.poppins(
+              fontSize: 14.5,
+              fontWeight: FontWeight.bold,
+              color: const Color(0xFF0F172A),
+            ),
+          ),
+          trailing: Icon(
+            isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+            color: const Color(0xFF2563EB),
+          ),
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16, top: 4),
+              child: child,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// 5. Extracted Bottom Action Bar Widget
+class _BottomActionBar extends StatelessWidget {
+  final bool isBookmarked;
+  final VoidCallback onBookmarkToggle;
+
+  const _BottomActionBar({
+    required this.isBookmarked,
+    required this.onBookmarkToggle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.only(
+        left: 16,
+        right: 16,
+        top: 16,
+        bottom: MediaQuery.of(context).padding.bottom + 16,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 16,
+            offset: const Offset(0, -4),
           ),
         ],
+        border: const Border(
+          top: BorderSide(color: Color(0xFFE2E8F0), width: 1),
+        ),
       ),
-      body: Column(
+      child: Row(
         children: [
+          // Save Scheme Button
           Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildBannerHeader(widget.scheme.category, evaluation),
-                  _buildSponsoringBodyBlock(),
-                  
-                  // Content Sections Card
-                  Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: const Color(0xFFE2E8F0)),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.02),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Section 1: Overview
-                        _buildOverviewSection(),
-                        const Divider(color: Color(0xFFF1F5F9), height: 1),
-                        
-                        // Section 2: Benefits
-                        _buildBenefitsSection(),
-                        const Divider(color: Color(0xFFF1F5F9), height: 1),
-                        
-                        // Section 3: Eligibility Criteria
-                        _buildEligibilitySection(),
-                        const Divider(color: Color(0xFFF1F5F9), height: 1),
-                        
-                        // Section 4: Required Documents
-                        _buildRequiredDocumentsSection(context),
-                        const Divider(color: Color(0xFFF1F5F9), height: 1),
-                        
-                        // Section 5: Application Process
-                        _buildApplicationProcessSection(),
-                        const Divider(color: Color(0xFFF1F5F9), height: 1),
-                        
-                        // Section 6: Important Dates
-                        _buildImportantDatesSection(),
-                        const Divider(color: Color(0xFFF1F5F9), height: 1),
-                        
-                        // Section 7: Official Website
-                        _buildOfficialWebsiteSection(),
-                        const Divider(color: Color(0xFFF1F5F9), height: 1),
-                        
-                        // Section 8: FAQs
-                        _buildFaqsSection(),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                ],
-              ),
-            ),
-          ),
-          
-          // Sticky Bottom Action Bar
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
-                  blurRadius: 10,
-                  offset: const Offset(0, -4),
+            child: SizedBox(
+              height: 50,
+              child: OutlinedButton.styleFrom(
+                side: const BorderSide(color: Color(0xFF2563EB), width: 1.5),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
                 ),
-              ],
-              border: const Border(top: BorderSide(color: Color(0xFFE2E8F0))),
-            ),
-            child: SafeArea(
-              top: false,
-              child: Row(
-                children: [
-                  // Bookmark Symbol (Left)
-                  OutlinedButton(
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      side: const BorderSide(color: Color(0xFFCBD5E1)),
-                      minimumSize: const Size(48, 48),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    onPressed: () => provider.toggleBookmark(widget.scheme.id),
-                    child: Icon(
+              ).build(
+                context,
+                onPressed: onBookmarkToggle,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
                       isBookmarked ? Icons.bookmark : Icons.bookmark_border,
-                      color: isBookmarked ? const Color(0xFF0D47A1) : const Color(0xFF475569),
+                      color: const Color(0xFF2563EB),
                       size: 20,
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  // Apply Now Button (Middle)
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF16A34A),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        elevation: 0,
-                        minimumSize: const Size.fromHeight(48),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Opening official portal: ${widget.scheme.officialWebsite}'),
-                            backgroundColor: AppConstants.primaryColor,
-                          ),
-                        );
-                      },
-                      icon: const Icon(Icons.launch, size: 18),
-                      label: Text(
-                        'Apply Now',
-                        style: GoogleFonts.inter(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                        ),
+                    const SizedBox(width: 8),
+                    Text(
+                      "Save Scheme",
+                      style: GoogleFonts.inter(
+                        color: const Color(0xFF2563EB),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
                       ),
                     ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 16),
+
+          // Apply Now Button
+          Expanded(
+            child: SizedBox(
+              height: 50,
+              child: ElevatedButton(
+                onPressed: () {},
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF2563EB),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  const SizedBox(width: 8),
-                  // Share Symbol (Right)
-                  OutlinedButton(
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      side: const BorderSide(color: Color(0xFFCBD5E1)),
-                      minimumSize: const Size(48, 48),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+                  elevation: 0,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      "Apply Now",
+                      style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
                       ),
                     ),
-                    onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Scheme link copied to clipboard!'),
-                          backgroundColor: AppConstants.successColor,
-                        ),
-                      );
-                    },
-                    child: const Icon(Icons.share_outlined, color: Color(0xFF475569), size: 20),
-                  ),
-                ],
+                    const SizedBox(width: 8),
+                    const Icon(Icons.arrow_forward, color: Colors.white, size: 16),
+                  ],
+                ),
               ),
             ),
           ),
         ],
       ),
+    );
+  }
+}
+
+// Extension to help build widgets on OutlinedButton
+extension _OutlinedButtonExtension on ButtonStyle {
+  Widget build(BuildContext context, {required VoidCallback onPressed, required Widget child}) {
+    return OutlinedButton(
+      onPressed: onPressed,
+      style: this,
+      child: child,
     );
   }
 }

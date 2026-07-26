@@ -82,9 +82,9 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
       bool stateMatch = true;
       if (filters['state'] != null && filters['state'] != 'All') {
         final st = filters['state'].toString().toLowerCase();
-        if (st != 'tamil nadu' && ['NEEDS', 'STARTUP_TN', 'KALAIGNAR_KAIVINAI'].contains(scheme.id)) {
-          stateMatch = false;
-        }
+        // Check scheme's own state field or 'All India' (national) schemes always match
+        stateMatch = scheme.state.toLowerCase() == 'all india' ||
+            scheme.state.toLowerCase().contains(st);
       }
 
       bool categoryMatch = true;
@@ -95,8 +95,11 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
       bool genderMatch = true;
       if (filters['gender'] != null && filters['gender'] != 'All') {
         final isFemale = filters['gender'] == 'Female';
-        if (!isFemale && ['TREAD', 'WEP'].contains(scheme.id)) {
-          genderMatch = false;
+        if (isFemale) {
+          // Show women-specific schemes and all-gender schemes
+          genderMatch = scheme.targetBeneficiary.toLowerCase().contains('women') ||
+              scheme.searchKeywords.toLowerCase().contains('women') ||
+              !scheme.targetBeneficiary.toLowerCase().contains('male');
         }
       }
 
