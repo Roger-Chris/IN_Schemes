@@ -1,0 +1,518 @@
+{
+  "evaluation": "scheme-intent-after-asr",
+  "synthetic": true,
+  "content_status": "synthetic_demo_only",
+  "results": [
+    {
+      "result_file": "tiny-int8.json",
+      "model": "tiny",
+      "condition": "baseline",
+      "intent_accuracy": 1.0,
+      "no_match_count": 0,
+      "items": [
+        {
+          "id": "bench_001",
+          "expected_scheme_id": "scheme_women_assistance",
+          "predicted_scheme_id": "scheme_women_assistance",
+          "correct": true,
+          "score": 0.4344,
+          "transcript": "மகலிருமே தோகே பாத்தி சொல்லிங்கள்."
+        },
+        {
+          "id": "bench_002",
+          "expected_scheme_id": "scheme_student_support",
+          "predicted_scheme_id": "scheme_student_support",
+          "correct": true,
+          "score": 0.4216,
+          "transcript": "குதுமே பேண்டத்தாட்டுக்கு எப்படி வென்றால் பேசாகப் பாது."
+        },
+        {
+          "id": "bench_003",
+          "expected_scheme_id": "scheme_skill_training",
+          "predicted_scheme_id": "scheme_skill_training",
+          "correct": true,
+          "score": 0.6303,
+          "transcript": "நான் முதல் வணப்பாயில் வரங்கள் வேண்டும்."
+        },
+        {
+          "id": "bench_004",
+          "expected_scheme_id": "scheme_breakfast",
+          "predicted_scheme_id": "scheme_breakfast",
+          "correct": true,
+          "score": 0.5893,
+          "transcript": "காலை உனவுத்திட்டம் யாரக்குக்குக்கும் எனக்கும் எனக்கும்"
+        },
+        {
+          "id": "bench_005",
+          "expected_scheme_id": "scheme_farmer_protection",
+          "predicted_scheme_id": "scheme_farmer_protection",
+          "correct": true,
+          "score": 0.556,
+          "transcript": "ஒரு பாதுகாப்புத்துத்து நின்பாயங்கள் என்னே?"
+        },
+        {
+          "id": "bench_006",
+          "expected_scheme_id": "scheme_health_insurance",
+          "predicted_scheme_id": "scheme_health_insurance",
+          "correct": true,
+          "score": 0.3865,
+          "transcript": "மற்றுது வகாபித்து தருகி, என்னால் அம்மினைங்கள் வேண்டம்."
+        },
+        {
+          "id": "bench_007",
+          "expected_scheme_id": "scheme_marriage_assistance",
+          "predicted_scheme_id": "scheme_marriage_assistance",
+          "correct": true,
+          "score": 0.5459,
+          "transcript": "திரமானமுத்து தோகேக்கு வாயது வரம்பு என்னே."
+        },
+        {
+          "id": "bench_008",
+          "expected_scheme_id": "scheme_senior_pension",
+          "predicted_scheme_id": "scheme_senior_pension",
+          "correct": true,
+          "score": 0.59,
+          "transcript": "முதியோரும் உயவுத்தியம் பெரவ்வது எப்படி."
+        }
+      ]
+    },
+    {
+      "result_file": "tiny-int8.json",
+      "model": "tiny",
+      "condition": "vocabulary_prompt",
+      "intent_accuracy": 0.875,
+      "no_match_count": 0,
+      "items": [
+        {
+          "id": "bench_001",
+          "expected_scheme_id": "scheme_women_assistance",
+          "predicted_scheme_id": "scheme_women_assistance",
+          "correct": true,
+          "score": 0.5074,
+          "transcript": "மகலிருமை தோகை பாத்தி சொல்லிங்கள்."
+        },
+        {
+          "id": "bench_002",
+          "expected_scheme_id": "scheme_student_support",
+          "predicted_scheme_id": "scheme_student_support",
+          "correct": true,
+          "score": 0.5015,
+          "transcript": "குதுமைப் பேண்டத் திருக்கும் எப்படி வென்றால் பேசிப் பாது."
+        },
+        {
+          "id": "bench_003",
+          "expected_scheme_id": "scheme_skill_training",
+          "predicted_scheme_id": "scheme_skill_training",
+          "correct": true,
+          "score": 0.6303,
+          "transcript": "நான் முதல் வணப்பாயில் வரங்கள் வேண்டும்."
+        },
+        {
+          "id": "bench_004",
+          "expected_scheme_id": "scheme_breakfast",
+          "predicted_scheme_id": "scheme_breakfast",
+          "correct": true,
+          "score": 1.0,
+          "transcript": "காலை உணவுத் திட்டம் யாருக்கு கிடைக்கும்,"
+        },
+        {
+          "id": "bench_005",
+          "expected_scheme_id": "scheme_farmer_protection",
+          "predicted_scheme_id": "scheme_farmer_protection",
+          "correct": true,
+          "score": 0.9165,
+          "transcript": "உழவர் பாதுகாப்புத் திட்டத்துன் பயன்கள் என்ன?"
+        },
+        {
+          "id": "bench_006",
+          "expected_scheme_id": "scheme_health_insurance",
+          "predicted_scheme_id": "scheme_health_insurance",
+          "correct": true,
+          "score": 0.5075,
+          "transcript": "மருத்துவைக் காப்பிட்டத்து தருக்கிய என்னால் அம்மினங்கள் வேண்டம்."
+        },
+        {
+          "id": "bench_007",
+          "expected_scheme_id": "scheme_marriage_assistance",
+          "predicted_scheme_id": "scheme_marriage_assistance",
+          "correct": true,
+          "score": 0.975,
+          "transcript": "திருமண உதவித் தொகைக்கு வயது வரம்பு என்னே."
+        },
+        {
+          "id": "bench_008",
+          "expected_scheme_id": "scheme_senior_pension",
+          "predicted_scheme_id": "scheme_marriage_assistance",
+          "correct": false,
+          "score": 0.4005,
+          "transcript": "மோதியோர, உயவுத் திருமண உதவி எப்படை."
+        }
+      ]
+    },
+    {
+      "result_file": "base-int8.json",
+      "model": "base",
+      "condition": "baseline",
+      "intent_accuracy": 0.875,
+      "no_match_count": 1,
+      "items": [
+        {
+          "id": "bench_001",
+          "expected_scheme_id": "scheme_women_assistance",
+          "predicted_scheme_id": null,
+          "correct": false,
+          "score": 0.0,
+          "transcript": "بگலر اور میں تو گئی پத்தி சொல்லங்கள்"
+        },
+        {
+          "id": "bench_002",
+          "expected_scheme_id": "scheme_student_support",
+          "predicted_scheme_id": "scheme_student_support",
+          "correct": true,
+          "score": 0.5237,
+          "transcript": "குதுமே பேண்டிட்டத்திருக்கு எப்படி விழ்ந்தாப் பேபாது."
+        },
+        {
+          "id": "bench_003",
+          "expected_scheme_id": "scheme_skill_training",
+          "predicted_scheme_id": "scheme_skill_training",
+          "correct": true,
+          "score": 0.6975,
+          "transcript": "நான் முதலவன் பயைத்திவுவரங்கள் வேண்டும்"
+        },
+        {
+          "id": "bench_004",
+          "expected_scheme_id": "scheme_breakfast",
+          "predicted_scheme_id": "scheme_breakfast",
+          "correct": true,
+          "score": 0.6152,
+          "transcript": "காலை உளவுதிக்டம் யாரக்குளைக்கும்"
+        },
+        {
+          "id": "bench_005",
+          "expected_scheme_id": "scheme_farmer_protection",
+          "predicted_scheme_id": "scheme_farmer_protection",
+          "correct": true,
+          "score": 0.6956,
+          "transcript": "ஒருவர் பாதுகாப் புதிட்டத்துன் பயங்கள் என்ன?"
+        },
+        {
+          "id": "bench_006",
+          "expected_scheme_id": "scheme_health_insurance",
+          "predicted_scheme_id": "scheme_health_insurance",
+          "correct": true,
+          "score": 0.6905,
+          "transcript": "மருத்துவாக் காப்பித்து தத்திற்கு என்ன ஆவனங்கள் வேண்டும்"
+        },
+        {
+          "id": "bench_007",
+          "expected_scheme_id": "scheme_marriage_assistance",
+          "predicted_scheme_id": "scheme_marriage_assistance",
+          "correct": true,
+          "score": 0.456,
+          "transcript": "திரமானமுதவி தோகேக வாய்து வரம்புயின்ன"
+        },
+        {
+          "id": "bench_008",
+          "expected_scheme_id": "scheme_senior_pension",
+          "predicted_scheme_id": "scheme_senior_pension",
+          "correct": true,
+          "score": 0.6641,
+          "transcript": "முதியோம் ஓய்வுதியம் பெருவதை எப்படி?"
+        }
+      ]
+    },
+    {
+      "result_file": "base-int8.json",
+      "model": "base",
+      "condition": "vocabulary_prompt",
+      "intent_accuracy": 1.0,
+      "no_match_count": 0,
+      "items": [
+        {
+          "id": "bench_001",
+          "expected_scheme_id": "scheme_women_assistance",
+          "predicted_scheme_id": "scheme_women_assistance",
+          "correct": true,
+          "score": 0.6313,
+          "transcript": "பகலர் உருமே தொகை பற்றி சொல்லங்கள்"
+        },
+        {
+          "id": "bench_002",
+          "expected_scheme_id": "scheme_student_support",
+          "predicted_scheme_id": "scheme_student_support",
+          "correct": true,
+          "score": 0.5402,
+          "transcript": "குடுமைப் பேண்டிட்டத்திருக்கு எப்படி விழ்ந்தாப் பேபாது"
+        },
+        {
+          "id": "bench_003",
+          "expected_scheme_id": "scheme_skill_training",
+          "predicted_scheme_id": "scheme_skill_training",
+          "correct": true,
+          "score": 0.6521,
+          "transcript": "நான் முதல் வந்தி பயைத்திவுவரங்கள் வேண்டும்"
+        },
+        {
+          "id": "bench_004",
+          "expected_scheme_id": "scheme_breakfast",
+          "predicted_scheme_id": "scheme_breakfast",
+          "correct": true,
+          "score": 1.0,
+          "transcript": "காலை உணவுத் திட்டம் யாருக்கு கிடைக்கும்"
+        },
+        {
+          "id": "bench_005",
+          "expected_scheme_id": "scheme_farmer_protection",
+          "predicted_scheme_id": "scheme_farmer_protection",
+          "correct": true,
+          "score": 1.0,
+          "transcript": "உழவர் பாதுகாப்புத் திட்டத்தின் பயன்கள் என்ன"
+        },
+        {
+          "id": "bench_006",
+          "expected_scheme_id": "scheme_health_insurance",
+          "predicted_scheme_id": "scheme_health_insurance",
+          "correct": true,
+          "score": 0.7776,
+          "transcript": "மருத்துவ காப்பிற்று திட்டத்திற்கு என்ன, அவனங்கள் வேண்டும்"
+        },
+        {
+          "id": "bench_007",
+          "expected_scheme_id": "scheme_marriage_assistance",
+          "predicted_scheme_id": "scheme_marriage_assistance",
+          "correct": true,
+          "score": 0.7838,
+          "transcript": "திருமண உதவித் தொகைக் கவயத் வாரம்பு என்ன"
+        },
+        {
+          "id": "bench_008",
+          "expected_scheme_id": "scheme_senior_pension",
+          "predicted_scheme_id": "scheme_senior_pension",
+          "correct": true,
+          "score": 0.4292,
+          "transcript": "முதiyorோ ஓயvoothiyam, பெருவது, எப்படி"
+        }
+      ]
+    },
+    {
+      "result_file": "ai4bharat-tamil-ctc-cuda.json",
+      "model": "AI4Bharat IndicConformer",
+      "condition": "ctc",
+      "intent_accuracy": 1.0,
+      "no_match_count": 0,
+      "items": [
+        {
+          "id": "bench_001",
+          "expected_scheme_id": "scheme_women_assistance",
+          "predicted_scheme_id": "scheme_women_assistance",
+          "correct": true,
+          "score": 0.8613,
+          "transcript": "உரிமைத் தொகை பற்றி சொல்லுங்கள்"
+        },
+        {
+          "id": "bench_002",
+          "expected_scheme_id": "scheme_student_support",
+          "predicted_scheme_id": "scheme_student_support",
+          "correct": true,
+          "score": 0.8887,
+          "transcript": "புது பெண் திட்டத்திற்கு எப்படி விண்ணப்பிப்பது"
+        },
+        {
+          "id": "bench_003",
+          "expected_scheme_id": "scheme_skill_training",
+          "predicted_scheme_id": "scheme_skill_training",
+          "correct": true,
+          "score": 0.9039,
+          "transcript": "முதல்வன் பயிற்சி விவரங்கள் வேண்டும்"
+        },
+        {
+          "id": "bench_004",
+          "expected_scheme_id": "scheme_breakfast",
+          "predicted_scheme_id": "scheme_breakfast",
+          "correct": true,
+          "score": 0.8858,
+          "transcript": "உணவுத் திட்டம் யாருக்கு கிடைக்கும்"
+        },
+        {
+          "id": "bench_005",
+          "expected_scheme_id": "scheme_farmer_protection",
+          "predicted_scheme_id": "scheme_farmer_protection",
+          "correct": true,
+          "score": 0.8873,
+          "transcript": "பாதுகாப்புத் திட்டத்தின் பயன்கள் என்ன"
+        },
+        {
+          "id": "bench_006",
+          "expected_scheme_id": "scheme_health_insurance",
+          "predicted_scheme_id": "scheme_health_insurance",
+          "correct": true,
+          "score": 0.7792,
+          "transcript": "காப்பீட்டு திட்டத்திற்கு என்ன ஆவணங்கள் வேண்டாம்"
+        },
+        {
+          "id": "bench_007",
+          "expected_scheme_id": "scheme_marriage_assistance",
+          "predicted_scheme_id": "scheme_marriage_assistance",
+          "correct": true,
+          "score": 1.0,
+          "transcript": "திருமண உதவித் தொகைக்கு வயது வரம்பு என்ன"
+        },
+        {
+          "id": "bench_008",
+          "expected_scheme_id": "scheme_senior_pension",
+          "predicted_scheme_id": "scheme_senior_pension",
+          "correct": true,
+          "score": 0.8085,
+          "transcript": "ஓய்வூதியம் பெறுவது எப்படி"
+        }
+      ]
+    },
+    {
+      "result_file": "ai4bharat-tamil-rnnt-cuda.json",
+      "model": "AI4Bharat IndicConformer",
+      "condition": "rnnt",
+      "intent_accuracy": 1.0,
+      "no_match_count": 0,
+      "items": [
+        {
+          "id": "bench_001",
+          "expected_scheme_id": "scheme_women_assistance",
+          "predicted_scheme_id": "scheme_women_assistance",
+          "correct": true,
+          "score": 0.8613,
+          "transcript": "உரிமைத் தொகை பற்றி சொல்லுங்கள்"
+        },
+        {
+          "id": "bench_002",
+          "expected_scheme_id": "scheme_student_support",
+          "predicted_scheme_id": "scheme_student_support",
+          "correct": true,
+          "score": 0.9396,
+          "transcript": "புதுமை பெண் திட்டத்திற்கு எப்படி விண்ணப்பிப்பது"
+        },
+        {
+          "id": "bench_003",
+          "expected_scheme_id": "scheme_skill_training",
+          "predicted_scheme_id": "scheme_skill_training",
+          "correct": true,
+          "score": 0.9039,
+          "transcript": "முதல்வன் பயிற்சி விவரங்கள் வேண்டும்"
+        },
+        {
+          "id": "bench_004",
+          "expected_scheme_id": "scheme_breakfast",
+          "predicted_scheme_id": "scheme_breakfast",
+          "correct": true,
+          "score": 0.8858,
+          "transcript": "உணவுத் திட்டம் யாருக்கு கிடைக்கும்"
+        },
+        {
+          "id": "bench_005",
+          "expected_scheme_id": "scheme_farmer_protection",
+          "predicted_scheme_id": "scheme_farmer_protection",
+          "correct": true,
+          "score": 0.8873,
+          "transcript": "பாதுகாப்புத் திட்டத்தின் பயன்கள் என்ன"
+        },
+        {
+          "id": "bench_006",
+          "expected_scheme_id": "scheme_health_insurance",
+          "predicted_scheme_id": "scheme_health_insurance",
+          "correct": true,
+          "score": 0.8192,
+          "transcript": "காப்பீட்டுத் திட்டத்திற்கு என்ன ஆவணங்கள் வேண்டாம்"
+        },
+        {
+          "id": "bench_007",
+          "expected_scheme_id": "scheme_marriage_assistance",
+          "predicted_scheme_id": "scheme_marriage_assistance",
+          "correct": true,
+          "score": 1.0,
+          "transcript": "திருமண உதவித் தொகைக்கு வயது வரம்பு என்ன"
+        },
+        {
+          "id": "bench_008",
+          "expected_scheme_id": "scheme_senior_pension",
+          "predicted_scheme_id": "scheme_senior_pension",
+          "correct": true,
+          "score": 0.8085,
+          "transcript": "ஓய்வூதியம் பெறுவது எப்படி"
+        }
+      ]
+    },
+    {
+      "result_file": "ai4bharat-tamil-ctc-cpu.json",
+      "model": "AI4Bharat IndicConformer",
+      "condition": "ctc",
+      "intent_accuracy": 1.0,
+      "no_match_count": 0,
+      "items": [
+        {
+          "id": "bench_001",
+          "expected_scheme_id": "scheme_women_assistance",
+          "predicted_scheme_id": "scheme_women_assistance",
+          "correct": true,
+          "score": 0.8613,
+          "transcript": "உரிமைத் தொகை பற்றி சொல்லுங்கள்"
+        },
+        {
+          "id": "bench_002",
+          "expected_scheme_id": "scheme_student_support",
+          "predicted_scheme_id": "scheme_student_support",
+          "correct": true,
+          "score": 0.8887,
+          "transcript": "புது பெண் திட்டத்திற்கு எப்படி விண்ணப்பிப்பது"
+        },
+        {
+          "id": "bench_003",
+          "expected_scheme_id": "scheme_skill_training",
+          "predicted_scheme_id": "scheme_skill_training",
+          "correct": true,
+          "score": 0.9039,
+          "transcript": "முதல்வன் பயிற்சி விவரங்கள் வேண்டும்"
+        },
+        {
+          "id": "bench_004",
+          "expected_scheme_id": "scheme_breakfast",
+          "predicted_scheme_id": "scheme_breakfast",
+          "correct": true,
+          "score": 0.8858,
+          "transcript": "உணவுத் திட்டம் யாருக்கு கிடைக்கும்"
+        },
+        {
+          "id": "bench_005",
+          "expected_scheme_id": "scheme_farmer_protection",
+          "predicted_scheme_id": "scheme_farmer_protection",
+          "correct": true,
+          "score": 0.8873,
+          "transcript": "பாதுகாப்புத் திட்டத்தின் பயன்கள் என்ன"
+        },
+        {
+          "id": "bench_006",
+          "expected_scheme_id": "scheme_health_insurance",
+          "predicted_scheme_id": "scheme_health_insurance",
+          "correct": true,
+          "score": 0.7792,
+          "transcript": "காப்பீட்டு திட்டத்திற்கு என்ன ஆவணங்கள் வேண்டாம்"
+        },
+        {
+          "id": "bench_007",
+          "expected_scheme_id": "scheme_marriage_assistance",
+          "predicted_scheme_id": "scheme_marriage_assistance",
+          "correct": true,
+          "score": 1.0,
+          "transcript": "திருமண உதவித் தொகைக்கு வயது வரம்பு என்ன"
+        },
+        {
+          "id": "bench_008",
+          "expected_scheme_id": "scheme_senior_pension",
+          "predicted_scheme_id": "scheme_senior_pension",
+          "correct": true,
+          "score": 0.8085,
+          "transcript": "ஓய்வூதியம் பெறுவது எப்படி"
+        }
+      ]
+    }
+  ]
+}
