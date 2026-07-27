@@ -1,6 +1,9 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
 import '../providers/app_state_provider.dart';
 import '../utils/constants.dart';
 import 'profile_setup_screen.dart';
@@ -202,6 +205,88 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
+  Future<void> _changeProfilePicture(BuildContext context, AppProvider provider) async {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(24),
+          topRight: Radius.circular(24),
+        ),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 20.0),
+                child: Text(
+                  'Profile Photo',
+                  style: GoogleFonts.poppins(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF0F172A),
+                  ),
+                ),
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_library_outlined, color: Color(0xFF2563EB)),
+                title: Text('Choose from Gallery', style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+                onTap: () async {
+                  Navigator.pop(context);
+                  final picker = ImagePicker();
+                  final pickedFile = await picker.pickImage(source: ImageSource.gallery, imageQuality: 85);
+                  if (pickedFile != null) {
+                    await _savePickedImage(pickedFile.path, provider);
+                  }
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.camera_alt_outlined, color: Color(0xFF2563EB)),
+                title: Text('Take Photo', style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+                onTap: () async {
+                  Navigator.pop(context);
+                  final picker = ImagePicker();
+                  final pickedFile = await picker.pickImage(source: ImageSource.camera, imageQuality: 85);
+                  if (pickedFile != null) {
+                    await _savePickedImage(pickedFile.path, provider);
+                  }
+                },
+              ),
+              if (provider.profile.profilePhoto.isNotEmpty)
+                ListTile(
+                  leading: const Icon(Icons.delete_outline_rounded, color: Color(0xFFEF4444)),
+                  title: Text('Remove Photo', style: GoogleFonts.inter(color: const Color(0xFFEF4444), fontWeight: FontWeight.w600)),
+                  onTap: () async {
+                    Navigator.pop(context);
+                    await provider.updateProfilePhoto('');
+                  },
+                ),
+              const SizedBox(height: 12),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _savePickedImage(String tempPath, AppProvider provider) async {
+    try {
+      final appDir = await getApplicationDocumentsDirectory();
+      final String extension = tempPath.split('.').last;
+      final String newFileName = 'profile_${DateTime.now().millisecondsSinceEpoch}.$extension';
+      final String newPath = '${appDir.path}/$newFileName';
+      
+      final File tempFile = File(tempPath);
+      await tempFile.copy(newPath);
+      await provider.updateProfilePhoto(newPath);
+    } catch (e) {
+      debugPrint('Error saving picked profile photo: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<AppProvider>(context);
@@ -322,22 +407,24 @@ class ProfileScreen extends StatelessWidget {
                           Stack(
                             alignment: Alignment.bottomRight,
                             children: [
-                              Container(
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  border: Border.all(color: Colors.white, width: 2),
-                                ),
-                                child: const CircleAvatar(
-                                  radius: 38,
-                                  backgroundImage: AssetImage('assets/images/user_avatar.png'),
+                              GestureDetector(
+                                onTap: () => _changeProfilePicture(context, provider),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    border: Border.all(color: Colors.white, width: 2),
+                                  ),
+                                  child: CircleAvatar(
+                                    radius: 38,
+                                    backgroundImage: provider.profile.profilePhoto.isNotEmpty &&
+                                            File(provider.profile.profilePhoto).existsSync()
+                                        ? FileImage(File(provider.profile.profilePhoto))
+                                        : const AssetImage('assets/images/user_avatar.png') as ImageProvider,
+                                  ),
                                 ),
                               ),
                               GestureDetector(
-                                onTap: () {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text('Change profile picture option opened')),
-                                  );
-                                },
+                                onTap: () => _changeProfilePicture(context, provider),
                                 child: Container(
                                   width: 24,
                                   height: 24,

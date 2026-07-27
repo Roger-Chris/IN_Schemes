@@ -22,6 +22,8 @@ class SearchScreenState extends State<SearchScreen> {
   SearchState _currentState = SearchState.idle;
   String _activeFilter = "For Me";
 
+  bool get isSearching => _currentState != SearchState.idle;
+
   // Data list of scheme results from Supabase (replaces hardcoded mock list)
   List<Scheme> _searchResults = [];
 
@@ -802,41 +804,109 @@ class _ResultSchemeCard extends StatelessWidget {
 
   const _ResultSchemeCard({required this.scheme});
 
-  List<String> get _tags {
+  List<String> get _otherTags {
     final List<String> list = [];
-    if (scheme.sponsoringBody.isNotEmpty) {
-      list.addAll(scheme.sponsoringBody.split(',').map((s) => s.trim()).where((s) => s.isNotEmpty));
+    
+    void addSplit(String value) {
+      if (value.isNotEmpty) {
+        list.addAll(value.split(',').map((s) => s.trim()).where((s) => s.isNotEmpty));
+      }
     }
-    if (scheme.governmentLevel.isNotEmpty) list.add(scheme.governmentLevel);
-    if (scheme.schemeType.isNotEmpty) list.add(scheme.schemeType);
-    if (scheme.sector.isNotEmpty) list.add(scheme.sector);
-    return list.take(4).toList();
+
+    addSplit(scheme.category);
+    addSplit(scheme.schemeType);
+    addSplit(scheme.sector);
+    
+    final Set<String> seen = {};
+    final List<String> uniqueList = [];
+    
+    final sponsoringLower = scheme.sponsoringBody.toLowerCase();
+    final govLevelLower = scheme.governmentLevel.toLowerCase();
+    final stateLower = scheme.state.toLowerCase();
+    
+    for (final tag in list) {
+      final lower = tag.toLowerCase();
+      final isSubtitleTerm = sponsoringLower.contains(lower) || 
+                             govLevelLower.contains(lower) || 
+                             stateLower.contains(lower) ||
+                             lower == 'central' || 
+                             lower == 'state';
+      if (!seen.contains(lower) && !isSubtitleTerm) {
+        seen.add(lower);
+        uniqueList.add(tag);
+      }
+    }
+
+    return uniqueList.take(4).toList();
   }
 
-  String _getImageForCategory(String category) {
-    final cat = category.toLowerCase();
-    if (cat.contains("farmer") || cat.contains("agriculture")) {
-      return 'assets/images/banner_farmer.png';
-    } else if (cat.contains("student") || cat.contains("education")) {
-      return 'assets/images/banner_students.png';
+  String _getOnlineLogoUrl(String schemeCode, String category, String governmentLevel, String state) {
+    final code = schemeCode.toUpperCase();
+    final st = state.toLowerCase();
+
+    if (code.contains('MUDRA') || code.contains('PMMY')) {
+      return 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Logo_of_the_Pradhan_Mantri_Mudra_Yojana.svg/450px-Logo_of_the_Pradhan_Mantri_Mudra_Yojana.svg.png';
+    } else if (code.contains('MSME') || code.contains('CGTMSE') || code.contains('PMEGP')) {
+      return 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/00/MSME_logo_%28colour%29.svg/330px-MSME_logo_%28colour%29.svg.png';
+    } else if (code.startsWith('TN_') || st.contains('tamil') || st.contains('tn')) {
+      return 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/Emblem_of_Tamil_Nadu.svg/360px-Emblem_of_Tamil_Nadu.svg.png';
     } else {
-      return 'assets/images/banner_family.png';
+      return 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Emblem_of_India.svg/358px-Emblem_of_India.svg.png';
+    }
+  }
+
+  Map<String, Color> _getTagColors(String tag, String category) {
+    final cleanTag = tag.toLowerCase().trim();
+    final cleanCat = category.toLowerCase().trim();
+    
+    if (cleanTag == cleanCat) {
+      if (cleanCat.contains('farmer') || cleanCat.contains('agri') || cleanCat.contains('rural')) {
+        return {'text': const Color(0xFF15803D), 'bg': const Color(0xFFDCFCE7)};
+      } else if (cleanCat.contains('student') || cleanCat.contains('edu') || cleanCat.contains('scholarship')) {
+        return {'text': const Color(0xFF6D28D9), 'bg': const Color(0xFFF5F3FF)};
+      } else if (cleanCat.contains('business') || cleanCat.contains('msme') || cleanCat.contains('employment')) {
+        return {'text': const Color(0xFF1E3A8A), 'bg': const Color(0xFFDBEAFE)};
+      } else if (cleanCat.contains('women') || cleanCat.contains('female') || cleanCat.contains('girl') || cleanCat.contains('child')) {
+        return {'text': const Color(0xFFBE185D), 'bg': const Color(0xFFFCE7F3)};
+      } else {
+        return {'text': const Color(0xFF0F766E), 'bg': const Color(0xFFCCFBF1)};
+      }
+    }
+
+    if (cleanTag.contains('central') || cleanTag.contains('national') || cleanTag.contains('india')) {
+      return {'text': const Color(0xFFC2410C), 'bg': const Color(0xFFFFEDD5)};
+    } else if (cleanTag.contains('state') || cleanTag.contains('tamil') || cleanTag.contains('tn')) {
+      return {'text': const Color(0xFF7C3AED), 'bg': const Color(0xFFF3E8FF)};
+    } else if (cleanTag.contains('loan') || cleanTag.contains('credit')) {
+      return {'text': const Color(0xFFB91C1C), 'bg': const Color(0xFFFEE2E2)};
+    } else if (cleanTag.contains('subsidy') || cleanTag.contains('grant')) {
+      return {'text': const Color(0xFF047857), 'bg': const Color(0xFFD1FAE5)};
+    } else if (cleanTag.contains('msme')) {
+      return {'text': const Color(0xFF15803D), 'bg': const Color(0xFFE8F5E9)};
+    }
+
+    final hash = cleanTag.hashCode;
+    final index = hash.abs() % 4;
+    if (index == 0) {
+      return {'text': const Color(0xFF0369A1), 'bg': const Color(0xFFE0F2FE)};
+    } else if (index == 1) {
+      return {'text': const Color(0xFF0F766E), 'bg': const Color(0xFFE6FFFA)};
+    } else if (index == 2) {
+      return {'text': const Color(0xFF6D28D9), 'bg': const Color(0xFFF5F3FF)};
+    } else {
+      return {'text': const Color(0xFFB45309), 'bg': const Color(0xFFFEF3C7)};
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<AppProvider>(context);
-    final isBookmarked = provider.bookmarkedIds.contains(scheme.id) || 
-                         provider.bookmarkedIds.contains(scheme.schemeCode);
-    final tags = _tags;
+    final tags = _otherTags;
     
     // Parse scheme name
     final titleText = scheme.name;
     final regex = RegExp(r'\(([^)]+)\)');
     final matchObj = regex.firstMatch(titleText);
     String shortForm = titleText;
-    String fullName = '';
     
     if (matchObj != null) {
       final bracketText = matchObj.group(1)!.trim();
@@ -846,176 +916,171 @@ class _ResultSchemeCard extends StatelessWidget {
                                bracketText == bracketText.toUpperCase();
       if (isBracketAcronym) {
         shortForm = bracketText;
-        fullName = outsideText;
       } else if (bracketText.length > outsideText.length) {
         shortForm = outsideText;
-        fullName = bracketText;
       }
     }
 
-    final imagePath = _getImageForCategory(scheme.category);
+    final logoUrl = _getOnlineLogoUrl(scheme.schemeCode, scheme.category, scheme.governmentLevel, scheme.state);
+    
+    // Build subtitle combining department and state/central level
+    final department = scheme.sponsoringBody.isNotEmpty ? scheme.sponsoringBody : scheme.issuingBody;
+    final level = scheme.state.isNotEmpty && scheme.state != 'All India' ? scheme.state : scheme.governmentLevel;
+    final subtitleText = [
+      if (department.isNotEmpty) department,
+      if (level.isNotEmpty) level,
+    ].join(' • ');
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.015),
-            blurRadius: 6,
-            offset: const Offset(0, 1.5),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
-        child: IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Left Image
-              SizedBox(
-                width: 90,
-                child: Image.asset(
-                  imagePath,
-                  fit: BoxFit.cover,
-                ),
-              ),
-
-              // Right Content Block
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Match & Bookmark Row
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFDCFCE7),
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: Text(
-                              "92% Match",
-                              style: GoogleFonts.inter(
-                                color: const Color(0xFF15803D),
-                                fontSize: 9.5,
-                                fontWeight: FontWeight.bold,
-                              ),
+    return GestureDetector(
+      onTap: () {
+        Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => SchemeDetailsScreen(scheme: scheme)),
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 14),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: const Color(0xFFE2E8F0), width: 1.2),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.02),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Stack(
+          children: [
+            // Main Card Content Row (Enlarged)
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  // Left: Circular Logo Container (Enlarged to 72)
+                  Container(
+                    width: 72,
+                    height: 72,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: const Color(0xFFE2E8F0), width: 1.2),
+                    ),
+                    padding: const EdgeInsets.all(10),
+                    child: Image.network(
+                      logoUrl,
+                      fit: BoxFit.contain,
+                      errorBuilder: (context, error, stackTrace) {
+                        return const Icon(
+                          Icons.account_balance,
+                          color: Color(0xFF2563EB),
+                          size: 28,
+                        );
+                      },
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return const Center(
+                          child: SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 1.5,
+                              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2563EB)),
                             ),
                           ),
-                          GestureDetector(
-                            onTap: () {
-                              provider.toggleBookmark(scheme.schemeCode);
-                            },
-                            child: Icon(
-                              isBookmarked ? Icons.bookmark : Icons.bookmark_border,
-                              color: isBookmarked ? const Color(0xFF2563EB) : const Color(0xFF94A3B8),
-                              size: 20,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-
-                      // Title Block
-                      Column(
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  
+                  // Middle Content Block
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 80), // Keep clear from top-right match pill
+                      child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
                             shortForm,
                             style: GoogleFonts.poppins(
-                              fontSize: 12.5,
+                              fontSize: 15,
                               fontWeight: FontWeight.bold,
                               color: const Color(0xFF0F172A),
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          if (fullName.isNotEmpty) ...[
-                            const SizedBox(height: 1),
+                          if (subtitleText.isNotEmpty) ...[
+                            const SizedBox(height: 3),
                             Text(
-                              "($fullName)",
+                              subtitleText,
                               style: GoogleFonts.inter(
-                                fontSize: 9.5,
-                                fontWeight: FontWeight.w500,
+                                fontSize: 10.5,
                                 color: const Color(0xFF64748B),
+                                fontWeight: FontWeight.w500,
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
                           ],
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-
-                      // Chips Row
-                      Wrap(
-                        spacing: 4,
-                        runSpacing: 4,
-                        children: tags.map((tag) {
-                          return Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFF1F5F9),
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: Text(
-                              tag,
-                              style: GoogleFonts.inter(
-                                fontSize: 9,
-                                color: const Color(0xFF475569),
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                      const SizedBox(height: 8),
-
-                      // Bottom Row
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          GestureDetector(
-                            onTap: () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(builder: (_) => SchemeDetailsScreen(scheme: scheme)),
-                              );
-                            },
-                            child: Row(
-                              children: [
-                                Text(
-                                  "Apply",
+                          const SizedBox(height: 12),
+                          
+                          // Chips Row (Others at the bottom)
+                          Wrap(
+                            spacing: 5,
+                            runSpacing: 4,
+                            children: tags.map((tag) {
+                              final colors = _getTagColors(tag, scheme.category);
+                              return Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: colors['bg'],
+                                  borderRadius: BorderRadius.circular(5),
+                                ),
+                                child: Text(
+                                  tag,
                                   style: GoogleFonts.inter(
-                                    color: const Color(0xFF2563EB),
+                                    fontSize: 8.5,
                                     fontWeight: FontWeight.bold,
-                                    fontSize: 11,
+                                    color: colors['text'],
                                   ),
                                 ),
-                                const SizedBox(width: 2),
-                                const Icon(
-                                  Icons.arrow_forward,
-                                  size: 11,
-                                  color: Color(0xFF2563EB),
-                                ),
-                              ],
-                            ),
+                              );
+                            }).toList(),
                           ),
                         ],
                       ),
-                    ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            
+            // Top Right Match Pill
+            Positioned(
+              top: 16,
+              right: 16,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE8F5E9),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  "92% Match",
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF2E7D32),
+                    fontSize: 9,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

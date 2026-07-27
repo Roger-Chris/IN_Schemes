@@ -26,6 +26,16 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
   final _documentsKey = GlobalKey();
   final _processKey = GlobalKey();
 
+  // ExpansionTileControllers to programmatically expand the accordions
+  // ignore: deprecated_member_use
+  final _benefitsController = ExpansionTileController();
+  // ignore: deprecated_member_use
+  final _eligibilityController = ExpansionTileController();
+  // ignore: deprecated_member_use
+  final _documentsController = ExpansionTileController();
+  // ignore: deprecated_member_use
+  final _processController = ExpansionTileController();
+
   // Fix 4: Accordions closed by default
   bool _benefitsExpanded = false;
   bool _eligibilityExpanded = false;
@@ -59,16 +69,18 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
 
   /// Fix 3: Scrolls to the section matching the tapped tab index.
   void _scrollToSection(int index) {
-    final keys = [_overviewKey, _benefitsKey, _eligibilityKey, _documentsKey, _processKey];
-    final key = keys[index];
-    final ctx = key.currentContext;
-    if (ctx != null) {
-      Scrollable.ensureVisible(
-        ctx,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
-    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final keys = [_overviewKey, _benefitsKey, _eligibilityKey, _documentsKey, _processKey];
+      final key = keys[index];
+      final ctx = key.currentContext;
+      if (ctx != null) {
+        Scrollable.ensureVisible(
+          ctx,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+        );
+      }
+    });
   }
 
   String _getImageForCategory(String category) {
@@ -151,6 +163,19 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                               onTap: () {
                                 setState(() {
                                   _activeTabIndex = index;
+                                  if (index == 1) {
+                                    _benefitsExpanded = true;
+                                    _benefitsController.expand();
+                                  } else if (index == 2) {
+                                    _eligibilityExpanded = true;
+                                    _eligibilityController.expand();
+                                  } else if (index == 3) {
+                                    _documentsExpanded = true;
+                                    _documentsController.expand();
+                                  } else if (index == 4) {
+                                    _processExpanded = true;
+                                    _processController.expand();
+                                  }
                                 });
                                 _scrollToSection(index);
                               },
@@ -221,6 +246,7 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                         // Benefits Expandable Section
                         _ExpandableSection(
                           key: _benefitsKey,
+                          controller: _benefitsController,
                           title: "Benefits Details",
                           icon: Icons.card_giftcard_outlined,
                           iconColor: const Color(0xFF047857),
@@ -238,6 +264,7 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                         // Eligibility Expandable Section
                         _ExpandableSection(
                           key: _eligibilityKey,
+                          controller: _eligibilityController,
                           title: "Eligibility Criteria",
                           icon: Icons.verified_user_outlined,
                           iconColor: const Color(0xFF1D4ED8),
@@ -255,6 +282,7 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                         // Required Documents Expandable Section
                         _ExpandableSection(
                           key: _documentsKey,
+                          controller: _documentsController,
                           title: "Required Documents",
                           icon: Icons.description_outlined,
                           iconColor: const Color(0xFF6D28D9),
@@ -272,6 +300,7 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                         // Process Expandable Section
                         _ExpandableSection(
                           key: _processKey,
+                          controller: _processController,
                           title: "Application Process",
                           icon: Icons.account_tree_outlined,
                           iconColor: const Color(0xFFEA580C),
@@ -847,6 +876,8 @@ class _ExpandableSection extends StatelessWidget {
   final Color iconColor;
   final Color iconBg;
   final bool isExpanded;
+  // ignore: deprecated_member_use
+  final ExpansionTileController controller;
   final VoidCallback onToggle;
   final Widget child;
 
@@ -857,6 +888,7 @@ class _ExpandableSection extends StatelessWidget {
     required this.iconColor,
     required this.iconBg,
     required this.isExpanded,
+    required this.controller,
     required this.onToggle,
     required this.child,
   });
@@ -872,6 +904,7 @@ class _ExpandableSection extends StatelessWidget {
       child: Theme(
         data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
         child: ExpansionTile(
+          controller: controller,
           initiallyExpanded: isExpanded,
           onExpansionChanged: (_) => onToggle(),
           tilePadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),

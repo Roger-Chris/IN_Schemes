@@ -43,6 +43,7 @@ class UserProfile {
   String language;
   bool notificationsEnabled;
   String theme;
+  String profilePhoto;
 
   UserProfile({
     this.name = '',
@@ -83,6 +84,7 @@ class UserProfile {
     this.language = 'en',
     this.notificationsEnabled = true,
     this.theme = 'light',
+    this.profilePhoto = '',
   });
 
   Map<String, dynamic> toJson() {
@@ -123,6 +125,7 @@ class UserProfile {
       'language': language,
       'notificationsEnabled': notificationsEnabled,
       'theme': theme,
+      'profilePhoto': profilePhoto,
     };
   }
 
@@ -166,6 +169,7 @@ class UserProfile {
       language: json['language'] ?? 'en',
       notificationsEnabled: json['notificationsEnabled'] ?? json['notifications'] ?? true,
       theme: json['theme'] ?? 'light',
+      profilePhoto: json['profilePhoto'] ?? '',
     );
   }
 
@@ -206,6 +210,7 @@ class UserProfile {
     String? language,
     bool? notificationsEnabled,
     String? theme,
+    String? profilePhoto,
   }) {
     return UserProfile(
       name: name ?? this.name,
@@ -244,6 +249,7 @@ class UserProfile {
       language: language ?? this.language,
       notificationsEnabled: notificationsEnabled ?? this.notificationsEnabled,
       theme: theme ?? this.theme,
+      profilePhoto: profilePhoto ?? this.profilePhoto,
     );
   }
 

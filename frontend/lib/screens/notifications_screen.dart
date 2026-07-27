@@ -14,6 +14,8 @@ class NotificationsScreen extends StatefulWidget {
 
 class _NotificationsScreenState extends State<NotificationsScreen> {
   String _activeFilter = 'All';
+  bool _isSelectionMode = false;
+  final Set<String> _selectedIds = {};
 
   final List<Map<String, dynamic>> _categories = [
     {'key': 'All', 'label': 'All', 'icon': Icons.notifications_none},
@@ -184,8 +186,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     );
   }
 
-  // 1. New Scheme Alerts Card Widget
   Widget _buildNewSchemeCard(BuildContext context, Map<String, dynamic> item, AppProvider provider) {
+    final id = item['id'] as String;
+    final isSelected = _selectedIds.contains(id);
     final isRead = item['read'] as bool;
     final isEducation = item['tag'] == 'Education';
     final Color iconBg = isEducation ? const Color(0xFFE8F5E9) : const Color(0xFFFFF3E0);
@@ -202,12 +205,33 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
-        onTap: () => provider.markNotificationRead(item['id']),
+        onTap: () {
+          if (_isSelectionMode) {
+            setState(() {
+              if (isSelected) {
+                _selectedIds.remove(id);
+              } else {
+                _selectedIds.add(id);
+              }
+            });
+          } else {
+            provider.markNotificationRead(id);
+          }
+        },
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              if (_isSelectionMode)
+                Container(
+                  margin: const EdgeInsets.only(right: 12, top: 12),
+                  child: Icon(
+                    isSelected ? Icons.check_circle : Icons.radio_button_off,
+                    color: isSelected ? const Color(0xFF2563EB) : const Color(0xFFCBD5E1),
+                    size: 24,
+                  ),
+                ),
               Container(
                 width: 48,
                 height: 48,
@@ -298,8 +322,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     );
   }
 
-  // 2. Deadline Reminders Card Widget
   Widget _buildDeadlineCard(BuildContext context, Map<String, dynamic> item, AppProvider provider) {
+    final id = item['id'] as String;
+    final isSelected = _selectedIds.contains(id);
     final isRead = item['read'] as bool;
     final isPostMatric = item['title'] == 'Post Matric Scholarship Scheme';
     final IconData icon = isPostMatric ? Icons.calendar_today_outlined : Icons.access_time;
@@ -316,12 +341,33 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
-        onTap: () => provider.markNotificationRead(item['id']),
+        onTap: () {
+          if (_isSelectionMode) {
+            setState(() {
+              if (isSelected) {
+                _selectedIds.remove(id);
+              } else {
+                _selectedIds.add(id);
+              }
+            });
+          } else {
+            provider.markNotificationRead(id);
+          }
+        },
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              if (_isSelectionMode)
+                Container(
+                  margin: const EdgeInsets.only(right: 12, top: 12),
+                  child: Icon(
+                    isSelected ? Icons.check_circle : Icons.radio_button_off,
+                    color: isSelected ? const Color(0xFF2563EB) : const Color(0xFFCBD5E1),
+                    size: 24,
+                  ),
+                ),
               Container(
                 width: 48,
                 height: 48,
@@ -416,8 +462,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     );
   }
 
-  // 3. Government Updates Card Widget
   Widget _buildGovtUpdateCard(BuildContext context, Map<String, dynamic> item, AppProvider provider) {
+    final id = item['id'] as String;
+    final isSelected = _selectedIds.contains(id);
     final isRead = item['read'] as bool;
     final IconData icon = item['iconType'] == 'emblem' ? Icons.gavel_outlined : Icons.account_balance_outlined;
 
@@ -431,12 +478,33 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
-        onTap: () => provider.markNotificationRead(item['id']),
+        onTap: () {
+          if (_isSelectionMode) {
+            setState(() {
+              if (isSelected) {
+                _selectedIds.remove(id);
+              } else {
+                _selectedIds.add(id);
+              }
+            });
+          } else {
+            provider.markNotificationRead(id);
+          }
+        },
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              if (_isSelectionMode)
+                Container(
+                  margin: const EdgeInsets.only(right: 12),
+                  child: Icon(
+                    isSelected ? Icons.check_circle : Icons.radio_button_off,
+                    color: isSelected ? const Color(0xFF2563EB) : const Color(0xFFCBD5E1),
+                    size: 24,
+                  ),
+                ),
               Container(
                 width: 48,
                 height: 48,
@@ -510,8 +578,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     );
   }
 
-  // 4. Profile Completion Card Widget
   Widget _buildProfileReminderCard(BuildContext context, Map<String, dynamic> item, AppProvider provider) {
+    final id = item['id'] as String;
+    final isSelected = _selectedIds.contains(id);
     final isRead = item['read'] as bool;
     final completion = item['progress'] ?? 70;
 
@@ -526,16 +595,35 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
         onTap: () {
-          provider.markNotificationRead(item['id']);
-          Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => const ProfileSetupScreen()),
-          );
+          if (_isSelectionMode) {
+            setState(() {
+              if (isSelected) {
+                _selectedIds.remove(id);
+              } else {
+                _selectedIds.add(id);
+              }
+            });
+          } else {
+            provider.markNotificationRead(id);
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const ProfileSetupScreen()),
+            );
+          }
         },
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              if (_isSelectionMode)
+                Container(
+                  margin: const EdgeInsets.only(right: 12, top: 12),
+                  child: Icon(
+                    isSelected ? Icons.check_circle : Icons.radio_button_off,
+                    color: isSelected ? const Color(0xFF2563EB) : const Color(0xFFCBD5E1),
+                    size: 24,
+                  ),
+                ),
               Container(
                 width: 48,
                 height: 48,
@@ -655,8 +743,19 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     return Scaffold(
       backgroundColor: AppConstants.backgroundColor,
       appBar: AppBar(
+        leading: _isSelectionMode
+            ? IconButton(
+                icon: const Icon(Icons.close, color: AppConstants.primaryText),
+                onPressed: () {
+                  setState(() {
+                    _isSelectionMode = false;
+                    _selectedIds.clear();
+                  });
+                },
+              )
+            : null,
         title: Text(
-          'Notifications',
+          _isSelectionMode ? '${_selectedIds.length} Selected' : 'Notifications',
           style: GoogleFonts.poppins(
             color: AppConstants.primaryText,
             fontWeight: FontWeight.bold,
@@ -667,24 +766,105 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         elevation: 0,
         scrolledUnderElevation: 0,
         iconTheme: const IconThemeData(color: AppConstants.primaryText),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.filter_alt_outlined, color: AppConstants.primaryText, size: 22),
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Filter options opened'), duration: Duration(milliseconds: 500)),
-              );
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.more_vert, color: AppConstants.primaryText, size: 22),
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('More options opened'), duration: Duration(milliseconds: 500)),
-              );
-            },
-          ),
-        ],
+        actions: _isSelectionMode
+            ? [
+                IconButton(
+                  icon: const Icon(Icons.done_all, color: Color(0xFF2563EB), size: 22),
+                  tooltip: 'Mark selected as read',
+                  onPressed: _selectedIds.isEmpty
+                      ? null
+                      : () {
+                          provider.markNotificationsRead(_selectedIds.toList());
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Selected notifications marked as read')),
+                          );
+                          setState(() {
+                            _isSelectionMode = false;
+                            _selectedIds.clear();
+                          });
+                        },
+                ),
+                IconButton(
+                  icon: const Icon(Icons.delete_outline, color: Color(0xFFEF4444), size: 22),
+                  tooltip: 'Delete selected',
+                  onPressed: _selectedIds.isEmpty
+                      ? null
+                      : () {
+                          provider.deleteNotifications(_selectedIds.toList());
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Selected notifications deleted')),
+                          );
+                          setState(() {
+                            _isSelectionMode = false;
+                            _selectedIds.clear();
+                          });
+                        },
+                ),
+                const SizedBox(width: 8),
+              ]
+            : [
+                IconButton(
+                  icon: const Icon(Icons.filter_alt_outlined, color: AppConstants.primaryText, size: 22),
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Filter options opened'), duration: Duration(milliseconds: 500)),
+                    );
+                  },
+                ),
+                PopupMenuButton<String>(
+                  icon: const Icon(Icons.more_vert, color: AppConstants.primaryText, size: 22),
+                  onSelected: (value) {
+                    if (value == 'mark_all_read') {
+                      provider.markAllNotificationsRead();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('All notifications marked as read')),
+                      );
+                    } else if (value == 'delete_all') {
+                      provider.deleteAllNotifications();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('All notifications deleted')),
+                      );
+                    } else if (value == 'select') {
+                      setState(() {
+                        _isSelectionMode = true;
+                        _selectedIds.clear();
+                      });
+                    }
+                  },
+                  itemBuilder: (context) => [
+                    PopupMenuItem(
+                      value: 'mark_all_read',
+                      child: Row(
+                        children: [
+                          const Icon(Icons.done_all, color: Color(0xFF64748B), size: 20),
+                          const SizedBox(width: 8),
+                          Text('Mark all as read', style: GoogleFonts.inter(fontSize: 13.5)),
+                        ],
+                      ),
+                    ),
+                    PopupMenuItem(
+                      value: 'delete_all',
+                      child: Row(
+                        children: [
+                          const Icon(Icons.delete_sweep_outlined, color: Color(0xFFEF4444), size: 20),
+                          const SizedBox(width: 8),
+                          Text('Delete all', style: GoogleFonts.inter(fontSize: 13.5, color: const Color(0xFFEF4444))),
+                        ],
+                      ),
+                    ),
+                    PopupMenuItem(
+                      value: 'select',
+                      child: Row(
+                        children: [
+                          const Icon(Icons.checklist_rtl_rounded, color: Color(0xFF64748B), size: 20),
+                          const SizedBox(width: 8),
+                          Text('Select', style: GoogleFonts.inter(fontSize: 13.5)),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
       ),
       body: Column(
         children: [

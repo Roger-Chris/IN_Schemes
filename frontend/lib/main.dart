@@ -164,7 +164,14 @@ class _MainTabsContainerState extends State<MainTabsContainer> {
         },
       ),
       SearchScreen(key: searchTabKey),
-      const CategoriesScreen(),
+      CategoriesScreen(
+        onCategorySelected: (category) {
+          provider.updateTabIndex(1);
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            searchTabKey.currentState?.submitVoiceQuery(category);
+          });
+        },
+      ),
       const SavedSchemesScreen(),
       const ProfileScreen(),
     ];
@@ -173,34 +180,57 @@ class _MainTabsContainerState extends State<MainTabsContainer> {
       decoration: const BoxDecoration(
         gradient: AppConstants.blueGradient,
       ),
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        body: IndexedStack(
-          index: provider.currentTabIndex,
-          children: tabs,
-        ),
-        bottomNavigationBar: Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            border: Border(
-              top: BorderSide(
-                color: Color(0xFFE2E8F0),
-                width: 1,
+      child: PopScope(
+        canPop: false,
+        onPopInvokedWithResult: (didPop, result) {
+          if (didPop) return;
+
+          // 1. If searching, clear query first
+          if (provider.currentTabIndex == 1 &&
+              searchTabKey.currentState != null &&
+              searchTabKey.currentState!.isSearching) {
+            searchTabKey.currentState!.resetToIdle();
+            return;
+          }
+
+          // 2. Try popping tab history
+          final popped = provider.popTabIndex();
+          if (popped) {
+            return;
+          }
+
+          // 3. Exit the app
+          SystemNavigator.pop();
+        },
+        child: Scaffold(
+          backgroundColor: Colors.transparent,
+          body: IndexedStack(
+            index: provider.currentTabIndex,
+            children: tabs,
+          ),
+          bottomNavigationBar: Container(
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              border: Border(
+                top: BorderSide(
+                  color: Color(0xFFE2E8F0),
+                  width: 1,
+                ),
               ),
             ),
-          ),
-          padding: const EdgeInsets.only(top: 8, bottom: 8),
-          child: SafeArea(
-            top: false,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildNavItem(0, Icons.home_outlined, Icons.home, 'Home', provider),
-                _buildNavItem(1, Icons.search, Icons.search_sharp, 'Search', provider),
-                _buildNavItem(2, Icons.explore_outlined, Icons.explore, 'Discover', provider),
-                _buildNavItem(3, Icons.bookmark_border, Icons.bookmark, 'Saved', provider),
-                _buildNavItem(4, Icons.person_outline, Icons.person, 'Profile', provider),
-              ],
+            padding: const EdgeInsets.only(top: 8, bottom: 8),
+            child: SafeArea(
+              top: false,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildNavItem(0, Icons.home_outlined, Icons.home, 'Home', provider),
+                  _buildNavItem(1, Icons.search, Icons.search_sharp, 'Search', provider),
+                  _buildNavItem(2, Icons.explore_outlined, Icons.explore, 'Discover', provider),
+                  _buildNavItem(3, Icons.bookmark_border, Icons.bookmark, 'Saved', provider),
+                  _buildNavItem(4, Icons.person_outline, Icons.person, 'Profile', provider),
+                ],
+              ),
             ),
           ),
         ),

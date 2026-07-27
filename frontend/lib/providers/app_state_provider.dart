@@ -17,7 +17,8 @@ class AppProvider with ChangeNotifier {
   String _selectedLanguage = 'en'; // 'en', 'hi'
   String _navigationMode = 'regular'; // 'regular', 'companion'
   int _currentTabIndex =
-      0; // Bottom Navigation: 0: Home, 1: Categories, 2: Search, 3: FindMySchemes, 4: Profile
+      0; // Bottom Navigation: 0: Home, 1: Search, 2: Categories, 3: Saved Schemes, 4: Profile
+  final List<int> _tabHistory = [];
   UserProfile _profile = UserProfile();
   List<String> _bookmarkedIds = [];
   List<String> _recentlyViewedIds = [];
@@ -410,16 +411,36 @@ class AppProvider with ChangeNotifier {
     _bookmarkedIds.clear();
     _recentlyViewedIds.clear();
     _currentTabIndex = 0;
+    _tabHistory.clear();
     notifyListeners();
   }
 
-
-
-  void updateTabIndex(int index) async {
+  void updateTabIndex(int index, {bool addToHistory = true}) async {
+    if (_currentTabIndex == index) return;
+    if (addToHistory) {
+      if (_tabHistory.isEmpty || _tabHistory.last != _currentTabIndex) {
+        _tabHistory.add(_currentTabIndex);
+      }
+    }
     _currentTabIndex = index;
     notifyListeners();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt('currentTabIndex', index);
+  }
+
+  bool get hasTabHistory => _tabHistory.isNotEmpty;
+
+  bool popTabIndex() {
+    if (_tabHistory.isNotEmpty) {
+      final prevIndex = _tabHistory.removeLast();
+      _currentTabIndex = prevIndex;
+      notifyListeners();
+      SharedPreferences.getInstance().then((prefs) {
+        prefs.setInt('currentTabIndex', prevIndex);
+      });
+      return true;
+    }
+    return false;
   }
 
   void toggleBookmark(String id) async {
@@ -535,6 +556,32 @@ class AppProvider with ChangeNotifier {
     }
   }
 
+  void markAllNotificationsRead() {
+    for (var n in notifications) {
+      n['read'] = true;
+    }
+    notifyListeners();
+  }
+
+  void deleteAllNotifications() {
+    notifications.clear();
+    notifyListeners();
+  }
+
+  void deleteNotifications(List<String> ids) {
+    notifications.removeWhere((n) => ids.contains(n['id']));
+    notifyListeners();
+  }
+
+  void markNotificationsRead(List<String> ids) {
+    for (var n in notifications) {
+      if (ids.contains(n['id'])) {
+        n['read'] = true;
+      }
+    }
+    notifyListeners();
+  }
+
   // Completion calculation
   int get profileCompletionPercentage {
     int totalFields = 6;
@@ -629,6 +676,12 @@ class AppProvider with ChangeNotifier {
         }
       }
     }
+  }
+
+  Future<void> updateProfilePhoto(String path) async {
+    _profile = _profile.copyWith(profilePhoto: path);
+    notifyListeners();
+    await _saveProfile();
   }
 
   // Location/GPS Helper

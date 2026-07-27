@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -24,7 +25,9 @@ class CategoryItem {
 }
 
 class CategoriesScreen extends StatefulWidget {
-  const CategoriesScreen({super.key});
+  const CategoriesScreen({super.key, this.onCategorySelected});
+
+  final ValueChanged<String>? onCategorySelected;
 
   @override
   State<CategoriesScreen> createState() => _CategoriesScreenState();
@@ -309,7 +312,10 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
               child: CircleAvatar(
                 backgroundColor: const Color(0xFFEFF6FF),
                 radius: 24, // Consistent with Home Page enlarge update
-                backgroundImage: const AssetImage('assets/images/user_avatar.png'),
+                backgroundImage: provider.profile.profilePhoto.isNotEmpty &&
+                        File(provider.profile.profilePhoto).existsSync()
+                    ? FileImage(File(provider.profile.profilePhoto))
+                    : const AssetImage('assets/images/user_avatar.png') as ImageProvider,
               ),
             ),
           ),
@@ -325,7 +331,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
               const SizedBox(height: 8),
               // Page Header Title (fontSize 17 bold matching Home Screen greeting)
               Text(
-                'Categories',
+                'Discover',
                 style: GoogleFonts.poppins(
                   fontSize: 17,
                   fontWeight: FontWeight.bold,
@@ -458,18 +464,22 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
         color: Colors.transparent,
         child: InkWell(
           onTap: () {
-            // Apply category filter in state
-            provider.clearFilters();
-            provider.updateFilter('category', category.title);
+            if (widget.onCategorySelected != null) {
+              widget.onCategorySelected!(category.title);
+            } else {
+              // Apply category filter in state
+              provider.clearFilters();
+              provider.updateFilter('category', category.title);
 
-            // Redirect to Search Results screen
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => SearchResultsScreen(
-                  title: category.title,
+              // Redirect to Search Results screen
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => SearchResultsScreen(
+                    title: category.title,
+                  ),
                 ),
-              ),
-            );
+              );
+            }
           },
           borderRadius: BorderRadius.circular(16),
           child: Padding(

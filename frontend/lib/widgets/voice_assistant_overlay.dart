@@ -231,19 +231,6 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
     super.dispose();
   }
 
-  String get _statusLabel {
-    switch (_phase) {
-      case _VoiceAssistantPhase.starting:
-        return 'Getting ready…';
-      case _VoiceAssistantPhase.listening:
-        return 'Listening…';
-      case _VoiceAssistantPhase.ready:
-        return _hasTranscript ? 'Voice query ready' : 'Tap the mic to speak';
-      case _VoiceAssistantPhase.unavailable:
-        return 'Voice is unavailable';
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final media = MediaQuery.of(context);
@@ -294,139 +281,258 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
   }
 
   Widget _buildVoicePanel() {
-    final helperText =
-        _message ??
+    final showTranscript = _transcript.trim().isNotEmpty || _message != null;
+    final displayedText = _message ??
         (_hasTranscript
             ? _transcript
-            : 'Ask about a scholarship, farmer benefit, business loan, or any government scheme.');
+            : 'I can help you find schemes, check eligibility, track applications and more.');
 
     return Container(
       key: const Key('voice-assistant-panel'),
-      padding: const EdgeInsets.fromLTRB(18, 12, 12, 12),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 10),
       decoration: BoxDecoration(
-        color: const Color(0xFF07111F),
-        borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.16)),
+        gradient: const LinearGradient(
+          colors: [Color(0xFF030D1E), Color(0xFF01060F)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: const Color(0xFF2563EB).withValues(alpha: 0.16), width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF2563EB).withValues(alpha: 0.28),
-            blurRadius: 30,
-            spreadRadius: 2,
+            color: const Color(0xFF2563EB).withValues(alpha: 0.24),
+            blurRadius: 36,
             offset: const Offset(0, 10),
           ),
         ],
       ),
-      child: Row(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Expanded(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Left: Companion bot image
+              Image.asset(
+                'assets/images/compoanion bot.png',
+                height: 72,
+                fit: BoxFit.contain,
+              ),
+              const SizedBox(width: 10),
+              
+              // Middle: Content Column
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(
-                      Icons.auto_awesome_rounded,
-                      color: Color(0xFF60A5FA),
-                      size: 17,
+                    // Header Wrap (prevents overflow on narrow screens)
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 4,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.auto_awesome_rounded,
+                          color: Color(0xFF60A5FA),
+                          size: 16,
+                        ),
+                        Text(
+                          'Ask IN AI',
+                          style: GoogleFonts.poppins(
+                            color: Colors.white,
+                            fontSize: 14.5,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        // Status Indicator Dot & Text
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 6,
+                              height: 6,
+                              decoration: BoxDecoration(
+                                color: _isListening ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              _isListening ? 'Listening...' : 'Idle',
+                              style: GoogleFonts.inter(
+                                color: _isListening ? const Color(0xFF10B981) : const Color(0xFF94A3B8),
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 7),
+                    const SizedBox(height: 6),
+                    // Transcript or helper text
                     Text(
-                      'Ask IN AI',
-                      style: GoogleFonts.poppins(
-                        color: Colors.white,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
+                      displayedText,
+                      key: const Key('voice-transcript'),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.inter(
+                        color: _message == null
+                            ? Colors.white.withValues(alpha: 0.72)
+                            : const Color(0xFFFCA5A5),
+                        fontSize: 11.5,
+                        height: 1.35,
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    Flexible(
-                      child: AnimatedOpacity(
-                        opacity: _isListening ? 1 : 0.65,
-                        duration: const Duration(milliseconds: 180),
-                        child: Text(
-                          _statusLabel,
-                          key: const Key('voice-status-label'),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.inter(
-                            color: _isListening
-                                ? const Color(0xFF67E8F9)
-                                : const Color(0xFF94A3B8),
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
+                    // Suggestion Chips (only when empty)
+                    if (!showTranscript) ...[
+                      const SizedBox(height: 8),
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        physics: const BouncingScrollPhysics(),
+                        child: Row(
+                          children: [
+                            _buildSuggestionChip('💼 Find business loans'),
+                            const SizedBox(width: 8),
+                            _buildSuggestionChip('📚 Scholarships for students'),
+                            const SizedBox(width: 8),
+                            _buildSuggestionChip('🌱 Subsidy for farmers'),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              
+              // Right Column: Waveform, Close, Mic Button
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Pulsing Waveform
+                      VoiceLevelBars(
+                        animation: _waveController,
+                        level: _edgeIntensity,
+                        active: _isListening,
+                      ),
+                      const SizedBox(width: 4),
+                      // Close button
+                      GestureDetector(
+                        onTap: _close,
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.white.withValues(alpha: 0.08),
+                          ),
+                          child: const Icon(
+                            Icons.close_rounded,
+                            color: Color(0xFF94A3B8),
+                            size: 15,
                           ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 6),
-                VoiceLevelBars(
-                  animation: _waveController,
-                  level: _edgeIntensity,
-                  active: _isListening,
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  helperText,
-                  key: const Key('voice-transcript'),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.inter(
-                    color: _message == null
-                        ? const Color(0xFFCBD5E1)
-                        : const Color(0xFFFCA5A5),
-                    fontSize: 12.5,
-                    height: 1.3,
+                    ],
                   ),
-                ),
-              ],
-            ),
+                  const SizedBox(height: 16),
+                  // Mic or Submit Button
+                  _hasTranscript
+                      ? GestureDetector(
+                          onTap: _submit,
+                          child: Container(
+                            width: 44,
+                            height: 44,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF2563EB),
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFF2563EB).withValues(alpha: 0.3),
+                                  blurRadius: 10,
+                                  spreadRadius: 2,
+                                ),
+                              ],
+                            ),
+                            alignment: Alignment.center,
+                            child: const Icon(
+                              Icons.arrow_forward_rounded,
+                              color: Colors.white,
+                              size: 20,
+                            ),
+                          ),
+                        )
+                      : GestureDetector(
+                          onTap: _toggleListening,
+                          child: Container(
+                            width: 44,
+                            height: 44,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                              border: Border.all(color: const Color(0xFF2563EB), width: 1.5),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFF2563EB).withValues(alpha: 0.2),
+                                  blurRadius: 10,
+                                  spreadRadius: 2,
+                                ),
+                              ],
+                            ),
+                            alignment: Alignment.center,
+                            child: Icon(
+                              _isListening ? Icons.mic : Icons.mic_none_rounded,
+                              color: const Color(0xFF2563EB),
+                              size: 22,
+                            ),
+                          ),
+                        ),
+                ],
+              ),
+            ],
           ),
-          const SizedBox(width: 10),
-          if (_hasTranscript)
-            IconButton.filled(
-              key: const Key('voice-submit-button'),
-              tooltip: 'Search with voice query',
-              onPressed: _submit,
-              style: IconButton.styleFrom(
-                backgroundColor: const Color(0xFF2563EB),
-                foregroundColor: Colors.white,
-              ),
-              icon: const Icon(Icons.arrow_forward_rounded),
-            )
-          else
-            ScaleTransition(
-              scale: _isListening
-                  ? _pulseController
-                  : const AlwaysStoppedAnimation(1),
-              child: IconButton.filled(
-                key: const Key('voice-microphone-button'),
-                tooltip: _isListening ? 'Stop listening' : 'Start listening',
-                onPressed: _toggleListening,
-                style: IconButton.styleFrom(
-                  minimumSize: const Size(48, 48),
-                  backgroundColor: _isListening
-                      ? const Color(0xFFE2E8F0)
-                      : const Color(0xFF2563EB),
-                  foregroundColor: _isListening
-                      ? const Color(0xFF0F172A)
-                      : Colors.white,
-                ),
-                icon: Icon(
-                  _isListening ? Icons.mic_rounded : Icons.mic_none_rounded,
-                ),
+          const SizedBox(height: 8),
+          // Drag handle
+          Center(
+            child: Container(
+              width: 36,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(2),
               ),
             ),
-          IconButton(
-            key: const Key('voice-close-button'),
-            tooltip: 'Close voice assistant',
-            onPressed: _close,
-            color: const Color(0xFF94A3B8),
-            icon: const Icon(Icons.close_rounded, size: 20),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSuggestionChip(String label) {
+    return GestureDetector(
+      onTap: () {
+        // Extract plain text query after the emoji spacer
+        final cleanQuery = label.substring(2).trim();
+        widget.onSubmit(cleanQuery);
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.06),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+        ),
+        child: Text(
+          label,
+          style: GoogleFonts.inter(
+            color: Colors.white.withValues(alpha: 0.85),
+            fontSize: 10.5,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
       ),
     );
   }
@@ -457,7 +563,7 @@ class VoiceLevelBars extends StatelessWidget {
           child: AnimatedBuilder(
             animation: Listenable.merge([animation, level]),
             builder: (context, child) => CustomPaint(
-              size: const Size(74, 20),
+              size: const Size(54, 20),
               painter: VoiceLevelPainter(
                 progress: animation.value,
                 level: level.value,

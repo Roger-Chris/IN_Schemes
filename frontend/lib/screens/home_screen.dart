@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -328,10 +329,13 @@ class _HomeScreenState extends State<HomeScreen> {
                   shape: BoxShape.circle,
                   border: Border.all(color: const Color(0xFFE2E8F0), width: 1.5),
                 ),
-                child: const CircleAvatar(
+                child: CircleAvatar(
                   radius: 20,
-                  backgroundImage: AssetImage('assets/images/user_avatar.png'),
-                  backgroundColor: Color(0xFFF1F5F9),
+                  backgroundImage: provider.profile.profilePhoto.isNotEmpty &&
+                          File(provider.profile.profilePhoto).existsSync()
+                      ? FileImage(File(provider.profile.profilePhoto))
+                      : const AssetImage('assets/images/user_avatar.png') as ImageProvider,
+                  backgroundColor: const Color(0xFFF1F5F9),
                 ),
               ),
             ),
@@ -1263,7 +1267,7 @@ class _HomeScreenState extends State<HomeScreen> {
           'match': '95% Match',
           'isBookmarked': false,
           'schemeCode': 'PMEGP',
-          'chips': ['Central Scheme', 'Loan'],
+          'chips': ['Central Scheme', 'Loan', 'Subsidy'],
           'location': 'All India',
           'scheme': null,
           'logoText': 'PMEGP',
@@ -1341,8 +1345,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(width: 4),
                   const Icon(
-                    Icons.arrow_forward,
-                    size: 13,
+                    Icons.chevron_right,
+                    size: 14,
                     color: Color(0xFF2563EB),
                   ),
                 ],
@@ -1388,175 +1392,146 @@ class _HomeScreenState extends State<HomeScreen> {
                 }
               }
 
-              return Container(
-                width: cardWidth,
-                margin: const EdgeInsets.only(right: 12, top: 4, bottom: 4),
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: const Color(0xFFE2E8F0)),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.015),
-                      blurRadius: 6,
-                      offset: const Offset(0, 1.5),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Match & Bookmark Row
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFDCFCE7),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Text(
-                            item['match'] as String,
-                            style: GoogleFonts.inter(
-                              color: const Color(0xFF15803D),
-                              fontSize: 9.5,
-                              fontWeight: FontWeight.bold,
+              return GestureDetector(
+                onTap: () {
+                  if (schemeObj != null) {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => SchemeDetailsScreen(scheme: schemeObj)),
+                    );
+                  }
+                },
+                child: Container(
+                  width: cardWidth,
+                  margin: const EdgeInsets.only(right: 12, top: 4, bottom: 4),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.015),
+                        blurRadius: 6,
+                        offset: const Offset(0, 1.5),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Match & Bookmark Row
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFDCFCE7),
+                              borderRadius: BorderRadius.circular(6),
                             ),
-                          ),
-                        ),
-                        GestureDetector(
-                          onTap: () {
-                            final sCode = item['schemeCode'] as String;
-                            provider.toggleBookmark(sCode);
-                          },
-                          child: Icon(
-                            isBookmarked ? Icons.bookmark : Icons.bookmark_border,
-                            color: isBookmarked ? const Color(0xFF2563EB) : const Color(0xFF94A3B8),
-                            size: 20,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    // Title Row
-                    Row(
-                      children: [
-                        Container(
-                          width: 30,
-                          height: 30,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.white,
-                            border: Border.all(color: const Color(0xFFE2E8F0)),
-                          ),
-                          alignment: Alignment.center,
-                          child: Text(
-                            (item['logoText'] ?? 'IN') as String,
-                            style: GoogleFonts.poppins(
-                              fontSize: 9.0,
-                              fontWeight: FontWeight.bold,
-                              color: (item['logoColor'] ?? const Color(0xFF2563EB)) as Color,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                shortForm,
-                                style: GoogleFonts.poppins(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.bold,
-                                  color: const Color(0xFF0F172A),
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
+                            child: Text(
+                              item['match'] as String,
+                              style: GoogleFonts.inter(
+                                color: const Color(0xFF15803D),
+                                fontSize: 9.5,
+                                fontWeight: FontWeight.bold,
                               ),
-                              if (fullName.isNotEmpty) ...[
-                                const SizedBox(height: 1),
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: () {
+                              final sCode = item['schemeCode'] as String;
+                              provider.toggleBookmark(sCode);
+                            },
+                            child: Icon(
+                              isBookmarked ? Icons.bookmark : Icons.bookmark_border,
+                              color: isBookmarked ? const Color(0xFF2563EB) : const Color(0xFF94A3B8),
+                              size: 20,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      // Title Row
+                      Row(
+                        children: [
+                          Container(
+                            width: 30,
+                            height: 30,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.white,
+                              border: Border.all(color: const Color(0xFFE2E8F0)),
+                            ),
+                            alignment: Alignment.center,
+                            child: Text(
+                              (item['logoText'] ?? 'IN') as String,
+                              style: GoogleFonts.poppins(
+                                fontSize: 9.0,
+                                fontWeight: FontWeight.bold,
+                                color: (item['logoColor'] ?? const Color(0xFF2563EB)) as Color,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
                                 Text(
-                                  "($fullName)",
-                                  style: GoogleFonts.inter(
-                                    fontSize: 10.5,
-                                    fontWeight: FontWeight.w500,
-                                    color: const Color(0xFF64748B),
+                                  shortForm,
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.bold,
+                                    color: const Color(0xFF0F172A),
                                   ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
+                                if (fullName.isNotEmpty) ...[
+                                  const SizedBox(height: 1),
+                                  Text(
+                                    "($fullName)",
+                                    style: GoogleFonts.inter(
+                                      fontSize: 10.5,
+                                      fontWeight: FontWeight.w500,
+                                      color: const Color(0xFF64748B),
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
                               ],
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    const Spacer(),
-                    // Chips Row
-                    Wrap(
-                      spacing: 4,
-                      runSpacing: 4,
-                      children: (item['chips'] as List<String>).map((tag) {
-                        return Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFF1F5F9),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Text(
-                            tag,
-                            style: GoogleFonts.inter(
-                              fontSize: 10,
-                              color: const Color(0xFF475569),
-                              fontWeight: FontWeight.w500,
                             ),
                           ),
-                        );
-                      }).toList(),
-                    ),
-                    const SizedBox(height: 10),
-                    // Bottom Row
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        GestureDetector(
-                          onTap: () {
-                            if (schemeObj != null) {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(builder: (_) => SchemeDetailsScreen(scheme: schemeObj)),
-                              );
-                            } else {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('Applying to ${item['title']}...')),
-                              );
-                            }
-                          },
-                          child: Row(
-                            children: [
-                              Text(
-                                "Apply",
-                                style: GoogleFonts.inter(
-                                  color: const Color(0xFF2563EB),
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 11,
-                                ),
+                        ],
+                      ),
+                      const Spacer(),
+                      // Chips Row
+                      Wrap(
+                        spacing: 4,
+                        runSpacing: 4,
+                        children: (item['chips'] as List<String>).map((tag) {
+                          return Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF1F5F9),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              tag,
+                              style: GoogleFonts.inter(
+                                fontSize: 10,
+                                color: const Color(0xFF475569),
+                                fontWeight: FontWeight.w500,
                               ),
-                              const SizedBox(width: 2),
-                              const Icon(
-                                Icons.arrow_forward,
-                                size: 11,
-                                color: Color(0xFF2563EB),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ],
+                  ),
                 ),
               );
             },
@@ -1827,28 +1802,24 @@ class _HomeScreenState extends State<HomeScreen> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 58,
-            height: 58,
+            width: 60,
+            height: 60,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              gradient: const LinearGradient(
-                colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
+              color: const Color(0xFFEFF6FF), // Soft premium light blue background
+              border: Border.all(color: const Color(0xFF93C5FD), width: 1.5),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF2563EB).withValues(alpha: 0.35),
-                  blurRadius: 10,
+                  color: const Color(0xFF2563EB).withValues(alpha: 0.24),
+                  blurRadius: 12,
                   offset: const Offset(0, 4),
                 ),
               ],
             ),
-            alignment: Alignment.center,
-            child: const Icon(
-              Icons.smart_toy,
-              color: Colors.white,
-              size: 28,
+            padding: const EdgeInsets.all(2),
+            child: Image.asset(
+              'assets/images/compoanion bot.png',
+              fit: BoxFit.contain,
             ),
           ),
           const SizedBox(height: 4),

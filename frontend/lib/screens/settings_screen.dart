@@ -104,15 +104,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         child: const Icon(Icons.explore_outlined, color: Color(0xFF7C3AED), size: 20),
                       ),
                       const SizedBox(width: 12),
-                      Text(
-                        'Choose Navigation Mode',
-                        style: GoogleFonts.poppins(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: const Color(0xFF0F172A),
+                      Expanded(
+                        child: Text(
+                          'Choose Navigation Mode',
+                          style: GoogleFonts.poppins(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: const Color(0xFF0F172A),
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      const Spacer(),
                       IconButton(
                         icon: const Icon(Icons.close_rounded, color: Color(0xFF94A3B8)),
                         onPressed: () => Navigator.pop(context),
