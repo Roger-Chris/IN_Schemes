@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
@@ -6,18 +7,27 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 
+import '../models/scheme_model.dart';
+import '../services/intelligent_scheme_search.dart';
+
 enum _VoiceAssistantPhase { starting, listening, ready, unavailable }
+
+enum VoiceInputLanguage { english, tamil }
 
 class VoiceAssistantOverlay extends StatefulWidget {
   const VoiceAssistantOverlay({
     super.key,
     required this.onClose,
     required this.onSubmit,
+    this.onSearch,
+    this.onSchemeSelected,
     this.autoStart = true,
   });
 
   final VoidCallback onClose;
   final ValueChanged<String> onSubmit;
+  final Future<List<SchemeSearchMatch>> Function(String query)? onSearch;
+  final ValueChanged<Scheme>? onSchemeSelected;
   final bool autoStart;
 
   @override
@@ -36,10 +46,30 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
   _VoiceAssistantPhase _phase = _VoiceAssistantPhase.starting;
   String _transcript = '';
   String? _message;
+  VoiceInputLanguage _language = VoiceInputLanguage.english;
+  List<SchemeSearchMatch> _matches = const [];
+  bool _isSearching = false;
+  int _searchGeneration = 0;
+  String _lastSearchedQuery = '';
   DateTime _lastSoundLevelUpdate = DateTime.fromMillisecondsSinceEpoch(0);
 
   bool get _isListening => _phase == _VoiceAssistantPhase.listening;
   bool get _hasTranscript => _transcript.trim().isNotEmpty;
+  bool get _hasSearch => widget.onSearch != null;
+  String get _statusLabel {
+    if (_isListening) return 'Listening...';
+    if (_isSearching) return 'Finding...';
+    if (_matches.isNotEmpty) return 'Found ${_matches.length}';
+    return 'Ready';
+  }
+
+  Color get _statusColor => _isListening
+      ? const Color(0xFF10B981)
+      : _isSearching
+      ? const Color(0xFFF59E0B)
+      : _matches.isNotEmpty
+      ? const Color(0xFF60A5FA)
+      : const Color(0xFF94A3B8);
 
   @override
   void initState() {
@@ -131,6 +161,7 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
           autoPunctuation: true,
           listenFor: Duration(seconds: 30),
           pauseFor: Duration(seconds: 4),
+          localeId: await _localeIdFor(_language),
         ),
       );
     } catch (_) {
@@ -154,6 +185,9 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
         _setListeningAnimations(false);
       }
     });
+    if (result.finalResult && _hasSearch) {
+      unawaited(_searchTranscript());
+    }
   }
 
   void _handleStatus(String status) {
@@ -192,6 +226,96 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
     }
   }
 
+  Future<String?> _localeIdFor(VoiceInputLanguage language) async {
+    final requestedPrefix = language == VoiceInputLanguage.tamil ? 'ta' : 'en';
+    final preferredRegion = language == VoiceInputLanguage.tamil
+        ? 'ta-in'
+        : 'en-in';
+    try {
+      final locales = await _speech.locales();
+      String normalized(String locale) =>
+          locale.toLowerCase().replaceAll('_', '-');
+      for (final locale in locales) {
+        if (normalized(locale.localeId) == preferredRegion) {
+          return locale.localeId;
+        }
+      }
+      for (final locale in locales) {
+        if (normalized(locale.localeId).startsWith('$requestedPrefix-')) {
+          return locale.localeId;
+        }
+      }
+    } catch (_) {
+      // Let the platform use its default locale when locale discovery fails.
+    }
+    return null;
+  }
+
+  Future<void> _changeLanguage(VoiceInputLanguage language) async {
+    if (_language == language) return;
+    _searchGeneration++;
+    await _speech.cancel();
+    if (!mounted) return;
+    setState(() {
+      _language = language;
+      _transcript = '';
+      _matches = const [];
+      _lastSearchedQuery = '';
+      _isSearching = false;
+      _message = null;
+      _phase = _VoiceAssistantPhase.ready;
+    });
+    await _startListening();
+  }
+
+  Future<void> _searchTranscript({bool force = false}) async {
+    final query = _transcript.trim();
+    final search = widget.onSearch;
+    if (query.isEmpty || search == null) return;
+    if (!force && query == _lastSearchedQuery) return;
+
+    final generation = ++_searchGeneration;
+    setState(() {
+      _isSearching = true;
+      _message = null;
+      _matches = const [];
+      _lastSearchedQuery = query;
+    });
+    try {
+      final matches = await search(query);
+      if (!mounted || generation != _searchGeneration) return;
+      setState(() {
+        _matches = matches;
+        _isSearching = false;
+      });
+    } catch (_) {
+      if (!mounted || generation != _searchGeneration) return;
+      setState(() {
+        _matches = const [];
+        _isSearching = false;
+        _message = 'I could not search right now. Please try again.';
+      });
+    }
+  }
+
+  Future<void> _useSuggestion(String query) async {
+    if (_speech.isListening) {
+      await _speech.stop();
+    }
+    if (!mounted) return;
+    _setListeningAnimations(false);
+    setState(() {
+      _phase = _VoiceAssistantPhase.ready;
+      _transcript = query;
+      _message = null;
+    });
+    if (_hasSearch) {
+      await _searchTranscript(force: true);
+    } else {
+      widget.onSubmit(query);
+    }
+  }
+
   void _setListeningAnimations(bool listening) {
     if (listening) {
       if (!_pulseController.isAnimating) {
@@ -216,9 +340,14 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
 
   Future<void> _submit() async {
     final query = _transcript.trim();
-    if (query.isEmpty) return;
+    if (query.isEmpty || _isSearching) return;
     await _speech.stop();
-    if (mounted) widget.onSubmit(query);
+    if (!mounted) return;
+    if (_hasSearch && _matches.isEmpty) {
+      await _searchTranscript(force: true);
+      return;
+    }
+    widget.onSubmit(query);
   }
 
   @override
@@ -356,19 +485,15 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
                               width: 6,
                               height: 6,
                               decoration: BoxDecoration(
-                                color: _isListening
-                                    ? const Color(0xFF10B981)
-                                    : const Color(0xFFEF4444),
+                                color: _statusColor,
                                 shape: BoxShape.circle,
                               ),
                             ),
                             const SizedBox(width: 4),
                             Text(
-                              _isListening ? 'Listening...' : 'Idle',
+                              _statusLabel,
                               style: GoogleFonts.inter(
-                                color: _isListening
-                                    ? const Color(0xFF10B981)
-                                    : const Color(0xFF94A3B8),
+                                color: _statusColor,
                                 fontSize: 10,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -392,6 +517,8 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
                         height: 1.35,
                       ),
                     ),
+                    const SizedBox(height: 8),
+                    _buildLanguageSelector(),
                     // Suggestion Chips (only when empty)
                     if (!showTranscript) ...[
                       const SizedBox(height: 8),
@@ -400,13 +527,26 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
                         physics: const BouncingScrollPhysics(),
                         child: Row(
                           children: [
-                            _buildSuggestionChip('💼 Find business loans'),
-                            const SizedBox(width: 8),
                             _buildSuggestionChip(
-                              '📚 Scholarships for students',
+                              'Business loans',
+                              _language == VoiceInputLanguage.tamil
+                                  ? 'business ku loan venum'
+                                  : 'business loans for me',
                             ),
                             const SizedBox(width: 8),
-                            _buildSuggestionChip('🌱 Subsidy for farmers'),
+                            _buildSuggestionChip(
+                              'Student scholarship',
+                              _language == VoiceInputLanguage.tamil
+                                  ? 'padippuku scholarship venum'
+                                  : 'scholarships for students',
+                            ),
+                            const SizedBox(width: 8),
+                            _buildSuggestionChip(
+                              'Farmer subsidy',
+                              _language == VoiceInputLanguage.tamil
+                                  ? 'vivasayathukku maaniyam venum'
+                                  : 'subsidy for farmers',
+                            ),
                           ],
                         ),
                       ),
@@ -516,6 +656,33 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
               ),
             ],
           ),
+          if (_isSearching) ...[
+            const SizedBox(height: 12),
+            const LinearProgressIndicator(
+              key: Key('voice-search-progress'),
+              minHeight: 2,
+              color: Color(0xFF60A5FA),
+              backgroundColor: Color(0xFF172554),
+            ),
+          ] else if (_matches.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            _buildSearchResults(),
+          ] else if (_hasTranscript &&
+              _lastSearchedQuery.isNotEmpty &&
+              _message == null) ...[
+            const SizedBox(height: 10),
+            Text(
+              _language == VoiceInputLanguage.tamil
+                  ? 'பொருத்தமான திட்டம் கிடைக்கவில்லை. வேறு வார்த்தைகளில் சொல்லிப் பாருங்கள்.'
+                  : 'No matching scheme found. Try saying it another way.',
+              key: const Key('voice-no-results'),
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(
+                color: const Color(0xFFFBBF24),
+                fontSize: 11,
+              ),
+            ),
+          ],
           const SizedBox(height: 8),
           // Drag handle
           Center(
@@ -533,13 +700,188 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
     );
   }
 
-  Widget _buildSuggestionChip(String label) {
+  Widget _buildLanguageSelector() {
+    return Semantics(
+      label: 'Voice input language',
+      child: Container(
+        padding: const EdgeInsets.all(2),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.06),
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildLanguageOption('EN', VoiceInputLanguage.english),
+            _buildLanguageOption('தமிழ்', VoiceInputLanguage.tamil),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLanguageOption(String label, VoiceInputLanguage language) {
+    final selected = _language == language;
+    return Semantics(
+      button: true,
+      selected: selected,
+      child: InkWell(
+        key: Key('voice-language-${language.name}'),
+        onTap: () => _changeLanguage(language),
+        borderRadius: BorderRadius.circular(12),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+          decoration: BoxDecoration(
+            color: selected ? const Color(0xFF2563EB) : Colors.transparent,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Text(
+            label,
+            style: GoogleFonts.inter(
+              color: selected ? Colors.white : const Color(0xFF94A3B8),
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSearchResults() {
+    final visible = _matches.take(3).toList(growable: false);
+    return Column(
+      key: const Key('voice-search-results'),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                _language == VoiceInputLanguage.tamil
+                    ? 'உங்களுக்கான சிறந்த திட்டங்கள்'
+                    : 'Best matching schemes',
+                style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            TextButton(
+              key: const Key('voice-view-all-results'),
+              onPressed: () => widget.onSubmit(_transcript.trim()),
+              style: TextButton.styleFrom(
+                minimumSize: const Size(48, 32),
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+              child: Text(
+                'View all',
+                style: GoogleFonts.inter(
+                  color: const Color(0xFF60A5FA),
+                  fontSize: 10.5,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ],
+        ),
+        ...visible.map(_buildSearchResultCard),
+      ],
+    );
+  }
+
+  Widget _buildSearchResultCard(SchemeSearchMatch match) {
+    final reason = match.reasons.isEmpty
+        ? 'Relevant scheme'
+        : match.reasons.join(' • ');
+    return Padding(
+      padding: const EdgeInsets.only(top: 6),
+      child: Semantics(
+        button: true,
+        label: 'Open ${match.scheme.name}',
+        child: InkWell(
+          key: Key('voice-result-${match.scheme.id}'),
+          onTap: () {
+            final callback = widget.onSchemeSelected;
+            if (callback != null) {
+              callback(match.scheme);
+            } else {
+              widget.onSubmit(_transcript.trim());
+            }
+          },
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.055),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: const Color(0xFF60A5FA).withValues(alpha: 0.16),
+              ),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 32,
+                  height: 32,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1D4ED8).withValues(alpha: 0.24),
+                    borderRadius: BorderRadius.circular(9),
+                  ),
+                  child: const Icon(
+                    Icons.account_balance_rounded,
+                    size: 17,
+                    color: Color(0xFF93C5FD),
+                  ),
+                ),
+                const SizedBox(width: 9),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        match.scheme.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        reason,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFF94A3B8),
+                          fontSize: 9.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(
+                  Icons.chevron_right_rounded,
+                  color: Color(0xFF60A5FA),
+                  size: 18,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSuggestionChip(String label, String query) {
     return GestureDetector(
-      onTap: () {
-        // Extract plain text query after the emoji spacer
-        final cleanQuery = label.substring(2).trim();
-        widget.onSubmit(cleanQuery);
-      },
+      onTap: () => _useSuggestion(query),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
         decoration: BoxDecoration(

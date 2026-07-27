@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../providers/app_state_provider.dart';
 import '../models/scheme_model.dart';
+import '../services/scheme_repository.dart';
 import 'scheme_details_screen.dart';
 import 'notifications_screen.dart';
 import '../widgets/voice_assistant_overlay.dart';
@@ -56,6 +57,18 @@ class _HomeScreenState extends State<HomeScreen> {
       pageBuilder: (overlayContext, animation, secondaryAnimation) {
         return VoiceAssistantOverlay(
           onClose: () => Navigator.of(overlayContext, rootNavigator: true).pop(),
+          onSearch: (query) => SchemeRepository.instance.searchSchemeMatches(
+            query,
+            limit: 20,
+          ),
+          onSchemeSelected: (scheme) {
+            Navigator.of(overlayContext, rootNavigator: true).pop();
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => SchemeDetailsScreen(scheme: scheme),
+              ),
+            );
+          },
           onSubmit: (query) {
             Navigator.of(overlayContext, rootNavigator: true).pop();
             widget.onVoiceQuery?.call(query);

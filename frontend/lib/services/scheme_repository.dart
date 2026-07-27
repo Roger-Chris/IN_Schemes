@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/scheme_model.dart';
 import '../models/user_profile.dart';
+import 'intelligent_scheme_search.dart';
 import 'scheme_catalog.dart';
 
 /// SchemeRepository
@@ -70,23 +71,20 @@ class SchemeRepository {
   }
 
   // ── 2. searchSchemes(query) ────────────────────────────────────────────
-  /// Full-text search across name, overview, keywords, category.
+  /// Intelligently ranks natural-language English, Tamil, and Tanglish queries.
   Future<List<Scheme>> searchSchemes(String query) async {
     if (query.trim().isEmpty) return getAllSchemes();
+    final matches = await searchSchemeMatches(query);
+    return matches.map((match) => match.scheme).toList(growable: false);
+  }
 
-    final q = query.toLowerCase().trim();
+  /// Returns scored matches for conversational search and voice result UIs.
+  Future<List<SchemeSearchMatch>> searchSchemeMatches(
+    String query, {
+    int? limit,
+  }) async {
     final all = await getAllSchemes();
-
-    return all.where((s) {
-      return s.name.toLowerCase().contains(q) ||
-          s.overview.toLowerCase().contains(q) ||
-          s.searchKeywords.toLowerCase().contains(q) ||
-          s.category.toLowerCase().contains(q) ||
-          s.schemeCode.toLowerCase().contains(q) ||
-          s.sponsoringBody.toLowerCase().contains(q) ||
-          s.targetBeneficiary.toLowerCase().contains(q) ||
-          s.sector.toLowerCase().contains(q);
-    }).toList();
+    return IntelligentSchemeSearch.rank(query, all, limit: limit);
   }
 
   // ── 3. getSchemesByCategory(category) ─────────────────────────────────
