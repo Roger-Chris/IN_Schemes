@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
@@ -28,6 +29,7 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
   final SpeechToText _speech = SpeechToText();
   late final AnimationController _edgeController;
   late final AnimationController _pulseController;
+  late final AnimationController _waveController;
   late final ValueNotifier<double> _edgeIntensity;
   late final Listenable _edgeRepaint;
 
@@ -53,7 +55,12 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
       duration: const Duration(milliseconds: 800),
       lowerBound: 0.82,
       upperBound: 1,
-    )..repeat(reverse: true);
+      value: 1,
+    );
+    _waveController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+    );
 
     if (widget.autoStart) {
       WidgetsBinding.instance.addPostFrameCallback((_) => _startListening());
@@ -64,6 +71,7 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
 
   Future<void> _startListening() async {
     if (!mounted) return;
+    _setListeningAnimations(false);
     setState(() {
       _phase = _VoiceAssistantPhase.starting;
       _message = null;
@@ -75,6 +83,7 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
         onError: (error) {
           if (!mounted) return;
           _edgeIntensity.value = 0.12;
+          _setListeningAnimations(false);
           setState(() {
             _phase = _VoiceAssistantPhase.unavailable;
             _message = error.errorMsg == 'error_permission'
@@ -87,6 +96,7 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
       if (!mounted) return;
       if (!available) {
         _edgeIntensity.value = 0.12;
+        _setListeningAnimations(false);
         setState(() {
           _phase = _VoiceAssistantPhase.unavailable;
           _message = 'Voice recognition is not available on this device.';
@@ -99,6 +109,7 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
         _message = null;
       });
       _edgeIntensity.value = 0.25;
+      _setListeningAnimations(true);
 
       await _speech.listen(
         onResult: _handleResult,
@@ -125,6 +136,7 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
     } catch (_) {
       if (!mounted) return;
       _edgeIntensity.value = 0.12;
+      _setListeningAnimations(false);
       setState(() {
         _phase = _VoiceAssistantPhase.unavailable;
         _message = 'Voice recognition could not start. Please try again.';
@@ -139,6 +151,7 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
       _transcript = result.recognizedWords;
       if (result.finalResult) {
         _phase = _VoiceAssistantPhase.ready;
+        _setListeningAnimations(false);
       }
     });
   }
@@ -147,12 +160,14 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
     if (!mounted) return;
     if (status == SpeechToText.listeningStatus) {
       _edgeIntensity.value = 0.25;
+      _setListeningAnimations(true);
       if (_phase != _VoiceAssistantPhase.listening) {
         setState(() => _phase = _VoiceAssistantPhase.listening);
       }
     } else if (status == SpeechToText.doneStatus ||
         status == SpeechToText.notListeningStatus) {
       _edgeIntensity.value = 0.12;
+      _setListeningAnimations(false);
       setState(() {
         _phase = _VoiceAssistantPhase.ready;
       });
@@ -163,6 +178,7 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
     await _speech.stop();
     if (!mounted) return;
     _edgeIntensity.value = 0.12;
+    _setListeningAnimations(false);
     setState(() {
       _phase = _VoiceAssistantPhase.ready;
     });
@@ -174,6 +190,23 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
     } else {
       await _startListening();
     }
+  }
+
+  void _setListeningAnimations(bool listening) {
+    if (listening) {
+      if (!_pulseController.isAnimating) {
+        _pulseController.repeat(reverse: true);
+      }
+      if (!_waveController.isAnimating) {
+        _waveController.repeat();
+      }
+      return;
+    }
+
+    _pulseController.stop();
+    _pulseController.value = 1;
+    _waveController.stop();
+    _waveController.value = 0;
   }
 
   Future<void> _close() async {
@@ -193,6 +226,7 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
     _speech.cancel();
     _edgeController.dispose();
     _pulseController.dispose();
+    _waveController.dispose();
     _edgeIntensity.dispose();
     super.dispose();
   }
@@ -327,7 +361,13 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
                     ),
                   ],
                 ),
-                const SizedBox(height: 5),
+                const SizedBox(height: 6),
+                VoiceLevelBars(
+                  animation: _waveController,
+                  level: _edgeIntensity,
+                  active: _isListening,
+                ),
+                const SizedBox(height: 6),
                 Text(
                   helperText,
                   key: const Key('voice-transcript'),
@@ -389,6 +429,97 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
         ],
       ),
     );
+  }
+}
+
+class VoiceLevelBars extends StatelessWidget {
+  const VoiceLevelBars({
+    super.key,
+    required this.animation,
+    required this.level,
+    required this.active,
+  });
+
+  final Animation<double> animation;
+  final ValueListenable<double> level;
+  final bool active;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      label: active ? 'Live voice level' : 'Voice level inactive',
+      image: true,
+      child: AnimatedOpacity(
+        key: const Key('voice-level-bars'),
+        opacity: active ? 1 : 0.32,
+        duration: const Duration(milliseconds: 180),
+        child: RepaintBoundary(
+          child: AnimatedBuilder(
+            animation: Listenable.merge([animation, level]),
+            builder: (context, child) => CustomPaint(
+              size: const Size(74, 20),
+              painter: VoiceLevelPainter(
+                progress: animation.value,
+                level: level.value,
+                active: active,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class VoiceLevelPainter extends CustomPainter {
+  const VoiceLevelPainter({
+    required this.progress,
+    required this.level,
+    required this.active,
+  });
+
+  static const int barCount = 9;
+
+  final double progress;
+  final double level;
+  final bool active;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    const strokeWidth = 3.2;
+    final spacing = (size.width - strokeWidth) / (barCount - 1);
+    final center = (barCount - 1) / 2;
+    final energy = ((level - 0.12) / 0.88).clamp(0.0, 1.0);
+    final phase = progress * math.pi * 2;
+    final paint = Paint()
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = strokeWidth
+      ..shader = const LinearGradient(
+        begin: Alignment.bottomCenter,
+        end: Alignment.topCenter,
+        colors: [Color(0xFF2563EB), Color(0xFF67E8F9)],
+      ).createShader(Offset.zero & size);
+
+    for (var index = 0; index < barCount; index++) {
+      final distance = ((index - center).abs() / center).clamp(0.0, 1.0);
+      final envelope = 1 - distance * 0.48;
+      final motion = (math.sin(phase * 2 + index * 0.82) + 1) / 2;
+      final normalizedHeight = active
+          ? (0.2 + envelope * (0.2 + motion * 0.5) * (0.55 + energy * 0.65))
+                .clamp(0.2, 1.0)
+          : 0.2 + envelope * 0.08;
+      final barHeight = size.height * normalizedHeight;
+      final x = strokeWidth / 2 + spacing * index;
+      final top = (size.height - barHeight) / 2;
+      canvas.drawLine(Offset(x, top), Offset(x, size.height - top), paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant VoiceLevelPainter oldDelegate) {
+    return oldDelegate.progress != progress ||
+        oldDelegate.level != level ||
+        oldDelegate.active != active;
   }
 }
 
