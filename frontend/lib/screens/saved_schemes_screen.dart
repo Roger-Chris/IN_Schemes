@@ -709,16 +709,10 @@ class _SavedSchemesScreenState extends State<SavedSchemesScreen> with SingleTick
         elevation: 0,
         scrolledUnderElevation: 0,
         toolbarHeight: 64,
-        leadingWidth: 48,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF0F172A)),
-          onPressed: () => provider.updateTabIndex(0),
-        ),
-        titleSpacing: 8,
         title: Text(
           'Saved Schemes',
           style: GoogleFonts.poppins(
-            fontSize: 17,
+            fontSize: 20.0,
             fontWeight: FontWeight.bold,
             color: const Color(0xFF0F172A),
           ),

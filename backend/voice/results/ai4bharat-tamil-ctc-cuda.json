@@ -1,0 +1,137 @@
+{
+  "benchmark": "in-schemes-tamil-voice",
+  "engine": "AI4Bharat IndicConformer",
+  "checkpoint": "indicconformer_stt_ta_hybrid_rnnt_large.nemo",
+  "checkpoint_sha256": "40a6fce3374ceb67daa2a071e92f0948c51c6a95b734d4881a3bcfe0b1bed32a",
+  "checkpoint_bytes": 523192320,
+  "device": "cuda",
+  "torch_version": "2.4.1+cu121",
+  "cuda_device": "NVIDIA GeForce RTX 4060 Laptop GPU",
+  "model_load_ms": 24715.051,
+  "rss_after_model_load_mb": 1631.598,
+  "rss_after_benchmark_mb": 1899.516,
+  "host": {
+    "platform": "Linux-5.15.167.4-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+    "processor": "x86_64",
+    "physical_cpu_cores": 8,
+    "logical_cpu_cores": 16,
+    "memory_gb": 7.414
+  },
+  "audio_dataset": {
+    "dataset_id": "synthetic-tamil-scheme-voice-v1",
+    "synthetic": true,
+    "voice": "ta-IN-PallaviNeural",
+    "item_count": 8
+  },
+  "conditions": {
+    "ctc": {
+      "warmup_ms": 14314.305,
+      "sequential": {
+        "utterance_count": 8,
+        "audio_seconds": 24.096,
+        "wall_seconds": 0.713,
+        "latency_p50_ms": 88.741,
+        "latency_p95_ms": 111.23,
+        "latency_mean_ms": 89.182,
+        "real_time_factor": 0.0296,
+        "audio_seconds_per_wall_second": 33.774,
+        "utterances_per_second": 11.213,
+        "character_error_rate": 0.1373,
+        "word_error_rate": 0.2195,
+        "exact_match_rate": 0.125
+      },
+      "batch": {
+        "batch_size": 8,
+        "wall_ms": 473.968,
+        "real_time_factor": 0.0197,
+        "audio_seconds_per_wall_second": 50.839,
+        "transcripts": [
+          "உரிமைத் தொகை பற்றி சொல்லுங்கள்",
+          "பெண் திட்டத்திற்கு எப்படி விண்ணப்பிப்பது",
+          "முதல்வன் பயிற்சி விவரங்கள் வேண்டும்",
+          "உணவுத் திட்டம் யாருக்கு கிடைக்கும்",
+          "பாதுகாப்புத் திட்டத்தின் பயன்கள் என்ன",
+          "காப்பீட்டு திட்டத்திற்கு என்ன ஆவணங்கள் வேண்டாம்",
+          "திருமண உதவித் தொகைக்கு வயது வரம்பு என்ன",
+          "ஓய்வூதியம் பெறுவது எப்படி"
+        ]
+      },
+      "gpu_memory": {
+        "allocated_mb": 523.698,
+        "reserved_mb": 924.0,
+        "peak_allocated_mb": 805.445
+      },
+      "items": [
+        {
+          "id": "bench_001",
+          "reference_text": "மகளிர் உரிமைத் தொகை பற்றி சொல்லுங்கள்",
+          "transcript": "உரிமைத் தொகை பற்றி சொல்லுங்கள்",
+          "audio_seconds": 2.568,
+          "latency_ms": 66.88,
+          "real_time_factor": 0.026
+        },
+        {
+          "id": "bench_002",
+          "reference_text": "புதுமைப் பெண் திட்டத்திற்கு எப்படி விண்ணப்பிப்பது",
+          "transcript": "புது பெண் திட்டத்திற்கு எப்படி விண்ணப்பிப்பது",
+          "audio_seconds": 3.12,
+          "latency_ms": 112.057,
+          "real_time_factor": 0.0359
+        },
+        {
+          "id": "bench_003",
+          "reference_text": "நான் முதல்வன் பயிற்சி விவரங்கள் வேண்டும்",
+          "transcript": "முதல்வன் பயிற்சி விவரங்கள் வேண்டும்",
+          "audio_seconds": 2.88,
+          "latency_ms": 109.695,
+          "real_time_factor": 0.0381
+        },
+        {
+          "id": "bench_004",
+          "reference_text": "காலை உணவுத் திட்டம் யாருக்கு கிடைக்கும்",
+          "transcript": "உணவுத் திட்டம் யாருக்கு கிடைக்கும்",
+          "audio_seconds": 2.856,
+          "latency_ms": 95.105,
+          "real_time_factor": 0.0333
+        },
+        {
+          "id": "bench_005",
+          "reference_text": "உழவர் பாதுகாப்புத் திட்டத்தின் பயன்கள் என்ன",
+          "transcript": "பாதுகாப்புத் திட்டத்தின் பயன்கள் என்ன",
+          "audio_seconds": 3.024,
+          "latency_ms": 82.58,
+          "real_time_factor": 0.0273
+        },
+        {
+          "id": "bench_006",
+          "reference_text": "மருத்துவ காப்பீட்டுத் திட்டத்திற்கு என்ன ஆவணங்கள் வேண்டும்",
+          "transcript": "காப்பீட்டு திட்டத்திற்கு என்ன ஆவணங்கள் வேண்டாம்",
+          "audio_seconds": 3.816,
+          "latency_ms": 94.902,
+          "real_time_factor": 0.0249
+        },
+        {
+          "id": "bench_007",
+          "reference_text": "திருமண உதவித் தொகைக்கு வயது வரம்பு என்ன",
+          "transcript": "திருமண உதவித் தொகைக்கு வயது வரம்பு என்ன",
+          "audio_seconds": 3.144,
+          "latency_ms": 81.575,
+          "real_time_factor": 0.0259
+        },
+        {
+          "id": "bench_008",
+          "reference_text": "முதியோர் ஓய்வூதியம் பெறுவது எப்படி",
+          "transcript": "ஓய்வூதியம் பெறுவது எப்படி",
+          "audio_seconds": 2.688,
+          "latency_ms": 70.662,
+          "real_time_factor": 0.0263
+        }
+      ]
+    }
+  },
+  "interpretation_limits": [
+    "Synthetic TTS does not represent rural accents, microphones, or noise.",
+    "This GPU desktop result does not predict Android latency.",
+    "The public checkpoint has no supported runtime hotword injection path."
+  ]
+}

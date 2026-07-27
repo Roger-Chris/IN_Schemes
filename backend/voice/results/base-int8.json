@@ -1,0 +1,232 @@
+{
+  "benchmark": "in-schemes-tamil-voice",
+  "model": "base",
+  "compute_type": "int8",
+  "threads": 8,
+  "model_load_ms": 1398.498,
+  "warmup_transcription_ms": 736.437,
+  "rss_after_model_load_mb": 162.672,
+  "rss_after_benchmark_mb": 179.828,
+  "host": {
+    "platform": "Windows-10-10.0.26200-SP0",
+    "processor": "AMD64 Family 25 Model 117 Stepping 2, AuthenticAMD",
+    "physical_cpu_cores": 8,
+    "logical_cpu_cores": 16,
+    "memory_gb": 15.307
+  },
+  "audio_dataset": {
+    "dataset_id": "synthetic-tamil-scheme-voice-v1",
+    "synthetic": true,
+    "voice": "ta-IN-PallaviNeural",
+    "item_count": 8
+  },
+  "vocabulary": {
+    "version": "2026.07.1",
+    "phrase_count": 32,
+    "token_count": 70,
+    "production_approved": false
+  },
+  "conditions": {
+    "baseline": {
+      "summary": {
+        "utterance_count": 8,
+        "audio_seconds": 24.096,
+        "wall_seconds": 6.036,
+        "latency_p50_ms": 764.871,
+        "latency_p95_ms": 835.142,
+        "latency_mean_ms": 754.442,
+        "real_time_factor": 0.2505,
+        "audio_seconds_per_wall_second": 3.992,
+        "utterances_per_second": 1.325,
+        "character_error_rate": 0.2941,
+        "word_error_rate": 0.878,
+        "exact_match_rate": 0.0
+      },
+      "items": [
+        {
+          "id": "bench_001",
+          "reference_text": "மகளிர் உரிமைத் தொகை பற்றி சொல்லுங்கள்",
+          "transcript": "بگலر اور میں تو گئی پத்தி சொல்லங்கள்",
+          "audio_seconds": 2.568,
+          "latency_ms": 611.365,
+          "real_time_factor": 0.2381,
+          "detected_language": "ta",
+          "language_probability": 1
+        },
+        {
+          "id": "bench_002",
+          "reference_text": "புதுமைப் பெண் திட்டத்திற்கு எப்படி விண்ணப்பிப்பது",
+          "transcript": "குதுமே பேண்டிட்டத்திருக்கு எப்படி விழ்ந்தாப் பேபாது.",
+          "audio_seconds": 3.12,
+          "latency_ms": 836.432,
+          "real_time_factor": 0.2681,
+          "detected_language": "ta",
+          "language_probability": 1
+        },
+        {
+          "id": "bench_003",
+          "reference_text": "நான் முதல்வன் பயிற்சி விவரங்கள் வேண்டும்",
+          "transcript": "நான் முதலவன் பயைத்திவுவரங்கள் வேண்டும்",
+          "audio_seconds": 2.88,
+          "latency_ms": 763.258,
+          "real_time_factor": 0.265,
+          "detected_language": "ta",
+          "language_probability": 1
+        },
+        {
+          "id": "bench_004",
+          "reference_text": "காலை உணவுத் திட்டம் யாருக்கு கிடைக்கும்",
+          "transcript": "காலை உளவுதிக்டம் யாரக்குளைக்கும்",
+          "audio_seconds": 2.856,
+          "latency_ms": 766.484,
+          "real_time_factor": 0.2684,
+          "detected_language": "ta",
+          "language_probability": 1
+        },
+        {
+          "id": "bench_005",
+          "reference_text": "உழவர் பாதுகாப்புத் திட்டத்தின் பயன்கள் என்ன",
+          "transcript": "ஒருவர் பாதுகாப் புதிட்டத்துன் பயங்கள் என்ன?",
+          "audio_seconds": 3.024,
+          "latency_ms": 767.699,
+          "real_time_factor": 0.2539,
+          "detected_language": "ta",
+          "language_probability": 1
+        },
+        {
+          "id": "bench_006",
+          "reference_text": "மருத்துவ காப்பீட்டுத் திட்டத்திற்கு என்ன ஆவணங்கள் வேண்டும்",
+          "transcript": "மருத்துவாக் காப்பித்து தத்திற்கு என்ன ஆவனங்கள் வேண்டும்",
+          "audio_seconds": 3.816,
+          "latency_ms": 832.745,
+          "real_time_factor": 0.2182,
+          "detected_language": "ta",
+          "language_probability": 1
+        },
+        {
+          "id": "bench_007",
+          "reference_text": "திருமண உதவித் தொகைக்கு வயது வரம்பு என்ன",
+          "transcript": "திரமானமுதவி தோகேக வாய்து வரம்புயின்ன",
+          "audio_seconds": 3.144,
+          "latency_ms": 715.675,
+          "real_time_factor": 0.2276,
+          "detected_language": "ta",
+          "language_probability": 1
+        },
+        {
+          "id": "bench_008",
+          "reference_text": "முதியோர் ஓய்வூதியம் பெறுவது எப்படி",
+          "transcript": "முதியோம் ஓய்வுதியம் பெருவதை எப்படி?",
+          "audio_seconds": 2.688,
+          "latency_ms": 741.875,
+          "real_time_factor": 0.276,
+          "detected_language": "ta",
+          "language_probability": 1
+        }
+      ]
+    },
+    "vocabulary_prompt": {
+      "summary": {
+        "utterance_count": 8,
+        "audio_seconds": 24.096,
+        "wall_seconds": 6.655,
+        "latency_p50_ms": 806.474,
+        "latency_p95_ms": 991.756,
+        "latency_mean_ms": 831.915,
+        "real_time_factor": 0.2762,
+        "audio_seconds_per_wall_second": 3.621,
+        "utterances_per_second": 1.202,
+        "character_error_rate": 0.1797,
+        "word_error_rate": 0.4634,
+        "exact_match_rate": 0.25
+      },
+      "items": [
+        {
+          "id": "bench_001",
+          "reference_text": "மகளிர் உரிமைத் தொகை பற்றி சொல்லுங்கள்",
+          "transcript": "பகலர் உருமே தொகை பற்றி சொல்லங்கள்",
+          "audio_seconds": 2.568,
+          "latency_ms": 777.479,
+          "real_time_factor": 0.3028,
+          "detected_language": "ta",
+          "language_probability": 1
+        },
+        {
+          "id": "bench_002",
+          "reference_text": "புதுமைப் பெண் திட்டத்திற்கு எப்படி விண்ணப்பிப்பது",
+          "transcript": "குடுமைப் பேண்டிட்டத்திருக்கு எப்படி விழ்ந்தாப் பேபாது",
+          "audio_seconds": 3.12,
+          "latency_ms": 1003.451,
+          "real_time_factor": 0.3216,
+          "detected_language": "ta",
+          "language_probability": 1
+        },
+        {
+          "id": "bench_003",
+          "reference_text": "நான் முதல்வன் பயிற்சி விவரங்கள் வேண்டும்",
+          "transcript": "நான் முதல் வந்தி பயைத்திவுவரங்கள் வேண்டும்",
+          "audio_seconds": 2.88,
+          "latency_ms": 970.037,
+          "real_time_factor": 0.3368,
+          "detected_language": "ta",
+          "language_probability": 1
+        },
+        {
+          "id": "bench_004",
+          "reference_text": "காலை உணவுத் திட்டம் யாருக்கு கிடைக்கும்",
+          "transcript": "காலை உணவுத் திட்டம் யாருக்கு கிடைக்கும்",
+          "audio_seconds": 2.856,
+          "latency_ms": 861.918,
+          "real_time_factor": 0.3018,
+          "detected_language": "ta",
+          "language_probability": 1
+        },
+        {
+          "id": "bench_005",
+          "reference_text": "உழவர் பாதுகாப்புத் திட்டத்தின் பயன்கள் என்ன",
+          "transcript": "உழவர் பாதுகாப்புத் திட்டத்தின் பயன்கள் என்ன",
+          "audio_seconds": 3.024,
+          "latency_ms": 757.152,
+          "real_time_factor": 0.2504,
+          "detected_language": "ta",
+          "language_probability": 1
+        },
+        {
+          "id": "bench_006",
+          "reference_text": "மருத்துவ காப்பீட்டுத் திட்டத்திற்கு என்ன ஆவணங்கள் வேண்டும்",
+          "transcript": "மருத்துவ காப்பிற்று திட்டத்திற்கு என்ன, அவனங்கள் வேண்டும்",
+          "audio_seconds": 3.816,
+          "latency_ms": 835.468,
+          "real_time_factor": 0.2189,
+          "detected_language": "ta",
+          "language_probability": 1
+        },
+        {
+          "id": "bench_007",
+          "reference_text": "திருமண உதவித் தொகைக்கு வயது வரம்பு என்ன",
+          "transcript": "திருமண உதவித் தொகைக் கவயத் வாரம்பு என்ன",
+          "audio_seconds": 3.144,
+          "latency_ms": 731.019,
+          "real_time_factor": 0.2325,
+          "detected_language": "ta",
+          "language_probability": 1
+        },
+        {
+          "id": "bench_008",
+          "reference_text": "முதியோர் ஓய்வூதியம் பெறுவது எப்படி",
+          "transcript": "முதiyorோ ஓயvoothiyam, பெருவது, எப்படி",
+          "audio_seconds": 2.688,
+          "latency_ms": 718.795,
+          "real_time_factor": 0.2674,
+          "detected_language": "ta",
+          "language_probability": 1
+        }
+      ]
+    }
+  },
+  "interpretation_limits": [
+    "Synthetic TTS does not represent rural accents, microphones, or noise.",
+    "Desktop CPU results do not predict Android latency.",
+    "Whisper hotwords bias decoding but do not enforce a Vosk-style grammar."
+  ]
+}

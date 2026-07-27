@@ -450,10 +450,11 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
           ),
         );
       } else {
-        Navigator.of(context).pushReplacement(
+        Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(
             builder: (_) => const MainTabsContainer(),
           ),
+          (route) => false,
         );
       }
     }

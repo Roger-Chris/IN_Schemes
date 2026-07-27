@@ -221,10 +221,11 @@ class _AboutYouProfileScreenState extends State<AboutYouProfileScreen> {
                               ),
                               onPressed: _selectedRole != null
                                   ? () {
-                                      Navigator.of(context).pushReplacement(
+                                      Navigator.of(context).pushAndRemoveUntil(
                                         MaterialPageRoute(
                                           builder: (_) => const MainTabsContainer(),
                                         ),
+                                        (route) => false,
                                       );
                                     }
                                   : null,

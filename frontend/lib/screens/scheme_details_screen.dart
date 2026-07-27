@@ -108,23 +108,11 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                     "Scheme Details",
                     style: GoogleFonts.poppins(
                       color: const Color(0xFF0F172A),
-                      fontSize: 20,
+                      fontSize: 20.0,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   actions: [
-                    IconButton(
-                      icon: Icon(
-                        _isBookmarked ? Icons.bookmark : Icons.bookmark_border,
-                        color: _isBookmarked ? const Color(0xFF2563EB) : const Color(0xFF0F172A),
-                        size: 24,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          _isBookmarked = !_isBookmarked;
-                        });
-                      },
-                    ),
                     IconButton(
                       icon: const Icon(Icons.share_outlined, color: Color(0xFF0F172A), size: 24),
                       onPressed: () {},
@@ -206,7 +194,7 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                           scheme.overview,
                           style: GoogleFonts.inter(
                             color: const Color(0xFF64748B),
-                            fontSize: 14,
+                            fontSize: 12,
                             height: 1.5,
                           ),
                         ),
@@ -329,7 +317,7 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
     ];
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
@@ -343,12 +331,12 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
         children: [
           Row(
             children: [
-              const Icon(Icons.track_changes, color: Color(0xFF2563EB), size: 20),
-              const SizedBox(width: 8),
+              const Icon(Icons.track_changes, color: Color(0xFF2563EB), size: 16),
+              const SizedBox(width: 6),
               Text(
                 "Why this matches you",
                 style: GoogleFonts.poppins(
-                  fontSize: 15,
+                  fontSize: 14,
                   fontWeight: FontWeight.bold,
                   color: const Color(0xFF0F172A),
                 ),
@@ -361,7 +349,7 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
             runSpacing: 8,
             children: matches.map((match) {
               return Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: const Color(0xFFEFF6FF),
                   borderRadius: BorderRadius.circular(30),
@@ -369,13 +357,13 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.check_circle, color: Color(0xFF2563EB), size: 14),
-                    const SizedBox(width: 6),
+                    const Icon(Icons.check_circle, color: Color(0xFF2563EB), size: 11),
+                    const SizedBox(width: 4),
                     Text(
                       match,
                       style: GoogleFonts.inter(
                         color: const Color(0xFF2563EB),
-                        fontSize: 12,
+                        fontSize: 11,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -404,7 +392,7 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
           benefitsText,
           style: GoogleFonts.inter(
             color: const Color(0xFF64748B),
-            fontSize: 13,
+            fontSize: 11.5,
             height: 1.45,
           ),
         ),
@@ -433,7 +421,7 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                       card["title"] as String,
                       textAlign: TextAlign.center,
                       style: GoogleFonts.inter(
-                        fontSize: 12,
+                        fontSize: 11,
                         fontWeight: FontWeight.bold,
                         color: const Color(0xFF0F172A),
                       ),
@@ -443,7 +431,7 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                       card["desc"] as String,
                       textAlign: TextAlign.center,
                       style: GoogleFonts.inter(
-                        fontSize: 10,
+                        fontSize: 9,
                         color: const Color(0xFF64748B),
                       ),
                     ),
@@ -475,7 +463,7 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                   rule,
                   style: GoogleFonts.inter(
                     color: const Color(0xFF64748B),
-                    fontSize: 13,
+                    fontSize: 11.5,
                     height: 1.35,
                   ),
                 ),
@@ -509,7 +497,7 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                   child: Text(
                     documents[index],
                     style: GoogleFonts.inter(
-                      fontSize: 12.5,
+                      fontSize: 11.5,
                       color: const Color(0xFF0F172A),
                       fontWeight: FontWeight.w500,
                     ),
@@ -530,7 +518,7 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
               style: GoogleFonts.inter(
                 color: const Color(0xFF2563EB),
                 fontWeight: FontWeight.bold,
-                fontSize: 13,
+                fontSize: 11.5,
               ),
             ),
           ),
@@ -584,7 +572,7 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                     style: GoogleFonts.inter(
                       color: const Color(0xFF0F172A),
                       fontWeight: FontWeight.bold,
-                      fontSize: 13.5,
+                      fontSize: 12,
                     ),
                   ),
                   const SizedBox(height: 2),
@@ -592,7 +580,7 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                     "Complete this phase to progress further.",
                     style: GoogleFonts.inter(
                       color: const Color(0xFF64748B),
-                      fontSize: 11,
+                      fontSize: 9.5,
                     ),
                   ),
                   const SizedBox(height: 14),
@@ -618,17 +606,37 @@ class _HeroSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final title = scheme.name;
+    final regex = RegExp(r'\(([^)]+)\)');
+    final matchObj = regex.firstMatch(title);
+    String shortForm = title;
+    String fullName = '';
+    
+    if (matchObj != null) {
+      final bracketText = matchObj.group(1)!.trim();
+      final outsideText = title.replaceAll(regex, '').replaceAll(RegExp(r'\s+'), ' ').trim();
+      final isBracketAcronym = bracketText.length <= 10 && 
+                               !bracketText.contains(' ') && 
+                               bracketText == bracketText.toUpperCase();
+      if (isBracketAcronym) {
+        shortForm = bracketText;
+        fullName = outsideText;
+      } else if (bracketText.length > outsideText.length) {
+        shortForm = outsideText;
+        fullName = bracketText;
+      }
+    }
+
     return Container(
-      margin: const EdgeInsets.all(16),
-      // Fix 1: Removed hardcoded height: 200 — card sizes dynamically
+      margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
@@ -641,8 +649,8 @@ class _HeroSection extends StatelessWidget {
               flex: 2,
               child: ClipRRect(
                 borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(16),
-                  bottomLeft: Radius.circular(16),
+                  topLeft: Radius.circular(14),
+                  bottomLeft: Radius.circular(14),
                 ),
                 child: Image.asset(
                   imagePath,
@@ -655,54 +663,75 @@ class _HeroSection extends StatelessWidget {
             Expanded(
               flex: 3,
               child: Padding(
-                padding: const EdgeInsets.all(12.0),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFEFF6FF),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        scheme.governmentLevel.isNotEmpty
-                            ? '${scheme.governmentLevel} Scheme'
-                            : 'Central Scheme',
-                        style: GoogleFonts.inter(
-                          color: const Color(0xFF2563EB),
-                          fontSize: 9,
-                          fontWeight: FontWeight.bold,
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFEFF6FF),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            scheme.governmentLevel.isNotEmpty
+                                ? '${scheme.governmentLevel} Scheme'
+                                : 'Central Scheme',
+                            style: GoogleFonts.inter(
+                              color: const Color(0xFF2563EB),
+                              fontSize: 8.5,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
-                      ),
+                        const SizedBox(height: 4),
+                        Text(
+                          shortForm,
+                          style: GoogleFonts.poppins(
+                            fontSize: 14.5,
+                            fontWeight: FontWeight.bold,
+                            color: const Color(0xFF0F172A),
+                            height: 1.3,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        if (fullName.isNotEmpty) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            "($fullName)",
+                            style: GoogleFonts.inter(
+                              fontSize: 9.5,
+                              fontWeight: FontWeight.w500,
+                              color: const Color(0xFF64748B),
+                              height: 1.25,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                        const SizedBox(height: 2),
+                        Text(
+                          scheme.sponsoringBody,
+                          style: GoogleFonts.inter(
+                            fontSize: 10.5,
+                            color: const Color(0xFF64748B),
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 4),
-                    // Fix 1: Title wraps naturally — maxLines: 3 instead of 1
-                    Text(
-                      scheme.name,
-                      style: GoogleFonts.poppins(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xFF0F172A),
-                      ),
-                      maxLines: 3,
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      scheme.sponsoringBody,
-                      style: GoogleFonts.inter(
-                        fontSize: 11,
-                        color: const Color(0xFF64748B),
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 6),
 
                     // Sponsoring theme tags
                     Wrap(
                       spacing: 4,
+                      runSpacing: 4,
                       children: [
                         if (scheme.schemeType.isNotEmpty)
                           _buildMiniTag(scheme.schemeType, const Color(0xFFEFF6FF), const Color(0xFF1D4ED8)),
@@ -714,44 +743,44 @@ class _HeroSection extends StatelessWidget {
                         ],
                       ],
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 6),
 
-                    // Match Banner
+                    // Match Banner (Single-row layout)
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
                         color: const Color(0xFFEFF6FF),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: const Color(0xFF2563EB).withValues(alpha: 0.2)),
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(color: const Color(0xFF2563EB).withValues(alpha: 0.15)),
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.auto_awesome, color: Color(0xFF2563EB), size: 14),
-                          const SizedBox(width: 6),
+                          const Icon(Icons.auto_awesome, color: Color(0xFF2563EB), size: 12),
+                          const SizedBox(width: 4),
                           Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  "96% Match",
-                                  style: GoogleFonts.inter(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.bold,
-                                    color: const Color(0xFF2563EB),
+                            child: RichText(
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              text: TextSpan(
+                                style: GoogleFonts.inter(fontSize: 10),
+                                children: [
+                                  TextSpan(
+                                    text: "96% Match ",
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF2563EB),
+                                    ),
                                   ),
-                                ),
-                                Text(
-                                  "Highly relevant",
-                                  style: GoogleFonts.inter(
-                                    fontSize: 8.5,
-                                    color: const Color(0xFF64748B),
+                                  const TextSpan(
+                                    text: "• Highly relevant",
+                                    style: TextStyle(
+                                      color: Color(0xFF64748B),
+                                    ),
                                   ),
-                                  maxLines: 1,
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
-                          const Icon(Icons.chevron_right, color: Color(0xFF2563EB), size: 14),
                         ],
                       ),
                     ),
@@ -845,21 +874,21 @@ class _ExpandableSection extends StatelessWidget {
         child: ExpansionTile(
           initiallyExpanded: isExpanded,
           onExpansionChanged: (_) => onToggle(),
-          tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          tilePadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
           leading: Container(
-            width: 38,
-            height: 38,
+            width: 32,
+            height: 32,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: iconBg,
             ),
             alignment: Alignment.center,
-            child: Icon(icon, color: iconColor, size: 20),
+            child: Icon(icon, color: iconColor, size: 16),
           ),
           title: Text(
             title,
             style: GoogleFonts.poppins(
-              fontSize: 14.5,
+              fontSize: 13.5,
               fontWeight: FontWeight.bold,
               color: const Color(0xFF0F172A),
             ),

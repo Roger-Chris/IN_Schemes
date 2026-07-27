@@ -1,0 +1,24 @@
+{
+  "name": "in-schemes-backend",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Supabase backend tooling and contracts for IN Schemes",
+  "scripts": {
+    "supabase:start": "supabase start --exclude analytics",
+    "supabase:stop": "supabase stop",
+    "db:reset": "supabase db reset --local",
+    "db:test": "supabase test db",
+    "db:lint": "supabase db lint --local --level warning --fail-on warning",
+    "db:validate": "npm run db:reset && npm run db:test && npm run db:lint",
+    "openapi:lint": "redocly lint openapi/openapi.yaml",
+    "voice:test": "python -m unittest discover -s voice/tests -v",
+    "types:generate": "supabase gen types typescript --local > supabase/database.types.ts"
+  },
+  "devDependencies": {
+    "@redocly/cli": "2.39.0",
+    "supabase": "2.109.1"
+  },
+  "engines": {
+    "node": ">=20.19.0 <21 || >=22.12.0"
+  }
+}

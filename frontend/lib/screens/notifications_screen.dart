@@ -660,7 +660,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           style: GoogleFonts.poppins(
             color: AppConstants.primaryText,
             fontWeight: FontWeight.bold,
-            fontSize: 17,
+            fontSize: 20.0,
           ),
         ),
         backgroundColor: Colors.white,

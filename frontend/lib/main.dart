@@ -141,8 +141,8 @@ class _MainTabsContainerState extends State<MainTabsContainer> {
     // List of screens matching tabs
     final List<Widget> tabs = [
       const HomeScreen(),
-      const CategoriesScreen(),
       SearchScreen(key: searchTabKey),
+      const CategoriesScreen(),
       const SavedSchemesScreen(),
       const ProfileScreen(),
     ];
@@ -174,8 +174,8 @@ class _MainTabsContainerState extends State<MainTabsContainer> {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 _buildNavItem(0, Icons.home_outlined, Icons.home, 'Home', provider),
-                _buildNavItem(1, Icons.grid_view_outlined, Icons.grid_view, 'Categories', provider),
-                _buildNavItem(2, Icons.search, Icons.search_sharp, 'Search', provider),
+                _buildNavItem(1, Icons.search, Icons.search_sharp, 'Search', provider),
+                _buildNavItem(2, Icons.explore_outlined, Icons.explore, 'Discover', provider),
                 _buildNavItem(3, Icons.bookmark_border, Icons.bookmark, 'Saved', provider),
                 _buildNavItem(4, Icons.person_outline, Icons.person, 'Profile', provider),
               ],

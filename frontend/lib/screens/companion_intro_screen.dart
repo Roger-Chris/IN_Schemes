@@ -661,10 +661,11 @@ class _CompanionIntroScreenState extends State<CompanionIntroScreen> {
                       onPressed: () {
                         final provider = Provider.of<AppProvider>(context, listen: false);
                         if (provider.profile.profileCompleted) {
-                          Navigator.of(context).pushReplacement(
+                          Navigator.of(context).pushAndRemoveUntil(
                             MaterialPageRoute(
                               builder: (_) => const MainTabsContainer(),
                             ),
+                            (route) => false,
                           );
                         } else {
                           Navigator.of(context).pushReplacement(

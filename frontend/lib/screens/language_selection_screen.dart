@@ -216,7 +216,7 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF2563EB).withOpacity(0.2),
+                            color: const Color(0xFF2563EB).withValues(alpha: 0.2),
                             blurRadius: 12,
                             offset: const Offset(0, 6),
                           ),
@@ -289,14 +289,14 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: const Color(0xFF3B82F6).withOpacity(0.08),
+                    color: const Color(0xFF3B82F6).withValues(alpha: 0.08),
                     blurRadius: 10,
                     offset: const Offset(0, 3),
                   ),
                 ]
               : [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.01),
+                    color: Colors.black.withValues(alpha: 0.01),
                     blurRadius: 4,
                     offset: const Offset(0, 1),
                   ),
