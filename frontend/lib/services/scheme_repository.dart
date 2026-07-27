@@ -101,7 +101,7 @@ class SchemeRepository {
           .limit(1);
 
       if ((rows as List).isEmpty) return null;
-      Scheme scheme = Scheme.fromSupabase(rows[0] as Map<String, dynamic>);
+      Scheme scheme = Scheme.fromSupabase(rows[0]);
 
       // Eligibility rules
       final eligibilityRows = await _db

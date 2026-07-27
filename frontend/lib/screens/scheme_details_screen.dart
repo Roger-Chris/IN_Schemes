@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../models/scheme_model.dart';
+import '../services/scheme_repository.dart';
 
 class SchemeDetailsScreen extends StatefulWidget {
   final Scheme scheme;
@@ -18,12 +19,57 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
   int _activeTabIndex = 0;
   final List<String> _tabs = ["Overview", "Benefits", "Eligibility", "Documents", "Process"];
 
-  // State variables for expandable sections
-  bool _benefitsExpanded = true;
-  bool _eligibilityExpanded = true;
-  bool _documentsExpanded = true;
-  bool _processExpanded = true;
+  // Fix 3: GlobalKeys for each scrollable section (for sticky tab auto-scroll)
+  final _overviewKey = GlobalKey();
+  final _benefitsKey = GlobalKey();
+  final _eligibilityKey = GlobalKey();
+  final _documentsKey = GlobalKey();
+  final _processKey = GlobalKey();
+
+  // Fix 4: Accordions closed by default
+  bool _benefitsExpanded = false;
+  bool _eligibilityExpanded = false;
+  bool _documentsExpanded = false;
+  bool _processExpanded = false;
   bool _isBookmarked = false;
+
+  // Enriched scheme (loaded from Supabase with eligibility, documents etc.)
+  Scheme? _detailedScheme;
+  bool _detailsLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadDetails();
+  }
+
+  Future<void> _loadDetails() async {
+    try {
+      final detail = await SchemeRepository.instance.getSchemeById(widget.scheme.id);
+      if (mounted) {
+        setState(() {
+          _detailedScheme = detail ?? widget.scheme;
+          _detailsLoading = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) setState(() => _detailsLoading = false);
+    }
+  }
+
+  /// Fix 3: Scrolls to the section matching the tapped tab index.
+  void _scrollToSection(int index) {
+    final keys = [_overviewKey, _benefitsKey, _eligibilityKey, _documentsKey, _processKey];
+    final key = keys[index];
+    final ctx = key.currentContext;
+    if (ctx != null) {
+      Scrollable.ensureVisible(
+        ctx,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
 
   String _getImageForCategory(String category) {
     final cat = category.toLowerCase();
@@ -38,7 +84,7 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final Scheme scheme = widget.scheme;
+    final Scheme scheme = _detailedScheme ?? widget.scheme;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -118,6 +164,7 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                                 setState(() {
                                   _activeTabIndex = index;
                                 });
+                                _scrollToSection(index);
                               },
                               child: Container(
                                 margin: const EdgeInsets.only(right: 24),
@@ -153,12 +200,15 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                   sliver: SliverList(
                     delegate: SliverChildListDelegate([
                       // Overview Paragraph
-                      Text(
-                        scheme.overview,
-                        style: GoogleFonts.inter(
-                          color: const Color(0xFF64748B),
-                          fontSize: 14,
-                          height: 1.5,
+                      Container(
+                        key: _overviewKey,
+                        child: Text(
+                          scheme.overview,
+                          style: GoogleFonts.inter(
+                            color: const Color(0xFF64748B),
+                            fontSize: 14,
+                            height: 1.5,
+                          ),
                         ),
                       ),
                       const SizedBox(height: 24),
@@ -167,68 +217,86 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                       _buildWhyThisMatchesYouCard(),
                       const SizedBox(height: 24),
 
-                      // Benefits Expandable Section
-                      _ExpandableSection(
-                        title: "Benefits Details",
-                        icon: Icons.card_giftcard_outlined,
-                        iconColor: const Color(0xFF047857),
-                        iconBg: const Color(0xFFECFDF5),
-                        isExpanded: _benefitsExpanded,
-                        onToggle: () {
-                          setState(() {
-                            _benefitsExpanded = !_benefitsExpanded;
-                          });
-                        },
-                        child: _buildBenefitsContent(scheme.benefits),
-                      ),
-                      const SizedBox(height: 12),
+                      // Show a loading indicator while enriched details load
+                      if (_detailsLoading)
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 24),
+                          child: Center(
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Color(0xFF2563EB),
+                            ),
+                          ),
+                        ),
 
-                      // Eligibility Expandable Section
-                      _ExpandableSection(
-                        title: "Eligibility Criteria",
-                        icon: Icons.verified_user_outlined,
-                        iconColor: const Color(0xFF1D4ED8),
-                        iconBg: const Color(0xFFEFF6FF),
-                        isExpanded: _eligibilityExpanded,
-                        onToggle: () {
-                          setState(() {
-                            _eligibilityExpanded = !_eligibilityExpanded;
-                          });
-                        },
-                        child: _buildEligibilityContent(scheme.eligibilityCriteria),
-                      ),
-                      const SizedBox(height: 12),
+                      if (!_detailsLoading) ...[
+                        // Benefits Expandable Section
+                        _ExpandableSection(
+                          key: _benefitsKey,
+                          title: "Benefits Details",
+                          icon: Icons.card_giftcard_outlined,
+                          iconColor: const Color(0xFF047857),
+                          iconBg: const Color(0xFFECFDF5),
+                          isExpanded: _benefitsExpanded,
+                          onToggle: () {
+                            setState(() {
+                              _benefitsExpanded = !_benefitsExpanded;
+                            });
+                          },
+                          child: _buildBenefitsContent(scheme.benefits),
+                        ),
+                        const SizedBox(height: 12),
 
-                      // Required Documents Expandable Section
-                      _ExpandableSection(
-                        title: "Required Documents",
-                        icon: Icons.description_outlined,
-                        iconColor: const Color(0xFF6D28D9),
-                        iconBg: const Color(0xFFF5F3FF),
-                        isExpanded: _documentsExpanded,
-                        onToggle: () {
-                          setState(() {
-                            _documentsExpanded = !_documentsExpanded;
-                          });
-                        },
-                        child: _buildDocumentsContent(scheme.requiredDocuments),
-                      ),
-                      const SizedBox(height: 12),
+                        // Eligibility Expandable Section
+                        _ExpandableSection(
+                          key: _eligibilityKey,
+                          title: "Eligibility Criteria",
+                          icon: Icons.verified_user_outlined,
+                          iconColor: const Color(0xFF1D4ED8),
+                          iconBg: const Color(0xFFEFF6FF),
+                          isExpanded: _eligibilityExpanded,
+                          onToggle: () {
+                            setState(() {
+                              _eligibilityExpanded = !_eligibilityExpanded;
+                            });
+                          },
+                          child: _buildEligibilityContent(scheme.eligibilityCriteria),
+                        ),
+                        const SizedBox(height: 12),
 
-                      // Process Expandable Section
-                      _ExpandableSection(
-                        title: "Application Process",
-                        icon: Icons.account_tree_outlined,
-                        iconColor: const Color(0xFFEA580C),
-                        iconBg: const Color(0xFFFFEDD5),
-                        isExpanded: _processExpanded,
-                        onToggle: () {
-                          setState(() {
-                            _processExpanded = !_processExpanded;
-                          });
-                        },
-                        child: _buildProcessContent(scheme.applicationProcess),
-                      ),
+                        // Required Documents Expandable Section
+                        _ExpandableSection(
+                          key: _documentsKey,
+                          title: "Required Documents",
+                          icon: Icons.description_outlined,
+                          iconColor: const Color(0xFF6D28D9),
+                          iconBg: const Color(0xFFF5F3FF),
+                          isExpanded: _documentsExpanded,
+                          onToggle: () {
+                            setState(() {
+                              _documentsExpanded = !_documentsExpanded;
+                            });
+                          },
+                          child: _buildDocumentsContent(scheme.requiredDocuments),
+                        ),
+                        const SizedBox(height: 12),
+
+                        // Process Expandable Section
+                        _ExpandableSection(
+                          key: _processKey,
+                          title: "Application Process",
+                          icon: Icons.account_tree_outlined,
+                          iconColor: const Color(0xFFEA580C),
+                          iconBg: const Color(0xFFFFEDD5),
+                          isExpanded: _processExpanded,
+                          onToggle: () {
+                            setState(() {
+                              _processExpanded = !_processExpanded;
+                            });
+                          },
+                          child: _buildProcessContent(scheme.applicationProcess),
+                        ),
+                      ], // end if (!_detailsLoading)
                     ]),
                   ),
                 ),
@@ -552,7 +620,7 @@ class _HeroSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.all(16),
-      height: 200,
+      // Fix 1: Removed hardcoded height: 200 — card sizes dynamically
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -564,128 +632,135 @@ class _HeroSection extends StatelessWidget {
           ),
         ],
       ),
-      child: Row(
-        children: [
-          // Left Image
-          Expanded(
-            flex: 2,
-            child: ClipRRect(
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(16),
-                bottomLeft: Radius.circular(16),
-              ),
-              child: Image.asset(
-                imagePath,
-                fit: BoxFit.cover,
-                height: double.infinity,
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Left Image
+            Expanded(
+              flex: 2,
+              child: ClipRRect(
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(16),
+                  bottomLeft: Radius.circular(16),
+                ),
+                child: Image.asset(
+                  imagePath,
+                  fit: BoxFit.cover,
+                ),
               ),
             ),
-          ),
 
-          // Right Content Block
-          Expanded(
-            flex: 3,
-            child: Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFEFF6FF),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          "Central Scheme",
-                          style: GoogleFonts.inter(
-                            color: const Color(0xFF2563EB),
-                            fontSize: 9,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+            // Right Content Block
+            Expanded(
+              flex: 3,
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFEFF6FF),
+                        borderRadius: BorderRadius.circular(4),
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        scheme.name,
-                        style: GoogleFonts.poppins(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: const Color(0xFF0F172A),
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        scheme.sponsoringBody,
+                      child: Text(
+                        scheme.governmentLevel.isNotEmpty
+                            ? '${scheme.governmentLevel} Scheme'
+                            : 'Central Scheme',
                         style: GoogleFonts.inter(
-                          fontSize: 11,
-                          color: const Color(0xFF64748B),
+                          color: const Color(0xFF2563EB),
+                          fontSize: 9,
+                          fontWeight: FontWeight.bold,
                         ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
                       ),
-                    ],
-                  ),
-
-                  // Sponsoring theme tags
-                  Wrap(
-                    spacing: 4,
-                    children: [
-                      _buildMiniTag("Loan", const Color(0xFFEFF6FF), const Color(0xFF1D4ED8)),
-                      _buildMiniTag("Subsidy", const Color(0xFFECFDF5), const Color(0xFF047857)),
-                    ],
-                  ),
-
-                  // Match Banner
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFEFF6FF),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: const Color(0xFF2563EB).withValues(alpha: 0.2)),
                     ),
-                    child: Row(
+                    const SizedBox(height: 4),
+                    // Fix 1: Title wraps naturally — maxLines: 3 instead of 1
+                    Text(
+                      scheme.name,
+                      style: GoogleFonts.poppins(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF0F172A),
+                      ),
+                      maxLines: 3,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      scheme.sponsoringBody,
+                      style: GoogleFonts.inter(
+                        fontSize: 11,
+                        color: const Color(0xFF64748B),
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 8),
+
+                    // Sponsoring theme tags
+                    Wrap(
+                      spacing: 4,
                       children: [
-                        const Icon(Icons.auto_awesome, color: Color(0xFF2563EB), size: 14),
-                        const SizedBox(width: 6),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                "96% Match",
-                                style: GoogleFonts.inter(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.bold,
-                                  color: const Color(0xFF2563EB),
-                                ),
-                              ),
-                              Text(
-                                "Highly relevant",
-                                style: GoogleFonts.inter(
-                                  fontSize: 8.5,
-                                  color: const Color(0xFF64748B),
-                                ),
-                                maxLines: 1,
-                              ),
-                            ],
-                          ),
-                        ),
-                        const Icon(Icons.chevron_right, color: Color(0xFF2563EB), size: 14),
+                        if (scheme.schemeType.isNotEmpty)
+                          _buildMiniTag(scheme.schemeType, const Color(0xFFEFF6FF), const Color(0xFF1D4ED8)),
+                        if (scheme.sector.isNotEmpty)
+                          _buildMiniTag(scheme.sector, const Color(0xFFECFDF5), const Color(0xFF047857)),
+                        if (scheme.schemeType.isEmpty && scheme.sector.isEmpty) ...[
+                          _buildMiniTag("Loan", const Color(0xFFEFF6FF), const Color(0xFF1D4ED8)),
+                          _buildMiniTag("Subsidy", const Color(0xFFECFDF5), const Color(0xFF047857)),
+                        ],
                       ],
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 8),
+
+                    // Match Banner
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFEFF6FF),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: const Color(0xFF2563EB).withValues(alpha: 0.2)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.auto_awesome, color: Color(0xFF2563EB), size: 14),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "96% Match",
+                                  style: GoogleFonts.inter(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    color: const Color(0xFF2563EB),
+                                  ),
+                                ),
+                                Text(
+                                  "Highly relevant",
+                                  style: GoogleFonts.inter(
+                                    fontSize: 8.5,
+                                    color: const Color(0xFF64748B),
+                                  ),
+                                  maxLines: 1,
+                                ),
+                              ],
+                            ),
+                          ),
+                          const Icon(Icons.chevron_right, color: Color(0xFF2563EB), size: 14),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -747,6 +822,7 @@ class _ExpandableSection extends StatelessWidget {
   final Widget child;
 
   const _ExpandableSection({
+    super.key,
     required this.title,
     required this.icon,
     required this.iconColor,
@@ -838,43 +914,46 @@ class _BottomActionBar extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Save Scheme Button
+          // Save Scheme Button — Fix 2: FittedBox prevents overflow
           Expanded(
             child: SizedBox(
               height: 50,
-              child: OutlinedButton.styleFrom(
-                side: const BorderSide(color: Color(0xFF2563EB), width: 1.5),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ).build(
-                context,
+              child: OutlinedButton(
                 onPressed: onBookmarkToggle,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      isBookmarked ? Icons.bookmark : Icons.bookmark_border,
-                      color: const Color(0xFF2563EB),
-                      size: 20,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      "Save Scheme",
-                      style: GoogleFonts.inter(
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: Color(0xFF2563EB), width: 1.5),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        isBookmarked ? Icons.bookmark : Icons.bookmark_border,
                         color: const Color(0xFF2563EB),
-                        fontWeight: FontWeight.bold,
-                        fontSize: 15,
+                        size: 20,
                       ),
-                    ),
-                  ],
+                      const SizedBox(width: 8),
+                      Text(
+                        "Save Scheme",
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFF2563EB),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
           ),
           const SizedBox(width: 16),
 
-          // Apply Now Button
+          // Apply Now Button — Fix 2: FittedBox prevents overflow
           Expanded(
             child: SizedBox(
               height: 50,
@@ -887,20 +966,23 @@ class _BottomActionBar extends StatelessWidget {
                   ),
                   elevation: 0,
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      "Apply Now",
-                      style: GoogleFonts.inter(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 15,
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        "Apply Now",
+                        style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    const Icon(Icons.arrow_forward, color: Colors.white, size: 16),
-                  ],
+                      const SizedBox(width: 8),
+                      const Icon(Icons.arrow_forward, color: Colors.white, size: 16),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -911,13 +993,3 @@ class _BottomActionBar extends StatelessWidget {
   }
 }
 
-// Extension to help build widgets on OutlinedButton
-extension _OutlinedButtonExtension on ButtonStyle {
-  Widget build(BuildContext context, {required VoidCallback onPressed, required Widget child}) {
-    return OutlinedButton(
-      onPressed: onPressed,
-      style: this,
-      child: child,
-    );
-  }
-}
