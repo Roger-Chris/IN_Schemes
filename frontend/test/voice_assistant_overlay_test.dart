@@ -21,6 +21,7 @@ void main() {
       expect(find.byKey(const Key('voice-assistant-overlay')), findsOneWidget);
       expect(find.byKey(const Key('voice-edge-outline')), findsOneWidget);
       expect(find.byKey(const Key('voice-assistant-panel')), findsOneWidget);
+      expect(find.byKey(const Key('voice-level-bars')), findsOneWidget);
       expect(find.byType(BackdropFilter), findsNothing);
       expect(find.byType(RepaintBoundary), findsWidgets);
       expect(find.text('Ask IN AI'), findsOneWidget);
@@ -36,6 +37,13 @@ void main() {
   test('edge painter repaints when animation values change', () {
     const original = VoiceEdgePainter(progress: 0, intensity: 0.2, radius: 28);
     const changed = VoiceEdgePainter(progress: 0.5, intensity: 0.2, radius: 28);
+
+    expect(changed.shouldRepaint(original), isTrue);
+  });
+
+  test('voice level painter repaints for live audio changes', () {
+    const original = VoiceLevelPainter(progress: 0, level: 0.2, active: true);
+    const changed = VoiceLevelPainter(progress: 0.5, level: 0.8, active: true);
 
     expect(changed.shouldRepaint(original), isTrue);
   });
