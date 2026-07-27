@@ -21,6 +21,8 @@ void main() {
       expect(find.byKey(const Key('voice-assistant-overlay')), findsOneWidget);
       expect(find.byKey(const Key('voice-edge-outline')), findsOneWidget);
       expect(find.byKey(const Key('voice-assistant-panel')), findsOneWidget);
+      expect(find.byType(BackdropFilter), findsNothing);
+      expect(find.byType(RepaintBoundary), findsWidgets);
       expect(find.text('Ask IN AI'), findsOneWidget);
       expect(find.text('Tap the mic to speak'), findsOneWidget);
 

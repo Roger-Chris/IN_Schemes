@@ -1,5 +1,4 @@
 import 'dart:math' as math;
-import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -29,11 +28,13 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
   final SpeechToText _speech = SpeechToText();
   late final AnimationController _edgeController;
   late final AnimationController _pulseController;
+  late final ValueNotifier<double> _edgeIntensity;
+  late final Listenable _edgeRepaint;
 
   _VoiceAssistantPhase _phase = _VoiceAssistantPhase.starting;
   String _transcript = '';
   String? _message;
-  double _soundLevel = 0;
+  DateTime _lastSoundLevelUpdate = DateTime.fromMillisecondsSinceEpoch(0);
 
   bool get _isListening => _phase == _VoiceAssistantPhase.listening;
   bool get _hasTranscript => _transcript.trim().isNotEmpty;
@@ -45,6 +46,8 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
       vsync: this,
       duration: const Duration(milliseconds: 2400),
     )..repeat();
+    _edgeIntensity = ValueNotifier<double>(0.12);
+    _edgeRepaint = Listenable.merge([_edgeController, _edgeIntensity]);
     _pulseController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 800),
@@ -71,6 +74,7 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
         onStatus: _handleStatus,
         onError: (error) {
           if (!mounted) return;
+          _edgeIntensity.value = 0.12;
           setState(() {
             _phase = _VoiceAssistantPhase.unavailable;
             _message = error.errorMsg == 'error_permission'
@@ -82,6 +86,7 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
 
       if (!mounted) return;
       if (!available) {
+        _edgeIntensity.value = 0.12;
         setState(() {
           _phase = _VoiceAssistantPhase.unavailable;
           _message = 'Voice recognition is not available on this device.';
@@ -93,14 +98,20 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
         _phase = _VoiceAssistantPhase.listening;
         _message = null;
       });
+      _edgeIntensity.value = 0.25;
 
       await _speech.listen(
         onResult: _handleResult,
         onSoundLevelChange: (level) {
           if (!mounted) return;
-          setState(() {
-            _soundLevel = ((level + 2) / 12).clamp(0.0, 1.0);
-          });
+          final now = DateTime.now();
+          if (now.difference(_lastSoundLevelUpdate) <
+              const Duration(milliseconds: 66)) {
+            return;
+          }
+          _lastSoundLevelUpdate = now;
+          final normalizedLevel = ((level + 2) / 12).clamp(0.0, 1.0);
+          _edgeIntensity.value = math.max(0.25, normalizedLevel);
         },
         listenOptions: SpeechListenOptions(
           cancelOnError: true,
@@ -113,6 +124,7 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
       );
     } catch (_) {
       if (!mounted) return;
+      _edgeIntensity.value = 0.12;
       setState(() {
         _phase = _VoiceAssistantPhase.unavailable;
         _message = 'Voice recognition could not start. Please try again.';
@@ -122,6 +134,7 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
 
   void _handleResult(SpeechRecognitionResult result) {
     if (!mounted) return;
+    if (_transcript == result.recognizedWords && !result.finalResult) return;
     setState(() {
       _transcript = result.recognizedWords;
       if (result.finalResult) {
@@ -133,12 +146,15 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
   void _handleStatus(String status) {
     if (!mounted) return;
     if (status == SpeechToText.listeningStatus) {
-      setState(() => _phase = _VoiceAssistantPhase.listening);
+      _edgeIntensity.value = 0.25;
+      if (_phase != _VoiceAssistantPhase.listening) {
+        setState(() => _phase = _VoiceAssistantPhase.listening);
+      }
     } else if (status == SpeechToText.doneStatus ||
         status == SpeechToText.notListeningStatus) {
+      _edgeIntensity.value = 0.12;
       setState(() {
         _phase = _VoiceAssistantPhase.ready;
-        _soundLevel = 0;
       });
     }
   }
@@ -146,9 +162,9 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
   Future<void> _stopListening() async {
     await _speech.stop();
     if (!mounted) return;
+    _edgeIntensity.value = 0.12;
     setState(() {
       _phase = _VoiceAssistantPhase.ready;
-      _soundLevel = 0;
     });
   }
 
@@ -177,6 +193,7 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
     _speech.cancel();
     _edgeController.dispose();
     _pulseController.dispose();
+    _edgeIntensity.dispose();
     super.dispose();
   }
 
@@ -204,25 +221,24 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
       child: Stack(
         children: [
           Positioned.fill(
-            child: BackdropFilter(
-              filter: ui.ImageFilter.blur(sigmaX: 1.2, sigmaY: 1.2),
-              child: Container(
-                color: const Color(0xFF020617).withValues(alpha: 0.10),
-              ),
+            child: ColoredBox(
+              color: const Color(0xFF020617).withValues(alpha: 0.08),
             ),
           ),
           Positioned.fill(
             child: IgnorePointer(
-              child: AnimatedBuilder(
-                key: const Key('voice-edge-outline'),
-                animation: _edgeController,
-                builder: (context, child) => CustomPaint(
-                  painter: VoiceEdgePainter(
-                    progress: _edgeController.value,
-                    intensity: _isListening
-                        ? math.max(0.25, _soundLevel)
-                        : 0.12,
-                    radius: edgeRadius,
+              child: RepaintBoundary(
+                child: AnimatedBuilder(
+                  key: const Key('voice-edge-outline'),
+                  animation: _edgeRepaint,
+                  builder: (context, child) => CustomPaint(
+                    isComplex: true,
+                    willChange: true,
+                    painter: VoiceEdgePainter(
+                      progress: _edgeController.value,
+                      intensity: _edgeIntensity.value,
+                      radius: edgeRadius,
+                    ),
                   ),
                 ),
               ),
@@ -234,7 +250,7 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
               alignment: Alignment.bottomCenter,
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 430),
-                child: _buildVoicePanel(),
+                child: RepaintBoundary(child: _buildVoicePanel()),
               ),
             ),
           ),
@@ -389,7 +405,7 @@ class VoiceEdgePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    const inset = 3.5;
+    const inset = 1.25;
     final rect = Rect.fromLTWH(
       inset,
       inset,
@@ -410,17 +426,28 @@ class VoiceEdgePainter extends CustomPainter {
       stops: const [0, 0.16, 0.38, 0.62, 0.82, 1],
     );
 
-    final glowPaint = Paint()
+    final haloGradient = SweepGradient(
+      transform: GradientRotation(progress * math.pi * 2),
+      colors: const [
+        Color(0x001D4ED8),
+        Color(0x5538BDF8),
+        Color(0x662563EB),
+        Color(0x66A855F7),
+        Color(0x5522D3EE),
+        Color(0x001D4ED8),
+      ],
+      stops: const [0, 0.16, 0.38, 0.62, 0.82, 1],
+    );
+    final haloPaint = Paint()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 8 + intensity * 5
-      ..shader = gradient.createShader(rect)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 7);
+      ..strokeWidth = 8 + intensity * 3
+      ..shader = haloGradient.createShader(rect);
     final edgePaint = Paint()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.5 + intensity * 1.8
+      ..strokeWidth = 2.2 + intensity * 1.3
       ..shader = gradient.createShader(rect);
 
-    canvas.drawRRect(rrect, glowPaint);
+    canvas.drawRRect(rrect, haloPaint);
     canvas.drawRRect(rrect, edgePaint);
   }
 
