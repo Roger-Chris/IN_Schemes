@@ -140,7 +140,14 @@ class _MainTabsContainerState extends State<MainTabsContainer> {
 
     // List of screens matching tabs
     final List<Widget> tabs = [
-      const HomeScreen(),
+      HomeScreen(
+        onVoiceQuery: (query) {
+          provider.updateTabIndex(2);
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            searchTabKey.currentState?.submitVoiceQuery(query);
+          });
+        },
+      ),
       const CategoriesScreen(),
       SearchScreen(key: searchTabKey),
       const SavedSchemesScreen(),

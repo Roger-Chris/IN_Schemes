@@ -61,6 +61,18 @@ class SearchScreenState extends State<SearchScreen> {
     }
   }
 
+  void submitVoiceQuery(String query) {
+    final normalizedQuery = query.trim();
+    if (normalizedQuery.isEmpty) return;
+
+    _searchController.value = TextEditingValue(
+      text: normalizedQuery,
+      selection: TextSelection.collapsed(offset: normalizedQuery.length),
+    );
+    _searchFocusNode.unfocus();
+    _triggerSearch(normalizedQuery);
+  }
+
   void _onSearchTextChanged() {
     // If text gets cleared, instantly revert to idle
     if (_searchController.text.isEmpty && _currentState != SearchState.idle) {

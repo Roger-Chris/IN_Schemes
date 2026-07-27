@@ -6,9 +6,12 @@ import '../models/scheme_model.dart';
 import 'scheme_details_screen.dart';
 import 'profile_setup_screen.dart';
 import 'notifications_screen.dart';
+import '../widgets/voice_assistant_overlay.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  const HomeScreen({super.key, this.onVoiceQuery});
+
+  final ValueChanged<String>? onVoiceQuery;
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -68,6 +71,44 @@ class _HomeScreenState extends State<HomeScreen> {
     _recommendedScrollController.dispose();
     _newsScrollController.dispose();
     super.dispose();
+  }
+
+  Future<void> _openVoiceAssistant() async {
+    if (!_isAiMode) {
+      setState(() => _isAiMode = true);
+    }
+
+    await showGeneralDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      barrierLabel: 'Voice assistant',
+      barrierColor: Colors.transparent,
+      transitionDuration: const Duration(milliseconds: 320),
+      pageBuilder: (overlayContext, animation, secondaryAnimation) {
+        return VoiceAssistantOverlay(
+          onClose: () => Navigator.of(overlayContext, rootNavigator: true).pop(),
+          onSubmit: (query) {
+            Navigator.of(overlayContext, rootNavigator: true).pop();
+            widget.onVoiceQuery?.call(query);
+          },
+        );
+      },
+      transitionBuilder: (context, animation, secondaryAnimation, child) {
+        final curved = CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeOutBack,
+          reverseCurve: Curves.easeInCubic,
+        );
+        return FadeTransition(
+          opacity: animation,
+          child: ScaleTransition(
+            alignment: Alignment.bottomRight,
+            scale: Tween<double>(begin: 0.72, end: 1).animate(curved),
+            child: child,
+          ),
+        );
+      },
+    );
   }
 
   /// Returns icon + background colors based on scheme category keyword.
@@ -1328,7 +1369,7 @@ class _HomeScreenState extends State<HomeScreen> {
             color: Colors.transparent,
             child: InkWell(
               customBorder: const CircleBorder(),
-              onTap: () {},
+              onTap: _openVoiceAssistant,
               child: const Icon(
                 Icons.smart_toy_outlined,
                 color: Colors.white,

@@ -9,8 +9,19 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:frontend/main.dart';
 import 'package:frontend/providers/app_state_provider.dart';
+import 'package:frontend/screens/splash_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 void main() {
+  setUpAll(() async {
+    SharedPreferences.setMockInitialValues({});
+    await Supabase.initialize(
+      url: 'https://example.supabase.co',
+      publishableKey: 'test-publishable-key',
+    );
+  });
+
   testWidgets('App smoke test', (WidgetTester tester) async {
     await tester.pumpWidget(
       ChangeNotifierProvider(
@@ -19,7 +30,6 @@ void main() {
       ),
     );
 
-    // Verify that the splash screen shows up by checking for the App name text
-    expect(find.text('IN Schemes'), findsOneWidget);
+    expect(find.byType(SplashScreen), findsOneWidget);
   });
 }

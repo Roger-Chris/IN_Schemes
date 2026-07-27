@@ -15,6 +15,7 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
+  Timer? _navigationTimer;
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
@@ -44,7 +45,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     _controller.forward();
 
     // Auto navigate after 3.2 seconds
-    Timer(const Duration(milliseconds: 3200), () {
+    _navigationTimer = Timer(const Duration(milliseconds: 3200), () {
       if (mounted) {
         final provider = Provider.of<AppProvider>(context, listen: false);
         if (provider.isLoggedIn || provider.isGuest) {
@@ -67,6 +68,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
   @override
   void dispose() {
+    _navigationTimer?.cancel();
     _controller.dispose();
     super.dispose();
   }
