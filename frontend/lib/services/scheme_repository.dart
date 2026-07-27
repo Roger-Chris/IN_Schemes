@@ -2,12 +2,13 @@ import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/scheme_model.dart';
 import '../models/user_profile.dart';
+import 'scheme_catalog.dart';
 
 /// SchemeRepository
 /// ─────────────────
-/// Single source of truth for all scheme-related data.
-/// Fetches from Supabase public.schemes (and related tables) and caches
-/// results in memory so that subsequent calls are instant.
+/// Single source of truth for all scheme-related data. The curated bundled
+/// catalog is loaded first so search and details work offline; Supabase remains
+/// a fallback for deployments that provide additional database-only records.
 class SchemeRepository {
   SchemeRepository._();
   static final SchemeRepository instance = SchemeRepository._();
@@ -16,6 +17,7 @@ class SchemeRepository {
 
   // ── In-memory cache ──────────────────────────────────────────────────
   List<Scheme>? _cachedSchemes;
+  Future<SchemeCatalog>? _catalogFuture;
   DateTime? _cacheTime;
   static const Duration _cacheTTL = Duration(minutes: 10);
 
@@ -27,12 +29,27 @@ class SchemeRepository {
   void clearCache() {
     _cachedSchemes = null;
     _cacheTime = null;
+    _catalogFuture = null;
   }
 
+  Future<SchemeCatalog> _loadCatalog() =>
+      _catalogFuture ??= SchemeCatalog.load();
+
   // ── 1. getAllSchemes() ────────────────────────────────────────────────
-  /// Returns all active schemes. Uses cache when valid.
+  /// Returns the complete curated catalog. Uses cache when valid.
   Future<List<Scheme>> getAllSchemes() async {
     if (_isCacheValid) return _cachedSchemes!;
+
+    try {
+      final catalog = await _loadCatalog();
+      if (catalog.schemes.isNotEmpty) {
+        _cachedSchemes = catalog.schemes;
+        _cacheTime = DateTime.now();
+        return _cachedSchemes!;
+      }
+    } catch (e) {
+      debugPrint('[SchemeRepository] bundled catalog error: $e');
+    }
 
     try {
       final rows = await _db
@@ -89,16 +106,18 @@ class SchemeRepository {
   }
 
   // ── 4. getSchemeById(id) ───────────────────────────────────────────────
-  /// Loads a fully enriched Scheme with eligibility, documents, and FAQs.
-  /// Results are NOT cached as they contain joined detail data.
+  /// Loads a fully enriched Scheme with eligibility, documents, and services.
   Future<Scheme?> getSchemeById(String id) async {
     try {
+      final catalogScheme = (await _loadCatalog()).findById(id);
+      if (catalogScheme != null) return catalogScheme;
+    } catch (e) {
+      debugPrint('[SchemeRepository] bundled scheme detail error: $e');
+    }
+
+    try {
       // Base scheme row
-      final rows = await _db
-          .from('schemes')
-          .select()
-          .eq('id', id)
-          .limit(1);
+      final rows = await _db.from('schemes').select().eq('id', id).limit(1);
 
       if ((rows as List).isEmpty) return null;
       Scheme scheme = Scheme.fromSupabase(rows[0]);
@@ -216,9 +235,11 @@ class SchemeRepository {
     final all = await getAllSchemes();
     // Match either by UUID (id) or by scheme_code for backwards compatibility
     return all
-        .where((s) =>
-            bookmarkedIds.contains(s.id) ||
-            bookmarkedIds.contains(s.schemeCode))
+        .where(
+          (s) =>
+              bookmarkedIds.contains(s.id) ||
+              bookmarkedIds.contains(s.schemeCode),
+        )
         .toList();
   }
 

@@ -86,6 +86,7 @@ flutter:
     - assets/images/Home_screen_bg.webp
     - assets/images/Login_bg.webp
     - assets/images/onboarding_bg.png
+    - assets/data/government_schemes.json
 
 
 

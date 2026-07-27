@@ -282,7 +282,8 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
 
   Widget _buildVoicePanel() {
     final showTranscript = _transcript.trim().isNotEmpty || _message != null;
-    final displayedText = _message ??
+    final displayedText =
+        _message ??
         (_hasTranscript
             ? _transcript
             : 'I can help you find schemes, check eligibility, track applications and more.');
@@ -297,7 +298,10 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFF2563EB).withValues(alpha: 0.16), width: 1.5),
+        border: Border.all(
+          color: const Color(0xFF2563EB).withValues(alpha: 0.16),
+          width: 1.5,
+        ),
         boxShadow: [
           BoxShadow(
             color: const Color(0xFF2563EB).withValues(alpha: 0.24),
@@ -319,7 +323,7 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
                 fit: BoxFit.contain,
               ),
               const SizedBox(width: 10),
-              
+
               // Middle: Content Column
               Expanded(
                 child: Column(
@@ -352,7 +356,9 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
                               width: 6,
                               height: 6,
                               decoration: BoxDecoration(
-                                color: _isListening ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+                                color: _isListening
+                                    ? const Color(0xFF10B981)
+                                    : const Color(0xFFEF4444),
                                 shape: BoxShape.circle,
                               ),
                             ),
@@ -360,7 +366,9 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
                             Text(
                               _isListening ? 'Listening...' : 'Idle',
                               style: GoogleFonts.inter(
-                                color: _isListening ? const Color(0xFF10B981) : const Color(0xFF94A3B8),
+                                color: _isListening
+                                    ? const Color(0xFF10B981)
+                                    : const Color(0xFF94A3B8),
                                 fontSize: 10,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -394,7 +402,9 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
                           children: [
                             _buildSuggestionChip('💼 Find business loans'),
                             const SizedBox(width: 8),
-                            _buildSuggestionChip('📚 Scholarships for students'),
+                            _buildSuggestionChip(
+                              '📚 Scholarships for students',
+                            ),
                             const SizedBox(width: 8),
                             _buildSuggestionChip('🌱 Subsidy for farmers'),
                           ],
@@ -405,7 +415,7 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
                 ),
               ),
               const SizedBox(width: 8),
-              
+
               // Right Column: Waveform, Close, Mic Button
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
@@ -421,18 +431,23 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
                       ),
                       const SizedBox(width: 4),
                       // Close button
-                      GestureDetector(
-                        onTap: _close,
-                        child: Container(
-                          padding: const EdgeInsets.all(4),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.white.withValues(alpha: 0.08),
-                          ),
-                          child: const Icon(
-                            Icons.close_rounded,
-                            color: Color(0xFF94A3B8),
-                            size: 15,
+                      Semantics(
+                        button: true,
+                        label: 'Close voice assistant',
+                        child: GestureDetector(
+                          key: const Key('voice-close-button'),
+                          onTap: _close,
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.white.withValues(alpha: 0.08),
+                            ),
+                            child: const Icon(
+                              Icons.close_rounded,
+                              color: Color(0xFF94A3B8),
+                              size: 15,
+                            ),
                           ),
                         ),
                       ),
@@ -451,7 +466,9 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
                               shape: BoxShape.circle,
                               boxShadow: [
                                 BoxShadow(
-                                  color: const Color(0xFF2563EB).withValues(alpha: 0.3),
+                                  color: const Color(
+                                    0xFF2563EB,
+                                  ).withValues(alpha: 0.3),
                                   blurRadius: 10,
                                   spreadRadius: 2,
                                 ),
@@ -473,10 +490,15 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
                             decoration: BoxDecoration(
                               color: Colors.white,
                               shape: BoxShape.circle,
-                              border: Border.all(color: const Color(0xFF2563EB), width: 1.5),
+                              border: Border.all(
+                                color: const Color(0xFF2563EB),
+                                width: 1.5,
+                              ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: const Color(0xFF2563EB).withValues(alpha: 0.2),
+                                  color: const Color(
+                                    0xFF2563EB,
+                                  ).withValues(alpha: 0.2),
                                   blurRadius: 10,
                                   spreadRadius: 2,
                                 ),
