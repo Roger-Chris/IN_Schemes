@@ -5,11 +5,14 @@ import '../providers/app_state_provider.dart';
 import '../models/scheme_model.dart';
 import 'scheme_details_screen.dart';
 import 'notifications_screen.dart';
+import '../widgets/voice_assistant_overlay.dart';
 import 'find_my_schemes_screen.dart';
 import 'companion_intro_screen.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  const HomeScreen({super.key, this.onVoiceQuery});
+
+  final ValueChanged<String>? onVoiceQuery;
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -42,6 +45,39 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
+  Future<void> _openVoiceAssistant() async {
+    await showGeneralDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      barrierLabel: 'Voice assistant',
+      barrierColor: Colors.transparent,
+      transitionDuration: const Duration(milliseconds: 320),
+      pageBuilder: (overlayContext, animation, secondaryAnimation) {
+        return VoiceAssistantOverlay(
+          onClose: () => Navigator.of(overlayContext, rootNavigator: true).pop(),
+          onSubmit: (query) {
+            Navigator.of(overlayContext, rootNavigator: true).pop();
+            widget.onVoiceQuery?.call(query);
+          },
+        );
+      },
+      transitionBuilder: (context, animation, secondaryAnimation, child) {
+        final curved = CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeOutBack,
+          reverseCurve: Curves.easeInCubic,
+        );
+        return FadeTransition(
+          opacity: animation,
+          child: ScaleTransition(
+            alignment: Alignment.bottomRight,
+            scale: Tween<double>(begin: 0.72, end: 1).animate(curved),
+            child: child,
+          ),
+        );
+      },
+    );
+  }
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<AppProvider>(context);
@@ -1786,11 +1822,7 @@ class _HomeScreenState extends State<HomeScreen> {
   // Sticky Floating Action Ask AI widget
   Widget _buildAskAiFab(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => const CompanionIntroScreen()),
-        );
-      },
+      onTap: _openVoiceAssistant,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
