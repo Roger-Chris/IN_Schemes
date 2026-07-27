@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../models/scheme_model.dart';
 import '../services/scheme_repository.dart';
 
 class SchemeDetailsScreen extends StatefulWidget {
   final Scheme scheme;
 
-  const SchemeDetailsScreen({
-    super.key,
-    required this.scheme,
-  });
+  const SchemeDetailsScreen({super.key, required this.scheme});
 
   @override
   State<SchemeDetailsScreen> createState() => _SchemeDetailsScreenState();
@@ -17,13 +15,21 @@ class SchemeDetailsScreen extends StatefulWidget {
 
 class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
   int _activeTabIndex = 0;
-  final List<String> _tabs = ["Overview", "Benefits", "Eligibility", "Documents", "Process"];
+  final List<String> _tabs = [
+    "Overview",
+    "Benefits",
+    "Eligibility",
+    "Documents",
+    "Services",
+    "Process",
+  ];
 
   // Fix 3: GlobalKeys for each scrollable section (for sticky tab auto-scroll)
   final _overviewKey = GlobalKey();
   final _benefitsKey = GlobalKey();
   final _eligibilityKey = GlobalKey();
   final _documentsKey = GlobalKey();
+  final _servicesKey = GlobalKey();
   final _processKey = GlobalKey();
 
   // ExpansionTileControllers to programmatically expand the accordions
@@ -34,16 +40,19 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
   // ignore: deprecated_member_use
   final _documentsController = ExpansionTileController();
   // ignore: deprecated_member_use
+  final _servicesController = ExpansionTileController();
+  // ignore: deprecated_member_use
   final _processController = ExpansionTileController();
 
   // Fix 4: Accordions closed by default
   bool _benefitsExpanded = false;
   bool _eligibilityExpanded = false;
   bool _documentsExpanded = false;
+  bool _servicesExpanded = false;
   bool _processExpanded = false;
   bool _isBookmarked = false;
 
-  // Enriched scheme (loaded from Supabase with eligibility, documents etc.)
+  // Enriched scheme loaded from the bundled catalog or repository fallback.
   Scheme? _detailedScheme;
   bool _detailsLoading = true;
 
@@ -55,7 +64,9 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
 
   Future<void> _loadDetails() async {
     try {
-      final detail = await SchemeRepository.instance.getSchemeById(widget.scheme.id);
+      final detail = await SchemeRepository.instance.getSchemeById(
+        widget.scheme.id,
+      );
       if (mounted) {
         setState(() {
           _detailedScheme = detail ?? widget.scheme;
@@ -70,7 +81,14 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
   /// Fix 3: Scrolls to the section matching the tapped tab index.
   void _scrollToSection(int index) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final keys = [_overviewKey, _benefitsKey, _eligibilityKey, _documentsKey, _processKey];
+      final keys = [
+        _overviewKey,
+        _benefitsKey,
+        _eligibilityKey,
+        _documentsKey,
+        _servicesKey,
+        _processKey,
+      ];
       final key = keys[index];
       final ctx = key.currentContext;
       if (ctx != null) {
@@ -81,6 +99,42 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
         );
       }
     });
+  }
+
+  String _applicationDestination(Scheme scheme) {
+    return [
+      scheme.applicationUrl,
+      scheme.officialWebsite,
+      scheme.guidelinesUrl,
+      scheme.sourceUrl,
+    ].firstWhere(_isSafeWebUrl, orElse: () => '');
+  }
+
+  bool _isSafeWebUrl(String value) {
+    final uri = Uri.tryParse(value);
+    return uri != null && (uri.scheme == 'https' || uri.scheme == 'http');
+  }
+
+  Future<void> _openOfficialUrl(String value) async {
+    if (!_isSafeWebUrl(value)) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No verified official link is available.'),
+        ),
+      );
+      return;
+    }
+
+    final opened = await launchUrl(
+      Uri.parse(value),
+      mode: LaunchMode.externalApplication,
+    );
+    if (!opened && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not open the official website.')),
+      );
+    }
   }
 
   String _getImageForCategory(String category) {
@@ -113,7 +167,11 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                   backgroundColor: Colors.white,
                   elevation: 0,
                   leading: IconButton(
-                    icon: const Icon(Icons.arrow_back, color: Color(0xFF0F172A), size: 24),
+                    icon: const Icon(
+                      Icons.arrow_back,
+                      color: Color(0xFF0F172A),
+                      size: 24,
+                    ),
                     onPressed: () => Navigator.pop(context),
                   ),
                   title: Text(
@@ -126,7 +184,11 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                   ),
                   actions: [
                     IconButton(
-                      icon: const Icon(Icons.share_outlined, color: Color(0xFF0F172A), size: 24),
+                      icon: const Icon(
+                        Icons.share_outlined,
+                        color: Color(0xFF0F172A),
+                        size: 24,
+                      ),
                       onPressed: () {},
                     ),
                     const SizedBox(width: 8),
@@ -149,7 +211,10 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                       decoration: const BoxDecoration(
                         color: Colors.white,
                         border: Border(
-                          bottom: BorderSide(color: Color(0xFFE2E8F0), width: 1),
+                          bottom: BorderSide(
+                            color: Color(0xFFE2E8F0),
+                            width: 1,
+                          ),
                         ),
                       ),
                       child: SingleChildScrollView(
@@ -173,6 +238,9 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                                     _documentsExpanded = true;
                                     _documentsController.expand();
                                   } else if (index == 4) {
+                                    _servicesExpanded = true;
+                                    _servicesController.expand();
+                                  } else if (index == 5) {
                                     _processExpanded = true;
                                     _processController.expand();
                                   }
@@ -181,11 +249,15 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                               },
                               child: Container(
                                 margin: const EdgeInsets.only(right: 24),
-                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 12,
+                                ),
                                 decoration: BoxDecoration(
                                   border: Border(
                                     bottom: BorderSide(
-                                      color: isSelected ? const Color(0xFF2563EB) : Colors.transparent,
+                                      color: isSelected
+                                          ? const Color(0xFF2563EB)
+                                          : Colors.transparent,
                                       width: 2,
                                     ),
                                   ),
@@ -193,8 +265,12 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                                 child: Text(
                                   _tabs[index],
                                   style: GoogleFonts.inter(
-                                    color: isSelected ? const Color(0xFF2563EB) : const Color(0xFF64748B),
-                                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                                    color: isSelected
+                                        ? const Color(0xFF2563EB)
+                                        : const Color(0xFF64748B),
+                                    fontWeight: isSelected
+                                        ? FontWeight.bold
+                                        : FontWeight.w500,
                                     fontSize: 14,
                                   ),
                                 ),
@@ -209,7 +285,12 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
 
                 // 4. Scrollable Content Body
                 SliverPadding(
-                  padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 120),
+                  padding: const EdgeInsets.only(
+                    left: 16,
+                    right: 16,
+                    top: 16,
+                    bottom: 120,
+                  ),
                   sliver: SliverList(
                     delegate: SliverChildListDelegate([
                       // Overview Paragraph
@@ -227,7 +308,9 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                       const SizedBox(height: 24),
 
                       // Why this matches you card
-                      _buildWhyThisMatchesYouCard(),
+                      _buildSchemeHighlightsCard(scheme),
+                      const SizedBox(height: 12),
+                      _buildOfficialSourceCard(scheme),
                       const SizedBox(height: 24),
 
                       // Show a loading indicator while enriched details load
@@ -257,7 +340,7 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                               _benefitsExpanded = !_benefitsExpanded;
                             });
                           },
-                          child: _buildBenefitsContent(scheme.benefits),
+                          child: _buildBenefitsContent(scheme),
                         ),
                         const SizedBox(height: 12),
 
@@ -275,7 +358,7 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                               _eligibilityExpanded = !_eligibilityExpanded;
                             });
                           },
-                          child: _buildEligibilityContent(scheme.eligibilityCriteria),
+                          child: _buildEligibilityContent(scheme),
                         ),
                         const SizedBox(height: 12),
 
@@ -293,7 +376,25 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                               _documentsExpanded = !_documentsExpanded;
                             });
                           },
-                          child: _buildDocumentsContent(scheme.requiredDocuments),
+                          child: _buildDocumentsContent(scheme),
+                        ),
+                        const SizedBox(height: 12),
+
+                        // Required Services Expandable Section
+                        _ExpandableSection(
+                          key: _servicesKey,
+                          controller: _servicesController,
+                          title: "Required Services",
+                          icon: Icons.support_agent_outlined,
+                          iconColor: const Color(0xFF0F766E),
+                          iconBg: const Color(0xFFCCFBF1),
+                          isExpanded: _servicesExpanded,
+                          onToggle: () {
+                            setState(() {
+                              _servicesExpanded = !_servicesExpanded;
+                            });
+                          },
+                          child: _buildServicesContent(scheme.requiredServices),
                         ),
                         const SizedBox(height: 12),
 
@@ -311,7 +412,9 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                               _processExpanded = !_processExpanded;
                             });
                           },
-                          child: _buildProcessContent(scheme.applicationProcess),
+                          child: _buildProcessContent(
+                            scheme.applicationProcess,
+                          ),
                         ),
                       ], // end if (!_detailsLoading)
                     ]),
@@ -326,24 +429,29 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
             bottom: 0,
             left: 0,
             right: 0,
-            child: _BottomActionBar(isBookmarked: _isBookmarked, onBookmarkToggle: () {
-              setState(() {
-                _isBookmarked = !_isBookmarked;
-              });
-            }),
+            child: _BottomActionBar(
+              isBookmarked: _isBookmarked,
+              onBookmarkToggle: () {
+                setState(() {
+                  _isBookmarked = !_isBookmarked;
+                });
+              },
+              onApply: () => _openOfficialUrl(_applicationDestination(scheme)),
+              applyEnabled: _applicationDestination(scheme).isNotEmpty,
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildWhyThisMatchesYouCard() {
+  Widget _buildSchemeHighlightsCard(Scheme scheme) {
     final matches = [
-      "Startup Business",
-      "Tamil Nadu",
-      "Manufacturing Sector",
-      "Women Entrepreneur",
-    ];
+      scheme.governmentLevel,
+      scheme.state,
+      scheme.sector,
+      scheme.targetBeneficiary,
+    ].where((value) => value.isNotEmpty).toSet().take(4).toList();
 
     return Container(
       padding: const EdgeInsets.all(12),
@@ -360,10 +468,14 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
         children: [
           Row(
             children: [
-              const Icon(Icons.track_changes, color: Color(0xFF2563EB), size: 16),
+              const Icon(
+                Icons.track_changes,
+                color: Color(0xFF2563EB),
+                size: 16,
+              ),
               const SizedBox(width: 6),
               Text(
-                "Why this matches you",
+                "Scheme at a glance",
                 style: GoogleFonts.poppins(
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
@@ -386,7 +498,11 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.check_circle, color: Color(0xFF2563EB), size: 11),
+                    const Icon(
+                      Icons.check_circle,
+                      color: Color(0xFF2563EB),
+                      size: 11,
+                    ),
                     const SizedBox(width: 4),
                     Text(
                       match,
@@ -406,97 +522,341 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
     );
   }
 
-  Widget _buildBenefitsContent(String benefitsText) {
-    final benefitCards = [
-      {"icon": Icons.monetization_on, "color": const Color(0xFF047857), "bg": const Color(0xFFECFDF5), "title": "Subsidies", "desc": "Up to 35% subsidy"},
-      {"icon": Icons.credit_card, "color": const Color(0xFF1D4ED8), "bg": const Color(0xFFEFF6FF), "title": "Credit Limit", "desc": "Up to ₹50 Lakh loan"},
-      {"icon": Icons.security, "color": const Color(0xFF6D28D9), "bg": const Color(0xFFF5F3FF), "title": "Collateral Free", "desc": "No collateral required"},
-      {"icon": Icons.school, "color": const Color(0xFFEA580C), "bg": const Color(0xFFFFEDD5), "title": "EDP Training", "desc": "Free training course"},
+  Widget _buildOfficialSourceCard(Scheme scheme) {
+    final sourceUrl = [
+      scheme.sourceUrl,
+      scheme.guidelinesUrl,
+      scheme.officialWebsite,
+    ].firstWhere(_isSafeWebUrl, orElse: () => '');
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.verified_outlined, color: Color(0xFF047857)),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  scheme.verificationStatus.isEmpty
+                      ? 'Official scheme information'
+                      : scheme.verificationStatus,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF0F172A),
+                    fontWeight: FontWeight.w700,
+                    fontSize: 11.5,
+                  ),
+                ),
+                if (scheme.lastUpdated.isNotEmpty)
+                  Text(
+                    'Last updated: ${scheme.lastUpdated}',
+                    style: GoogleFonts.inter(
+                      color: const Color(0xFF64748B),
+                      fontSize: 10,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          TextButton.icon(
+            onPressed: sourceUrl.isEmpty
+                ? null
+                : () => _openOfficialUrl(sourceUrl),
+            icon: const Icon(Icons.open_in_new_rounded, size: 15),
+            label: const Text('Source'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _formatFunding(double amount) {
+    if (amount >= 10000000) {
+      return '₹${(amount / 10000000).toStringAsFixed(1)} crore';
+    }
+    if (amount >= 100000) {
+      return '₹${(amount / 100000).toStringAsFixed(1)} lakh';
+    }
+    return '₹${amount.toStringAsFixed(0)}';
+  }
+
+  Widget _buildBenefitsContent(Scheme scheme) {
+    final benefitCards = <Map<String, Object>>[
+      if (scheme.subsidyPercentage != null)
+        {
+          "icon": Icons.percent_rounded,
+          "color": const Color(0xFF047857),
+          "bg": const Color(0xFFECFDF5),
+          "title": "Subsidy",
+          "desc": "${scheme.subsidyPercentage!.toStringAsFixed(0)}%",
+        },
+      if (scheme.subsidyAmount.isNotEmpty &&
+          scheme.subsidyAmount.toLowerCase() != 'not specified')
+        {
+          "icon": Icons.payments_outlined,
+          "color": const Color(0xFF1D4ED8),
+          "bg": const Color(0xFFEFF6FF),
+          "title": "Amount",
+          "desc": scheme.subsidyAmount,
+        },
+      if (scheme.maxFunding != null)
+        {
+          "icon": Icons.account_balance_wallet_outlined,
+          "color": const Color(0xFF6D28D9),
+          "bg": const Color(0xFFF5F3FF),
+          "title": "Maximum",
+          "desc": _formatFunding(scheme.maxFunding!),
+        },
+      if (scheme.schemeType.isNotEmpty)
+        {
+          "icon": Icons.category_outlined,
+          "color": const Color(0xFFEA580C),
+          "bg": const Color(0xFFFFEDD5),
+          "title": "Support",
+          "desc": scheme.schemeType,
+        },
     ];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          benefitsText,
+          scheme.benefits.isEmpty
+              ? 'Benefit details are available from the official source.'
+              : scheme.benefits,
           style: GoogleFonts.inter(
             color: const Color(0xFF64748B),
             fontSize: 11.5,
             height: 1.45,
           ),
         ),
-        const SizedBox(height: 14),
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          physics: const BouncingScrollPhysics(),
-          child: Row(
-            children: benefitCards.map((card) {
-              return Container(
-                width: 120,
-                height: 120,
-                margin: const EdgeInsets.only(right: 12, bottom: 4),
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: card["bg"] as Color,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Icon(card["icon"] as IconData, color: card["color"] as Color, size: 24),
-                    const SizedBox(height: 8),
-                    Text(
-                      card["title"] as String,
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.inter(
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xFF0F172A),
+        if (benefitCards.isNotEmpty) ...[
+          const SizedBox(height: 14),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            child: Row(
+              children: benefitCards.map((card) {
+                return Container(
+                  width: 120,
+                  height: 120,
+                  margin: const EdgeInsets.only(right: 12, bottom: 4),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: card["bg"] as Color,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Icon(
+                        card["icon"] as IconData,
+                        color: card["color"] as Color,
+                        size: 24,
                       ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      card["desc"] as String,
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.inter(
-                        fontSize: 9,
-                        color: const Color(0xFF64748B),
+                      const SizedBox(height: 8),
+                      Text(
+                        card["title"] as String,
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.inter(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF0F172A),
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              );
-            }).toList(),
+                      const SizedBox(height: 2),
+                      Text(
+                        card["desc"] as String,
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.inter(
+                          fontSize: 9,
+                          color: const Color(0xFF64748B),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
+            ),
           ),
-        ),
+        ],
       ],
     );
   }
 
-  Widget _buildEligibilityContent(List<String> criteria) {
+  Widget _buildEligibilityContent(Scheme scheme) {
     return Column(
-      children: criteria.map((rule) {
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 8.0),
-          child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ...scheme.eligibilityCriteria.map((rule) {
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 8.0),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Padding(
+                  padding: EdgeInsets.only(top: 2.0),
+                  child: Icon(
+                    Icons.check_circle_outline,
+                    color: Color(0xFF2563EB),
+                    size: 14,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    rule,
+                    style: GoogleFonts.inter(
+                      color: const Color(0xFF64748B),
+                      fontSize: 11.5,
+                      height: 1.35,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }),
+        if (scheme.verificationNotes.isNotEmpty) ...[
+          const Divider(height: 20),
+          Text(
+            'Verification note',
+            style: GoogleFonts.inter(
+              color: const Color(0xFF0F172A),
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            scheme.verificationNotes,
+            style: GoogleFonts.inter(
+              color: const Color(0xFF64748B),
+              fontSize: 10.5,
+              height: 1.35,
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildDocumentsContent(Scheme scheme) {
+    final documents = scheme.documents.isNotEmpty
+        ? scheme.documents
+        : scheme.requiredDocuments
+              .map((name) => SchemeDocument(name: name))
+              .toList();
+    if (documents.isEmpty) {
+      return Text(
+        'No document list is published for this scheme. Check the official source before applying.',
+        style: GoogleFonts.inter(
+          color: const Color(0xFF64748B),
+          fontSize: 11.5,
+          height: 1.4,
+        ),
+      );
+    }
+
+    return Column(
+      children: documents.map((document) {
+        return Container(
+          width: double.infinity,
+          margin: const EdgeInsets.only(bottom: 10),
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF8FAFC),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
+          ),
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Padding(
-                padding: EdgeInsets.only(top: 2.0),
-                child: Icon(Icons.check_circle_outline, color: Color(0xFF2563EB), size: 14),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Icon(
+                    Icons.assignment_outlined,
+                    color: Color(0xFF2563EB),
+                    size: 17,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      document.name,
+                      style: GoogleFonts.inter(
+                        fontSize: 11.5,
+                        color: const Color(0xFF0F172A),
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                  if (document.mandatory.isNotEmpty)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 7,
+                        vertical: 3,
+                      ),
+                      decoration: BoxDecoration(
+                        color: document.isMandatory
+                            ? const Color(0xFFFEE2E2)
+                            : const Color(0xFFE2E8F0),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        document.isMandatory ? 'Required' : document.mandatory,
+                        style: GoogleFonts.inter(
+                          color: document.isMandatory
+                              ? const Color(0xFFB91C1C)
+                              : const Color(0xFF475569),
+                          fontSize: 9,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                ],
               ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  rule,
+              if (document.description.isNotEmpty) ...[
+                const SizedBox(height: 6),
+                Text(
+                  document.description,
                   style: GoogleFonts.inter(
                     color: const Color(0xFF64748B),
-                    fontSize: 11.5,
+                    fontSize: 10.5,
                     height: 1.35,
                   ),
                 ),
-              ),
+              ],
+              if (document.issuingAuthority.isNotEmpty) ...[
+                const SizedBox(height: 6),
+                Text(
+                  'Issued by: ${document.issuingAuthority}',
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF475569),
+                    fontSize: 9.5,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+              if (document.estimatedCost.isNotEmpty &&
+                  document.estimatedCost.toLowerCase() != 'not specified')
+                Text(
+                  'Estimated cost: ${document.estimatedCost}',
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF475569),
+                    fontSize: 9.5,
+                  ),
+                ),
             ],
           ),
         );
@@ -504,55 +864,54 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
     );
   }
 
-  Widget _buildDocumentsContent(List<String> documents) {
-    return Column(
-      children: [
-        GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            childAspectRatio: 3.5,
-            crossAxisSpacing: 10,
-            mainAxisSpacing: 10,
-          ),
-          itemCount: documents.length,
-          itemBuilder: (context, index) {
-            return Row(
-              children: [
-                const Icon(Icons.assignment_outlined, color: Color(0xFF2563EB), size: 16),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    documents[index],
-                    style: GoogleFonts.inter(
-                      fontSize: 11.5,
-                      color: const Color(0xFF0F172A),
-                      fontWeight: FontWeight.w500,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
-            );
-          },
+  Widget _buildServicesContent(List<SchemeService> services) {
+    if (services.isEmpty) {
+      return Text(
+        'No separate service requirement is listed for this scheme.',
+        style: GoogleFonts.inter(
+          color: const Color(0xFF64748B),
+          fontSize: 11.5,
         ),
-        const SizedBox(height: 12),
-        Center(
-          child: TextButton(
-            onPressed: () {},
-            child: Text(
-              "Show less ^",
-              style: GoogleFonts.inter(
-                color: const Color(0xFF2563EB),
-                fontWeight: FontWeight.bold,
-                fontSize: 11.5,
-              ),
+      );
+    }
+
+    return Column(
+      children: services.map((service) {
+        return ListTile(
+          contentPadding: EdgeInsets.zero,
+          leading: const CircleAvatar(
+            radius: 18,
+            backgroundColor: Color(0xFFCCFBF1),
+            child: Icon(
+              Icons.support_agent_outlined,
+              color: Color(0xFF0F766E),
+              size: 18,
             ),
           ),
-        ),
-      ],
+          title: Text(
+            service.name,
+            style: GoogleFonts.inter(
+              color: const Color(0xFF0F172A),
+              fontSize: 11.5,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          subtitle: Text(
+            [
+              service.category,
+              service.description,
+            ].where((value) => value.isNotEmpty).join(' • '),
+            style: GoogleFonts.inter(
+              color: const Color(0xFF64748B),
+              fontSize: 10.5,
+              height: 1.35,
+            ),
+          ),
+          trailing: service.mandatory
+              ? const Icon(Icons.check_circle, color: Color(0xFF0F766E))
+              : null,
+        );
+      }).toList(),
     );
   }
 
@@ -628,10 +987,7 @@ class _HeroSection extends StatelessWidget {
   final Scheme scheme;
   final String imagePath;
 
-  const _HeroSection({
-    required this.scheme,
-    required this.imagePath,
-  });
+  const _HeroSection({required this.scheme, required this.imagePath});
 
   @override
   Widget build(BuildContext context) {
@@ -640,13 +996,17 @@ class _HeroSection extends StatelessWidget {
     final matchObj = regex.firstMatch(title);
     String shortForm = title;
     String fullName = '';
-    
+
     if (matchObj != null) {
       final bracketText = matchObj.group(1)!.trim();
-      final outsideText = title.replaceAll(regex, '').replaceAll(RegExp(r'\s+'), ' ').trim();
-      final isBracketAcronym = bracketText.length <= 10 && 
-                               !bracketText.contains(' ') && 
-                               bracketText == bracketText.toUpperCase();
+      final outsideText = title
+          .replaceAll(regex, '')
+          .replaceAll(RegExp(r'\s+'), ' ')
+          .trim();
+      final isBracketAcronym =
+          bracketText.length <= 10 &&
+          !bracketText.contains(' ') &&
+          bracketText == bracketText.toUpperCase();
       if (isBracketAcronym) {
         shortForm = bracketText;
         fullName = outsideText;
@@ -681,10 +1041,7 @@ class _HeroSection extends StatelessWidget {
                   topLeft: Radius.circular(14),
                   bottomLeft: Radius.circular(14),
                 ),
-                child: Image.asset(
-                  imagePath,
-                  fit: BoxFit.cover,
-                ),
+                child: Image.asset(imagePath, fit: BoxFit.cover),
               ),
             ),
 
@@ -692,7 +1049,10 @@ class _HeroSection extends StatelessWidget {
             Expanded(
               flex: 3,
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 8,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -701,7 +1061,10 @@ class _HeroSection extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
                           decoration: BoxDecoration(
                             color: const Color(0xFFEFF6FF),
                             borderRadius: BorderRadius.circular(4),
@@ -763,12 +1126,29 @@ class _HeroSection extends StatelessWidget {
                       runSpacing: 4,
                       children: [
                         if (scheme.schemeType.isNotEmpty)
-                          _buildMiniTag(scheme.schemeType, const Color(0xFFEFF6FF), const Color(0xFF1D4ED8)),
+                          _buildMiniTag(
+                            scheme.schemeType,
+                            const Color(0xFFEFF6FF),
+                            const Color(0xFF1D4ED8),
+                          ),
                         if (scheme.sector.isNotEmpty)
-                          _buildMiniTag(scheme.sector, const Color(0xFFECFDF5), const Color(0xFF047857)),
-                        if (scheme.schemeType.isEmpty && scheme.sector.isEmpty) ...[
-                          _buildMiniTag("Loan", const Color(0xFFEFF6FF), const Color(0xFF1D4ED8)),
-                          _buildMiniTag("Subsidy", const Color(0xFFECFDF5), const Color(0xFF047857)),
+                          _buildMiniTag(
+                            scheme.sector,
+                            const Color(0xFFECFDF5),
+                            const Color(0xFF047857),
+                          ),
+                        if (scheme.schemeType.isEmpty &&
+                            scheme.sector.isEmpty) ...[
+                          _buildMiniTag(
+                            "Loan",
+                            const Color(0xFFEFF6FF),
+                            const Color(0xFF1D4ED8),
+                          ),
+                          _buildMiniTag(
+                            "Subsidy",
+                            const Color(0xFFECFDF5),
+                            const Color(0xFF047857),
+                          ),
                         ],
                       ],
                     ),
@@ -776,15 +1156,26 @@ class _HeroSection extends StatelessWidget {
 
                     // Match Banner (Single-row layout)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFFEFF6FF),
                         borderRadius: BorderRadius.circular(6),
-                        border: Border.all(color: const Color(0xFF2563EB).withValues(alpha: 0.15)),
+                        border: Border.all(
+                          color: const Color(
+                            0xFF2563EB,
+                          ).withValues(alpha: 0.15),
+                        ),
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.auto_awesome, color: Color(0xFF2563EB), size: 12),
+                          const Icon(
+                            Icons.auto_awesome,
+                            color: Color(0xFF2563EB),
+                            size: 12,
+                          ),
                           const SizedBox(width: 4),
                           Expanded(
                             child: RichText(
@@ -802,9 +1193,7 @@ class _HeroSection extends StatelessWidget {
                                   ),
                                   const TextSpan(
                                     text: "• Highly relevant",
-                                    style: TextStyle(
-                                      color: Color(0xFF64748B),
-                                    ),
+                                    style: TextStyle(color: Color(0xFF64748B)),
                                   ),
                                 ],
                               ),
@@ -855,12 +1244,12 @@ class _StickyTabBarDelegate extends SliverPersistentHeaderDelegate {
   double get maxExtent => 48.0;
 
   @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return Container(
-      color: Colors.white,
-      height: 48.0,
-      child: child,
-    );
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
+    return Container(color: Colors.white, height: 48.0, child: child);
   }
 
   @override
@@ -911,10 +1300,7 @@ class _ExpandableSection extends StatelessWidget {
           leading: Container(
             width: 32,
             height: 32,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: iconBg,
-            ),
+            decoration: BoxDecoration(shape: BoxShape.circle, color: iconBg),
             alignment: Alignment.center,
             child: Icon(icon, color: iconColor, size: 16),
           ),
@@ -932,7 +1318,12 @@ class _ExpandableSection extends StatelessWidget {
           ),
           children: [
             Padding(
-              padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16, top: 4),
+              padding: const EdgeInsets.only(
+                left: 16,
+                right: 16,
+                bottom: 16,
+                top: 4,
+              ),
               child: child,
             ),
           ],
@@ -946,10 +1337,14 @@ class _ExpandableSection extends StatelessWidget {
 class _BottomActionBar extends StatelessWidget {
   final bool isBookmarked;
   final VoidCallback onBookmarkToggle;
+  final VoidCallback onApply;
+  final bool applyEnabled;
 
   const _BottomActionBar({
     required this.isBookmarked,
     required this.onBookmarkToggle,
+    required this.onApply,
+    required this.applyEnabled,
   });
 
   @override
@@ -1020,9 +1415,10 @@ class _BottomActionBar extends StatelessWidget {
             child: SizedBox(
               height: 50,
               child: ElevatedButton(
-                onPressed: () {},
+                onPressed: applyEnabled ? onApply : null,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF2563EB),
+                  disabledBackgroundColor: const Color(0xFFCBD5E1),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -1042,7 +1438,11 @@ class _BottomActionBar extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 8),
-                      const Icon(Icons.arrow_forward, color: Colors.white, size: 16),
+                      const Icon(
+                        Icons.arrow_forward,
+                        color: Colors.white,
+                        size: 16,
+                      ),
                     ],
                   ),
                 ),
@@ -1054,4 +1454,3 @@ class _BottomActionBar extends StatelessWidget {
     );
   }
 }
-

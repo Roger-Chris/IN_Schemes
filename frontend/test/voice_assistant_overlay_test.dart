@@ -25,7 +25,7 @@ void main() {
       expect(find.byType(BackdropFilter), findsNothing);
       expect(find.byType(RepaintBoundary), findsWidgets);
       expect(find.text('Ask IN AI'), findsOneWidget);
-      expect(find.text('Tap the mic to speak'), findsOneWidget);
+      expect(find.text('Idle'), findsOneWidget);
 
       await tester.tap(find.byKey(const Key('voice-close-button')));
       await tester.pump();
