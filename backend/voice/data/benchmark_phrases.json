@@ -1,0 +1,88 @@
+{
+  "dataset_id": "synthetic-tamil-scheme-voice-v1",
+  "locale": "ta-IN",
+  "synthetic": true,
+  "production_approved": false,
+  "items": [
+    {
+      "id": "bench_001",
+      "scheme_id": "scheme_women_assistance",
+      "reference_text": "மகளிர் உரிமைத் தொகை பற்றி சொல்லுங்கள்",
+      "aliases": [
+        "மகளிர் உரிமைத் தொகை",
+        "பெண்களுக்கான ஆயிரம் ரூபாய் திட்டம்",
+        "magalir urimai thogai"
+      ]
+    },
+    {
+      "id": "bench_002",
+      "scheme_id": "scheme_student_support",
+      "reference_text": "புதுமைப் பெண் திட்டத்திற்கு எப்படி விண்ணப்பிப்பது",
+      "aliases": [
+        "புதுமைப் பெண் திட்டம்",
+        "மாணவிகளுக்கான உதவித் தொகை",
+        "puthumai penn thittam"
+      ]
+    },
+    {
+      "id": "bench_003",
+      "scheme_id": "scheme_skill_training",
+      "reference_text": "நான் முதல்வன் பயிற்சி விவரங்கள் வேண்டும்",
+      "aliases": [
+        "நான் முதல்வன்",
+        "திறன் மேம்பாட்டு பயிற்சி",
+        "naan mudhalvan"
+      ]
+    },
+    {
+      "id": "bench_004",
+      "scheme_id": "scheme_breakfast",
+      "reference_text": "காலை உணவுத் திட்டம் யாருக்கு கிடைக்கும்",
+      "aliases": [
+        "முதலமைச்சரின் காலை உணவுத் திட்டம்",
+        "பள்ளி காலை உணவு",
+        "kaalai unavu thittam"
+      ]
+    },
+    {
+      "id": "bench_005",
+      "scheme_id": "scheme_farmer_protection",
+      "reference_text": "உழவர் பாதுகாப்புத் திட்டத்தின் பயன்கள் என்ன",
+      "aliases": [
+        "உழவர் பாதுகாப்புத் திட்டம்",
+        "விவசாயிகள் பாதுகாப்பு உதவி",
+        "uzhavar paathukaappu thittam"
+      ]
+    },
+    {
+      "id": "bench_006",
+      "scheme_id": "scheme_health_insurance",
+      "reference_text": "மருத்துவ காப்பீட்டுத் திட்டத்திற்கு என்ன ஆவணங்கள் வேண்டும்",
+      "aliases": [
+        "மருத்துவ காப்பீட்டுத் திட்டம்",
+        "குடும்ப மருத்துவ உதவி",
+        "maruthuva kaappeettu thittam"
+      ]
+    },
+    {
+      "id": "bench_007",
+      "scheme_id": "scheme_marriage_assistance",
+      "reference_text": "திருமண உதவித் தொகைக்கு வயது வரம்பு என்ன",
+      "aliases": [
+        "திருமண உதவித் தொகை",
+        "திருமண நிதி உதவி",
+        "thirumana uthavi thogai"
+      ]
+    },
+    {
+      "id": "bench_008",
+      "scheme_id": "scheme_senior_pension",
+      "reference_text": "முதியோர் ஓய்வூதியம் பெறுவது எப்படி",
+      "aliases": [
+        "முதியோர் ஓய்வூதியம்",
+        "வயதானவர்களுக்கான மாத உதவி",
+        "muthiyor oyvoothiyam"
+      ]
+    }
+  ]
+}

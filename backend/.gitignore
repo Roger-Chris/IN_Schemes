@@ -1,0 +1,15 @@
+node_modules/
+.env
+.env.*
+!.env.example
+supabase/.branches/
+supabase/.temp/
+coverage/
+dist/
+*.log
+__pycache__/
+*.py[cod]
+.venv-voice/
+.venv-ai4bharat-wsl/
+voice/.cache/
+voice/data/generated_audio/

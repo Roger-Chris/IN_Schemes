@@ -1,0 +1,18 @@
+{
+  "analysis": "ai4bharat-600m-tamil-tokenizer-compatibility",
+  "model_vocab_path": "~/.cache/in-schemes-hf/hub/models--ai4bharat--indic-conformer-600m-multilingual/blobs/572b383ffdf366f025958ec556fa89b603fdbb16",
+  "public_vocab_path": "voice/.cache/ai4bharat-indicvoices/artifacts/tokenizers/ta_256/tokenizer_spe_bpe_v256/tokenizer.vocab",
+  "model_token_count": 257,
+  "public_token_count": 256,
+  "model_lexical_sha256": "8a20f4a1e690fa2a268085b841d888dd418eede10baa052481987a9c6c164225",
+  "public_sha256": "8a20f4a1e690fa2a268085b841d888dd418eede10baa052481987a9c6c164225",
+  "lexical_ids_exact_match": true,
+  "mismatch_count": 0,
+  "mismatches": [],
+  "model_appended_tokens": [
+    "|"
+  ],
+  "ctc_blank_id": 256,
+  "ctc_blank_token": "|",
+  "interpretation": "The public ta_256 SentencePiece vocabulary maps exactly to model IDs 0-255. The multilingual ONNX model appends its CTC blank at ID 256. The tokenizer is compatible for decoding, but changing its pieces or IDs still requires matching output-head retraining or remapping."
+}

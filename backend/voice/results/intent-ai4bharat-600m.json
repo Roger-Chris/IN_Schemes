@@ -1,0 +1,153 @@
+{
+  "evaluation": "scheme-intent-after-asr",
+  "synthetic": true,
+  "content_status": "synthetic_demo_only",
+  "results": [
+    {
+      "result_file": "ai4bharat-600m-multilingual-onnx-cuda.json",
+      "model": "AI4Bharat IndicConformer 600M Multilingual ONNX",
+      "condition": "ctc",
+      "intent_accuracy": 1.0,
+      "no_match_count": 0,
+      "items": [
+        {
+          "id": "bench_001",
+          "expected_scheme_id": "scheme_women_assistance",
+          "predicted_scheme_id": "scheme_women_assistance",
+          "correct": true,
+          "score": 0.8612,
+          "transcript": "பகளலர் உரிமைத் தொகை பற்றி சொல்லுங்கள்"
+        },
+        {
+          "id": "bench_002",
+          "expected_scheme_id": "scheme_student_support",
+          "predicted_scheme_id": "scheme_student_support",
+          "correct": true,
+          "score": 1.0,
+          "transcript": "புதுமைப் பெண் திட்டத்திற்கு எப்படி விண்ணப்பிப்பது"
+        },
+        {
+          "id": "bench_003",
+          "expected_scheme_id": "scheme_skill_training",
+          "predicted_scheme_id": "scheme_skill_training",
+          "correct": true,
+          "score": 1.0,
+          "transcript": "நான் முதல்வன் பயிற்சி விவரங்கள் வேண்டும்"
+        },
+        {
+          "id": "bench_004",
+          "expected_scheme_id": "scheme_breakfast",
+          "predicted_scheme_id": "scheme_breakfast",
+          "correct": true,
+          "score": 0.9375,
+          "transcript": "காலை உணவுத் திட்டம் யாருக்குக் கிடைக்கும்"
+        },
+        {
+          "id": "bench_005",
+          "expected_scheme_id": "scheme_farmer_protection",
+          "predicted_scheme_id": "scheme_farmer_protection",
+          "correct": true,
+          "score": 1.0,
+          "transcript": "உழவர் பாதுகாப்புத் திட்டத்தின் பயன்கள் என்ன"
+        },
+        {
+          "id": "bench_006",
+          "expected_scheme_id": "scheme_health_insurance",
+          "predicted_scheme_id": "scheme_health_insurance",
+          "correct": true,
+          "score": 0.9403,
+          "transcript": "மருத்துவக் காப்பீட்டுத் திட்டத்திற்கு என்ன ஆவணங்கள் வேண்டும்"
+        },
+        {
+          "id": "bench_007",
+          "expected_scheme_id": "scheme_marriage_assistance",
+          "predicted_scheme_id": "scheme_marriage_assistance",
+          "correct": true,
+          "score": 1.0,
+          "transcript": "திருமண உதவித் தொகைக்கு வயது வரம்பு என்ன"
+        },
+        {
+          "id": "bench_008",
+          "expected_scheme_id": "scheme_senior_pension",
+          "predicted_scheme_id": "scheme_senior_pension",
+          "correct": true,
+          "score": 1.0,
+          "transcript": "முதியோர் ஓய்வூதியம் பெறுவது எப்படி"
+        }
+      ]
+    },
+    {
+      "result_file": "ai4bharat-600m-multilingual-onnx-cuda.json",
+      "model": "AI4Bharat IndicConformer 600M Multilingual ONNX",
+      "condition": "rnnt",
+      "intent_accuracy": 1.0,
+      "no_match_count": 0,
+      "items": [
+        {
+          "id": "bench_001",
+          "expected_scheme_id": "scheme_women_assistance",
+          "predicted_scheme_id": "scheme_women_assistance",
+          "correct": true,
+          "score": 0.854,
+          "transcript": "பகலர் உரிமைத் தொகை பற்றி சொல்லுங்கள்"
+        },
+        {
+          "id": "bench_002",
+          "expected_scheme_id": "scheme_student_support",
+          "predicted_scheme_id": "scheme_student_support",
+          "correct": true,
+          "score": 1.0,
+          "transcript": "புதுமைப் பெண் திட்டத்திற்கு எப்படி விண்ணப்பிப்பது"
+        },
+        {
+          "id": "bench_003",
+          "expected_scheme_id": "scheme_skill_training",
+          "predicted_scheme_id": "scheme_skill_training",
+          "correct": true,
+          "score": 1.0,
+          "transcript": "நான் முதல்வன் பயிற்சி விவரங்கள் வேண்டும்"
+        },
+        {
+          "id": "bench_004",
+          "expected_scheme_id": "scheme_breakfast",
+          "predicted_scheme_id": "scheme_breakfast",
+          "correct": true,
+          "score": 0.9375,
+          "transcript": "காலை உணவுத் திட்டம் யாருக்குக் கிடைக்கும்"
+        },
+        {
+          "id": "bench_005",
+          "expected_scheme_id": "scheme_farmer_protection",
+          "predicted_scheme_id": "scheme_farmer_protection",
+          "correct": true,
+          "score": 1.0,
+          "transcript": "உழவர் பாதுகாப்புத் திட்டத்தின் பயன்கள் என்ன"
+        },
+        {
+          "id": "bench_006",
+          "expected_scheme_id": "scheme_health_insurance",
+          "predicted_scheme_id": "scheme_health_insurance",
+          "correct": true,
+          "score": 1.0,
+          "transcript": "மருத்துவ காப்பீட்டுத் திட்டத்திற்கு என்ன ஆவணங்கள் வேண்டும்"
+        },
+        {
+          "id": "bench_007",
+          "expected_scheme_id": "scheme_marriage_assistance",
+          "predicted_scheme_id": "scheme_marriage_assistance",
+          "correct": true,
+          "score": 1.0,
+          "transcript": "திருமண உதவித் தொகைக்கு வயது வரம்பு என்ன"
+        },
+        {
+          "id": "bench_008",
+          "expected_scheme_id": "scheme_senior_pension",
+          "predicted_scheme_id": "scheme_senior_pension",
+          "correct": true,
+          "score": 1.0,
+          "transcript": "முதியோர் ஓய்வூதியம் பெறுவது எப்படி"
+        }
+      ]
+    }
+  ]
+}
