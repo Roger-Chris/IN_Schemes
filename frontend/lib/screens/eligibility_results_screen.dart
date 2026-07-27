@@ -26,7 +26,7 @@ class EligibilityResultsScreen extends StatelessWidget {
           style: GoogleFonts.poppins(
             color: const Color(0xFF0F172A),
             fontWeight: FontWeight.bold,
-            fontSize: 18,
+            fontSize: 20.0,
           ),
         ),
         centerTitle: false,

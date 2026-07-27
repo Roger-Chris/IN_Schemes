@@ -271,8 +271,8 @@ class NavigationOptionCard extends StatelessWidget {
           boxShadow: [
             BoxShadow(
               color: isSelected
-                  ? activeColor.withOpacity(0.08)
-                  : Colors.black.withOpacity(0.015),
+                  ? activeColor.withValues(alpha: 0.08)
+                  : Colors.black.withValues(alpha: 0.015),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -476,7 +476,7 @@ class PrimaryButton extends StatelessWidget {
         borderRadius: BorderRadius.circular(16), // Large radius
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF2563EB).withOpacity(0.35),
+            color: const Color(0xFF2563EB).withValues(alpha: 0.35),
             blurRadius: 18,
             offset: const Offset(0, 8),
           ),

@@ -106,7 +106,7 @@ class _AntiGravityHeroSectionState extends State<AntiGravityHeroSection> with Ti
                         shape: BoxShape.circle,
                         gradient: RadialGradient(
                           colors: [
-                            const Color(0xFF8BB4F6).withOpacity(0.2), 
+                            const Color(0xFF8BB4F6).withValues(alpha: 0.2), 
                             Colors.transparent
                           ],
                         ),
@@ -247,7 +247,7 @@ class SoftCloudPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.white.withOpacity(0.55)
+      ..color = Colors.white.withValues(alpha: 0.55)
       ..style = PaintingStyle.fill
       // This MaskFilter ensures the shapes render as soft clouds, not hard shapes
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 40); 

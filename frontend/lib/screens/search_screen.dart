@@ -244,18 +244,10 @@ class SearchScreenState extends State<SearchScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF0F172A), size: 24),
-          onPressed: () {
-            provider.updateTabIndex(0); // Navigate to Home
-          },
-          padding: EdgeInsets.zero,
-          constraints: const BoxConstraints(),
-        ),
         Text(
           "Search",
           style: GoogleFonts.poppins(
-            fontSize: 22,
+            fontSize: 20.0,
             fontWeight: FontWeight.bold,
             color: const Color(0xFF0F172A),
           ),
@@ -269,19 +261,19 @@ class SearchScreenState extends State<SearchScreen> {
               builder: (context) => const FilterBottomSheet(),
             );
           },
-          child: Row(
-            children: [
-              const Icon(Icons.filter_alt_outlined, color: Color(0xFF2563EB), size: 20),
-              const SizedBox(width: 4),
-              Text(
-                "Filter",
-                style: GoogleFonts.inter(
-                  color: const Color(0xFF2563EB),
-                  fontWeight: FontWeight.w600,
-                  fontSize: 14,
-                ),
-              ),
-            ],
+          child: Container(
+            width: 36,
+            height: 36,
+            decoration: const BoxDecoration(
+              color: Color(0xFFEFF6FF),
+              shape: BoxShape.circle,
+            ),
+            alignment: Alignment.center,
+            child: const Icon(
+              Icons.filter_alt_outlined,
+              color: Color(0xFF2563EB),
+              size: 20,
+            ),
           ),
         ),
       ],
@@ -312,28 +304,31 @@ class SearchScreenState extends State<SearchScreen> {
           hintText: "Search schemes...",
           hintStyle: GoogleFonts.inter(
             color: const Color(0xFF94A3B8),
-            fontSize: 15,
+            fontSize: 14,
           ),
-          prefixIcon: const Icon(Icons.search, color: Color(0xFF94A3B8), size: 22),
+          prefixIcon: const Icon(Icons.search, color: Color(0xFF94A3B8), size: 18),
           suffixIcon: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               if (hasText)
                 IconButton(
-                  icon: const Icon(Icons.close, color: Color(0xFF94A3B8), size: 20),
+                  icon: const Icon(Icons.close, color: Color(0xFF94A3B8), size: 18),
                   onPressed: () {
                     _searchController.clear();
                     setState(() {
                       _currentState = SearchState.idle;
                     });
                   },
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
                 ),
-              const Icon(Icons.mic, color: Color(0xFF94A3B8), size: 22),
+              if (hasText) const SizedBox(width: 8),
+              const Icon(Icons.mic, color: Color(0xFF94A3B8), size: 18),
               const SizedBox(width: 12),
             ],
           ),
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(vertical: 14),
+          contentPadding: const EdgeInsets.symmetric(vertical: 8),
         ),
       ),
     );
@@ -355,12 +350,12 @@ class SearchScreenState extends State<SearchScreen> {
         Text(
           "Quick Filters",
           style: GoogleFonts.poppins(
-            fontSize: 16,
+            fontSize: 13.5,
             fontWeight: FontWeight.bold,
             color: const Color(0xFF0F172A),
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 8),
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           physics: const BouncingScrollPhysics(),
@@ -379,7 +374,7 @@ class SearchScreenState extends State<SearchScreen> {
                 },
                 child: Container(
                   margin: const EdgeInsets.only(right: 8),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 5),
                   decoration: BoxDecoration(
                     color: isSelected ? const Color(0xFF2563EB) : Colors.white,
                     borderRadius: BorderRadius.circular(30),
@@ -394,16 +389,16 @@ class SearchScreenState extends State<SearchScreen> {
                         Icon(
                           Icons.auto_awesome,
                           color: isSelected ? Colors.white : const Color(0xFF2563EB),
-                          size: 14,
+                          size: 11,
                         ),
-                        const SizedBox(width: 6),
+                        const SizedBox(width: 4),
                       ],
                       Text(
                         name,
                         style: GoogleFonts.inter(
                           color: isSelected ? Colors.white : const Color(0xFF2563EB),
                           fontWeight: FontWeight.bold,
-                          fontSize: 13,
+                          fontSize: 11,
                         ),
                       ),
                     ],
@@ -807,200 +802,219 @@ class _ResultSchemeCard extends StatelessWidget {
 
   const _ResultSchemeCard({required this.scheme});
 
-  Color _tagBg(String tag) {
-    final t = tag.toLowerCase();
-    if (t.contains('central') || t.contains('state')) return const Color(0xFFEFF6FF);
-    if (t.contains('loan') || t.contains('credit')) return const Color(0xFFECFDF5);
-    return const Color(0xFFF5F3FF);
-  }
-
-  Color _tagText(String tag) {
-    final t = tag.toLowerCase();
-    if (t.contains('central') || t.contains('state')) return const Color(0xFF1D4ED8);
-    if (t.contains('loan') || t.contains('credit')) return const Color(0xFF047857);
-    return const Color(0xFF6D28D9);
-  }
-
   List<String> get _tags {
-    return [
-      if (scheme.governmentLevel.isNotEmpty) scheme.governmentLevel,
-      if (scheme.schemeType.isNotEmpty) scheme.schemeType,
-      if (scheme.sector.isNotEmpty) scheme.sector,
-    ].take(3).toList();
+    final List<String> list = [];
+    if (scheme.sponsoringBody.isNotEmpty) {
+      list.addAll(scheme.sponsoringBody.split(',').map((s) => s.trim()).where((s) => s.isNotEmpty));
+    }
+    if (scheme.governmentLevel.isNotEmpty) list.add(scheme.governmentLevel);
+    if (scheme.schemeType.isNotEmpty) list.add(scheme.schemeType);
+    if (scheme.sector.isNotEmpty) list.add(scheme.sector);
+    return list.take(4).toList();
+  }
+
+  String _getImageForCategory(String category) {
+    final cat = category.toLowerCase();
+    if (cat.contains("farmer") || cat.contains("agriculture")) {
+      return 'assets/images/banner_farmer.png';
+    } else if (cat.contains("student") || cat.contains("education")) {
+      return 'assets/images/banner_students.png';
+    } else {
+      return 'assets/images/banner_family.png';
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final provider = Provider.of<AppProvider>(context);
+    final isBookmarked = provider.bookmarkedIds.contains(scheme.id) || 
+                         provider.bookmarkedIds.contains(scheme.schemeCode);
     final tags = _tags;
+    
+    // Parse scheme name
+    final titleText = scheme.name;
+    final regex = RegExp(r'\(([^)]+)\)');
+    final matchObj = regex.firstMatch(titleText);
+    String shortForm = titleText;
+    String fullName = '';
+    
+    if (matchObj != null) {
+      final bracketText = matchObj.group(1)!.trim();
+      final outsideText = titleText.replaceAll(regex, '').replaceAll(RegExp(r'\s+'), ' ').trim();
+      final isBracketAcronym = bracketText.length <= 10 && 
+                               !bracketText.contains(' ') && 
+                               bracketText == bracketText.toUpperCase();
+      if (isBracketAcronym) {
+        shortForm = bracketText;
+        fullName = outsideText;
+      } else if (bracketText.length > outsideText.length) {
+        shortForm = outsideText;
+        fullName = bracketText;
+      }
+    }
+
+    final imagePath = _getImageForCategory(scheme.category);
+
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.only(bottom: 14),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8F0), width: 1),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            color: Colors.black.withValues(alpha: 0.015),
+            blurRadius: 6,
+            offset: const Offset(0, 1.5),
           ),
         ],
       ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(16),
-          onTap: () {
-            Navigator.of(context).push(MaterialPageRoute(
-              builder: (_) => SchemeDetailsScreen(scheme: scheme),
-            ));
-          },
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Left Logo Box
-                Column(
-                  children: [
-                    Container(
-                      width: 56,
-                      height: 56,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFEFF6FF),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      alignment: Alignment.center,
-                      child: const Icon(Icons.account_balance,
-                          color: Color(0xFF2563EB), size: 26),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      scheme.sponsoringBody.isNotEmpty
-                          ? scheme.sponsoringBody
-                          : scheme.governmentLevel,
-                      style: GoogleFonts.inter(
-                        fontSize: 9.5,
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xFF64748B),
-                      ),
-                      textAlign: TextAlign.center,
-                      maxLines: 2,
-                    ),
-                  ],
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Left Image
+              SizedBox(
+                width: 90,
+                child: Image.asset(
+                  imagePath,
+                  fit: BoxFit.cover,
                 ),
-                const SizedBox(width: 14),
+              ),
 
-                // Right Content Block
-                Expanded(
+              // Right Content Block
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Title & Bookmark
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: Text(
-                              scheme.name,
-                              style: GoogleFonts.poppins(
-                                fontSize: 14.5,
-                                fontWeight: FontWeight.bold,
-                                color: const Color(0xFF0F172A),
-                              ),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          const Icon(Icons.bookmark_border,
-                              color: Color(0xFF94A3B8), size: 20),
-                        ],
-                      ),
-
-                      const SizedBox(height: 6),
-
-                      // Tags Wrap
-                      if (tags.isNotEmpty)
-                        Wrap(
-                          spacing: 6,
-                          runSpacing: 4,
-                          children: tags.map((tag) {
-                            return Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 8, vertical: 3),
-                              decoration: BoxDecoration(
-                                color: _tagBg(tag),
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: Text(
-                                tag,
-                                style: GoogleFonts.inter(
-                                  color: _tagText(tag),
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            );
-                          }).toList(),
-                        ),
-
-                      const SizedBox(height: 8),
-
-                      // Description
-                      Text(
-                        scheme.overview.isNotEmpty
-                            ? scheme.overview
-                            : scheme.objectives,
-                        style: GoogleFonts.inter(
-                          color: const Color(0xFF64748B),
-                          fontSize: 12.5,
-                          height: 1.3,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-
-                      const SizedBox(height: 12),
-
-                      // Bottom Match Badge & Chevron
+                      // Match & Bookmark Row
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 4),
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFECFDF5),
-                              borderRadius: BorderRadius.circular(20),
+                              color: const Color(0xFFDCFCE7),
+                              borderRadius: BorderRadius.circular(6),
                             ),
+                            child: Text(
+                              "92% Match",
+                              style: GoogleFonts.inter(
+                                color: const Color(0xFF15803D),
+                                fontSize: 9.5,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: () {
+                              provider.toggleBookmark(scheme.schemeCode);
+                            },
+                            child: Icon(
+                              isBookmarked ? Icons.bookmark : Icons.bookmark_border,
+                              color: isBookmarked ? const Color(0xFF2563EB) : const Color(0xFF94A3B8),
+                              size: 20,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+
+                      // Title Block
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            shortForm,
+                            style: GoogleFonts.poppins(
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xFF0F172A),
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          if (fullName.isNotEmpty) ...[
+                            const SizedBox(height: 1),
+                            Text(
+                              "($fullName)",
+                              style: GoogleFonts.inter(
+                                fontSize: 9.5,
+                                fontWeight: FontWeight.w500,
+                                color: const Color(0xFF64748B),
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+
+                      // Chips Row
+                      Wrap(
+                        spacing: 4,
+                        runSpacing: 4,
+                        children: tags.map((tag) {
+                          return Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF1F5F9),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              tag,
+                              style: GoogleFonts.inter(
+                                fontSize: 9,
+                                color: const Color(0xFF475569),
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                      const SizedBox(height: 8),
+
+                      // Bottom Row
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(builder: (_) => SchemeDetailsScreen(scheme: scheme)),
+                              );
+                            },
                             child: Row(
                               children: [
-                                const Icon(Icons.auto_awesome,
-                                    color: Color(0xFF047857), size: 12),
-                                const SizedBox(width: 4),
                                 Text(
-                                  scheme.governmentLevel == 'State'
-                                      ? 'State Scheme'
-                                      : 'Central Scheme',
+                                  "Apply",
                                   style: GoogleFonts.inter(
-                                    color: const Color(0xFF047857),
-                                    fontSize: 10.5,
+                                    color: const Color(0xFF2563EB),
                                     fontWeight: FontWeight.bold,
+                                    fontSize: 11,
                                   ),
+                                ),
+                                const SizedBox(width: 2),
+                                const Icon(
+                                  Icons.arrow_forward,
+                                  size: 11,
+                                  color: Color(0xFF2563EB),
                                 ),
                               ],
                             ),
                           ),
-                          const Icon(Icons.chevron_right,
-                              color: Color(0xFF94A3B8), size: 22),
                         ],
                       ),
                     ],
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),

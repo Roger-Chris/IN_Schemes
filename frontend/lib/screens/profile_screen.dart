@@ -217,7 +217,7 @@ class ProfileScreen extends StatelessWidget {
           style: GoogleFonts.poppins(
             color: const Color(0xFF0F172A),
             fontWeight: FontWeight.bold,
-            fontSize: 17,
+            fontSize: 20.0,
           ),
         ),
         backgroundColor: Colors.transparent,

@@ -654,7 +654,7 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                       Text(
                         'Help & Support',
                         style: GoogleFonts.poppins(
-                          fontSize: 24,
+                          fontSize: 20.0,
                           fontWeight: FontWeight.bold,
                           color: const Color(0xFF0F172A),
                         ),

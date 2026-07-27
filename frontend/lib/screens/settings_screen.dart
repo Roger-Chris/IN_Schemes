@@ -281,7 +281,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       Text(
                         'Settings',
                         style: GoogleFonts.poppins(
-                          fontSize: 24,
+                          fontSize: 20.0,
                           fontWeight: FontWeight.bold,
                           color: const Color(0xFF0F172A),
                         ),
