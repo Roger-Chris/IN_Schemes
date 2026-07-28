@@ -304,9 +304,12 @@ class AppProvider with ChangeNotifier {
 
       final session = Supabase.instance.client.auth.currentSession;
       if (session != null) {
+        debugPrint('[AppProvider] Active Supabase session found during _loadState: user=${session.user.id}');
         _isLoggedIn = true;
         _isGuest = false;
         _mobileNumber = session.user.phone ?? '';
+      } else {
+        debugPrint('[AppProvider] No active Supabase session found during _loadState.');
       }
 
       notifyListeners();
@@ -361,15 +364,17 @@ class AppProvider with ChangeNotifier {
 
   Future<bool> loginWithGoogle() async {
     try {
+      debugPrint('[AppProvider] Starting loginWithGoogle flow...');
       final response = await AuthService.signInWithGoogle();
       if (response.user != null) {
         _currentTabIndex = 0;
         final prefs = await SharedPreferences.getInstance();
         await prefs.setInt('currentTabIndex', 0);
+        debugPrint('[AppProvider] loginWithGoogle flow succeeded for user ID: ${response.user?.id}');
         return true;
       }
     } catch (e) {
-      debugPrint('Error signing in with Google: $e');
+      debugPrint('[AppProvider] Error signing in with Google: $e');
       rethrow;
     }
     return false;
@@ -389,7 +394,12 @@ class AppProvider with ChangeNotifier {
   }
 
   void logout() async {
-    await Supabase.instance.client.auth.signOut();
+    debugPrint('[AppProvider] logout initiated...');
+    try {
+      await AuthService.signOut();
+    } catch (e) {
+      debugPrint('[AppProvider] Error during AuthService.signOut(): $e');
+    }
 
     final prefs = await SharedPreferences.getInstance();
     final lang = prefs.getString('language');
@@ -411,7 +421,11 @@ class AppProvider with ChangeNotifier {
     _bookmarkedIds.clear();
     _recentlyViewedIds.clear();
     _currentTabIndex = 0;
+<<<<<<< HEAD
     _tabHistory.clear();
+=======
+    debugPrint('[AppProvider] Local states cleared after logout.');
+>>>>>>> c5dd534 (Describe your changes)
     notifyListeners();
   }
 
