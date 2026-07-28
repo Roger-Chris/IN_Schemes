@@ -88,6 +88,16 @@ void main() {
     expect(matches, isEmpty);
   });
 
+  test('tolerates a one-character spelling mistake', () {
+    final matches = IntelligentSchemeSearch.rank(
+      'college scholrship support',
+      schemes,
+    );
+
+    expect(matches, isNotEmpty);
+    expect(matches.first.scheme.id, 'IN-STUDENT');
+  });
+
   test('Tamil voice query finds relevant real catalog records', () async {
     final catalog = await SchemeCatalog.load();
     final matches = IntelligentSchemeSearch.rank(

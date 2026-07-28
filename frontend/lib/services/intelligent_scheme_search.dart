@@ -38,6 +38,13 @@ class SchemeSearchIntent {
 class IntelligentSchemeSearch {
   const IntelligentSchemeSearch._();
 
+  // Catalog entries are immutable. Cache their normalized search document so
+  // repeated conversational turns do not re-normalize the same 217 schemes.
+  // User statements are intentionally never cached.
+  static final Expando<_SchemeSearchDocument> _documentCache =
+      Expando<_SchemeSearchDocument>('schemeSearchDocument');
+  static final RegExp _asciiTokenPattern = RegExp(r'^[a-z0-9]+$');
+
   static const Map<String, _Concept> _concepts = {
     'agriculture': _Concept(
       label: 'Agriculture',
@@ -370,6 +377,7 @@ class IntelligentSchemeSearch {
         'marriage',
         'wedding',
         'bride',
+        'kalyana',
         'kalyanam',
         'thirumanam',
         'கல்யாணம்',
@@ -470,9 +478,14 @@ class IntelligentSchemeSearch {
     'iruka',
     'irukku',
     'kidaikuma',
+    'ku',
     'kudunga',
+    'illa',
+    'irukken',
     'naa',
     'naan',
+    'panna',
+    'pannalam',
     'pathi',
     'thevai',
     'venum',
@@ -502,8 +515,7 @@ class IntelligentSchemeSearch {
       concepts: concepts,
       isTamil:
           RegExp(r'[\u0B80-\u0BFF]').hasMatch(query) ||
-          _tokens(normalized).any(_tanglishMarkers.contains) ||
-          concepts.any((concept) => _hasTanglishAlias(normalized, concept)),
+          _tokens(normalized).any(_tanglishMarkers.contains),
     );
   }
 
@@ -546,7 +558,61 @@ class IntelligentSchemeSearch {
     SchemeSearchIntent intent,
     String normalizedQuery,
   ) {
-    final fields = <(String, String, double)>[
+    final document = _documentFor(scheme);
+    final fields = document.fields;
+
+    var score = 0.0;
+    final reasonScores = <String, double>{};
+    final normalizedCode = document.normalizedCode;
+    if (normalizedQuery == normalizedCode && normalizedCode.isNotEmpty) {
+      score += 100;
+      reasonScores['Exact scheme code'] = 100;
+    }
+    if (normalizedQuery.length > 3 &&
+        fields.first.$2.contains(normalizedQuery)) {
+      score += 28;
+      reasonScores['Scheme name'] = 28;
+    }
+
+    for (final field in fields) {
+      var fieldScore = 0.0;
+      for (final term in intent.terms) {
+        if (_containsAlias(field.$2, term, tokens: field.$4)) {
+          fieldScore += field.$3;
+        }
+      }
+      if (fieldScore == 0) continue;
+      score += fieldScore;
+      reasonScores[_reasonForField(field.$1)] = fieldScore;
+    }
+
+    for (final conceptKey in intent.concepts) {
+      final concept = _concepts[conceptKey]!;
+      final hits = concept.expansion
+          .where(
+            (term) => _containsAlias(
+              document.searchable,
+              term,
+              tokens: document.searchableTokens,
+            ),
+          )
+          .length;
+      if (hits > 0) {
+        final conceptScore = 2.5 + math.min(hits, 3) * 1.5;
+        score += conceptScore;
+        reasonScores[concept.label] = conceptScore;
+      }
+    }
+
+    final reasons = reasonScores.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+    return (score, reasons.take(2).map((entry) => entry.key).toList());
+  }
+
+  static _SchemeSearchDocument _documentFor(Scheme scheme) {
+    final cached = _documentCache[scheme];
+    if (cached != null) return cached;
+    final normalizedFields = <(String, String, double)>[
       ('name', _normalize(scheme.name), 9),
       ('beneficiary', _normalize(scheme.targetBeneficiary), 6.5),
       ('category', _normalize('${scheme.category} ${scheme.sector}'), 6),
@@ -567,46 +633,25 @@ class IntelligentSchemeSearch {
         1.5,
       ),
     ];
-
-    var score = 0.0;
-    final reasonScores = <String, double>{};
-    final normalizedCode = _normalize(scheme.schemeCode);
-    if (normalizedQuery == normalizedCode && normalizedCode.isNotEmpty) {
-      score += 100;
-      reasonScores['Exact scheme code'] = 100;
-    }
-    if (normalizedQuery.length > 3 &&
-        fields.first.$2.contains(normalizedQuery)) {
-      score += 28;
-      reasonScores['Scheme name'] = 28;
-    }
-
-    for (final field in fields) {
-      var fieldScore = 0.0;
-      for (final term in intent.terms) {
-        if (_containsAlias(field.$2, term)) fieldScore += field.$3;
-      }
-      if (fieldScore == 0) continue;
-      score += fieldScore;
-      reasonScores[_reasonForField(field.$1)] = fieldScore;
-    }
-
-    for (final conceptKey in intent.concepts) {
-      final concept = _concepts[conceptKey]!;
-      final searchable = fields.map((field) => field.$2).join(' ');
-      final hits = concept.expansion
-          .where((term) => _containsAlias(searchable, term))
-          .length;
-      if (hits > 0) {
-        final conceptScore = 2.5 + math.min(hits, 3) * 1.5;
-        score += conceptScore;
-        reasonScores[concept.label] = conceptScore;
-      }
-    }
-
-    final reasons = reasonScores.entries.toList()
-      ..sort((a, b) => b.value.compareTo(a.value));
-    return (score, reasons.take(2).map((entry) => entry.key).toList());
+    final fields = normalizedFields
+        .map(
+          (field) => (
+            field.$1,
+            field.$2,
+            field.$3,
+            _tokens(field.$2).toList(growable: false),
+          ),
+        )
+        .toList(growable: false);
+    final searchable = normalizedFields.map((field) => field.$2).join(' ');
+    final document = _SchemeSearchDocument(
+      fields: fields,
+      normalizedCode: _normalize(scheme.schemeCode),
+      searchable: searchable,
+      searchableTokens: _tokens(searchable).toList(growable: false),
+    );
+    _documentCache[scheme] = document;
+    return document;
   }
 
   static String _reasonForField(String field) => switch (field) {
@@ -619,28 +664,53 @@ class IntelligentSchemeSearch {
     _ => 'Scheme details',
   };
 
-  static bool _hasTanglishAlias(String query, String conceptKey) {
-    final concept = _concepts[conceptKey]!;
-    return concept.aliases.any(
-      (alias) =>
-          RegExp(r'^[a-z]').hasMatch(alias) &&
-          !concept.expansion.contains(alias) &&
-          _containsAlias(query, alias),
-    );
-  }
-
-  static bool _containsAlias(String text, String alias) {
+  static bool _containsAlias(
+    String text,
+    String alias, {
+    Iterable<String>? tokens,
+  }) {
     final normalizedAlias = _normalize(alias);
     if (normalizedAlias.isEmpty) return false;
     if (' $text '.contains(' $normalizedAlias ')) return true;
     if (normalizedAlias.contains(' ') || normalizedAlias.length < 4) {
       return false;
     }
-    return _tokens(text).any(
+    final allowSpellingTolerance = _asciiTokenPattern.hasMatch(normalizedAlias);
+    return (tokens ?? _tokens(text)).any(
       (token) =>
           token.startsWith(normalizedAlias) ||
-          (token.length >= 4 && normalizedAlias.startsWith(token)),
+          (token.length >= 4 && normalizedAlias.startsWith(token)) ||
+          (allowSpellingTolerance &&
+              _asciiTokenPattern.hasMatch(token) &&
+              token.length >= 5 &&
+              normalizedAlias.length >= 5 &&
+              withinOneEdit(token, normalizedAlias)),
     );
+  }
+
+  static bool withinOneEdit(String left, String right) {
+    if ((left.length - right.length).abs() > 1) return false;
+    var leftIndex = 0;
+    var rightIndex = 0;
+    var edits = 0;
+    while (leftIndex < left.length && rightIndex < right.length) {
+      if (left.codeUnitAt(leftIndex) == right.codeUnitAt(rightIndex)) {
+        leftIndex++;
+        rightIndex++;
+        continue;
+      }
+      if (++edits > 1) return false;
+      if (left.length > right.length) {
+        leftIndex++;
+      } else if (right.length > left.length) {
+        rightIndex++;
+      } else {
+        leftIndex++;
+        rightIndex++;
+      }
+    }
+    if (leftIndex < left.length || rightIndex < right.length) edits++;
+    return edits <= 1;
   }
 
   static Iterable<String> _tokens(String value) =>
@@ -663,4 +733,18 @@ class _Concept {
   final String label;
   final List<String> aliases;
   final List<String> expansion;
+}
+
+class _SchemeSearchDocument {
+  const _SchemeSearchDocument({
+    required this.fields,
+    required this.normalizedCode,
+    required this.searchable,
+    required this.searchableTokens,
+  });
+
+  final List<(String, String, double, List<String>)> fields;
+  final String normalizedCode;
+  final String searchable;
+  final List<String> searchableTokens;
 }

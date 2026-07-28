@@ -131,20 +131,31 @@ class AutomaticSpeechBridge(
         val sessionRecognizer = SpeechRecognizer.createSpeechRecognizer(activity)
         recognizer = sessionRecognizer
         activeSessionId = sessionId
-        sessionRecognizer.setRecognitionListener(SessionListener(sessionId))
+        sessionRecognizer.setRecognitionListener(SessionListener(sessionId, preferredLocale))
 
         val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
             putExtra(
                 RecognizerIntent.EXTRA_LANGUAGE_MODEL,
-                RecognizerIntent.LANGUAGE_MODEL_WEB_SEARCH,
+                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM,
             )
             putExtra(RecognizerIntent.EXTRA_LANGUAGE, preferredLocale)
             putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
             putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 5)
+            // The A059 recognizer otherwise endpoints before users finish a
+            // natural Tamil sentence or even have time to begin speaking.
+            putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_MINIMUM_LENGTH_MILLIS, 2_500L)
+            putExtra(
+                RecognizerIntent.EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS,
+                1_000L,
+            )
+            putExtra(
+                RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS,
+                1_600L,
+            )
             putExtra(RecognizerIntent.EXTRA_ENABLE_LANGUAGE_DETECTION, true)
             putExtra(
                 RecognizerIntent.EXTRA_ENABLE_LANGUAGE_SWITCH,
-                RecognizerIntent.LANGUAGE_SWITCH_BALANCED,
+                RecognizerIntent.LANGUAGE_SWITCH_QUICK_RESPONSE,
             )
             putStringArrayListExtra(
                 RecognizerIntent.EXTRA_LANGUAGE_DETECTION_ALLOWED_LANGUAGES,
@@ -230,7 +241,10 @@ class AutomaticSpeechBridge(
 
     private inner class SessionListener(
         private val sessionId: Int,
+        initialLanguage: String,
     ) : RecognitionListener {
+        private var detectedLanguage: String? = initialLanguage
+
         override fun onReadyForSpeech(params: Bundle?) {
             emit(sessionId, "status", mapOf("status" to "listening"))
         }
@@ -281,6 +295,7 @@ class AutomaticSpeechBridge(
 
         override fun onLanguageDetection(results: Bundle) {
             val language = results.getString(SpeechRecognizer.DETECTED_LANGUAGE) ?: return
+            detectedLanguage = language
             emit(sessionId, "language", mapOf("language" to language))
         }
 
@@ -288,13 +303,24 @@ class AutomaticSpeechBridge(
             val transcripts = bundle
                 ?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
                 .orEmpty()
-            val transcript = transcripts.firstOrNull().orEmpty()
+            val transcript = selectTranscript(transcripts)
             if (transcript.isEmpty()) return
             emit(
                 sessionId,
                 "result",
                 mapOf("transcript" to transcript, "final" to finalResult),
             )
+        }
+
+        private fun selectTranscript(transcripts: List<String>): String {
+            if (detectedLanguage?.startsWith("ta", ignoreCase = true) == true) {
+                // Some recognizers retain an English-biased first hypothesis
+                // after switching. Prefer an available Tamil-script candidate.
+                transcripts.firstOrNull { candidate ->
+                    candidate.any { character -> character.code in 0x0B80..0x0BFF }
+                }?.let { return it }
+            }
+            return transcripts.firstOrNull().orEmpty()
         }
     }
 
