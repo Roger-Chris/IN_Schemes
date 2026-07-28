@@ -3,6 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'about_you_profile_screen.dart';
+import 'package:provider/provider.dart';
+import '../providers/app_state_provider.dart';
 
 class LocationProfileScreen extends StatefulWidget {
   const LocationProfileScreen({super.key});
@@ -357,6 +359,14 @@ class _LocationProfileScreenState extends State<LocationProfileScreen> {
                                     elevation: 0,
                                   ),
                                   onPressed: () {
+                                    final provider = Provider.of<AppProvider>(context, listen: false);
+                                    provider.updateProfile(provider.profile.copyWith(
+                                      house: _doorStreetController.text.trim(),
+                                      area: _areaLocalityController.text.trim(),
+                                      district: _cityDistrictController.text.trim(),
+                                      state: _stateController.text.trim(),
+                                      pinCode: _pincodeController.text.trim(),
+                                    ));
                                     Navigator.of(context).push(
                                       MaterialPageRoute(
                                         builder: (_) => const AboutYouProfileScreen(),

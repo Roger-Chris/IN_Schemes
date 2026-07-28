@@ -4,7 +4,6 @@ import 'package:google_fonts/google_fonts.dart';
 import '../providers/app_state_provider.dart';
 import '../utils/constants.dart';
 import 'language_selection_screen.dart';
-import 'login_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -20,7 +19,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void _handleDeleteAccount(BuildContext context, AppProvider provider) {
     showDialog(
       context: context,
-      builder: (context) {
+      builder: (dialogContext) {
         return AlertDialog(
           backgroundColor: Colors.white,
           shape: RoundedRectangleBorder(
@@ -40,7 +39,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => Navigator.pop(dialogContext),
               child: Text(
                 'Cancel',
                 style: GoogleFonts.inter(color: AppConstants.secondaryText),
@@ -52,14 +51,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 elevation: 0,
               ),
-              onPressed: () {
-                Navigator.pop(context);
-                provider.logout(); // Clears all local storage
-                Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (_) => const LoginScreen()),
-                  (route) => false,
-                );
-              },
+              onPressed: provider.isLoggingOut
+                  ? null
+                  : () {
+                      Navigator.pop(dialogContext);
+                      provider.deleteAccount(context);
+                    },
               child: Text(
                 'Delete Permanently',
                 style: GoogleFonts.inter(

@@ -65,6 +65,11 @@ class _CompanionIntroScreenState extends State<CompanionIntroScreen> {
   }
 
   Widget _buildLeftChatBubble() {
+    final provider = Provider.of<AppProvider>(context, listen: false);
+    final displayName = provider.profile.name.isNotEmpty 
+        ? provider.profile.name.split(' ').first 
+        : 'User';
+
     return CustomPaint(
       painter: ChatBubblePainter(color: const Color(0xFFEFF6FF), isLeft: true),
       child: Padding(
@@ -76,16 +81,16 @@ class _CompanionIntroScreenState extends State<CompanionIntroScreen> {
               fontWeight: FontWeight.w500,
               color: const Color(0xFF334155),
             ),
-            children: const [
-              TextSpan(text: 'Hello, '),
+            children: [
+              const TextSpan(text: 'Hello, '),
               TextSpan(
-                text: 'Praveen!',
-                style: TextStyle(
+                text: '$displayName!',
+                style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   color: Color(0xFF2563EB),
                 ),
               ),
-              TextSpan(text: ' 👋'),
+              const TextSpan(text: ' 👋'),
             ],
           ),
         ),

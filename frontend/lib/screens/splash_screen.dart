@@ -2,8 +2,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'language_selection_screen.dart';
+import 'login_screen.dart';
 import '../providers/app_state_provider.dart';
+import '../services/session_cache_service.dart';
 import '../utils/constants.dart';
 import '../main.dart';
 
@@ -45,21 +48,39 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     _controller.forward();
 
     // Auto navigate after 3.2 seconds
-    _navigationTimer = Timer(const Duration(milliseconds: 3200), () {
-      if (mounted) {
-        final provider = Provider.of<AppProvider>(context, listen: false);
-        if (provider.isLoggedIn || provider.isGuest) {
-          provider.updateTabIndex(0); // Ensure home page is the first page shown
+    _navigationTimer = Timer(const Duration(milliseconds: 3200), () async {
+      if (!mounted) return;
+      
+      final provider = Provider.of<AppProvider>(context, listen: false);
+      final cache = SessionCacheService.instance;
+      
+      // Load preference details from cache
+      final lang = await cache.getLanguage();
+      final profile = await cache.loadProfile();
+      
+      // Validate Supabase session (instant offline check)
+      final session = Supabase.instance.client.auth.currentSession;
+      
+      if (!mounted) return;
+      
+      if (session != null && profile != null && profile.profileCompleted) {
+        // Instant routing based on local cache
+        provider.updateTabIndex(0);
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const MainTabsContainer()),
+        );
+      } else {
+        // Session invalid or profile incomplete - clean auth cache
+        await cache.clearSession();
+        
+        if (!mounted) return;
+        if (lang == null) {
           Navigator.of(context).pushReplacement(
-            MaterialPageRoute(
-              builder: (_) => const MainTabsContainer(),
-            ),
+            MaterialPageRoute(builder: (_) => const LanguageSelectionScreen()),
           );
         } else {
           Navigator.of(context).pushReplacement(
-            MaterialPageRoute(
-              builder: (_) => const LanguageSelectionScreen(),
-            ),
+            MaterialPageRoute(builder: (_) => const LoginScreen()),
           );
         }
       }

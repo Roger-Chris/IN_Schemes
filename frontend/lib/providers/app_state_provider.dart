@@ -9,10 +9,12 @@ import '../models/scheme_model.dart';
 import '../engine/recommendation_engine.dart';
 import '../services/auth_service.dart';
 import '../services/scheme_repository.dart';
+import '../services/session_cache_service.dart';
+import '../screens/login_screen.dart';
 
 class AppProvider with ChangeNotifier {
   bool _isLoggedIn = false;
-  bool _isGuest = false;
+  bool _isLoggingOut = false;
   String _mobileNumber = '';
   String _selectedLanguage = 'en'; // 'en', 'hi'
   String _navigationMode = 'regular'; // 'regular', 'companion'
@@ -152,37 +154,32 @@ class AppProvider with ChangeNotifier {
           (event == AuthChangeEvent.signedIn ||
               event == AuthChangeEvent.tokenRefreshed)) {
         _isLoggedIn = true;
-        _isGuest = false;
         final user = session.user;
         _mobileNumber = user.phone ?? '';
 
-        // Initialize user profile from Supabase user info
-        _profile = UserProfile(
-          name: user.userMetadata?['full_name'] ??
-              user.userMetadata?['name'] ??
-              'Google User',
-          email: user.email ?? '',
-          mobile: user.phone ?? '',
-        );
-
-        // Sync/Update profile in public.users table
-        try {
-          await Supabase.instance.client.from('users').upsert({
-            'id': user.id,
-            'full_name': _profile.name,
-            'phone': _profile.mobile,
-            'profile_photo_url': user.userMetadata?['avatar_url'] ?? '',
-            'is_active': true,
-          });
-        } catch (e) {
-          debugPrint('Error syncing profile to public.users: $e');
+        final dbProfile = await SchemeRepository.instance.getProfile(user.id);
+        if (dbProfile != null) {
+          _profile = dbProfile;
+          _selectedLanguage = dbProfile.language;
+          _navigationMode = dbProfile.navigationMode;
+        } else {
+          _profile = UserProfile(
+            googleUserId: user.id,
+            name: user.userMetadata?['full_name'] ??
+                user.userMetadata?['name'] ??
+                'Google User',
+            email: user.email ?? '',
+            mobile: user.phone ?? '',
+            profilePhoto: user.userMetadata?['avatar_url'] ?? '',
+            language: _selectedLanguage,
+            navigationMode: _navigationMode,
+          );
         }
 
         await _saveProfile();
         notifyListeners();
       } else if (event == AuthChangeEvent.signedOut) {
         _isLoggedIn = false;
-        _isGuest = false;
         _mobileNumber = '';
         _profile = UserProfile();
         _bookmarkedIds.clear();
@@ -195,7 +192,8 @@ class AppProvider with ChangeNotifier {
 
   // Getters
   bool get isLoggedIn => _isLoggedIn;
-  bool get isGuest => _isGuest;
+  bool get isGuest => false;
+  bool get isLoggingOut => _isLoggingOut;
   String get mobileNumber => _mobileNumber;
   String get selectedLanguage => _selectedLanguage;
   String get navigationMode => _navigationMode;
@@ -260,22 +258,19 @@ class AppProvider with ChangeNotifier {
   // Load state from SharedPreferences (for session continue support)
   Future<void> _loadState() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      _selectedLanguage = prefs.getString('language') ?? 'en';
-      _navigationMode = prefs.getString('navigationMode') ?? 'regular';
-      _isGuest = prefs.getBool('isGuest') ?? false;
-      _currentTabIndex = prefs.getInt('currentTabIndex') ?? 0;
+      _selectedLanguage = await SessionCacheService.instance.getLanguage() ?? 'en';
+      _currentTabIndex = await SessionCacheService.instance.getCurrentTabIndex();
 
-
-      final profileStr = prefs.getString('userProfile');
-      if (profileStr != null) {
-        _profile = UserProfile.fromJson(jsonDecode(profileStr));
+      final cachedProfile = await SessionCacheService.instance.loadProfile();
+      if (cachedProfile != null) {
+        _profile = cachedProfile;
+        _navigationMode = _profile.navigationMode;
       }
 
-      _bookmarkedIds = prefs.getStringList('bookmarks') ?? ['POST_MATRIC', 'PM_MATRU_VANDANA', 'PM_AWAS'];
-      _recentlyViewedIds = prefs.getStringList('recentlyViewed') ?? ['NSP_PORTAL', 'PM_EDRIVE', 'AYUSHMAN_BHARAT', 'MUDRA'];
+      _bookmarkedIds = await SessionCacheService.instance.getBookmarks() ?? ['POST_MATRIC', 'PM_MATRU_VANDANA', 'PM_AWAS'];
+      _recentlyViewedIds = await SessionCacheService.instance.getRecentlyViewed() ?? ['NSP_PORTAL', 'PM_EDRIVE', 'AYUSHMAN_BHARAT', 'MUDRA'];
 
-      final downloadedDocsStr = prefs.getString('downloadedDocs');
+      final downloadedDocsStr = await SessionCacheService.instance.getDownloadedDocs();
       if (downloadedDocsStr != null) {
         _downloadedDocs = List<Map<String, dynamic>>.from(jsonDecode(downloadedDocsStr));
       } else {
@@ -306,7 +301,6 @@ class AppProvider with ChangeNotifier {
       if (session != null) {
         debugPrint('[AppProvider] Active Supabase session found during _loadState: user=${session.user.id}');
         _isLoggedIn = true;
-        _isGuest = false;
         _mobileNumber = session.user.phone ?? '';
       } else {
         debugPrint('[AppProvider] No active Supabase session found during _loadState.');
@@ -323,43 +317,32 @@ class AppProvider with ChangeNotifier {
 
   // Save state helpers
   Future<void> _saveProfile() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('userProfile', jsonEncode(_profile.toJson()));
-  }
-
-  Future<void> _saveLoginState() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('isGuest', _isGuest);
+    await SessionCacheService.instance.saveProfile(_profile);
   }
 
   // Setters & Actions
   void changeLanguage(String lang) async {
     _selectedLanguage = lang;
     notifyListeners();
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('language', lang);
+    await SessionCacheService.instance.saveLanguage(lang);
   }
 
   void changeNavigationMode(String mode) async {
     _navigationMode = mode;
     notifyListeners();
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('navigationMode', mode);
+    await SessionCacheService.instance.saveNavigationMode(mode);
   }
 
 
   void login(String mobile) async {
     _isLoggedIn = true;
-    _isGuest = false;
     _mobileNumber = mobile;
     _currentTabIndex = 0;
     // Default initial profile
     _profile = UserProfile(mobile: mobile);
     notifyListeners();
-    await _saveLoginState();
     await _saveProfile();
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt('currentTabIndex', 0);
+    await SessionCacheService.instance.saveCurrentTabIndex(0);
   }
 
   Future<bool> loginWithGoogle() async {
@@ -367,11 +350,45 @@ class AppProvider with ChangeNotifier {
       debugPrint('[AppProvider] Starting loginWithGoogle flow...');
       final response = await AuthService.signInWithGoogle();
       if (response.user != null) {
-        _currentTabIndex = 0;
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setInt('currentTabIndex', 0);
-        debugPrint('[AppProvider] loginWithGoogle flow succeeded for user ID: ${response.user?.id}');
-        return true;
+        final user = response.user!;
+        _isLoggedIn = true;
+        _mobileNumber = user.phone ?? '';
+
+        final dbProfile = await SchemeRepository.instance.getProfile(user.id);
+        if (dbProfile != null) {
+          _profile = dbProfile;
+          _selectedLanguage = dbProfile.language;
+          _navigationMode = dbProfile.navigationMode;
+
+          await SchemeRepository.instance.updateLastLogin(user.id);
+
+          await SessionCacheService.instance.saveProfile(_profile);
+          await SessionCacheService.instance.saveLanguage(_selectedLanguage);
+          await SessionCacheService.instance.saveNavigationMode(_navigationMode);
+
+          _currentTabIndex = 0;
+          await SessionCacheService.instance.saveCurrentTabIndex(0);
+
+          notifyListeners();
+          debugPrint('[AppProvider] loginWithGoogle returning user: ${user.id}');
+          return true; // Profile exists and complete
+        } else {
+          _profile = UserProfile(
+            googleUserId: user.id,
+            name: user.userMetadata?['full_name'] ?? user.userMetadata?['name'] ?? '',
+            email: user.email ?? '',
+            mobile: user.phone ?? '',
+            profilePhoto: user.userMetadata?['avatar_url'] ?? '',
+            language: _selectedLanguage,
+            navigationMode: _navigationMode,
+            profileCompleted: false,
+          );
+
+          await _saveProfile();
+          notifyListeners();
+          debugPrint('[AppProvider] loginWithGoogle new user: ${user.id}');
+          return false; // Profile does not exist yet
+        }
       }
     } catch (e) {
       debugPrint('[AppProvider] Error signing in with Google: $e');
@@ -380,52 +397,123 @@ class AppProvider with ChangeNotifier {
     return false;
   }
 
-  void continueAsGuest() async {
-    _isLoggedIn = false;
-    _isGuest = true;
-    _mobileNumber = '';
-    _currentTabIndex = 0;
-    _profile = UserProfile(name: 'Guest User');
-    notifyListeners();
-    await _saveLoginState();
-    await _saveProfile();
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt('currentTabIndex', 0);
+  Future<bool> checkSessionAndFetchProfile() async {
+    final session = Supabase.instance.client.auth.currentSession;
+    if (session == null) {
+      _isLoggedIn = false;
+      notifyListeners();
+      return false;
+    }
+
+    final user = session.user;
+    _isLoggedIn = true;
+    _mobileNumber = user.phone ?? '';
+
+    final dbProfile = await SchemeRepository.instance.getProfile(user.id);
+    if (dbProfile != null) {
+      _profile = dbProfile;
+      _selectedLanguage = dbProfile.language;
+      _navigationMode = dbProfile.navigationMode;
+
+      await SchemeRepository.instance.updateLastLogin(user.id);
+
+      await SessionCacheService.instance.saveProfile(_profile);
+      await SessionCacheService.instance.saveLanguage(_selectedLanguage);
+      await SessionCacheService.instance.saveNavigationMode(_navigationMode);
+
+      notifyListeners();
+      return dbProfile.profileCompleted;
+    } else {
+      _profile = UserProfile(
+        googleUserId: user.id,
+        name: user.userMetadata?['full_name'] ?? user.userMetadata?['name'] ?? '',
+        email: user.email ?? '',
+        mobile: user.phone ?? '',
+        profilePhoto: user.userMetadata?['avatar_url'] ?? '',
+        language: _selectedLanguage,
+        navigationMode: _navigationMode,
+        profileCompleted: false,
+      );
+      await _saveProfile();
+      notifyListeners();
+      return false;
+    }
   }
 
-  void logout() async {
+
+  Future<void> logout(BuildContext context) async {
     debugPrint('[AppProvider] logout initiated...');
+    _isLoggingOut = true;
+    notifyListeners();
+
+    // 1. Navigate instantly to LoginScreen to prevent UI loading freeze on Home
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+      (route) => false,
+    );
+
+    // 2. Perform cleanup in the background
+    _isLoggedIn = false;
+    _mobileNumber = '';
+    _profile = UserProfile();
+    _bookmarkedIds.clear();
+    _recentlyViewedIds.clear();
+    _currentTabIndex = 0;
+    _tabHistory.clear();
+
+    await SessionCacheService.instance.clearSession();
+
     try {
       await AuthService.signOut();
     } catch (e) {
       debugPrint('[AppProvider] Error during AuthService.signOut(): $e');
     }
 
-    final prefs = await SharedPreferences.getInstance();
-    final lang = prefs.getString('language');
-    final onboarding = prefs.getBool('onboardingCompleted');
+    _isLoggingOut = false;
+    notifyListeners();
+  }
 
-    await prefs.clear();
+  Future<void> deleteAccount(BuildContext context) async {
+    debugPrint('[AppProvider] deleteAccount initiated...');
+    _isLoggingOut = true;
+    notifyListeners();
 
-    if (lang != null) {
-      await prefs.setString('language', lang);
+    if (_isLoggedIn) {
+      final user = Supabase.instance.client.auth.currentUser;
+      if (user != null) {
+        try {
+          debugPrint('[AppProvider] Deleting profile data from Supabase for user: ${user.id}');
+          await Supabase.instance.client.from('profiles').delete().eq('id', user.id);
+          debugPrint('[AppProvider] Supabase profile data deleted.');
+        } catch (e) {
+          debugPrint('[AppProvider] Error deleting profile from database: $e');
+        }
+      }
     }
-    if (onboarding != null) {
-      await prefs.setBool('onboardingCompleted', onboarding);
-    }
+
+    if (!context.mounted) return;
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+      (route) => false,
+    );
 
     _isLoggedIn = false;
-    _isGuest = false;
     _mobileNumber = '';
     _profile = UserProfile();
     _bookmarkedIds.clear();
     _recentlyViewedIds.clear();
     _currentTabIndex = 0;
-<<<<<<< HEAD
     _tabHistory.clear();
-=======
-    debugPrint('[AppProvider] Local states cleared after logout.');
->>>>>>> c5dd534 (Describe your changes)
+
+    await SessionCacheService.instance.clearSession();
+
+    try {
+      await AuthService.signOut();
+    } catch (e) {
+      debugPrint('[AppProvider] Error during AuthService.signOut(): $e');
+    }
+
+    _isLoggingOut = false;
     notifyListeners();
   }
 
@@ -438,8 +526,45 @@ class AppProvider with ChangeNotifier {
     }
     _currentTabIndex = index;
     notifyListeners();
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt('currentTabIndex', index);
+    await SessionCacheService.instance.saveCurrentTabIndex(index);
+  }
+
+  Future<void> fetchLatestProfile() async {
+    if (!_isLoggedIn) return;
+    try {
+      final lastSync = await SessionCacheService.instance.getLastProfileSync();
+      final now = DateTime.now();
+      
+      if (lastSync != null && now.difference(lastSync).inMinutes < 10) {
+        debugPrint('[AppProvider] Silent profile sync skipped (interval threshold not met).');
+        return;
+      }
+
+      final user = Supabase.instance.client.auth.currentUser;
+      if (user == null) return;
+
+      debugPrint('[AppProvider] Starting silent background sync...');
+      final dbProfile = await SchemeRepository.instance.getProfile(user.id);
+      
+      if (dbProfile != null) {
+        final remoteUpdated = dbProfile.updatedAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+        final localUpdated = _profile.updatedAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+
+        if (remoteUpdated.isAfter(localUpdated)) {
+          _profile = dbProfile;
+          _selectedLanguage = dbProfile.language;
+          _navigationMode = dbProfile.navigationMode;
+          await SessionCacheService.instance.saveProfile(_profile);
+          notifyListeners();
+          debugPrint('[AppProvider] Silent background sync updated local profile.');
+        } else {
+          debugPrint('[AppProvider] Stale remote profile skipped during sync.');
+        }
+      }
+      await SessionCacheService.instance.updateLastProfileSync();
+    } catch (e) {
+      debugPrint('[AppProvider] Error during background sync: $e');
+    }
   }
 
   bool get hasTabHistory => _tabHistory.isNotEmpty;
@@ -632,36 +757,10 @@ class AppProvider with ChangeNotifier {
       final user = Supabase.instance.client.auth.currentUser;
       if (user != null) {
         try {
-          // 1. Sync users table
-          await Supabase.instance.client.from('users').upsert({
-            'id': user.id,
-            'full_name': _profile.name,
-            'phone': _profile.mobile,
-            'profile_photo_url': user.userMetadata?['avatar_url'] ?? '',
-            'is_active': true,
-            'dob': _profile.dob?.toIso8601String(),
-            'gender': _profile.gender,
-            'disability': _profile.disability,
-            'veteran': _profile.veteran,
-            'house': _profile.house,
-            'street': _profile.street,
-            'area': _profile.area,
-            'village': _profile.village,
-            'pin': _profile.pinCode,
-            'state': _profile.state,
-            'district': _profile.district,
-            'city': _profile.city,
-            'qualification': _profile.qualification,
-            'employment': _profile.employmentStatus,
-            'annual_income': _profile.annualIncome,
-            'community': _profile.community,
-            'language': _profile.language,
-            'notifications': _profile.notificationsEnabled,
-            'theme': _profile.theme,
-            'profile_completed': _profile.profileCompleted,
-          });
+          // Sync profiles table (single source of truth)
+          await SchemeRepository.instance.createProfile(_profile);
 
-          // 2. Sync startup_profiles table if they have business details
+          // Sync startup_profiles table if they have business details
           final existingStartups = await Supabase.instance.client
               .from('startup_profiles')
               .select('id')
@@ -705,16 +804,21 @@ class AppProvider with ChangeNotifier {
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
         if (permission == LocationPermission.denied) {
-          throw 'Location permissions are denied';
+          debugPrint('Location permissions are denied');
+          _setNullLocation();
+          return null;
         }
       }
       
       if (permission == LocationPermission.deniedForever) {
-        throw 'Location permissions are permanently denied';
+        debugPrint('Location permissions are permanently denied');
+        _setNullLocation();
+        return null;
       }
 
       final position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
+        timeLimit: const Duration(seconds: 5),
       );
 
       final placemarks = await placemarkFromCoordinates(
@@ -755,9 +859,24 @@ class AppProvider with ChangeNotifier {
       }
     } catch (e) {
       debugPrint('Error fetching location: $e');
-      rethrow;
+      _setNullLocation();
     }
     return null;
+  }
+
+  void _setNullLocation() {
+    _profile = _profile.copyWith(
+      house: '',
+      street: '',
+      area: '',
+      village: '',
+      state: '',
+      district: '',
+      city: '',
+      pinCode: '',
+    );
+    notifyListeners();
+    _saveProfile();
   }
 
   List<Map<String, dynamic>> get downloadedDocs => _downloadedDocs;

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../main.dart';
+import 'package:provider/provider.dart';
+import '../providers/app_state_provider.dart';
 
 class AboutYouProfileScreen extends StatefulWidget {
   const AboutYouProfileScreen({super.key});
@@ -220,7 +222,19 @@ class _AboutYouProfileScreenState extends State<AboutYouProfileScreen> {
                                 elevation: 0,
                               ),
                               onPressed: _selectedRole != null
-                                  ? () {
+                                  ? () async {
+                                      final provider = Provider.of<AppProvider>(context, listen: false);
+                                      final selectedRoleModel = _roles.firstWhere((r) => r.id == _selectedRole);
+                                      final roleTitle = selectedRoleModel.title;
+
+                                      final updatedProfile = provider.profile.copyWith(
+                                        employmentStatus: roleTitle,
+                                        profileCompleted: true,
+                                      );
+
+                                      await provider.updateProfile(updatedProfile);
+
+                                      if (!context.mounted) return;
                                       Navigator.of(context).pushAndRemoveUntil(
                                         MaterialPageRoute(
                                           builder: (_) => const MainTabsContainer(),

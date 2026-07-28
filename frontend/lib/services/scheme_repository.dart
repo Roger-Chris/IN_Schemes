@@ -272,4 +272,59 @@ class SchemeRepository {
       ];
     }
   }
+
+  // ── 7. Profile Database Management Methods ────────────────────────────
+  
+  /// Retrieves a user profile by their UUID from public.profiles table.
+  Future<UserProfile?> getProfile(String uid) async {
+    try {
+      final rows = await _db.from('profiles').select().eq('id', uid).limit(1);
+      if ((rows as List).isEmpty) {
+        debugPrint('[SchemeRepository] No profile found for user UUID: $uid');
+        return null;
+      }
+      return UserProfile.fromJson(rows[0]);
+    } catch (e) {
+      debugPrint('[SchemeRepository] Error fetching profile: $e');
+      return null;
+    }
+  }
+
+  /// Creates a new profile record in the database.
+  Future<void> createProfile(UserProfile profile) async {
+    try {
+      debugPrint('[SchemeRepository] Creating profile for user UUID: ${profile.googleUserId}');
+      await _db.from('profiles').upsert(profile.toSupabase());
+      debugPrint('[SchemeRepository] Profile successfully created.');
+    } catch (e) {
+      debugPrint('[SchemeRepository] Error creating profile: $e');
+      rethrow;
+    }
+  }
+
+  /// Updates an existing profile record in the database.
+  Future<void> updateProfile(UserProfile profile) async {
+    try {
+      debugPrint('[SchemeRepository] Updating profile for user UUID: ${profile.googleUserId}');
+      await _db.from('profiles').update(profile.toSupabase()).eq('id', profile.googleUserId);
+      debugPrint('[SchemeRepository] Profile successfully updated.');
+    } catch (e) {
+      debugPrint('[SchemeRepository] Error updating profile: $e');
+      rethrow;
+    }
+  }
+
+  /// Updates the last login timestamp for the user.
+  Future<void> updateLastLogin(String uid) async {
+    try {
+      debugPrint('[SchemeRepository] Updating last login timestamp for user UUID: $uid');
+      await _db.from('profiles').update({
+        'last_login_at': DateTime.now().toIso8601String(),
+      }).eq('id', uid);
+      debugPrint('[SchemeRepository] Last login timestamp successfully updated.');
+    } catch (e) {
+      debugPrint('[SchemeRepository] Error updating last login: $e');
+      // Do not rethrow since this shouldn't block the auth flow if it fails
+    }
+  }
 }

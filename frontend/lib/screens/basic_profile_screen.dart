@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import '../providers/app_state_provider.dart';
 import 'location_profile_screen.dart';
 
 class BasicProfileScreen extends StatefulWidget {
@@ -10,14 +12,53 @@ class BasicProfileScreen extends StatefulWidget {
 }
 
 class _BasicProfileScreenState extends State<BasicProfileScreen> {
-  // Form controllers with default values
-  final _nameController = TextEditingController(text: 'Roger Christopher');
-  final _emailController = TextEditingController(text: 'rogerchristopher@gmail.com');
-  final _phoneController = TextEditingController(text: '98765 43210'); // reserved prefix
-  final _dobController = TextEditingController(text: '04-Oct-2001'); // DOB calendar selector
+  // Form controllers initialized dynamically
+  late final TextEditingController _nameController;
+  late final TextEditingController _emailController;
+  late final TextEditingController _phoneController;
+  late final TextEditingController _dobController;
 
-  String _selectedGender = 'Male';
-  DateTime _selectedDob = DateTime(2001, 10, 4);
+  String _selectedGender = 'Female';
+  DateTime? _selectedDob;
+
+  @override
+  void initState() {
+    super.initState();
+    final provider = Provider.of<AppProvider>(context, listen: false);
+    final profile = provider.profile;
+
+    _nameController = TextEditingController(text: profile.name);
+    _emailController = TextEditingController(text: profile.email);
+    _phoneController = TextEditingController(
+      text: profile.mobile.isNotEmpty ? profile.mobile : provider.mobileNumber,
+    );
+
+    if (profile.dob != null) {
+      _selectedDob = profile.dob;
+      final day = _selectedDob!.day.toString().padLeft(2, '0');
+      final months = [
+        'Jan',
+        'Feb',
+        'Mar',
+        'Apr',
+        'May',
+        'Jun',
+        'Jul',
+        'Aug',
+        'Sep',
+        'Oct',
+        'Nov',
+        'Dec'
+      ];
+      _dobController = TextEditingController(
+        text: '$day-${months[_selectedDob!.month - 1]}-${_selectedDob!.year}',
+      );
+    } else {
+      _dobController = TextEditingController();
+    }
+
+    _selectedGender = profile.gender.isNotEmpty ? profile.gender : 'Female';
+  }
 
   // Constants
   static const Color kPrimaryBlue = Color(0xFF2563EB);
@@ -206,6 +247,14 @@ class _BasicProfileScreenState extends State<BasicProfileScreen> {
                                 elevation: 0,
                               ),
                               onPressed: () {
+                                final provider = Provider.of<AppProvider>(context, listen: false);
+                                provider.updateProfile(provider.profile.copyWith(
+                                  name: _nameController.text.trim(),
+                                  email: _emailController.text.trim(),
+                                  mobile: _phoneController.text.trim(),
+                                  dob: _selectedDob,
+                                  gender: _selectedGender,
+                                ));
                                 Navigator.of(context).push(
                                   MaterialPageRoute(
                                     builder: (_) => const LocationProfileScreen(),

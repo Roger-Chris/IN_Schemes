@@ -5,6 +5,7 @@ import '../providers/app_state_provider.dart';
 import '../utils/constants.dart';
 import 'otp_screen.dart';
 import 'navigation_mode_screen.dart';
+import '../main.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -21,36 +22,11 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     super.initState();
-    final provider = Provider.of<AppProvider>(context, listen: false);
-    provider.addListener(_onAuthChanged);
-    // If already logged in, redirect immediately
-    if (provider.isLoggedIn) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _redirectToHome();
-      });
-    }
   }
 
-  void _onAuthChanged() {
-    final provider = Provider.of<AppProvider>(context, listen: false);
-    if (provider.isLoggedIn && mounted) {
-      _redirectToHome();
-    }
-  }
-
-  void _redirectToHome() {
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (_) => const NavigationModeScreen(),
-      ),
-    );
-  }
 
   @override
   void dispose() {
-    try {
-      Provider.of<AppProvider>(context, listen: false).removeListener(_onAuthChanged);
-    } catch (_) {}
     _phoneController.dispose();
     super.dispose();
   }
@@ -402,7 +378,22 @@ class _LoginScreenState extends State<LoginScreen> {
                         });
                         try {
                           final provider = Provider.of<AppProvider>(context, listen: false);
-                          await provider.loginWithGoogle();
+                          final isProfileComplete = await provider.loginWithGoogle();
+                          if (mounted) {
+                            if (isProfileComplete) {
+                              Navigator.of(context).pushReplacement(
+                                MaterialPageRoute(
+                                  builder: (_) => const MainTabsContainer(),
+                                ),
+                              );
+                            } else {
+                              Navigator.of(context).pushReplacement(
+                                MaterialPageRoute(
+                                  builder: (_) => const NavigationModeScreen(),
+                                ),
+                              );
+                            }
+                          }
                         } catch (e) {
                           if (mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
@@ -473,80 +464,7 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           ],
         ),
-        const SizedBox(height: 16),
-        
-        // Continue as Guest Box
-        _buildGuestBox(),
       ],
-    );
-  }
-
-  Widget _buildGuestBox() {
-    final provider = Provider.of<AppProvider>(context, listen: false);
-    return InkWell(
-      onTap: () {
-        provider.continueAsGuest();
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (_) => const NavigationModeScreen(),
-          ),
-        );
-      },
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color: const Color(0xFFEFF6FF), // Blue 50
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFFDBEAFE)), // Blue 100
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 38,
-              height: 38,
-              decoration: const BoxDecoration(
-                shape: BoxShape.circle,
-                color: Color(0xFFDBEAFE), // Blue 100
-              ),
-              child: const Icon(
-                Icons.person_outline,
-                color: Color(0xFF1D4ED8), // Blue 700
-                size: 22,
-              ),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Continue as Guest',
-                    style: GoogleFonts.inter(
-                      fontSize: 13,
-                      fontWeight: FontWeight.bold,
-                      color: const Color(0xFF1D4ED8), // Blue 700
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    'Explore the app without signing in.',
-                    style: GoogleFonts.inter(
-                      fontSize: 11,
-                      color: const Color(0xFF64748B), // Slate 500
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const Icon(
-              Icons.arrow_forward,
-              color: Color(0xFF1D4ED8), // Blue 700
-              size: 20,
-            ),
-          ],
-        ),
-      ),
     );
   }
 

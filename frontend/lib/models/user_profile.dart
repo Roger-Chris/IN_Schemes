@@ -38,12 +38,14 @@ class UserProfile {
   bool emailVerified;
   String provider;
   DateTime? lastLoginTime;
+  DateTime? updatedAt;
 
   // Preferences
   String language;
   bool notificationsEnabled;
   String theme;
   String profilePhoto;
+  String navigationMode;
 
   UserProfile({
     this.name = '',
@@ -81,10 +83,12 @@ class UserProfile {
     this.emailVerified = false,
     this.provider = 'google',
     this.lastLoginTime,
+    this.updatedAt,
     this.language = 'en',
     this.notificationsEnabled = true,
     this.theme = 'light',
     this.profilePhoto = '',
+    this.navigationMode = 'regular',
   });
 
   Map<String, dynamic> toJson() {
@@ -122,16 +126,51 @@ class UserProfile {
       'emailVerified': emailVerified,
       'provider': provider,
       'lastLoginTime': lastLoginTime?.toIso8601String(),
+      'updatedAt': updatedAt?.toIso8601String(),
       'language': language,
       'notificationsEnabled': notificationsEnabled,
       'theme': theme,
       'profilePhoto': profilePhoto,
+      'navigationMode': navigationMode,
+    };
+  }
+
+  Map<String, dynamic> toSupabase() {
+    return {
+      'id': googleUserId,
+      'email': email,
+      'name': name,
+      'photo_url': profilePhoto,
+      'language': language,
+      'navigation_mode': navigationMode,
+      'applicant_type': employmentStatus,
+      'state': state,
+      'district': district,
+      'pincode': pinCode,
+      'is_profile_complete': profileCompleted,
+      'last_login_at': lastLoginTime?.toIso8601String() ?? DateTime.now().toIso8601String(),
+      'dob': dob?.toIso8601String().split('T')[0], // yyyy-MM-dd format for DATE type
+      'gender': gender,
+      'disability': disability,
+      'veteran': veteran,
+      'house': house,
+      'street': street,
+      'area': area,
+      'village': village,
+      'city': city,
+      'qualification': qualification,
+      'annual_income': annualIncome,
+      'community': community,
+      'notifications': notificationsEnabled,
+      'theme': theme,
+      'phone': mobile,
+      'updated_at': updatedAt?.toIso8601String() ?? DateTime.now().toIso8601String(),
     };
   }
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
     return UserProfile(
-      name: json['name'] ?? '',
+      name: json['name'] ?? json['full_name'] ?? '',
       dob: json['dob'] != null ? DateTime.tryParse(json['dob']) : null,
       gender: json['gender'] ?? 'Female',
       mobile: json['mobile'] ?? json['phone'] ?? '',
@@ -140,14 +179,14 @@ class UserProfile {
       state: json['state'] ?? 'Tamil Nadu',
       district: json['district'] ?? '',
       city: json['city'] ?? '',
-      pinCode: json['pinCode'] ?? json['pin'] ?? '',
+      pinCode: json['pinCode'] ?? json['pincode'] ?? json['pin'] ?? '',
       community: json['community'] ?? 'General',
       religion: json['religion'] ?? '',
       educationLevel: json['educationLevel'] ?? 'Undergraduate',
       firstGenGraduate: json['firstGenGraduate'] ?? false,
       annualIncome: (json['annualIncome'] ?? json['annual_income'] ?? 0.0).toDouble(),
-      employmentStatus: json['employmentStatus'] ?? json['employment'] ?? 'Student',
-      profileCompleted: json['profileCompleted'] ?? json['profile_completed'] ?? false,
+      employmentStatus: json['employmentStatus'] ?? json['applicant_type'] ?? json['employment'] ?? 'Student',
+      profileCompleted: json['profileCompleted'] ?? json['profile_completed'] ?? json['is_profile_complete'] ?? false,
       disability: json['disability'] ?? 'None',
       veteran: json['veteran'] ?? false,
       house: json['house'] ?? '',
@@ -160,16 +199,22 @@ class UserProfile {
       businessIndustry: json['businessIndustry'] ?? json['industry'] ?? 'Technology',
       fundingRequired: (json['fundingRequired'] ?? json['funding_required_amount'] ?? 0.0).toDouble(),
       registrationNumbers: json['registrationNumbers'] ?? json['registration_numbers'] ?? '',
-      googleUserId: json['googleUserId'] ?? json['google_user_id'] ?? '',
+      googleUserId: json['googleUserId'] ?? json['id'] ?? json['google_user_id'] ?? '',
       emailVerified: json['emailVerified'] ?? json['email_verified'] ?? false,
       provider: json['provider'] ?? 'google',
       lastLoginTime: json['lastLoginTime'] != null 
           ? DateTime.tryParse(json['lastLoginTime']) 
-          : (json['last_login_time'] != null ? DateTime.tryParse(json['last_login_time']) : null),
+          : (json['last_login_time'] != null 
+              ? DateTime.tryParse(json['last_login_time']) 
+              : (json['last_login_at'] != null ? DateTime.tryParse(json['last_login_at']) : null)),
       language: json['language'] ?? 'en',
       notificationsEnabled: json['notificationsEnabled'] ?? json['notifications'] ?? true,
       theme: json['theme'] ?? 'light',
-      profilePhoto: json['profilePhoto'] ?? '',
+      profilePhoto: json['profilePhoto'] ?? json['photo_url'] ?? json['profile_photo_url'] ?? '',
+      navigationMode: json['navigationMode'] ?? json['navigation_mode'] ?? 'regular',
+      updatedAt: json['updatedAt'] != null 
+          ? DateTime.tryParse(json['updatedAt']) 
+          : (json['updated_at'] != null ? DateTime.tryParse(json['updated_at']) : null),
     );
   }
 
@@ -207,10 +252,12 @@ class UserProfile {
     bool? emailVerified,
     String? provider,
     DateTime? lastLoginTime,
+    DateTime? updatedAt,
     String? language,
     bool? notificationsEnabled,
     String? theme,
     String? profilePhoto,
+    String? navigationMode,
   }) {
     return UserProfile(
       name: name ?? this.name,
@@ -220,6 +267,7 @@ class UserProfile {
       email: email ?? this.email,
       address: address ?? this.address,
       state: state ?? this.state,
+      updatedAt: updatedAt ?? this.updatedAt,
       district: district ?? this.district,
       city: city ?? this.city,
       pinCode: pinCode ?? this.pinCode,
@@ -250,6 +298,7 @@ class UserProfile {
       notificationsEnabled: notificationsEnabled ?? this.notificationsEnabled,
       theme: theme ?? this.theme,
       profilePhoto: profilePhoto ?? this.profilePhoto,
+      navigationMode: navigationMode ?? this.navigationMode,
     );
   }
 

@@ -10,6 +10,7 @@ import 'notifications_screen.dart';
 import '../widgets/voice_assistant_overlay.dart';
 import 'find_my_schemes_screen.dart';
 import 'companion_intro_screen.dart';
+import 'login_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key, this.onVoiceQuery});
@@ -28,6 +29,17 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final provider = Provider.of<AppProvider>(context, listen: false);
+      if (!provider.isLoggedIn) {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (_) => const LoginScreen()),
+          (route) => false,
+        );
+        return;
+      }
+      provider.fetchLatestProfile();
+    });
     _carouselScrollController.addListener(() {
       if (_carouselScrollController.hasClients) {
         final index = (_carouselScrollController.offset / 300).round();
@@ -95,6 +107,13 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<AppProvider>(context);
+    if (!provider.isLoggedIn) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
     final recommended = provider.allSchemes.take(4).toList();
 
     return Scaffold(
@@ -209,7 +228,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildHeader(BuildContext context, AppProvider provider) {
     final displayName = provider.profile.name.isNotEmpty 
         ? provider.profile.name.split(' ').first 
-        : 'Praveen';
+        : 'User';
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,

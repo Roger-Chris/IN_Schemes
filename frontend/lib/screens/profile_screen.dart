@@ -10,7 +10,6 @@ import 'profile_setup_screen.dart';
 import 'language_selection_screen.dart';
 import 'settings_screen.dart';
 import 'help_support_screen.dart';
-import 'login_screen.dart';
 import 'notifications_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -51,14 +50,12 @@ class ProfileScreen extends StatelessWidget {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 elevation: 0,
               ),
-              onPressed: () {
-                Navigator.pop(context);
-                provider.logout();
-                Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (_) => const LoginScreen()),
-                  (route) => false,
-                );
-              },
+              onPressed: provider.isLoggingOut
+                  ? null
+                  : () {
+                      Navigator.pop(context);
+                      provider.logout(context);
+                    },
               child: Text(
                 'Logout',
                 style: GoogleFonts.inter(color: Colors.white, fontWeight: FontWeight.bold),
@@ -291,7 +288,6 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final provider = Provider.of<AppProvider>(context);
     final profile = provider.profile;
-    final isGuest = provider.isGuest;
     final unreadCount = provider.notifications.where((n) => !n['read']).length;
 
     return Scaffold(
@@ -455,7 +451,7 @@ class ProfileScreen extends StatelessWidget {
                                   children: [
                                     Expanded(
                                       child: Text(
-                                        profile.name.isNotEmpty ? profile.name : 'Praveen Kanna H',
+                                        profile.name.isNotEmpty ? profile.name : 'Not Set',
                                         style: GoogleFonts.poppins(
                                           fontSize: 16.5,
                                           fontWeight: FontWeight.bold,
@@ -497,7 +493,7 @@ class ProfileScreen extends StatelessWidget {
                                     const Icon(Icons.phone_outlined, color: Colors.white70, size: 12),
                                     const SizedBox(width: 6),
                                     Text(
-                                      isGuest ? 'Guest Session' : '+91 ${provider.mobileNumber.isNotEmpty ? provider.mobileNumber : "98765 43210"}',
+                                      profile.mobile.isNotEmpty ? '+91 ${profile.mobile}' : 'Not Set',
                                       style: GoogleFonts.inter(
                                         fontSize: 11.5,
                                         color: Colors.white.withAlpha(230),
@@ -513,7 +509,7 @@ class ProfileScreen extends StatelessWidget {
                                     const SizedBox(width: 6),
                                     Expanded(
                                       child: Text(
-                                        profile.email.isNotEmpty ? profile.email : 'praveen.kanna@example.com',
+                                        profile.email.isNotEmpty ? profile.email : 'Not Set',
                                         style: GoogleFonts.inter(
                                           fontSize: 11.5,
                                           color: Colors.white.withAlpha(230),
@@ -609,13 +605,13 @@ class ProfileScreen extends StatelessWidget {
                   // Information Details Grid
                   Row(
                     children: [
-                      _buildInfoCol('Full Name', profile.name.isNotEmpty ? profile.name : 'Praveen Kanna H', 5),
+                      _buildInfoCol('Full Name', profile.name.isNotEmpty ? profile.name : 'Not Set', 5),
                       _buildDividerCol(),
-                      _buildInfoCol('Age', profile.age > 0 ? '${profile.age}' : '21', 2),
+                      _buildInfoCol('Age', profile.dob != null ? '${profile.age}' : 'Not Set', 2),
                       _buildDividerCol(),
-                      _buildInfoCol('Gender', profile.gender.isNotEmpty ? profile.gender : 'Male', 3),
+                      _buildInfoCol('Gender', profile.gender.isNotEmpty ? profile.gender : 'Not Set', 3),
                       _buildDividerCol(),
-                      _buildInfoCol('Location', profile.city.isNotEmpty ? '${profile.city}, ${profile.state}' : 'Chennai, TN', 6),
+                      _buildInfoCol('Location', profile.district.isNotEmpty ? '${profile.district}, ${profile.state}' : 'Not Set', 6),
                     ],
                   ),
                 ],
