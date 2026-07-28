@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:math' as math;
-import 'dart:ui' show PathMetric;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -76,7 +75,6 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
   late final ValueNotifier<double> _edgeIntensity;
   late final ValueNotifier<double> _soundLevel;
   late final Listenable _edgeRepaint;
-  late final VoiceEdgeGeometryCache _edgeGeometryCache;
   bool _reduceEdgeMotion = false;
 
   _VoiceAssistantPhase _voicePhase = _VoiceAssistantPhase.starting;
@@ -193,12 +191,15 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
         : VoiceInputLanguage.english;
     _edgeController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 5200),
-    )..repeat();
+      duration: const Duration(milliseconds: 3400),
+    );
     _edgeRevealController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 650),
-    )..forward();
+      duration: const Duration(milliseconds: 2800),
+    );
+    _edgeRevealController.addStatusListener(_handleEdgeBloomStatus);
+    _edgeController.repeat();
+    _edgeRevealController.forward();
     _edgeIntensity = ValueNotifier<double>(0.12);
     _soundLevel = ValueNotifier<double>(0.1);
     _edgeRepaint = Listenable.merge([
@@ -206,7 +207,6 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
       _edgeRevealController,
       _edgeIntensity,
     ]);
-    _edgeGeometryCache = VoiceEdgeGeometryCache();
     _pulseController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 800),
@@ -236,13 +236,20 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
       _edgeController.stop();
       _edgeController.value = 0;
       _edgeRevealController.stop();
-      _edgeRevealController.value = 1;
+      _edgeRevealController.value = 0.5;
     } else {
-      _edgeController.repeat();
-      if (_edgeRevealController.value < 1) {
-        _edgeRevealController.forward();
-      }
+      _startEdgeBloom();
     }
+  }
+
+  void _handleEdgeBloomStatus(AnimationStatus status) {
+    if (status == AnimationStatus.completed) _edgeController.stop();
+  }
+
+  void _startEdgeBloom() {
+    if (_reduceEdgeMotion) return;
+    if (!_edgeController.isAnimating) _edgeController.repeat();
+    _edgeRevealController.forward(from: 0);
   }
 
   Future<void> _initializeSpeechOutput() async {
@@ -441,6 +448,7 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
   void _handleStatus(String status) {
     if (!mounted) return;
     if (status == 'listening') {
+      _startEdgeBloom();
       _edgeIntensity.value = 0.25;
       _setListeningAnimations(true);
       if (_voicePhase != _VoiceAssistantPhase.listening) {
@@ -681,6 +689,7 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
       unawaited(_speechOutputController.stop());
     }
     _edgeController.dispose();
+    _edgeRevealController.removeStatusListener(_handleEdgeBloomStatus);
     _edgeRevealController.dispose();
     _pulseController.dispose();
     _waveController.dispose();
@@ -733,7 +742,6 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
                       activity: _edgeActivity,
                       radius: edgeRadius,
                       reduceMotion: _reduceEdgeMotion,
-                      geometryCache: _edgeGeometryCache,
                     ),
                   ),
                 ),
@@ -1591,7 +1599,6 @@ class VoiceEdgePainter extends CustomPainter {
     required this.activity,
     required this.radius,
     required this.reduceMotion,
-    required this.geometryCache,
   });
 
   final double entranceProgress;
@@ -1600,122 +1607,157 @@ class VoiceEdgePainter extends CustomPainter {
   final VoiceEdgeActivity activity;
   final double radius;
   final bool reduceMotion;
-  final VoiceEdgeGeometryCache geometryCache;
-
-  static const _sourceColors = [
-    Color(0xFF38BDF8),
-    Color(0xFF2563EB),
-    Color(0xFFA855F7),
-    Color(0xFFF472B6),
-  ];
-
-  static const _sourcePositions = [0.03, 0.29, 0.55, 0.79];
 
   @override
   void paint(Canvas canvas, Size size) {
     if (size.isEmpty) return;
-    final geometry = geometryCache.resolve(size, radius);
-    final path = geometry.path;
-    final metric = geometry.metric;
-    final rect = geometry.rect;
-    final reveal = Curves.easeOutCubic.transform(
-      entranceProgress.clamp(0.0, 1.0),
-    );
+    final timeline = entranceProgress.clamp(0.0, 1.0);
+    final envelope = reduceMotion
+        ? switch (activity) {
+            VoiceEdgeActivity.listening => 0.50,
+            VoiceEdgeActivity.processing => 0.34,
+            VoiceEdgeActivity.speaking => 0.42,
+            VoiceEdgeActivity.idle => 0.28,
+          }
+        : _bloomEnvelope(timeline);
+    if (envelope <= 0.001) return;
+
+    final spread = reduceMotion
+        ? 1.0
+        : Curves.easeOutCubic.transform((timeline / 0.34).clamp(0.0, 1.0));
     final phase = reduceMotion ? 0.0 : ambientProgress * math.pi * 2;
-    final breath = reduceMotion ? 0.5 : (math.sin(phase) + 1) / 2;
     final level = activityIntensity.clamp(0.0, 1.0);
     final strength = switch (activity) {
-      VoiceEdgeActivity.idle => 0.38 + breath * 0.05,
-      VoiceEdgeActivity.listening => 0.62 + level * 0.36,
-      VoiceEdgeActivity.processing => 0.50 + breath * 0.10,
-      VoiceEdgeActivity.speaking => 0.58 + breath * 0.14,
+      VoiceEdgeActivity.idle => 0.72,
+      VoiceEdgeActivity.listening => 0.82 + level * 0.16,
+      VoiceEdgeActivity.processing => 0.64,
+      VoiceEdgeActivity.speaking => 0.74,
     };
-    final gradientRotation = reduceMotion
-        ? 0.0
-        : math.sin(phase) * 0.10 + math.sin(phase * 2) * 0.025;
-    final perimeterGradient = SweepGradient(
-      transform: GradientRotation(gradientRotation),
-      colors: const [
-        Color(0xFF38BDF8),
-        Color(0xFF2563EB),
-        Color(0xFFA855F7),
-        Color(0xFFF472B6),
-        Color(0xFF22D3EE),
-        Color(0xFF38BDF8),
-      ],
-      stops: const [0, 0.20, 0.42, 0.62, 0.82, 1],
-    );
+    final opacity = envelope * strength;
+    final horizontalDrift = reduceMotion ? 0.0 : math.sin(phase) * 8;
+    final verticalDrift = reduceMotion ? 0.0 : math.sin(phase * 1.4) * 12;
+    final cornerRadius = radius.clamp(24.0, 58.0);
+    final sideTop = size.height * (1 - 0.92 * spread);
 
-    // A faint full-perimeter haze makes the final state feel continuous. It
-    // fades in behind the four expanding sources, so no side becomes a visual
-    // starting point during the entrance.
+    // Gemini's effect is a wide U-shaped wash, not a bordered rectangle. The
+    // two neutral strokes create a cloudy inner edge with no crisp core and no
+    // line across the top of the screen.
+    final ambientRail = Path()
+      ..moveTo(0, sideTop)
+      ..lineTo(0, size.height - cornerRadius)
+      ..quadraticBezierTo(0, size.height, cornerRadius, size.height)
+      ..lineTo(size.width - cornerRadius, size.height)
+      ..quadraticBezierTo(
+        size.width,
+        size.height,
+        size.width,
+        size.height - cornerRadius,
+      )
+      ..lineTo(size.width, sideTop);
     canvas.drawPath(
-      path,
+      ambientRail,
       Paint()
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 18 + strength * 8
+        ..strokeWidth = 40
         ..strokeCap = StrokeCap.round
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 9)
-        ..shader = perimeterGradient.createShader(rect)
-        ..colorFilter = ColorFilter.mode(
-          Colors.white.withValues(alpha: reveal * reveal * strength * 0.34),
-          BlendMode.modulate,
-        ),
+        ..strokeJoin = StrokeJoin.round
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 26)
+        ..color = const Color(0xFFE8EDF3).withValues(alpha: opacity * 0.22),
     );
-
-    final halfSpan = metric.length * (0.015 + reveal * 0.145);
-    for (var index = 0; index < _sourcePositions.length; index++) {
-      final localPhase = phase + index * math.pi * 0.73;
-      final drift = reduceMotion
-          ? 0.0
-          : math.sin(localPhase) * 0.018 + math.sin(localPhase * 1.7) * 0.006;
-      final center = metric.length * (_sourcePositions[index] + drift);
-      final segment = _extractWrappedPath(
-        metric,
-        center - halfSpan,
-        center + halfSpan,
-      );
-      final color = _sourceColors[index];
-      canvas.drawPath(
-        segment,
-        Paint()
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 9 + strength * 5
-          ..strokeCap = StrokeCap.round
-          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4.5)
-          ..color = color.withValues(alpha: reveal * strength * 0.62),
-      );
-    }
-
-    // The crisp core remains unbroken after the source segments merge, while
-    // the brighter lobes above it drift independently rather than orbiting as
-    // one obvious sweep.
     canvas.drawPath(
-      path,
+      ambientRail,
       Paint()
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 2.1 + strength * 1.7
+        ..strokeWidth = 18
         ..strokeCap = StrokeCap.round
-        ..shader = perimeterGradient.createShader(rect)
-        ..colorFilter = ColorFilter.mode(
-          Colors.white.withValues(alpha: reveal * (0.50 + strength * 0.42)),
-          BlendMode.modulate,
-        ),
+        ..strokeJoin = StrokeJoin.round
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 14)
+        ..color = const Color(0xFFF8FAFC).withValues(alpha: opacity * 0.38),
+    );
+
+    final sideHeight = size.height * (0.24 + spread * 0.56);
+    _drawGlow(
+      canvas,
+      center: Offset(-12 + horizontalDrift, size.height * 0.80),
+      width: 150,
+      height: sideHeight * 0.58,
+      color: const Color(0xFF62E58F),
+      opacity: opacity * 0.44,
+    );
+    _drawGlow(
+      canvas,
+      center: Offset(-20 - horizontalDrift * 0.4, size.height * 0.47),
+      width: 105,
+      height: sideHeight * 0.66,
+      color: const Color(0xFF93C5FD),
+      opacity: opacity * 0.20,
+    );
+    _drawGlow(
+      canvas,
+      center: Offset(size.width * 0.48 + horizontalDrift, size.height + 12),
+      width: size.width * 0.64,
+      height: 125,
+      color: const Color(0xFFFACC15),
+      opacity: opacity * 0.48,
+    );
+    _drawGlow(
+      canvas,
+      center: Offset(size.width * 0.82 - horizontalDrift, size.height + 6),
+      width: size.width * 0.46,
+      height: 120,
+      color: const Color(0xFF60A5FA),
+      opacity: opacity * 0.30,
+    );
+    _drawGlow(
+      canvas,
+      center: Offset(size.width + 12 - horizontalDrift, size.height * 0.76),
+      width: 145,
+      height: sideHeight * 0.62,
+      color: const Color(0xFFC084FC),
+      opacity: opacity * 0.40,
+    );
+    _drawGlow(
+      canvas,
+      center: Offset(
+        size.width + 18 + horizontalDrift * 0.5,
+        size.height * 0.27 + verticalDrift,
+      ),
+      width: 110,
+      height: sideHeight * 0.72,
+      color: const Color(0xFFFB7185),
+      opacity: opacity * 0.34,
     );
   }
 
-  Path _extractWrappedPath(PathMetric metric, double start, double end) {
-    final length = metric.length;
-    final span = (end - start).clamp(0.0, length);
-    if (span >= length) return metric.extractPath(0, length);
-    final normalizedStart = ((start % length) + length) % length;
-    final normalizedEnd = normalizedStart + span;
-    if (normalizedEnd <= length) {
-      return metric.extractPath(normalizedStart, normalizedEnd);
+  double _bloomEnvelope(double timeline) {
+    if (timeline < 0.10) {
+      return Curves.easeOut.transform(timeline / 0.10);
     }
-    return Path()
-      ..addPath(metric.extractPath(normalizedStart, length), Offset.zero)
-      ..addPath(metric.extractPath(0, normalizedEnd - length), Offset.zero);
+    if (timeline < 0.56) return 1;
+    return 1 - Curves.easeInCubic.transform((timeline - 0.56) / 0.44);
+  }
+
+  void _drawGlow(
+    Canvas canvas, {
+    required Offset center,
+    required double width,
+    required double height,
+    required Color color,
+    required double opacity,
+  }) {
+    final rect = Rect.fromCenter(center: center, width: width, height: height);
+    canvas.drawOval(
+      rect,
+      Paint()
+        ..shader = RadialGradient(
+          colors: [
+            color.withValues(alpha: opacity),
+            color.withValues(alpha: opacity * 0.46),
+            color.withValues(alpha: 0),
+          ],
+          stops: const [0, 0.42, 1],
+        ).createShader(rect),
+    );
   }
 
   @override
@@ -1726,47 +1768,4 @@ class VoiceEdgePainter extends CustomPainter {
       oldDelegate.activity != activity ||
       oldDelegate.radius != radius ||
       oldDelegate.reduceMotion != reduceMotion;
-}
-
-class VoiceEdgeGeometryCache {
-  Size? _size;
-  double? _radius;
-  VoiceEdgeGeometry? _geometry;
-
-  VoiceEdgeGeometry resolve(Size size, double radius) {
-    if (_geometry != null && _size == size && _radius == radius) {
-      return _geometry!;
-    }
-    const inset = 1.25;
-    final rect = Rect.fromLTWH(
-      inset,
-      inset,
-      math.max(0, size.width - inset * 2),
-      math.max(0, size.height - inset * 2),
-    );
-    final path = Path()
-      ..addRRect(RRect.fromRectAndRadius(rect, Radius.circular(radius)));
-    final geometry = VoiceEdgeGeometry(
-      rect: rect,
-      path: path,
-      metric: path.computeMetrics().first,
-    );
-    _size = size;
-    _radius = radius;
-    _geometry = geometry;
-    return geometry;
-  }
-}
-
-@immutable
-class VoiceEdgeGeometry {
-  const VoiceEdgeGeometry({
-    required this.rect,
-    required this.path,
-    required this.metric,
-  });
-
-  final Rect rect;
-  final Path path;
-  final PathMetric metric;
 }

@@ -10,96 +10,77 @@ void main() {
 
   for (final size in [const Size(360, 800), const Size(412, 915)]) {
     test(
-      'ambient edge glow reaches every edge at ${size.width}x${size.height}',
+      'soft bloom reaches the side rails and bottom at ${size.width}x${size.height}',
       () async {
         final image = await _renderEdge(
           size: size,
-          entranceProgress: 1,
+          entranceProgress: 0.38,
           ambientProgress: 0.37,
           intensity: 0.7,
           activity: VoiceEdgeActivity.listening,
         );
 
-        expect(image.maxTopAlpha, greaterThan(40));
-        expect(image.maxRightAlpha, greaterThan(40));
-        expect(image.maxBottomAlpha, greaterThan(40));
-        expect(image.maxLeftAlpha, greaterThan(40));
+        expect(image.maxRightAlpha, greaterThan(25));
+        expect(image.maxBottomAlpha, greaterThan(25));
+        expect(image.maxLeftAlpha, greaterThan(25));
+        expect(image.topCenterAlpha, lessThan(image.bottomCenterAlpha));
       },
     );
   }
 
-  test('entrance reveals bright sources around all four sides', () async {
-    final image = await _renderEdge(
+  test('opening bloom rises progressively from the lower edges', () async {
+    final early = await _renderEdge(
       size: const Size(360, 800),
-      entranceProgress: 0.22,
+      entranceProgress: 0.03,
       ambientProgress: 0,
       intensity: 0.25,
       activity: VoiceEdgeActivity.idle,
     );
+    final opened = await _renderEdge(
+      size: const Size(360, 800),
+      entranceProgress: 0.30,
+      ambientProgress: 0.08,
+      intensity: 0.25,
+      activity: VoiceEdgeActivity.idle,
+    );
 
-    expect(image.maxTopAlpha, greaterThan(20));
-    expect(image.maxRightAlpha, greaterThan(20));
-    expect(image.maxBottomAlpha, greaterThan(20));
-    expect(image.maxLeftAlpha, greaterThan(20));
+    expect(opened.upperSideAlphaTotal, greaterThan(early.upperSideAlphaTotal));
+    expect(opened.edgeAlphaTotal, greaterThan(early.edgeAlphaTotal));
   });
 
-  test(
-    'idle, listening, and processing states keep a full perimeter',
-    () async {
-      for (final activity in [
-        VoiceEdgeActivity.idle,
-        VoiceEdgeActivity.listening,
-        VoiceEdgeActivity.processing,
-      ]) {
-        final image = await _renderEdge(
-          size: const Size(360, 800),
-          entranceProgress: 1,
-          ambientProgress: 0.61,
-          intensity: 0.5,
-          activity: activity,
-        );
+  test('bloom fades away instead of leaving a permanent border', () async {
+    final image = await _renderEdge(
+      size: const Size(360, 800),
+      entranceProgress: 1,
+      ambientProgress: 0.9,
+      intensity: 1,
+      activity: VoiceEdgeActivity.listening,
+    );
 
-        expect(image.maxTopAlpha, greaterThan(20), reason: '$activity top');
-        expect(image.maxRightAlpha, greaterThan(20), reason: '$activity right');
-        expect(
-          image.maxBottomAlpha,
-          greaterThan(20),
-          reason: '$activity bottom',
-        );
-        expect(image.maxLeftAlpha, greaterThan(20), reason: '$activity left');
-      }
-    },
-  );
+    expect(image.edgeAlphaTotal, 0);
+  });
 
-  test(
-    'listening sound level strengthens glow without changing geometry',
-    () async {
-      const size = Size(360, 800);
-      final cache = VoiceEdgeGeometryCache();
-      final originalGeometry = cache.resolve(size, 36);
-      final quiet = await _renderEdge(
-        size: size,
-        entranceProgress: 1,
-        ambientProgress: 0.25,
-        intensity: 0.25,
-        activity: VoiceEdgeActivity.listening,
-        cache: cache,
-      );
-      final loud = await _renderEdge(
-        size: size,
-        entranceProgress: 1,
-        ambientProgress: 0.25,
-        intensity: 1,
-        activity: VoiceEdgeActivity.listening,
-        cache: cache,
-      );
+  test('listening sound level strengthens the active bloom', () async {
+    const size = Size(360, 800);
+    final quiet = await _renderEdge(
+      size: size,
+      entranceProgress: 0.38,
+      ambientProgress: 0.25,
+      intensity: 0.25,
+      activity: VoiceEdgeActivity.listening,
+    );
+    final loud = await _renderEdge(
+      size: size,
+      entranceProgress: 0.38,
+      ambientProgress: 0.25,
+      intensity: 1,
+      activity: VoiceEdgeActivity.listening,
+    );
 
-      expect(cache.resolve(size, 36), same(originalGeometry));
-      expect(loud.edgeAlphaTotal, greaterThan(quiet.edgeAlphaTotal));
-    },
-  );
+    expect(loud.edgeAlphaTotal, greaterThan(quiet.edgeAlphaTotal));
+  });
 
-  test('reduced motion produces a static perimeter', () async {
+  test('reduced motion produces a static soft glow', () async {
     const size = Size(360, 800);
     final first = await _renderEdge(
       size: size,
@@ -129,7 +110,6 @@ Future<_RenderedEdge> _renderEdge({
   required double intensity,
   required VoiceEdgeActivity activity,
   bool reduceMotion = false,
-  VoiceEdgeGeometryCache? cache,
 }) async {
   final recorder = ui.PictureRecorder();
   final canvas = Canvas(recorder);
@@ -140,7 +120,6 @@ Future<_RenderedEdge> _renderEdge({
     activity: activity,
     radius: 36,
     reduceMotion: reduceMotion,
-    geometryCache: cache ?? VoiceEdgeGeometryCache(),
   ).paint(canvas, size);
   final picture = recorder.endRecording();
   final image = await picture.toImage(size.width.round(), size.height.round());
@@ -169,6 +148,16 @@ class _RenderedEdge {
   int get maxRightAlpha => _maxVerticalAlpha(width - 2);
   int get maxBottomAlpha => _maxHorizontalAlpha(height - 2);
   int get maxLeftAlpha => _maxVerticalAlpha(1);
+  int get topCenterAlpha => _alphaAt(width ~/ 2, 1);
+  int get bottomCenterAlpha => _alphaAt(width ~/ 2, height - 2);
+
+  int get upperSideAlphaTotal {
+    var total = 0;
+    for (var y = 0; y < height ~/ 2; y++) {
+      total += _alphaAt(1, y) + _alphaAt(width - 2, y);
+    }
+    return total;
+  }
 
   int get edgeAlphaTotal =>
       _horizontalAlphaTotal(1) +

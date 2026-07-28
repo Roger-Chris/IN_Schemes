@@ -533,7 +533,6 @@ void main() {
   });
 
   test('edge painter repaints when animation values change', () {
-    final cache = VoiceEdgeGeometryCache();
     final original = VoiceEdgePainter(
       entranceProgress: 1,
       ambientProgress: 0,
@@ -541,7 +540,6 @@ void main() {
       activity: VoiceEdgeActivity.idle,
       radius: 28,
       reduceMotion: false,
-      geometryCache: cache,
     );
     final changed = VoiceEdgePainter(
       entranceProgress: 1,
@@ -550,7 +548,6 @@ void main() {
       activity: VoiceEdgeActivity.idle,
       radius: 28,
       reduceMotion: false,
-      geometryCache: cache,
     );
 
     expect(changed.shouldRepaint(original), isTrue);
