@@ -13,9 +13,6 @@ class SessionCacheService {
   static const String _keyNavigationMode = 'navigationMode';
   static const String _keyOnboardingCompleted = 'onboardingCompleted';
   static const String _keyLastProfileSync = 'last_profile_sync';
-  static const String _keyTheme = 'theme';
-  static const String _keyFirstLaunch = 'first_launch';
-  static const String _keyFeatureFlags = 'feature_flags';
   static const String _keyIsLoggedIn = 'isLoggedIn';
   static const String _keyIsGuest = 'isGuest';
 
@@ -67,28 +64,12 @@ class SessionCacheService {
     }
   }
 
-  /// Clears session-specific authentication cache (removes user profile, user ID, nav mode, etc.)
-  /// while preserving global app preferences like language, theme, and first launch.
+  /// Clears all SharedPreferences keys to completely reset the application like a fresh install.
   Future<void> clearSession() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      
-      // Preserve settings
-      final lang = prefs.getString(_keyLanguage);
-      final theme = prefs.getString(_keyTheme);
-      final firstLaunch = prefs.getBool(_keyFirstLaunch);
-      final featureFlags = prefs.getString(_keyFeatureFlags);
-
-      // Clear all
       await prefs.clear();
-
-      // Restore settings
-      if (lang != null) await prefs.setString(_keyLanguage, lang);
-      if (theme != null) await prefs.setString(_keyTheme, theme);
-      if (firstLaunch != null) await prefs.setBool(_keyFirstLaunch, firstLaunch);
-      if (featureFlags != null) await prefs.setString(_keyFeatureFlags, featureFlags);
-      
-      debugPrint('[SessionCacheService] Auth session cache cleared. App preferences preserved.');
+      debugPrint('[SessionCacheService] All session and preference data cleared.');
     } catch (e) {
       debugPrint('[SessionCacheService] Error clearing session: $e');
     }

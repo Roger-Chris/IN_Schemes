@@ -10,7 +10,7 @@ import '../engine/recommendation_engine.dart';
 import '../services/auth_service.dart';
 import '../services/scheme_repository.dart';
 import '../services/session_cache_service.dart';
-import '../screens/login_screen.dart';
+import '../screens/splash_screen.dart';
 
 class AppProvider with ChangeNotifier {
   bool _isLoggedIn = false;
@@ -329,8 +329,22 @@ class AppProvider with ChangeNotifier {
 
   void changeNavigationMode(String mode) async {
     _navigationMode = mode;
+    _profile = _profile.copyWith(navigationMode: mode);
     notifyListeners();
     await SessionCacheService.instance.saveNavigationMode(mode);
+    await SessionCacheService.instance.saveProfile(_profile);
+
+    if (_isLoggedIn) {
+      final user = Supabase.instance.client.auth.currentUser;
+      if (user != null) {
+        try {
+          await SchemeRepository.instance.createProfile(_profile);
+          debugPrint('[AppProvider] Successfully synced navigation mode ($mode) to Supabase.');
+        } catch (e) {
+          debugPrint('[AppProvider] Error syncing navigation mode to database: $e');
+        }
+      }
+    }
   }
 
 
@@ -446,15 +460,16 @@ class AppProvider with ChangeNotifier {
     _isLoggingOut = true;
     notifyListeners();
 
-    // 1. Navigate instantly to LoginScreen to prevent UI loading freeze on Home
+    // 1. Navigate instantly to SplashScreen to perform the fresh welcome animation sequence
     Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (_) => const LoginScreen()),
+      MaterialPageRoute(builder: (_) => const SplashScreen()),
       (route) => false,
     );
 
     // 2. Perform cleanup in the background
     _isLoggedIn = false;
     _mobileNumber = '';
+    _selectedLanguage = 'en';
     _profile = UserProfile();
     _bookmarkedIds.clear();
     _recentlyViewedIds.clear();
@@ -493,12 +508,13 @@ class AppProvider with ChangeNotifier {
 
     if (!context.mounted) return;
     Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (_) => const LoginScreen()),
+      MaterialPageRoute(builder: (_) => const SplashScreen()),
       (route) => false,
     );
 
     _isLoggedIn = false;
     _mobileNumber = '';
+    _selectedLanguage = 'en';
     _profile = UserProfile();
     _bookmarkedIds.clear();
     _recentlyViewedIds.clear();
@@ -878,7 +894,9 @@ class AppProvider with ChangeNotifier {
           'area': placemark.subLocality ?? placemark.name ?? '',
           'village': placemark.subLocality != null && placemark.name != null && placemark.subLocality != placemark.name ? placemark.name : '',
           'state': placemark.administrativeArea ?? '',
-          'district': placemark.subAdministrativeArea ?? '',
+          'district': (placemark.subAdministrativeArea != null && placemark.subAdministrativeArea!.isNotEmpty)
+              ? placemark.subAdministrativeArea!
+              : (placemark.locality ?? ''),
           'city': placemark.locality ?? placemark.subLocality ?? '',
           'pinCode': placemark.postalCode ?? '',
           'latitude': position.latitude,

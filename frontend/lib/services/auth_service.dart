@@ -50,26 +50,30 @@ class AuthService {
   }
 
   static Future<void> signOut() async {
+    debugPrint('[AuthService] Starting signOut process...');
+    
     try {
-      debugPrint('[AuthService] Starting signOut process...');
-      
-      debugPrint('[AuthService] Revoking/Disconnecting Google Sign-In session...');
-      await _googleSignIn.disconnect();
-      
       debugPrint('[AuthService] Signing out of Google Sign-In...');
       await _googleSignIn.signOut();
-      
+    } catch (e) {
+      debugPrint('[AuthService] Google signOut error: $e');
+    }
+
+    try {
+      debugPrint('[AuthService] Revoking/Disconnecting Google Sign-In session...');
+      await _googleSignIn.disconnect();
+    } catch (e) {
+      debugPrint('[AuthService] Google disconnect error: $e');
+    }
+
+    try {
       debugPrint('[AuthService] Signing out of Supabase...');
       await client.auth.signOut();
-      
-      debugPrint('[AuthService] signOut process completed successfully.');
     } catch (e) {
-      debugPrint('[AuthService] Error during signOut: $e');
-      // Still attempt to sign out from Supabase as a fallback
-      try {
-        await client.auth.signOut();
-      } catch (_) {}
+      debugPrint('[AuthService] Supabase signOut error: $e');
     }
+
+    debugPrint('[AuthService] signOut process completed.');
   }
 }
 

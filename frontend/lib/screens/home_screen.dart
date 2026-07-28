@@ -9,7 +9,7 @@ import 'scheme_details_screen.dart';
 import 'notifications_screen.dart';
 import '../widgets/voice_assistant_overlay.dart';
 import 'find_my_schemes_screen.dart';
-import 'companion_intro_screen.dart';
+import 'companion/saarthi_welcome_screen.dart';
 import 'login_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -902,7 +902,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 btnColor: const Color(0xFF7C3AED),
                 onBtnTap: () {
                   Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => const CompanionIntroScreen()),
+                    MaterialPageRoute(builder: (_) => const SaarthiWelcomeScreen()),
                   );
                 },
                 rightGraphic: Image.asset(

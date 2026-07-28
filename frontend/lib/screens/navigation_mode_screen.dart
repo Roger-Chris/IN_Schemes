@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import 'companion_intro_screen.dart';
+import 'companion/saarthi_welcome_screen.dart';
 import 'language_selection_screen.dart';
 import 'basic_profile_screen.dart';
 import '../providers/app_state_provider.dart';
@@ -202,7 +202,7 @@ class _NavigationModeScreenState extends State<NavigationModeScreen> {
                           if (_selectedMode == NavigationMode.companion) {
                             Navigator.of(context).push(
                               MaterialPageRoute(
-                                builder: (_) => const CompanionIntroScreen(),
+                                builder: (_) => const SaarthiWelcomeScreen(),
                               ),
                             );
                           } else {
