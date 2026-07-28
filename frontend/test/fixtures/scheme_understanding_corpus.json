@@ -1,0 +1,33 @@
+[
+  {"mode":"english","query":"I need a loan to start a small manufacturing business","expected":"business|entrepreneur|msme|employment generation"},
+  {"mode":"english","query":"My daughter needs financial help for college studies","expected":"student|education|scholarship|higher education"},
+  {"mode":"english","query":"I am a farmer looking for subsidy for crop equipment","expected":"farmer|agriculture|crop|horticulture"},
+  {"mode":"english","query":"Is there government support to build a house?","expected":"housing|house|home"},
+  {"mode":"english","query":"I need medical insurance for hospital treatment","expected":"health|medical|hospital|insurance"},
+  {"mode":"english","query":"I am unemployed and want skill training for a job","expected":"employment|skill|training|entrepreneurship"},
+  {"mode":"english","query":"What assistance is available for a person with disability?","expected":"disab|differently abled"},
+  {"mode":"english","query":"My elderly mother needs an old age pension","expected":"pension|senior|old age|elderly","answerable":false},
+  {"mode":"english","query":"We need marriage assistance for a poor bride","expected":"marriage|bride|wedding"},
+  {"mode":"english","query":"I belong to SC and want support to start an enterprise","expected":"ambedkar|scheduled caste|sc/st|entrepreneur"},
+  {"mode":"english","query":"I am a fisherman and need help buying fishing equipment","expected":"fish|fisher","answerable":false},
+  {"mode":"english","query":"I want subsidy to start a dairy and goat farm","expected":"dairy|cattle|livestock|animal husbandry|poultry","answerable":false},
+
+  {"mode":"tamil","query":"எனக்கு கல்லூரி படிப்புக்கு உதவித்தொகை வேண்டும்","expected":"student|education|scholarship|higher education"},
+  {"mode":"tamil","query":"விவசாய கருவிகள் வாங்க மானியம் வேண்டும்","expected":"farmer|agriculture|crop|horticulture"},
+  {"mode":"tamil","query":"பெண்கள் தொழில் தொடங்க கடன் உதவி இருக்கிறதா","expected":"women|business|entrepreneur|enterprise"},
+  {"mode":"tamil","query":"முதியோருக்கு ஓய்வூதிய திட்டம் வேண்டும்","expected":"pension|senior|old age|elderly","answerable":false},
+  {"mode":"tamil","query":"மாற்றுத்திறனாளிகளுக்கு அரசு உதவி என்ன கிடைக்கும்","expected":"disab|differently abled"},
+  {"mode":"tamil","query":"மீனவர்கள் படகு உபகரணம் வாங்க உதவி வேண்டும்","expected":"fish|fisher","answerable":false},
+
+  {"mode":"tanglish","query":"enakku college padippuku scholarship venum","expected":"student|education|scholarship|higher education"},
+  {"mode":"tanglish","query":"naan vivasayi crop equipment ku maaniyam venum","expected":"farmer|agriculture|crop|horticulture"},
+  {"mode":"tanglish","query":"amma ku muthiyor pension kidaikuma","expected":"pension|senior|old age|elderly","answerable":false},
+  {"mode":"tanglish","query":"ponnu kalyanathuku government assistance venum","expected":"marriage|bride|wedding"},
+  {"mode":"tanglish","query":"meenavar ku fishing boat help iruka","expected":"fish|fisher","answerable":false},
+  {"mode":"tanglish","query":"velai illa skill training scheme venum","expected":"employment|skill|training|entrepreneurship"},
+
+  {"mode":"mixed","query":"my mother ku own business start panna loan venum","expected":"women|business|entrepreneur|enterprise"},
+  {"mode":"mixed","query":"I am SC category and Tamil Nadu la manufacturing business start panna help venum","expected":"ambedkar|scheduled caste|sc/st|entrepreneur"},
+  {"mode":"mixed","query":"appa farmer, irrigation pump subsidy venum","expected":"farmer|agriculture|crop|horticulture"},
+  {"mode":"mixed","query":"widow amma ku pension and financial help venum","expected":"widow|pension|women"}
+]
