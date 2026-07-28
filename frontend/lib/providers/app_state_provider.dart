@@ -421,11 +421,8 @@ class AppProvider with ChangeNotifier {
     _bookmarkedIds.clear();
     _recentlyViewedIds.clear();
     _currentTabIndex = 0;
-<<<<<<< HEAD
     _tabHistory.clear();
-=======
     debugPrint('[AppProvider] Local states cleared after logout.');
->>>>>>> c5dd534 (Describe your changes)
     notifyListeners();
   }
 

@@ -68,6 +68,20 @@ void main() {
     expect(matches.first.scheme.id, 'IN-STUDENT');
   });
 
+  test('understands mixed English and colloquial Tamil requests', () {
+    final intent = IntelligentSchemeSearch.interpret(
+      'my mother ku own business start panna loan venum',
+    );
+    final matches = IntelligentSchemeSearch.rank(
+      'my mother ku own business start panna loan venum',
+      schemes,
+    );
+
+    expect(intent.isTamil, isTrue);
+    expect(intent.concepts, containsAll(['women', 'business', 'loan']));
+    expect(matches.first.scheme.id, 'IN-BIZ');
+  });
+
   test('returns no confident match for an unrelated request', () {
     final matches = IntelligentSchemeSearch.rank('play a movie song', schemes);
 

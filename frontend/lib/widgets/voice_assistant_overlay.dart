@@ -4,11 +4,10 @@ import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:speech_to_text/speech_recognition_result.dart';
-import 'package:speech_to_text/speech_to_text.dart';
 
 import '../models/scheme_model.dart';
 import '../services/intelligent_scheme_search.dart';
+import '../services/voice_recognition_controller.dart';
 
 enum _VoiceAssistantPhase { starting, listening, ready, unavailable }
 
@@ -21,6 +20,7 @@ class VoiceAssistantOverlay extends StatefulWidget {
     required this.onSubmit,
     this.onSearch,
     this.onSchemeSelected,
+    this.recognitionController,
     this.autoStart = true,
   });
 
@@ -28,6 +28,7 @@ class VoiceAssistantOverlay extends StatefulWidget {
   final ValueChanged<String> onSubmit;
   final Future<List<SchemeSearchMatch>> Function(String query)? onSearch;
   final ValueChanged<Scheme>? onSchemeSelected;
+  final VoiceRecognitionController? recognitionController;
   final bool autoStart;
 
   @override
@@ -36,7 +37,8 @@ class VoiceAssistantOverlay extends StatefulWidget {
 
 class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
     with TickerProviderStateMixin {
-  final SpeechToText _speech = SpeechToText();
+  late final VoiceRecognitionController _recognitionController;
+  late final bool _ownsRecognitionController;
   late final AnimationController _edgeController;
   late final AnimationController _pulseController;
   late final AnimationController _waveController;
@@ -46,7 +48,11 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
   _VoiceAssistantPhase _phase = _VoiceAssistantPhase.starting;
   String _transcript = '';
   String? _message;
-  VoiceInputLanguage _language = VoiceInputLanguage.english;
+  String? _detectedLanguage;
+  String? _fallbackReason;
+  VoiceInputLanguage _fallbackLanguage = VoiceInputLanguage.english;
+  bool _showFallbackPicker = false;
+  bool _startingRecognition = false;
   List<SchemeSearchMatch> _matches = const [];
   bool _isSearching = false;
   int _searchGeneration = 0;
@@ -56,6 +62,25 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
   bool get _isListening => _phase == _VoiceAssistantPhase.listening;
   bool get _hasTranscript => _transcript.trim().isNotEmpty;
   bool get _hasSearch => widget.onSearch != null;
+  bool get _presentInTamil {
+    if (_detectedLanguage?.toLowerCase().startsWith('ta') == true) return true;
+    if (_detectedLanguage?.toLowerCase().startsWith('en') == true) return false;
+    if (_transcript.trim().isNotEmpty) {
+      return IntelligentSchemeSearch.interpret(_transcript).isTamil;
+    }
+    return _showFallbackPicker && _fallbackLanguage == VoiceInputLanguage.tamil;
+  }
+
+  String get _languageBadgeLabel {
+    if (_detectedLanguage?.toLowerCase().startsWith('ta') == true) {
+      return 'தமிழ்';
+    }
+    if (_detectedLanguage?.toLowerCase().startsWith('en') == true) {
+      return 'English';
+    }
+    return 'Auto';
+  }
+
   String get _statusLabel {
     if (_isListening) return 'Listening...';
     if (_isSearching) return 'Finding...';
@@ -74,6 +99,13 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
   @override
   void initState() {
     super.initState();
+    _ownsRecognitionController = widget.recognitionController == null;
+    _recognitionController =
+        widget.recognitionController ?? AutomaticVoiceRecognitionController();
+    final deviceLanguage = PlatformDispatcher.instance.locale.languageCode;
+    _fallbackLanguage = deviceLanguage == 'ta'
+        ? VoiceInputLanguage.tamil
+        : VoiceInputLanguage.english;
     _edgeController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 2400),
@@ -100,70 +132,54 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
   }
 
   Future<void> _startListening() async {
-    if (!mounted) return;
+    if (!mounted || _startingRecognition) return;
+    _startingRecognition = true;
     _setListeningAnimations(false);
     setState(() {
       _phase = _VoiceAssistantPhase.starting;
       _message = null;
+      _detectedLanguage = null;
     });
 
     try {
-      final available = await _speech.initialize(
+      final capabilities = await _recognitionController.initialize(
         onStatus: _handleStatus,
-        onError: (error) {
-          if (!mounted) return;
-          _edgeIntensity.value = 0.12;
-          _setListeningAnimations(false);
-          setState(() {
-            _phase = _VoiceAssistantPhase.unavailable;
-            _message = error.errorMsg == 'error_permission'
-                ? 'Microphone permission is needed for voice search.'
-                : 'I could not hear you. Tap the microphone to try again.';
-          });
-        },
+        onResult: _handleResult,
+        onSoundLevel: _handleSoundLevel,
+        onLanguage: _handleLanguage,
+        onError: _handleError,
       );
 
       if (!mounted) return;
-      if (!available) {
+      if (!capabilities.available) {
         _edgeIntensity.value = 0.12;
         _setListeningAnimations(false);
         setState(() {
           _phase = _VoiceAssistantPhase.unavailable;
-          _message = 'Voice recognition is not available on this device.';
+          _message =
+              capabilities.reason ??
+              'Voice recognition is not available on this device.';
         });
         return;
       }
 
+      final useFallback = !capabilities.automaticLanguageDetection;
       setState(() {
         _phase = _VoiceAssistantPhase.listening;
         _message = null;
+        _showFallbackPicker = useFallback;
+        _fallbackReason = useFallback ? capabilities.reason : null;
       });
       _edgeIntensity.value = 0.25;
       _setListeningAnimations(true);
 
-      await _speech.listen(
-        onResult: _handleResult,
-        onSoundLevelChange: (level) {
-          if (!mounted) return;
-          final now = DateTime.now();
-          if (now.difference(_lastSoundLevelUpdate) <
-              const Duration(milliseconds: 66)) {
-            return;
-          }
-          _lastSoundLevelUpdate = now;
-          final normalizedLevel = ((level + 2) / 12).clamp(0.0, 1.0);
-          _edgeIntensity.value = math.max(0.25, normalizedLevel);
-        },
-        listenOptions: SpeechListenOptions(
-          cancelOnError: true,
-          partialResults: true,
-          listenMode: ListenMode.search,
-          autoPunctuation: true,
-          listenFor: Duration(seconds: 30),
-          pauseFor: Duration(seconds: 4),
-          localeId: await _localeIdFor(_language),
-        ),
+      await _recognitionController.listen(
+        localeId: useFallback ? _fallbackLocaleId : null,
       );
+      if (mounted && !_recognitionController.isListening) {
+        _edgeIntensity.value = 0.12;
+        _setListeningAnimations(false);
+      }
     } catch (_) {
       if (!mounted) return;
       _edgeIntensity.value = 0.12;
@@ -172,34 +188,71 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
         _phase = _VoiceAssistantPhase.unavailable;
         _message = 'Voice recognition could not start. Please try again.';
       });
+    } finally {
+      _startingRecognition = false;
     }
   }
 
-  void _handleResult(SpeechRecognitionResult result) {
+  String get _fallbackLocaleId =>
+      _fallbackLanguage == VoiceInputLanguage.tamil ? 'ta-IN' : 'en-IN';
+
+  void _handleResult(VoiceRecognitionResult result) {
     if (!mounted) return;
-    if (_transcript == result.recognizedWords && !result.finalResult) return;
+    if (_transcript == result.transcript && !result.isFinal) return;
     setState(() {
-      _transcript = result.recognizedWords;
-      if (result.finalResult) {
+      _transcript = result.transcript;
+      if (result.isFinal) {
         _phase = _VoiceAssistantPhase.ready;
         _setListeningAnimations(false);
       }
     });
-    if (result.finalResult && _hasSearch) {
+    if (result.isFinal && _hasSearch) {
       unawaited(_searchTranscript());
     }
   }
 
+  void _handleSoundLevel(double level) {
+    if (!mounted) return;
+    final now = DateTime.now();
+    if (now.difference(_lastSoundLevelUpdate) <
+        const Duration(milliseconds: 66)) {
+      return;
+    }
+    _lastSoundLevelUpdate = now;
+    final normalizedLevel = ((level + 2) / 12).clamp(0.0, 1.0);
+    _edgeIntensity.value = math.max(0.25, normalizedLevel);
+  }
+
+  void _handleLanguage(String language) {
+    if (!mounted || language == _detectedLanguage) return;
+    setState(() => _detectedLanguage = language);
+  }
+
+  void _handleError(VoiceRecognitionError error) {
+    if (!mounted) return;
+    _edgeIntensity.value = 0.12;
+    _setListeningAnimations(false);
+    setState(() {
+      _phase = _VoiceAssistantPhase.unavailable;
+      if (error.automaticUnavailable) {
+        _showFallbackPicker = true;
+        _fallbackReason = error.message;
+        _message = null;
+      } else {
+        _message = error.message;
+      }
+    });
+  }
+
   void _handleStatus(String status) {
     if (!mounted) return;
-    if (status == SpeechToText.listeningStatus) {
+    if (status == 'listening' || status == 'processing') {
       _edgeIntensity.value = 0.25;
       _setListeningAnimations(true);
       if (_phase != _VoiceAssistantPhase.listening) {
         setState(() => _phase = _VoiceAssistantPhase.listening);
       }
-    } else if (status == SpeechToText.doneStatus ||
-        status == SpeechToText.notListeningStatus) {
+    } else if (status == 'done' || status == 'notListening') {
       _edgeIntensity.value = 0.12;
       _setListeningAnimations(false);
       setState(() {
@@ -209,7 +262,7 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
   }
 
   Future<void> _stopListening() async {
-    await _speech.stop();
+    await _recognitionController.stop();
     if (!mounted) return;
     _edgeIntensity.value = 0.12;
     _setListeningAnimations(false);
@@ -226,46 +279,26 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
     }
   }
 
-  Future<String?> _localeIdFor(VoiceInputLanguage language) async {
-    final requestedPrefix = language == VoiceInputLanguage.tamil ? 'ta' : 'en';
-    final preferredRegion = language == VoiceInputLanguage.tamil
-        ? 'ta-in'
-        : 'en-in';
-    try {
-      final locales = await _speech.locales();
-      String normalized(String locale) =>
-          locale.toLowerCase().replaceAll('_', '-');
-      for (final locale in locales) {
-        if (normalized(locale.localeId) == preferredRegion) {
-          return locale.localeId;
-        }
-      }
-      for (final locale in locales) {
-        if (normalized(locale.localeId).startsWith('$requestedPrefix-')) {
-          return locale.localeId;
-        }
-      }
-    } catch (_) {
-      // Let the platform use its default locale when locale discovery fails.
-    }
-    return null;
-  }
-
   Future<void> _changeLanguage(VoiceInputLanguage language) async {
-    if (_language == language) return;
+    if (_fallbackLanguage == language && _isListening) return;
     _searchGeneration++;
-    await _speech.cancel();
+    await _recognitionController.cancel();
     if (!mounted) return;
     setState(() {
-      _language = language;
+      _fallbackLanguage = language;
+      _detectedLanguage = language == VoiceInputLanguage.tamil
+          ? 'ta-IN'
+          : 'en-IN';
       _transcript = '';
       _matches = const [];
       _lastSearchedQuery = '';
       _isSearching = false;
       _message = null;
-      _phase = _VoiceAssistantPhase.ready;
+      _phase = _VoiceAssistantPhase.listening;
     });
-    await _startListening();
+    _edgeIntensity.value = 0.25;
+    _setListeningAnimations(true);
+    await _recognitionController.listen(localeId: _fallbackLocaleId);
   }
 
   Future<void> _searchTranscript({bool force = false}) async {
@@ -299,8 +332,8 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
   }
 
   Future<void> _useSuggestion(String query) async {
-    if (_speech.isListening) {
-      await _speech.stop();
+    if (_recognitionController.isListening) {
+      await _recognitionController.stop();
     }
     if (!mounted) return;
     _setListeningAnimations(false);
@@ -334,14 +367,14 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
   }
 
   Future<void> _close() async {
-    await _speech.cancel();
+    await _recognitionController.cancel();
     if (mounted) widget.onClose();
   }
 
   Future<void> _submit() async {
     final query = _transcript.trim();
     if (query.isEmpty || _isSearching) return;
-    await _speech.stop();
+    await _recognitionController.stop();
     if (!mounted) return;
     if (_hasSearch && _matches.isEmpty) {
       await _searchTranscript(force: true);
@@ -352,7 +385,11 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
 
   @override
   void dispose() {
-    _speech.cancel();
+    if (_ownsRecognitionController) {
+      unawaited(_recognitionController.dispose());
+    } else {
+      unawaited(_recognitionController.cancel());
+    }
     _edgeController.dispose();
     _pulseController.dispose();
     _waveController.dispose();
@@ -519,6 +556,20 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
                     ),
                     const SizedBox(height: 8),
                     _buildLanguageSelector(),
+                    if (_showFallbackPicker && _fallbackReason != null) ...[
+                      const SizedBox(height: 5),
+                      Text(
+                        _fallbackReason!,
+                        key: const Key('voice-language-fallback-reason'),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFFFBBF24),
+                          fontSize: 9,
+                          height: 1.25,
+                        ),
+                      ),
+                    ],
                     // Suggestion Chips (only when empty)
                     if (!showTranscript) ...[
                       const SizedBox(height: 8),
@@ -529,21 +580,21 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
                           children: [
                             _buildSuggestionChip(
                               'Business loans',
-                              _language == VoiceInputLanguage.tamil
+                              _presentInTamil
                                   ? 'business ku loan venum'
                                   : 'business loans for me',
                             ),
                             const SizedBox(width: 8),
                             _buildSuggestionChip(
                               'Student scholarship',
-                              _language == VoiceInputLanguage.tamil
+                              _presentInTamil
                                   ? 'padippuku scholarship venum'
                                   : 'scholarships for students',
                             ),
                             const SizedBox(width: 8),
                             _buildSuggestionChip(
                               'Farmer subsidy',
-                              _language == VoiceInputLanguage.tamil
+                              _presentInTamil
                                   ? 'vivasayathukku maaniyam venum'
                                   : 'subsidy for farmers',
                             ),
@@ -672,7 +723,7 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
               _message == null) ...[
             const SizedBox(height: 10),
             Text(
-              _language == VoiceInputLanguage.tamil
+              _presentInTamil
                   ? 'பொருத்தமான திட்டம் கிடைக்கவில்லை. வேறு வார்த்தைகளில் சொல்லிப் பாருங்கள்.'
                   : 'No matching scheme found. Try saying it another way.',
               key: const Key('voice-no-results'),
@@ -701,9 +752,35 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
   }
 
   Widget _buildLanguageSelector() {
+    if (!_showFallbackPicker) {
+      return Semantics(
+        label: 'Voice language $_languageBadgeLabel',
+        child: Container(
+          key: const Key('voice-language-auto-badge'),
+          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+          decoration: BoxDecoration(
+            color: const Color(0xFF2563EB).withValues(alpha: 0.18),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: const Color(0xFF60A5FA).withValues(alpha: 0.28),
+            ),
+          ),
+          child: Text(
+            _languageBadgeLabel,
+            style: GoogleFonts.inter(
+              color: const Color(0xFFBFDBFE),
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+      );
+    }
+
     return Semantics(
-      label: 'Voice input language',
+      label: 'Fallback voice input language',
       child: Container(
+        key: const Key('voice-language-fallback-picker'),
         padding: const EdgeInsets.all(2),
         decoration: BoxDecoration(
           color: Colors.white.withValues(alpha: 0.06),
@@ -721,7 +798,7 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
   }
 
   Widget _buildLanguageOption(String label, VoiceInputLanguage language) {
-    final selected = _language == language;
+    final selected = _fallbackLanguage == language;
     return Semantics(
       button: true,
       selected: selected,
@@ -759,7 +836,7 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
           children: [
             Expanded(
               child: Text(
-                _language == VoiceInputLanguage.tamil
+                _presentInTamil
                     ? 'உங்களுக்கான சிறந்த திட்டங்கள்'
                     : 'Best matching schemes',
                 style: GoogleFonts.inter(
