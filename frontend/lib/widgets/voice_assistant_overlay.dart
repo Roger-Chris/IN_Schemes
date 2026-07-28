@@ -13,7 +13,13 @@ import '../services/scheme_understanding_engine.dart';
 import '../services/speech_output_controller.dart';
 import '../services/voice_recognition_controller.dart';
 
-enum _VoiceAssistantPhase { starting, listening, ready, unavailable }
+enum _VoiceAssistantPhase {
+  starting,
+  listening,
+  processing,
+  ready,
+  unavailable,
+}
 
 enum VoiceInputLanguage { english, tamil }
 
@@ -77,6 +83,7 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
   bool _showFallbackPicker = false;
   bool _startingRecognition = false;
   bool _speaking = false;
+  bool _closing = false;
   List<SchemeSearchMatch> _legacyMatches = const [];
   bool _legacySearching = false;
   int _operationGeneration = 0;
@@ -110,6 +117,9 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
   String get _statusLabel {
     if (_speaking) return _presentInTamil ? 'பேசுகிறது...' : 'Speaking...';
     if (_isListening) return _presentInTamil ? 'கேட்கிறது...' : 'Listening...';
+    if (_voicePhase == _VoiceAssistantPhase.processing) {
+      return _presentInTamil ? 'செயலாக்குகிறது...' : 'Processing...';
+    }
     switch (_session?.phase) {
       case AssistantSessionPhase.understanding:
         return _presentInTamil ? 'புரிந்துகொள்கிறது...' : 'Understanding...';
@@ -128,7 +138,9 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
 
   Color get _statusColor => _isListening
       ? const Color(0xFF10B981)
-      : _speaking || _session?.phase == AssistantSessionPhase.understanding
+      : _speaking ||
+            _voicePhase == _VoiceAssistantPhase.processing ||
+            _session?.phase == AssistantSessionPhase.understanding
       ? const Color(0xFFF59E0B)
       : (_session?.recommendations.isNotEmpty == true ||
             _legacyMatches.isNotEmpty)
@@ -383,11 +395,18 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
 
   void _handleStatus(String status) {
     if (!mounted) return;
-    if (status == 'listening' || status == 'processing') {
+    if (status == 'listening') {
       _edgeIntensity.value = 0.25;
       _setListeningAnimations(true);
       if (_voicePhase != _VoiceAssistantPhase.listening) {
         setState(() => _voicePhase = _VoiceAssistantPhase.listening);
+      }
+    } else if (status == 'processing') {
+      _edgeIntensity.value = 0.16;
+      _soundLevel.value = 0.1;
+      _setListeningAnimations(false);
+      if (_voicePhase != _VoiceAssistantPhase.processing) {
+        setState(() => _voicePhase = _VoiceAssistantPhase.processing);
       }
     } else if (status == 'done' || status == 'notListening') {
       _edgeIntensity.value = 0.12;
@@ -453,7 +472,13 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
     );
     if (!mounted || generation != _operationGeneration) return;
     setState(() => _speaking = false);
-    if (completed) await _startListening(preserveTranscript: true);
+    if (completed) {
+      // Give Android audio focus a moment to move from TTS back to the mic.
+      await Future<void>.delayed(const Duration(milliseconds: 250));
+      if (mounted && generation == _operationGeneration) {
+        await _startListening(preserveTranscript: true);
+      }
+    }
   }
 
   Future<void> _answerOption(String option) async {
@@ -584,12 +609,16 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
     }
   }
 
-  Future<void> _close() async {
+  void _close() {
+    if (_closing) return;
+    _closing = true;
     _operationGeneration++;
     _sessionController?.cancel();
-    await _speechOutputController.stop();
-    await _recognitionController.cancel();
-    if (mounted) widget.onClose();
+    // Navigation must never wait for an OEM speech service to acknowledge
+    // cancellation. Disposal still performs the full native cleanup.
+    unawaited(_speechOutputController.stop());
+    unawaited(_recognitionController.cancel());
+    widget.onClose();
   }
 
   @override
@@ -785,14 +814,18 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
   Widget _buildHeader() {
     return Row(
       children: [
-        Container(
-          width: 34,
-          height: 34,
-          decoration: const BoxDecoration(
-            color: Color(0xFF1D4ED8),
-            shape: BoxShape.circle,
+        Semantics(
+          image: true,
+          label: 'IN AI assistant',
+          child: SizedBox(
+            width: 56,
+            height: 56,
+            child: Image.asset(
+              'assets/images/compoanion bot.png',
+              key: const Key('voice-assistant-image'),
+              fit: BoxFit.contain,
+            ),
           ),
-          child: const Icon(Icons.auto_awesome, color: Colors.white, size: 18),
         ),
         const SizedBox(width: 10),
         Expanded(
@@ -920,11 +953,18 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
   }
 
   Widget _suggestionChip(String label) => ActionChip(
-    label: Text(label, style: const TextStyle(fontSize: 10.5)),
+    label: Text(
+      label,
+      style: const TextStyle(
+        color: Colors.white,
+        fontSize: 11.5,
+        fontWeight: FontWeight.w600,
+      ),
+    ),
     onPressed: () => _useSuggestion(label),
-    side: BorderSide(color: const Color(0xFF60A5FA).withValues(alpha: 0.24)),
-    backgroundColor: const Color(0xFF1E3A8A).withValues(alpha: 0.22),
-    labelStyle: const TextStyle(color: Color(0xFFBFDBFE)),
+    side: const BorderSide(color: Color(0xFF3B82F6)),
+    backgroundColor: const Color(0xFF172554),
+    labelStyle: const TextStyle(color: Colors.white),
     visualDensity: VisualDensity.compact,
   );
 
@@ -936,17 +976,15 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
           key: const Key('voice-language-auto-badge'),
           padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
           decoration: BoxDecoration(
-            color: const Color(0xFF2563EB).withValues(alpha: 0.18),
+            color: const Color(0xFFDBEAFE),
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: const Color(0xFF60A5FA).withValues(alpha: 0.28),
-            ),
+            border: Border.all(color: const Color(0xFF93C5FD)),
           ),
           child: Text(
             _languageBadgeLabel,
             style: GoogleFonts.inter(
-              color: const Color(0xFFBFDBFE),
-              fontSize: 10,
+              color: const Color(0xFF172554),
+              fontSize: 11,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -1029,7 +1067,11 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
                   ),
                   label: Text(
                     '${_factLabel(fact.key)}: ${_displayFactValue(fact)}',
-                    style: const TextStyle(fontSize: 9.5),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                   onPressed: () => _editFact(fact),
                   side: BorderSide(
@@ -1037,8 +1079,8 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
                         ? const Color(0xFFFBBF24)
                         : const Color(0xFF334155),
                   ),
-                  backgroundColor: const Color(0xFF0F172A),
-                  labelStyle: const TextStyle(color: Color(0xFFE2E8F0)),
+                  backgroundColor: const Color(0xFF172554),
+                  labelStyle: const TextStyle(color: Colors.white),
                   visualDensity: VisualDensity.compact,
                 );
               })
@@ -1105,11 +1147,18 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
                       key: Key(
                         'voice-answer-${option.toLowerCase().replaceAll(' ', '-')}',
                       ),
-                      label: Text(option, style: const TextStyle(fontSize: 10)),
+                      label: Text(
+                        option,
+                        style: const TextStyle(
+                          color: Color(0xFF172554),
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                       onPressed: () => _answerOption(option),
-                      backgroundColor: const Color(0xFF172554),
-                      side: const BorderSide(color: Color(0xFF1D4ED8)),
-                      labelStyle: const TextStyle(color: Color(0xFFDBEAFE)),
+                      backgroundColor: const Color(0xFFDBEAFE),
+                      side: const BorderSide(color: Color(0xFF93C5FD)),
+                      labelStyle: const TextStyle(color: Color(0xFF172554)),
                     ),
                   )
                   .toList(growable: false),
@@ -1228,18 +1277,19 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
                   const SizedBox(width: 8),
                   Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 7,
-                      vertical: 3,
+                      horizontal: 8,
+                      vertical: 5,
                     ),
                     decoration: BoxDecoration(
-                      color: color.withValues(alpha: 0.14),
+                      color: color.withValues(alpha: 0.24),
                       borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: color.withValues(alpha: 0.62)),
                     ),
                     child: Text(
                       label,
                       style: TextStyle(
                         color: color,
-                        fontSize: 8.5,
+                        fontSize: 10.5,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -1290,8 +1340,8 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
             style: GoogleFonts.inter(
-              color: const Color(0xFFCBD5E1),
-              fontSize: 9.3,
+              color: const Color(0xFFF1F5F9),
+              fontSize: 10.5,
               height: 1.35,
             ),
           ),

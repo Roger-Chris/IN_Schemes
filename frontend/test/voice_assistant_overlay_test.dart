@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frontend/models/scheme_model.dart';
@@ -35,6 +37,7 @@ void main() {
       expect(find.byType(BackdropFilter), findsNothing);
       expect(find.byType(RepaintBoundary), findsWidgets);
       expect(find.text('Ask IN AI'), findsOneWidget);
+      expect(find.byKey(const Key('voice-assistant-image')), findsOneWidget);
       expect(find.text('Ready'), findsOneWidget);
       expect(
         find.byKey(const Key('voice-language-auto-badge')),
@@ -53,6 +56,61 @@ void main() {
       expect(controller.cancelCount, 1);
     },
   );
+
+  testWidgets('close navigation does not wait for speech cancellation', (
+    tester,
+  ) async {
+    final cancelCompleter = Completer<void>();
+    final controller = _FakeVoiceRecognitionController(
+      cancelCompleter: cancelCompleter,
+    );
+    var closed = false;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: VoiceAssistantOverlay(
+          autoStart: false,
+          recognitionController: controller,
+          speechOutputController: _FakeSpeechOutputController(),
+          onClose: () => closed = true,
+          onSubmit: (_) {},
+        ),
+      ),
+    );
+
+    await tester.tap(find.byKey(const Key('voice-close-button')));
+    await tester.pump();
+
+    expect(closed, isTrue);
+    expect(controller.cancelCount, 1);
+    cancelCompleter.complete();
+  });
+
+  testWidgets('processing is distinct from active listening', (tester) async {
+    final controller = _FakeVoiceRecognitionController();
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: VoiceAssistantOverlay(
+          recognitionController: controller,
+          speechOutputController: _FakeSpeechOutputController(),
+          onClose: () {},
+          onSubmit: (_) {},
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump();
+
+    controller.emitStatus('processing');
+    await tester.pump();
+
+    expect(find.text('Processing...'), findsOneWidget);
+    expect(
+      tester.widget<VoiceLevelBars>(find.byType(VoiceLevelBars)).active,
+      isFalse,
+    );
+  });
 
   testWidgets('automatic recognition reports Tamil and ranks schemes', (
     tester,
@@ -333,7 +391,7 @@ void main() {
     );
     await tester.pump();
     await tester.pump();
-    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
 
     expect(find.byKey(const Key('voice-follow-up-question')), findsOneWidget);
     expect(speech.spokenTexts, isNotEmpty);
@@ -491,10 +549,12 @@ class _FakeVoiceRecognitionController implements VoiceRecognitionController {
       automaticLanguageDetection: true,
     ),
     this.errorOnListen,
+    this.cancelCompleter,
   });
 
   final VoiceRecognitionCapabilities capabilities;
   final VoiceRecognitionError? errorOnListen;
+  final Completer<void>? cancelCompleter;
   VoiceStatusCallback? _onStatus;
   VoiceResultCallback? _onResult;
   VoiceLanguageCallback? _onLanguage;
@@ -539,6 +599,11 @@ class _FakeVoiceRecognitionController implements VoiceRecognitionController {
 
   void emitLanguage(String language) => _onLanguage?.call(language);
 
+  void emitStatus(String status) {
+    _isListening = status == 'listening';
+    _onStatus?.call(status);
+  }
+
   void emitResult(String transcript, {required bool isFinal}) {
     if (isFinal) _isListening = false;
     _onResult?.call(
@@ -557,6 +622,7 @@ class _FakeVoiceRecognitionController implements VoiceRecognitionController {
   Future<void> cancel() async {
     cancelCount++;
     _isListening = false;
+    await cancelCompleter?.future;
   }
 
   @override

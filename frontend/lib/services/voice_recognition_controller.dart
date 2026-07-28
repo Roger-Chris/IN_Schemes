@@ -91,6 +91,7 @@ class AutomaticVoiceRecognitionController
   bool _disposed = false;
   bool _isListening = false;
   int _sessionId = 0;
+  String? _lastDetectedLanguage;
 
   @override
   bool get isListening => _isListening;
@@ -262,7 +263,7 @@ class AutomaticVoiceRecognitionController
       listenOptions: SpeechListenOptions(
         cancelOnError: true,
         partialResults: true,
-        listenMode: ListenMode.search,
+        listenMode: ListenMode.dictation,
         autoPunctuation: true,
         listenFor: const Duration(seconds: 30),
         pauseFor: const Duration(seconds: 4),
@@ -272,6 +273,9 @@ class AutomaticVoiceRecognitionController
   }
 
   String get _preferredAutomaticLocale {
+    final detected = _lastDetectedLanguage;
+    if (detected?.toLowerCase().startsWith('ta') == true) return 'ta-IN';
+    if (detected?.toLowerCase().startsWith('en') == true) return 'en-IN';
     final language = PlatformDispatcher.instance.locale.languageCode;
     return language == 'ta' ? 'ta-IN' : 'en-IN';
   }
@@ -322,7 +326,7 @@ class AutomaticVoiceRecognitionController
       case 'status':
         final status = event['status'];
         if (status is! String) return;
-        _isListening = status == 'listening' || status == 'processing';
+        _isListening = status == 'listening';
         _onStatus(status);
       case 'result':
         final transcript = event['transcript'];
@@ -338,7 +342,10 @@ class AutomaticVoiceRecognitionController
         if (level is num) _onSoundLevel(level.toDouble());
       case 'language':
         final language = event['language'];
-        if (language is String) _onLanguage(language);
+        if (language is String) {
+          _lastDetectedLanguage = language;
+          _onLanguage(language);
+        }
       case 'error':
         _isListening = false;
         final automaticUnavailable = event['automaticUnavailable'] == true;
