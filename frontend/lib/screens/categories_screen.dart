@@ -1,10 +1,8 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../providers/app_state_provider.dart';
 import 'search_results_screen.dart';
-import 'notifications_screen.dart';
 
 class CategoryItem {
   final String title;
@@ -242,205 +240,133 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
 
     return Scaffold(
       backgroundColor: Colors.transparent, // Parent provides blueGradient
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        toolbarHeight: 72,
-        title: Image.asset(
-          'assets/images/Logo icon.png',
-          height: 56, // Bold logo size matching Home Page
-          fit: BoxFit.contain,
-        ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 8.0),
-            child: GestureDetector(
-              onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const NotificationsScreen()),
-                );
-              },
-              child: Stack(
-                clipBehavior: Clip.none,
-                alignment: Alignment.center,
+      body: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Stationary Header
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 12.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    width: 44,
-                    height: 44,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFEFF6FF),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.notifications_none_outlined,
-                      color: Color(0xFF0D47A1),
-                      size: 24,
+                  Text(
+                    'Discover',
+                    style: GoogleFonts.poppins(
+                      fontSize: 18.0,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF0F172A),
                     ),
                   ),
-                  if (provider.notifications.where((n) => !n['read']).isNotEmpty)
-                    Positioned(
-                      right: 2,
-                      top: 2,
-                      child: Container(
-                        padding: const EdgeInsets.all(2),
-                        decoration: const BoxDecoration(
-                          color: Color(0xFFEF4444),
-                          shape: BoxShape.circle,
-                        ),
-                        constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
-                        alignment: Alignment.center,
-                        child: Text(
-                          '${provider.notifications.where((n) => !n['read']).length}',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 8.5,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
                 ],
               ),
             ),
-          ),
-          // User profile avatar
-          Padding(
-            padding: const EdgeInsets.only(right: 16.0),
-            child: GestureDetector(
-              onTap: () => provider.updateTabIndex(4),
-              child: CircleAvatar(
-                backgroundColor: const Color(0xFFEFF6FF),
-                radius: 24, // Consistent with Home Page enlarge update
-                backgroundImage: provider.profile.profilePhoto.isNotEmpty &&
-                        File(provider.profile.profilePhoto).existsSync()
-                    ? FileImage(File(provider.profile.profilePhoto))
-                    : const AssetImage('assets/images/user_avatar.png') as ImageProvider,
-              ),
-            ),
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 8),
-              // Page Header Title (fontSize 17 bold matching Home Screen greeting)
-              Text(
-                'Discover',
-                style: GoogleFonts.poppins(
-                  fontSize: 17,
-                  fontWeight: FontWeight.bold,
-                  color: const Color(0xFF0F172A),
-                ),
-              ),
-              const SizedBox(height: 4),
-              // Subtitle from the screenshot
-              Text(
-                'Browse schemes by category and find what matters most to you.',
-                style: GoogleFonts.inter(
-                  fontSize: 10.5,
-                  color: const Color(0xFF64748B), // Slate 500
-                ),
-              ),
-              const SizedBox(height: 16),
-              // Search categories input bar
-              Container(
-                decoration: BoxDecoration(
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withAlpha(4),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: TextField(
-                  controller: _searchController,
-                  onChanged: (value) {
-                    setState(() {
-                      _searchQuery = value;
-                    });
-                  },
-                  decoration: InputDecoration(
-                    hintText: 'Search categories...',
-                    hintStyle: GoogleFonts.inter(
-                      color: const Color(0xFF94A3B8), // Slate 400
-                      fontSize: 14,
-                    ),
-                    prefixIcon: const Icon(
-                      Icons.search,
-                      color: Color(0xFF64748B), // Slate 500
-                    ),
-                    suffixIcon: _searchQuery.isNotEmpty
-                        ? IconButton(
-                            icon: const Icon(Icons.clear, color: Color(0xFF94A3B8)),
-                            onPressed: () {
-                              _searchController.clear();
-                              setState(() {
-                                _searchQuery = '';
-                              });
-                            },
-                          )
-                        : null,
-                    filled: true,
-                    fillColor: Colors.white,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 12),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(30),
-                      borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(30),
-                      borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(30),
-                      borderSide: const BorderSide(color: Color(0xFF0D47A1), width: 1.5),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-              // Recreated 3-column Grid
-              filteredCategories.isEmpty
-                  ? Center(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 40.0),
-                        child: Text(
-                          'No categories found matching "$_searchQuery"',
+            // Scrollable Content
+            Expanded(
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 16),
+                      // Categories Search Input Field
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(30),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withAlpha(4),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: TextField(
+                          onChanged: (val) {
+                            setState(() {
+                              _searchQuery = val;
+                            });
+                          },
                           style: GoogleFonts.inter(
-                            color: const Color(0xFF64748B),
-                            fontSize: 14,
+                            fontSize: 13.5,
+                            color: const Color(0xFF0F172A),
+                          ),
+                          decoration: InputDecoration(
+                            hintText: 'Search categories...',
+                            hintStyle: GoogleFonts.inter(
+                              color: const Color(0xFF94A3B8),
+                              fontSize: 13,
+                            ),
+                            prefixIcon: const Icon(Icons.search, color: Color(0xFF64748B), size: 20),
+                            filled: true,
+                            fillColor: Colors.white,
+                            contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(30),
+                              borderSide: BorderSide.none,
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(30),
+                              borderSide: BorderSide.none,
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(30),
+                              borderSide: const BorderSide(color: Color(0xFF0D47A1), width: 1.5),
+                            ),
                           ),
                         ),
                       ),
-                    )
-                  : GridView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 3,
-                        crossAxisSpacing: 10,
-                        mainAxisSpacing: 12,
-                        childAspectRatio: 0.78, // Adjusted to prevent vertical title overflow on small screens
+                      const SizedBox(height: 16),
+                      Text(
+                        'Browse schemes by category and find what matters most to you.',
+                        style: GoogleFonts.inter(
+                          fontSize: 11.0,
+                          color: const Color(0xFF64748B),
+                        ),
                       ),
-                      itemCount: filteredCategories.length,
-                      itemBuilder: (context, index) {
-                        final category = filteredCategories[index];
-                        return _buildCategoryCard(context, category, provider);
-                      },
-                    ),
-              const SizedBox(height: 24),
-              // "Can't find what you're looking for?" Banner
-              _buildBottomBanner(context, provider),
-              const SizedBox(height: 32),
-            ],
-          ),
+                      const SizedBox(height: 16),
+                      // Recreated 3-column Grid
+                      filteredCategories.isEmpty
+                          ? Center(
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 40.0),
+                                child: Text(
+                                  'No categories found matching "$_searchQuery"',
+                                  style: GoogleFonts.inter(
+                                    color: const Color(0xFF64748B),
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ),
+                            )
+                          : GridView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 3,
+                                crossAxisSpacing: 10,
+                                mainAxisSpacing: 12,
+                                childAspectRatio: 0.78, // Adjusted to prevent vertical title overflow on small screens
+                              ),
+                              itemCount: filteredCategories.length,
+                              itemBuilder: (context, index) {
+                                final category = filteredCategories[index];
+                                return _buildCategoryCard(context, category, provider);
+                              },
+                            ),
+                      const SizedBox(height: 24),
+                      // "Can't find what you're looking for?" Banner
+                      _buildBottomBanner(context, provider),
+                      const SizedBox(height: 32),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

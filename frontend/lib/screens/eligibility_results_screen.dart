@@ -26,12 +26,13 @@ class EligibilityResultsScreen extends StatelessWidget {
           style: GoogleFonts.poppins(
             color: const Color(0xFF0F172A),
             fontWeight: FontWeight.bold,
-            fontSize: 20.0,
+            fontSize: 18.0,
           ),
         ),
         centerTitle: false,
         backgroundColor: Colors.transparent,
         elevation: 0,
+        scrolledUnderElevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Color(0xFF0F172A)),
           onPressed: () => Navigator.of(context).pop(),

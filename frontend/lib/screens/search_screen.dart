@@ -6,6 +6,7 @@ import '../widgets/filter_bottom_sheet.dart';
 import '../models/scheme_model.dart';
 import '../services/scheme_repository.dart';
 import 'scheme_details_screen.dart';
+import '../engine/recommendation_engine.dart';
 
 enum SearchState { idle, loading, results }
 
@@ -24,8 +25,38 @@ class SearchScreenState extends State<SearchScreen> {
 
   bool get isSearching => _currentState != SearchState.idle;
 
-  // Data list of scheme results from Supabase (replaces hardcoded mock list)
+  // Data list of scheme results from Supabase
   List<Scheme> _searchResults = [];
+  List<Scheme> _masterSearchResults = [];
+  String _currentSort = "Match";
+
+  void _applySorting() {
+    if (_masterSearchResults.isEmpty) return;
+
+    final provider = Provider.of<AppProvider>(context, listen: false);
+    final sorted = List<Scheme>.from(_masterSearchResults);
+
+    if (_currentSort == 'Match %') {
+      sorted.sort((a, b) {
+        final scoreA = RecommendationEngine.evaluate(provider.profile, a).score;
+        final scoreB = RecommendationEngine.evaluate(provider.profile, b).score;
+        return scoreB.compareTo(scoreA); // High to Low
+      });
+    } else if (_currentSort == 'Scheme Name (A-Z)') {
+      sorted.sort(
+        (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+      );
+    } else if (_currentSort == 'Scheme Name (Z-A)') {
+      sorted.sort(
+        (a, b) => b.name.toLowerCase().compareTo(a.name.toLowerCase()),
+      );
+    }
+    // "Best Match" just retains the repository search relevance order
+
+    setState(() {
+      _searchResults = sorted;
+    });
+  }
 
   @override
   void initState() {
@@ -85,27 +116,81 @@ class SearchScreenState extends State<SearchScreen> {
   }
 
   void _triggerSearch(String query) async {
-    if (query.isEmpty) {
+    // If query is empty and active filter is "For Me" or "All", go back to idle Categories screen
+    if (query.isEmpty &&
+        (_activeFilter == 'For Me' || _activeFilter == 'All')) {
       setState(() {
         _currentState = SearchState.idle;
         _searchResults = [];
       });
       return;
     }
+
     setState(() {
       _currentState = SearchState.loading;
     });
 
+    final normalized = query.toLowerCase().trim();
+    final bool showAll =
+        _activeFilter != 'For Me' ||
+        normalized == 'all' ||
+        normalized.startsWith('all ') ||
+        normalized.endsWith(' all') ||
+        normalized.contains(' all ');
+
+    String searchTerm = query;
+    if (showAll && normalized != 'all' && _activeFilter == 'For Me') {
+      searchTerm = query
+          .replaceAll(RegExp(r'\ball\b', caseSensitive: false), '')
+          .replaceAll(RegExp(r'\s+'), ' ')
+          .trim();
+    }
+
     try {
-      final results = await SchemeRepository.instance.searchSchemes(query);
+      List<Scheme> results;
+      if (searchTerm.isEmpty || searchTerm.toLowerCase() == 'all') {
+        results = await SchemeRepository.instance.getAllSchemes();
+      } else {
+        results = await SchemeRepository.instance.searchSchemes(searchTerm);
+      }
+
       if (!mounted) return;
+
+      final provider = Provider.of<AppProvider>(context, listen: false);
+      List<Scheme> filteredResults = results;
+
+      if (_activeFilter == 'For Me') {
+        filteredResults = results.where((scheme) {
+          final eval = RecommendationEngine.evaluate(provider.profile, scheme);
+          return eval.score > 0;
+        }).toList();
+      } else if (_activeFilter == 'Central') {
+        filteredResults = results.where((scheme) {
+          return scheme.governmentLevel.toLowerCase() == 'central';
+        }).toList();
+      } else if (_activeFilter == 'State') {
+        filteredResults = results.where((scheme) {
+          return scheme.governmentLevel.toLowerCase() == 'state' ||
+              (scheme.state.isNotEmpty &&
+                  scheme.state.toLowerCase() != 'all india');
+        }).toList();
+      } else if (_activeFilter == 'Loan') {
+        filteredResults = results.where((scheme) {
+          final type = scheme.schemeType.toLowerCase();
+          final category = scheme.category.toLowerCase();
+          return type.contains('loan') || category.contains('loan');
+        }).toList();
+      }
+
       setState(() {
-        _searchResults = results;
+        _masterSearchResults = filteredResults;
         _currentState = SearchState.results;
       });
+      _applySorting();
     } catch (e) {
       if (!mounted) return;
       setState(() {
+        _masterSearchResults = [];
         _searchResults = [];
         _currentState = SearchState.results;
       });
@@ -183,7 +268,11 @@ class SearchScreenState extends State<SearchScreen> {
           children: [
             // Fixed top header elements
             Padding(
-              padding: const EdgeInsets.only(left: 16.0, right: 16.0, top: 16.0),
+              padding: const EdgeInsets.only(
+                left: 16.0,
+                right: 16.0,
+                top: 16.0,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -200,7 +289,11 @@ class SearchScreenState extends State<SearchScreen> {
                   // Try banner
                   Row(
                     children: [
-                      const Icon(Icons.search, color: Color(0xFF64748B), size: 12),
+                      const Icon(
+                        Icons.search,
+                        color: Color(0xFF64748B),
+                        size: 12,
+                      ),
                       const SizedBox(width: 4),
                       Text(
                         "Try: Search PMEGP, Startup India, MSME loans...",
@@ -213,10 +306,11 @@ class SearchScreenState extends State<SearchScreen> {
                     ],
                   ),
 
-                  const SizedBox(height: 16),
-
-                  // 3. Quick Filters Row (Horizontal Scroll)
-                  _buildQuickFilters(),
+                  if (isSearching) ...[
+                    const SizedBox(height: 16),
+                    // 3. Quick Filters Row (Horizontal Scroll)
+                    _buildQuickFilters(),
+                  ],
                 ],
               ),
             ),
@@ -249,7 +343,7 @@ class SearchScreenState extends State<SearchScreen> {
         Text(
           "Search",
           style: GoogleFonts.poppins(
-            fontSize: 20.0,
+            fontSize: 18.0,
             fontWeight: FontWeight.bold,
             color: const Color(0xFF0F172A),
           ),
@@ -302,19 +396,28 @@ class SearchScreenState extends State<SearchScreen> {
         controller: _searchController,
         focusNode: _searchFocusNode,
         onSubmitted: _triggerSearch,
+        style: GoogleFonts.inter(fontSize: 13, color: const Color(0xFF1E293B)),
         decoration: InputDecoration(
           hintText: "Search schemes...",
           hintStyle: GoogleFonts.inter(
             color: const Color(0xFF94A3B8),
-            fontSize: 14,
+            fontSize: 12.5,
           ),
-          prefixIcon: const Icon(Icons.search, color: Color(0xFF94A3B8), size: 18),
+          prefixIcon: const Icon(
+            Icons.search,
+            color: Color(0xFF94A3B8),
+            size: 18,
+          ),
           suffixIcon: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               if (hasText)
                 IconButton(
-                  icon: const Icon(Icons.close, color: Color(0xFF94A3B8), size: 18),
+                  icon: const Icon(
+                    Icons.close,
+                    color: Color(0xFF94A3B8),
+                    size: 18,
+                  ),
                   onPressed: () {
                     _searchController.clear();
                     setState(() {
@@ -349,13 +452,57 @@ class SearchScreenState extends State<SearchScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          "Quick Filters",
-          style: GoogleFonts.poppins(
-            fontSize: 13.5,
-            fontWeight: FontWeight.bold,
-            color: const Color(0xFF0F172A),
-          ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              "Quick Filters",
+              style: GoogleFonts.poppins(
+                fontSize: 12.5,
+                fontWeight: FontWeight.bold,
+                color: const Color(0xFF0F172A),
+              ),
+            ),
+            PopupMenuButton<String>(
+              onSelected: (String value) {
+                setState(() {
+                  _currentSort = value;
+                });
+                _applySorting();
+              },
+              itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                const PopupMenuItem<String>(
+                  value: 'Match %',
+                  child: Text('Match %'),
+                ),
+                const PopupMenuItem<String>(
+                  value: 'Scheme Name (A-Z)',
+                  child: Text('Scheme Name (A-Z)'),
+                ),
+                const PopupMenuItem<String>(
+                  value: 'Scheme Name (Z-A)',
+                  child: Text('Scheme Name (Z-A)'),
+                ),
+              ],
+              child: Row(
+                children: [
+                  Text(
+                    'Sort by: $_currentSort',
+                    style: GoogleFonts.inter(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF2563EB),
+                    ),
+                  ),
+                  const Icon(
+                    Icons.keyboard_arrow_down,
+                    size: 14,
+                    color: Color(0xFF2563EB),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 8),
         SingleChildScrollView(
@@ -366,17 +513,19 @@ class SearchScreenState extends State<SearchScreen> {
               final String name = filter["name"] as String;
               final bool hasSparkle = filter["hasSparkle"] as bool;
               final bool isSelected = _activeFilter == name;
-
               return GestureDetector(
                 onTap: () {
                   setState(() {
                     _activeFilter = name;
                   });
-                  _triggerSearch(name);
+                  _triggerSearch(_searchController.text);
                 },
                 child: Container(
                   margin: const EdgeInsets.only(right: 8),
-                  padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 5),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 11,
+                    vertical: 5,
+                  ),
                   decoration: BoxDecoration(
                     color: isSelected ? const Color(0xFF2563EB) : Colors.white,
                     borderRadius: BorderRadius.circular(30),
@@ -390,7 +539,9 @@ class SearchScreenState extends State<SearchScreen> {
                       if (hasSparkle) ...[
                         Icon(
                           Icons.auto_awesome,
-                          color: isSelected ? Colors.white : const Color(0xFF2563EB),
+                          color: isSelected
+                              ? Colors.white
+                              : const Color(0xFF2563EB),
                           size: 11,
                         ),
                         const SizedBox(width: 4),
@@ -398,9 +549,11 @@ class SearchScreenState extends State<SearchScreen> {
                       Text(
                         name,
                         style: GoogleFonts.inter(
-                          color: isSelected ? Colors.white : const Color(0xFF2563EB),
+                          color: isSelected
+                              ? Colors.white
+                              : const Color(0xFF2563EB),
                           fontWeight: FontWeight.bold,
-                          fontSize: 11,
+                          fontSize: 10,
                         ),
                       ),
                     ],
@@ -483,22 +636,28 @@ class SearchScreenState extends State<SearchScreen> {
           Center(
             child: Column(
               children: [
-                const Icon(Icons.search_off,
-                    size: 56, color: Color(0xFFCBD5E1)),
+                const Icon(
+                  Icons.search_off,
+                  size: 56,
+                  color: Color(0xFFCBD5E1),
+                ),
                 const SizedBox(height: 16),
                 Text(
                   'No schemes found for "$queryText"',
                   style: GoogleFonts.poppins(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: const Color(0xFF0F172A)),
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF0F172A),
+                  ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 8),
                 Text(
                   'Try a different keyword or browse categories.',
                   style: GoogleFonts.inter(
-                      fontSize: 13, color: const Color(0xFF64748B)),
+                    fontSize: 13,
+                    color: const Color(0xFF64748B),
+                  ),
                   textAlign: TextAlign.center,
                 ),
               ],
@@ -514,41 +673,28 @@ class SearchScreenState extends State<SearchScreen> {
       physics: const BouncingScrollPhysics(),
       children: [
         // Results Header Row
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text.rich(
+        Text.rich(
+          TextSpan(
+            children: [
               TextSpan(
-                children: [
-                  TextSpan(
-                    text: '${_searchResults.length} results for ',
-                    style: GoogleFonts.inter(
-                        fontSize: 14, color: const Color(0xFF64748B)),
-                  ),
-                  TextSpan(
-                    text: '"$queryText"',
-                    style: GoogleFonts.inter(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xFF6D28D9)),
-                  ),
-                ],
-              ),
-            ),
-            Row(
-              children: [
-                Text(
-                  'Sort by: Best Match',
-                  style: GoogleFonts.inter(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFF0F172A)),
+                text: '${_searchResults.length} results for ',
+                style: GoogleFonts.inter(
+                  fontSize: 12,
+                  color: const Color(0xFF64748B),
                 ),
-                const Icon(Icons.keyboard_arrow_down,
-                    size: 16, color: Color(0xFF0F172A)),
-              ],
-            ),
-          ],
+              ),
+              TextSpan(
+                text: '"$queryText"',
+                style: GoogleFonts.inter(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: const Color(0xFF6D28D9),
+                ),
+              ),
+            ],
+          ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         ),
 
         const SizedBox(height: 16),
@@ -618,7 +764,10 @@ class SearchScreenState extends State<SearchScreen> {
                     ),
                     const SizedBox(width: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFFECFDF5),
                         borderRadius: BorderRadius.circular(4),
@@ -660,7 +809,11 @@ class SearchScreenState extends State<SearchScreen> {
                         ),
                       ),
                       const SizedBox(width: 4),
-                      const Icon(Icons.arrow_forward, size: 10, color: Color(0xFF2563EB)),
+                      const Icon(
+                        Icons.arrow_forward,
+                        size: 10,
+                        color: Color(0xFF2563EB),
+                      ),
                     ],
                   ),
                 ),
@@ -680,19 +833,38 @@ class SearchScreenState extends State<SearchScreen> {
                     height: 58,
                     decoration: BoxDecoration(
                       color: const Color(0xFFEFF6FF),
-                      border: Border.all(color: const Color(0xFFDBEAFE), width: 1.5),
+                      border: Border.all(
+                        color: const Color(0xFFDBEAFE),
+                        width: 1.5,
+                      ),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Padding(
-                      padding: const EdgeInsets.only(top: 14, left: 6, right: 6),
+                      padding: const EdgeInsets.only(
+                        top: 14,
+                        left: 6,
+                        right: 6,
+                      ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Container(width: 24, height: 3, color: const Color(0xFF93C5FD)),
+                          Container(
+                            width: 24,
+                            height: 3,
+                            color: const Color(0xFF93C5FD),
+                          ),
                           const SizedBox(height: 4),
-                          Container(width: 30, height: 3, color: const Color(0xFF93C5FD)),
+                          Container(
+                            width: 30,
+                            height: 3,
+                            color: const Color(0xFF93C5FD),
+                          ),
                           const SizedBox(height: 4),
-                          Container(width: 20, height: 3, color: const Color(0xFF93C5FD)),
+                          Container(
+                            width: 20,
+                            height: 3,
+                            color: const Color(0xFF93C5FD),
+                          ),
                         ],
                       ),
                     ),
@@ -742,10 +914,7 @@ class SearchScreenState extends State<SearchScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: const Color(0xFFE2E8F0),
-          width: 1,
-        ),
+        border: Border.all(color: const Color(0xFFE2E8F0), width: 1),
       ),
       child: Material(
         color: Colors.transparent,
@@ -756,7 +925,10 @@ class SearchScreenState extends State<SearchScreen> {
             _triggerSearch(category["title"] as String);
           },
           child: ListTile(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 4,
+            ),
             leading: Container(
               width: 42,
               height: 42,
@@ -774,7 +946,7 @@ class SearchScreenState extends State<SearchScreen> {
             title: Text(
               category["title"] as String,
               style: GoogleFonts.inter(
-                fontSize: 14,
+                fontSize: 12.5,
                 fontWeight: FontWeight.bold,
                 color: const Color(0xFF0F172A),
               ),
@@ -782,7 +954,7 @@ class SearchScreenState extends State<SearchScreen> {
             subtitle: Text(
               category["count"] as String,
               style: GoogleFonts.inter(
-                fontSize: 11,
+                fontSize: 10,
                 color: const Color(0xFF64748B),
               ),
             ),
@@ -806,31 +978,41 @@ class _ResultSchemeCard extends StatelessWidget {
 
   List<String> get _otherTags {
     final List<String> list = [];
-    
+
     void addSplit(String value) {
       if (value.isNotEmpty) {
-        list.addAll(value.split(',').map((s) => s.trim()).where((s) => s.isNotEmpty));
+        list.addAll(
+          value
+              .split(',')
+              .map((s) => s.trim())
+              .where(
+                (s) =>
+                    s.isNotEmpty &&
+                    s.toLowerCase() != 'pending official verification',
+              ),
+        );
       }
     }
 
     addSplit(scheme.category);
     addSplit(scheme.schemeType);
     addSplit(scheme.sector);
-    
+
     final Set<String> seen = {};
     final List<String> uniqueList = [];
-    
+
     final sponsoringLower = scheme.sponsoringBody.toLowerCase();
     final govLevelLower = scheme.governmentLevel.toLowerCase();
     final stateLower = scheme.state.toLowerCase();
-    
+
     for (final tag in list) {
       final lower = tag.toLowerCase();
-      final isSubtitleTerm = sponsoringLower.contains(lower) || 
-                             govLevelLower.contains(lower) || 
-                             stateLower.contains(lower) ||
-                             lower == 'central' || 
-                             lower == 'state';
+      final isSubtitleTerm =
+          sponsoringLower.contains(lower) ||
+          govLevelLower.contains(lower) ||
+          stateLower.contains(lower) ||
+          lower == 'central' ||
+          lower == 'state';
       if (!seen.contains(lower) && !isSubtitleTerm) {
         seen.add(lower);
         uniqueList.add(tag);
@@ -840,15 +1022,24 @@ class _ResultSchemeCard extends StatelessWidget {
     return uniqueList.take(4).toList();
   }
 
-  String _getOnlineLogoUrl(String schemeCode, String category, String governmentLevel, String state) {
+  String _getOnlineLogoUrl(
+    String schemeCode,
+    String category,
+    String governmentLevel,
+    String state,
+  ) {
     final code = schemeCode.toUpperCase();
     final st = state.toLowerCase();
 
     if (code.contains('MUDRA') || code.contains('PMMY')) {
       return 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Logo_of_the_Pradhan_Mantri_Mudra_Yojana.svg/450px-Logo_of_the_Pradhan_Mantri_Mudra_Yojana.svg.png';
-    } else if (code.contains('MSME') || code.contains('CGTMSE') || code.contains('PMEGP')) {
+    } else if (code.contains('MSME') ||
+        code.contains('CGTMSE') ||
+        code.contains('PMEGP')) {
       return 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/00/MSME_logo_%28colour%29.svg/330px-MSME_logo_%28colour%29.svg.png';
-    } else if (code.startsWith('TN_') || st.contains('tamil') || st.contains('tn')) {
+    } else if (code.startsWith('TN_') ||
+        st.contains('tamil') ||
+        st.contains('tn')) {
       return 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/Emblem_of_Tamil_Nadu.svg/360px-Emblem_of_Tamil_Nadu.svg.png';
     } else {
       return 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Emblem_of_India.svg/358px-Emblem_of_India.svg.png';
@@ -858,24 +1049,37 @@ class _ResultSchemeCard extends StatelessWidget {
   Map<String, Color> _getTagColors(String tag, String category) {
     final cleanTag = tag.toLowerCase().trim();
     final cleanCat = category.toLowerCase().trim();
-    
+
     if (cleanTag == cleanCat) {
-      if (cleanCat.contains('farmer') || cleanCat.contains('agri') || cleanCat.contains('rural')) {
+      if (cleanCat.contains('farmer') ||
+          cleanCat.contains('agri') ||
+          cleanCat.contains('rural')) {
         return {'text': const Color(0xFF15803D), 'bg': const Color(0xFFDCFCE7)};
-      } else if (cleanCat.contains('student') || cleanCat.contains('edu') || cleanCat.contains('scholarship')) {
+      } else if (cleanCat.contains('student') ||
+          cleanCat.contains('edu') ||
+          cleanCat.contains('scholarship')) {
         return {'text': const Color(0xFF6D28D9), 'bg': const Color(0xFFF5F3FF)};
-      } else if (cleanCat.contains('business') || cleanCat.contains('msme') || cleanCat.contains('employment')) {
+      } else if (cleanCat.contains('business') ||
+          cleanCat.contains('msme') ||
+          cleanCat.contains('employment')) {
         return {'text': const Color(0xFF1E3A8A), 'bg': const Color(0xFFDBEAFE)};
-      } else if (cleanCat.contains('women') || cleanCat.contains('female') || cleanCat.contains('girl') || cleanCat.contains('child')) {
+      } else if (cleanCat.contains('women') ||
+          cleanCat.contains('female') ||
+          cleanCat.contains('girl') ||
+          cleanCat.contains('child')) {
         return {'text': const Color(0xFFBE185D), 'bg': const Color(0xFFFCE7F3)};
       } else {
         return {'text': const Color(0xFF0F766E), 'bg': const Color(0xFFCCFBF1)};
       }
     }
 
-    if (cleanTag.contains('central') || cleanTag.contains('national') || cleanTag.contains('india')) {
+    if (cleanTag.contains('central') ||
+        cleanTag.contains('national') ||
+        cleanTag.contains('india')) {
       return {'text': const Color(0xFFC2410C), 'bg': const Color(0xFFFFEDD5)};
-    } else if (cleanTag.contains('state') || cleanTag.contains('tamil') || cleanTag.contains('tn')) {
+    } else if (cleanTag.contains('state') ||
+        cleanTag.contains('tamil') ||
+        cleanTag.contains('tn')) {
       return {'text': const Color(0xFF7C3AED), 'bg': const Color(0xFFF3E8FF)};
     } else if (cleanTag.contains('loan') || cleanTag.contains('credit')) {
       return {'text': const Color(0xFFB91C1C), 'bg': const Color(0xFFFEE2E2)};
@@ -900,32 +1104,25 @@ class _ResultSchemeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tags = _otherTags;
-    
-    // Parse scheme name
-    final titleText = scheme.name;
-    final regex = RegExp(r'\(([^)]+)\)');
-    final matchObj = regex.firstMatch(titleText);
-    String shortForm = titleText;
-    
-    if (matchObj != null) {
-      final bracketText = matchObj.group(1)!.trim();
-      final outsideText = titleText.replaceAll(regex, '').replaceAll(RegExp(r'\s+'), ' ').trim();
-      final isBracketAcronym = bracketText.length <= 10 && 
-                               !bracketText.contains(' ') && 
-                               bracketText == bracketText.toUpperCase();
-      if (isBracketAcronym) {
-        shortForm = bracketText;
-      } else if (bracketText.length > outsideText.length) {
-        shortForm = outsideText;
-      }
-    }
+    final tags = List<String>.from(_otherTags)..sort((a, b) => a.length.compareTo(b.length));
+    final provider = Provider.of<AppProvider>(context);
 
-    final logoUrl = _getOnlineLogoUrl(scheme.schemeCode, scheme.category, scheme.governmentLevel, scheme.state);
-    
+    // Display the full scheme name as requested
+
+    final logoUrl = _getOnlineLogoUrl(
+      scheme.schemeCode,
+      scheme.category,
+      scheme.governmentLevel,
+      scheme.state,
+    );
+
     // Build subtitle combining department and state/central level
-    final department = scheme.sponsoringBody.isNotEmpty ? scheme.sponsoringBody : scheme.issuingBody;
-    final level = scheme.state.isNotEmpty && scheme.state != 'All India' ? scheme.state : scheme.governmentLevel;
+    final department = scheme.sponsoringBody.isNotEmpty
+        ? scheme.sponsoringBody
+        : scheme.issuingBody;
+    final level = scheme.state.isNotEmpty && scheme.state != 'All India'
+        ? scheme.state
+        : scheme.governmentLevel;
     final subtitleText = [
       if (department.isNotEmpty) department,
       if (level.isNotEmpty) level,
@@ -934,7 +1131,9 @@ class _ResultSchemeCard extends StatelessWidget {
     return GestureDetector(
       onTap: () {
         Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => SchemeDetailsScreen(scheme: scheme)),
+          MaterialPageRoute(
+            builder: (_) => SchemeDetailsScreen(scheme: scheme),
+          ),
         );
       },
       child: Container(
@@ -966,7 +1165,10 @@ class _ResultSchemeCard extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: Colors.white,
                       shape: BoxShape.circle,
-                      border: Border.all(color: const Color(0xFFE2E8F0), width: 1.2),
+                      border: Border.all(
+                        color: const Color(0xFFE2E8F0),
+                        width: 1.2,
+                      ),
                     ),
                     padding: const EdgeInsets.all(10),
                     child: Image.network(
@@ -987,7 +1189,9 @@ class _ResultSchemeCard extends StatelessWidget {
                             height: 16,
                             child: CircularProgressIndicator(
                               strokeWidth: 1.5,
-                              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2563EB)),
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Color(0xFF2563EB),
+                              ),
                             ),
                           ),
                         );
@@ -995,89 +1199,92 @@ class _ResultSchemeCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 16),
-                  
+
                   // Middle Content Block
                   Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.only(right: 80), // Keep clear from top-right match pill
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // Match Badge Pill
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 5,
+                              vertical: 1.5,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFE8F5E9),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              "${RecommendationEngine.evaluate(provider.profile, scheme).percentage}% Match",
+                              style: GoogleFonts.inter(
+                                color: const Color(0xFF2E7D32),
+                                fontSize: 7.5,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        // Title (Scheme Name) - Full Width
+                        Text(
+                          scheme.name,
+                          style: GoogleFonts.poppins(
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.bold,
+                            color: const Color(0xFF0F172A),
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        if (subtitleText.isNotEmpty) ...[
+                          const SizedBox(height: 3),
                           Text(
-                            shortForm,
-                            style: GoogleFonts.poppins(
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold,
-                              color: const Color(0xFF0F172A),
+                            subtitleText,
+                            style: GoogleFonts.inter(
+                              fontSize: 9.5,
+                              color: const Color(0xFF64748B),
+                              fontWeight: FontWeight.w500,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          if (subtitleText.isNotEmpty) ...[
-                            const SizedBox(height: 3),
-                            Text(
-                              subtitleText,
-                              style: GoogleFonts.inter(
-                                fontSize: 10.5,
-                                color: const Color(0xFF64748B),
-                                fontWeight: FontWeight.w500,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
-                          const SizedBox(height: 12),
-                          
-                          // Chips Row (Others at the bottom)
-                          Wrap(
-                            spacing: 5,
-                            runSpacing: 4,
-                            children: tags.map((tag) {
-                              final colors = _getTagColors(tag, scheme.category);
-                              return Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: colors['bg'],
-                                  borderRadius: BorderRadius.circular(5),
-                                ),
-                                child: Text(
-                                  tag,
-                                  style: GoogleFonts.inter(
-                                    fontSize: 8.5,
-                                    fontWeight: FontWeight.bold,
-                                    color: colors['text'],
-                                  ),
-                                ),
-                              );
-                            }).toList(),
-                          ),
                         ],
-                      ),
+                        const SizedBox(height: 12),
+
+                        // Chips Row (Others at the bottom)
+                        Wrap(
+                          spacing: 5,
+                          runSpacing: 4,
+                          children: tags.map((tag) {
+                            final colors = _getTagColors(tag, scheme.category);
+                            return Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: colors['bg'],
+                                borderRadius: BorderRadius.circular(5),
+                              ),
+                              child: Text(
+                                tag,
+                                style: GoogleFonts.inter(
+                                  fontSize: 8.5,
+                                  fontWeight: FontWeight.bold,
+                                  color: colors['text'],
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ],
                     ),
                   ),
                 ],
-              ),
-            ),
-            
-            // Top Right Match Pill
-            Positioned(
-              top: 16,
-              right: 16,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFE8F5E9),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Text(
-                  "92% Match",
-                  style: GoogleFonts.inter(
-                    color: const Color(0xFF2E7D32),
-                    fontSize: 9,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
               ),
             ),
           ],
@@ -1095,7 +1302,8 @@ class _ShimmerSkeletonCard extends StatefulWidget {
   State<_ShimmerSkeletonCard> createState() => _ShimmerSkeletonCardState();
 }
 
-class _ShimmerSkeletonCardState extends State<_ShimmerSkeletonCard> with SingleTickerProviderStateMixin {
+class _ShimmerSkeletonCardState extends State<_ShimmerSkeletonCard>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
 
   @override

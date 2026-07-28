@@ -160,20 +160,30 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     setState(() {
       _selectedDob = profile.dob;
       if (profile.gender.isNotEmpty) _selectedGender = profile.gender;
-      if (profile.state.isNotEmpty) _selectedState = profile.state;
 
-      if (!_districtsByState.containsKey(_selectedState)) {
+      if (profile.state.isNotEmpty) {
+        _selectedState = profile.state;
+        if (!_districtsByState.containsKey(_selectedState)) {
+          _districtsByState[_selectedState!] = [profile.district.isNotEmpty ? profile.district : 'Select District'];
+        }
+      } else {
         _selectedState = 'Tamil Nadu';
       }
 
-      if (profile.district.isNotEmpty && (_districtsByState[_selectedState] ?? []).contains(profile.district)) {
+      if (profile.district.isNotEmpty) {
         _selectedDistrict = profile.district;
+        if (!(_districtsByState[_selectedState] ?? []).contains(_selectedDistrict)) {
+          _districtsByState[_selectedState!] = [_selectedDistrict!, ...?_districtsByState[_selectedState]];
+        }
       } else {
         _selectedDistrict = _districtsByState[_selectedState]!.first;
       }
 
-      if (profile.city.isNotEmpty && (_districtsByState[_selectedState] ?? []).contains(profile.city)) {
+      if (profile.city.isNotEmpty) {
         _selectedCity = profile.city;
+        if (!(_districtsByState[_selectedState] ?? []).contains(_selectedCity)) {
+          _districtsByState[_selectedState!] = [_selectedCity!, ...?_districtsByState[_selectedState]];
+        }
       } else {
         _selectedCity = _selectedDistrict;
       }
@@ -370,15 +380,17 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
             }
           }
         });
-      }
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Location fetched and populated successfully!'),
-            backgroundColor: AppConstants.successColor,
-          ),
-        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Location fetched and populated successfully!'),
+              backgroundColor: AppConstants.successColor,
+            ),
+          );
+        }
+      } else {
+        throw 'Could not retrieve location. Please check your GPS and permissions.';
       }
     } catch (e) {
       if (mounted) {
@@ -885,6 +897,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                                       _buildInputLabel('State'),
                                       const SizedBox(height: 6),
                                       DropdownButtonFormField<String>(
+                                        key: ValueKey(_selectedState),
                                         isExpanded: true,
                                         initialValue: _selectedState,
                                         style: GoogleFonts.inter(fontSize: 14, color: const Color(0xFF1E293B)),
@@ -913,6 +926,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                                       _buildInputLabel('District'),
                                       const SizedBox(height: 6),
                                       DropdownButtonFormField<String>(
+                                        key: ValueKey(_selectedDistrict),
                                         isExpanded: true,
                                         initialValue: _selectedDistrict,
                                         style: GoogleFonts.inter(fontSize: 14, color: const Color(0xFF1E293B)),
@@ -944,6 +958,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                                       _buildInputLabel('City / Town'),
                                       const SizedBox(height: 6),
                                       DropdownButtonFormField<String>(
+                                        key: ValueKey(_selectedCity),
                                         isExpanded: true,
                                         initialValue: _selectedCity,
                                         style: GoogleFonts.inter(fontSize: 14, color: const Color(0xFF1E293B)),

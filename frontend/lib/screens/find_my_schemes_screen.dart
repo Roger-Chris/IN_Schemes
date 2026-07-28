@@ -128,11 +128,12 @@ class _FindMySchemesScreenState extends State<FindMySchemesScreen> {
           style: GoogleFonts.poppins(
             color: Colors.white,
             fontWeight: FontWeight.bold,
-            fontSize: 20.0,
+            fontSize: 18.0,
           ),
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
+        scrolledUnderElevation: 0,
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20),

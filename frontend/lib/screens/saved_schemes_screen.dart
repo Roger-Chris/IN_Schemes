@@ -233,14 +233,23 @@ class _SavedSchemesScreenState extends State<SavedSchemesScreen> with SingleTick
                           overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: 6),
-                        Wrap(
-                          spacing: 6,
-                          runSpacing: 4,
-                          children: [
-                            _buildTag(scheme.category, const Color(0xFFF3E8FF), const Color(0xFF7C3AED)),
-                            _buildTag('Central Scheme', const Color(0xFFDBEAFE), const Color(0xFF2563EB)),
-                            _buildTag('Active', const Color(0xFFDCFCE7), const Color(0xFF16A34A)),
-                          ],
+                        Builder(
+                          builder: (context) {
+                            final tagList = [
+                              {'text': scheme.category, 'bg': const Color(0xFFF3E8FF), 'fg': const Color(0xFF7C3AED)},
+                              {'text': 'Central Scheme', 'bg': const Color(0xFFDBEAFE), 'fg': const Color(0xFF2563EB)},
+                              {'text': 'Active', 'bg': const Color(0xFFDCFCE7), 'fg': const Color(0xFF16A34A)},
+                            ];
+                            tagList.sort((a, b) => (a['text'] as String).length.compareTo((b['text'] as String).length));
+
+                            return Wrap(
+                              spacing: 6,
+                              runSpacing: 4,
+                              children: tagList.map((t) {
+                                return _buildTag(t['text'] as String, t['bg'] as Color, t['fg'] as Color);
+                              }).toList(),
+                            );
+                          },
                         ),
                       ],
                     ),
@@ -705,14 +714,14 @@ class _SavedSchemesScreenState extends State<SavedSchemesScreen> with SingleTick
     return Scaffold(
       backgroundColor: Colors.transparent,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 0,
         toolbarHeight: 64,
         title: Text(
           'Saved Schemes',
           style: GoogleFonts.poppins(
-            fontSize: 20.0,
+            fontSize: 18.0,
             fontWeight: FontWeight.bold,
             color: const Color(0xFF0F172A),
           ),

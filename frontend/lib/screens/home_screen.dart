@@ -176,10 +176,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     // Quick search horizontal pills
                     _buildQuickPills(context, provider),
                     
-                    const SizedBox(height: 18),
-                    
-                    // Profile Completion (Real & Compact)
-                    _buildProfileCompleteCard(context, provider),
+                    if (provider.profileCompletionPercentage < 100) ...[
+                      const SizedBox(height: 18),
+                      // Profile Completion (Real & Compact)
+                      _buildProfileCompleteCard(context, provider),
+                    ],
                     
                     const SizedBox(height: 20),
                     
@@ -531,8 +532,12 @@ class _HomeScreenState extends State<HomeScreen> {
           return GestureDetector(
             onTap: () {
               final query = text.replaceAll("Search ", "");
-              provider.updateSearchQuery(query);
-              provider.updateTabIndex(1);
+              if (widget.onVoiceQuery != null) {
+                widget.onVoiceQuery!(query);
+              } else {
+                provider.updateSearchQuery(query);
+                provider.updateTabIndex(1);
+              }
             },
             child: Container(
               margin: const EdgeInsets.only(right: 8),
@@ -1285,7 +1290,11 @@ class _HomeScreenState extends State<HomeScreen> {
               ...s.sponsoringBody.split(',').map((x) => x.trim()).where((x) => x.isNotEmpty),
             s.governmentLevel.isNotEmpty ? s.governmentLevel : 'Central',
             s.schemeType.isNotEmpty ? s.schemeType : 'Loan',
-          ].take(3).toList(),
+          ]
+              .map((x) => x.trim())
+              .where((x) => x.isNotEmpty && x.toLowerCase() != 'pending official verification')
+              .take(3)
+              .toList(),
           'location': s.state.isNotEmpty ? s.state : 'All India',
           'scheme': s,
         });
@@ -1541,26 +1550,32 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       const Spacer(),
                       // Chips Row
-                      Wrap(
-                        spacing: 4,
-                        runSpacing: 4,
-                        children: (item['chips'] as List<String>).map((tag) {
-                          return Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFF1F5F9),
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: Text(
-                              tag,
-                              style: GoogleFonts.inter(
-                                fontSize: 10,
-                                color: const Color(0xFF475569),
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
+                      Builder(
+                        builder: (context) {
+                          final chipsList = List<String>.from(item['chips'] as List<String>)
+                            ..sort((a, b) => a.length.compareTo(b.length));
+                          return Wrap(
+                            spacing: 4,
+                            runSpacing: 4,
+                            children: chipsList.map((tag) {
+                              return Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFF1F5F9),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  tag,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 10,
+                                    color: const Color(0xFF475569),
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              );
+                            }).toList(),
                           );
-                        }).toList(),
+                        },
                       ),
                     ],
                   ),

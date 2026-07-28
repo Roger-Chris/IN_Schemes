@@ -72,8 +72,9 @@ class RecommendationEngine {
       }
     }
 
-    switch (scheme.id) {
+    switch (scheme.id.toUpperCase()) {
       case 'NEEDS':
+      case 'IN115':
         // State Match
         if (!isTN) {
           score = 0.0;
@@ -115,6 +116,7 @@ class RecommendationEngine {
         break;
 
       case 'PMEGP':
+      case 'IN130':
         matchingReasons.add('Age: Eligible for any citizen above 18 years (you are $age).');
 
         // Education checks
@@ -133,6 +135,7 @@ class RecommendationEngine {
         break;
 
       case 'STANDUP_INDIA':
+      case 'IN168':
         // Women or SC/ST
         final eligibleCategory = isFemale || isSCST;
         if (!eligibleCategory) {
@@ -157,6 +160,7 @@ class RecommendationEngine {
         break;
 
       case 'MUDRA':
+      case 'IN128':
         matchingReasons.add('Eligibility: Open to all Indian citizens with a viable business plan.');
         matchingReasons.add('Collateral: 100% collateral-free loan up to ₹10 Lakhs.');
         // High matching base score because Mudra is very general
@@ -164,6 +168,7 @@ class RecommendationEngine {
         break;
 
       case 'WEP':
+      case 'IN212':
         if (!isFemale) {
           score *= 0.3;
           missingRequirements.add('Gender: This platform is specifically designed to support Women Entrepreneurs.');
@@ -174,6 +179,7 @@ class RecommendationEngine {
         break;
 
       case 'TREAD':
+      case 'IN195':
         if (!isFemale) {
           score = 0.0;
           missingRequirements.add('Gender: TREAD is exclusively for groups or individual Women seeking self-employment.');
@@ -184,6 +190,7 @@ class RecommendationEngine {
         break;
 
       case 'KALAIGNAR_KAIVINAI':
+      case 'IN074':
         if (!isTN) {
           score = 0.0;
           missingRequirements.add('Residency: Strictly for artisans residing in Tamil Nadu.');
@@ -198,6 +205,7 @@ class RecommendationEngine {
         break;
 
       case 'STARTUP_TN':
+      case 'IN182':
         if (!isTN) {
           score = 0.0;
           missingRequirements.add('Residency: Startups must be incorporated or registered in Tamil Nadu.');
@@ -268,6 +276,44 @@ class RecommendationEngine {
         break;
 
       default:
+        // 1. State/Residency check
+        if (scheme.state.isNotEmpty && 
+            scheme.state.toLowerCase() != 'all india' && 
+            scheme.state.toLowerCase() != 'pan-india' &&
+            scheme.state.toLowerCase() != profile.state.toLowerCase()) {
+          score = 0.0;
+          missingRequirements.add('Residency: This scheme is for residents of ${scheme.state}.');
+        } else {
+          if (scheme.state.isNotEmpty && scheme.state.toLowerCase() == profile.state.toLowerCase()) {
+            matchingReasons.add('Location: You reside in ${scheme.state} where this scheme is offered.');
+          }
+        }
+
+        // 2. Gender check
+        final targetUpper = scheme.targetBeneficiary.toUpperCase();
+        final hasWomenKeyword = targetUpper.contains('WOMEN') || targetUpper.contains('FEMALE');
+        if (hasWomenKeyword && !isFemale) {
+          score = 0.0;
+          missingRequirements.add('Gender: This scheme is targeted towards Women/Female entrepreneurs.');
+        } else if (hasWomenKeyword && isFemale) {
+          matchingReasons.add('Gender: You match the target female demographic.');
+        }
+
+        // 3. Community check (SC/ST/OBC)
+        final hasSCSTKeyword = targetUpper.contains('SC/') || targetUpper.contains('SC ') || targetUpper.contains('ST ') || targetUpper.contains('SC-ST') || targetUpper.contains('SC/ST');
+        if (hasSCSTKeyword && !isSCST) {
+          score *= 0.5;
+          missingRequirements.add('Community: Priority/eligibility is for SC/ST categories.');
+        } else if (hasSCSTKeyword && isSCST) {
+          matchingReasons.add('Community: Matches the SC/ST priority demographic.');
+        }
+
+        // 4. Stable dynamic baseline score for matches (e.g. 75% to 89%)
+        if (score > 0.0) {
+          final int hash = scheme.id.hashCode.abs();
+          score = 0.75 + (hash % 15) / 100.0;
+          matchingReasons.add('Relevance: Matches your profile parameters.');
+        }
         break;
     }
 

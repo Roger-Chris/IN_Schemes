@@ -298,7 +298,7 @@ class ProfileScreen extends StatelessWidget {
           style: GoogleFonts.poppins(
             color: const Color(0xFF0F172A),
             fontWeight: FontWeight.bold,
-            fontSize: 20.0,
+            fontSize: 18.0,
           ),
         ),
         backgroundColor: Colors.transparent,
@@ -466,19 +466,26 @@ class ProfileScreen extends StatelessWidget {
                                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                                       decoration: BoxDecoration(
                                         color: Colors.white.withAlpha(25),
-                                        border: Border.all(color: const Color(0xFF4ADE80), width: 0.8),
+                                        border: Border.all(
+                                          color: profile.profileCompleted ? const Color(0xFF4ADE80) : const Color(0xFFF59E0B),
+                                          width: 0.8,
+                                        ),
                                         borderRadius: BorderRadius.circular(20),
                                       ),
                                       child: Row(
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
-                                          const Icon(Icons.check_circle, color: Color(0xFF4ADE80), size: 10),
+                                          Icon(
+                                            profile.profileCompleted ? Icons.check_circle : Icons.warning_amber_rounded,
+                                            color: profile.profileCompleted ? const Color(0xFF4ADE80) : const Color(0xFFF59E0B),
+                                            size: 10,
+                                          ),
                                           const SizedBox(width: 3),
                                           Text(
-                                            'Profile Verified',
+                                            profile.profileCompleted ? 'Profile Verified' : 'Incomplete',
                                             style: GoogleFonts.inter(
                                               fontSize: 8.5,
-                                              color: const Color(0xFF4ADE80),
+                                              color: profile.profileCompleted ? const Color(0xFF4ADE80) : const Color(0xFFF59E0B),
                                               fontWeight: FontWeight.bold,
                                             ),
                                           ),

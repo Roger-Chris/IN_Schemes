@@ -222,59 +222,37 @@ class SchemeCard extends StatelessWidget {
                       const SizedBox(height: 6),
                       
                       // Row of Pill Badges
-                      Wrap(
-                        spacing: 6,
-                        runSpacing: 4,
-                        children: [
-                          // Tag 1 (Scheme Type: Central/State)
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFEFF6FF), // Blue 50
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: Text(
-                              details['tag1']!,
-                              style: GoogleFonts.inter(
-                                fontSize: 9.5,
-                                fontWeight: FontWeight.bold,
-                                color: const Color(0xFF2563EB), // Blue 600
-                              ),
-                            ),
-                          ),
-                          // Tag 2 (Category)
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFF5F3FF), // Purple 50
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: Text(
-                              details['tag2']!,
-                              style: GoogleFonts.inter(
-                                fontSize: 9.5,
-                                fontWeight: FontWeight.bold,
-                                color: const Color(0xFF7C3AED), // Purple 600
-                              ),
-                            ),
-                          ),
-                          // Tag 3 (Target / Type)
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFF0FDF4), // Green 50
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: Text(
-                              details['tag3']!,
-                              style: GoogleFonts.inter(
-                                fontSize: 9.5,
-                                fontWeight: FontWeight.bold,
-                                color: const Color(0xFF16A34A), // Green 600
-                              ),
-                            ),
-                          ),
-                        ],
+                      Builder(
+                        builder: (context) {
+                          final tagList = [
+                            {'text': details['tag1']!, 'bg': const Color(0xFFEFF6FF), 'fg': const Color(0xFF2563EB)},
+                            {'text': details['tag2']!, 'bg': const Color(0xFFF5F3FF), 'fg': const Color(0xFF7C3AED)},
+                            {'text': details['tag3']!, 'bg': const Color(0xFFF0FDF4), 'fg': const Color(0xFF16A34A)},
+                          ];
+                          tagList.sort((a, b) => (a['text'] as String).length.compareTo((b['text'] as String).length));
+
+                          return Wrap(
+                            spacing: 6,
+                            runSpacing: 4,
+                            children: tagList.map((t) {
+                              return Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: t['bg'] as Color,
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  t['text'] as String,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 9.5,
+                                    fontWeight: FontWeight.bold,
+                                    color: t['fg'] as Color,
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                          );
+                        },
                       ),
                       const SizedBox(height: 8),
                       

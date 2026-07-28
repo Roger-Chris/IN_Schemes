@@ -723,24 +723,69 @@ class AppProvider with ChangeNotifier {
 
   // Completion calculation
   int get profileCompletionPercentage {
-    int totalFields = 6;
-    int filledFields = 0;
+    final List<bool> checks = [];
 
-    if (_profile.mobile.isNotEmpty) filledFields++;
-    if (_profile.dob != null) filledFields++;
-    if (_profile.address.isNotEmpty) filledFields++;
-    if (_profile.existingBusiness) filledFields++;
-    if (_profile.qualification.isNotEmpty) filledFields++;
-    if (_profile.profileCompleted) filledFields++;
+    // Personal Info
+    checks.add(_profile.name.trim().isNotEmpty);
+    checks.add(_profile.mobile.trim().isNotEmpty);
+    checks.add(_profile.dob != null);
+    checks.add(_profile.gender.trim().isNotEmpty);
 
-    return ((filledFields / totalFields) * 100).round();
+    // Address Info
+    checks.add(_profile.house.trim().isNotEmpty);
+    checks.add(_profile.street.trim().isNotEmpty);
+    checks.add(_profile.area.trim().isNotEmpty);
+    checks.add(_profile.state.trim().isNotEmpty);
+    checks.add(_profile.district.trim().isNotEmpty);
+    checks.add(_profile.city.trim().isNotEmpty);
+    checks.add(_profile.pinCode.trim().isNotEmpty);
+
+    // Social
+    checks.add(_profile.community.trim().isNotEmpty);
+
+    // Education & Employment
+    checks.add(_profile.qualification.trim().isNotEmpty);
+    checks.add(_profile.employmentStatus.trim().isNotEmpty);
+
+    // Business (conditional)
+    if (_profile.existingBusiness) {
+      checks.add(_profile.businessStage.trim().isNotEmpty);
+      checks.add(_profile.businessIndustry.trim().isNotEmpty);
+    }
+
+    final total = checks.length;
+    final filled = checks.where((c) => c).length;
+
+    return ((filled / total) * 100).round();
   }
 
   List<String> get missingProfileSections {
     final missing = <String>[];
-    if (_profile.mobile.isEmpty) missing.add('Phone');
-    if (_profile.address.isEmpty) missing.add('Address');
-    if (!_profile.existingBusiness) missing.add('Business');
+    if (_profile.name.trim().isEmpty) missing.add('Name');
+    if (_profile.mobile.trim().isEmpty) missing.add('Phone');
+    if (_profile.dob == null) missing.add('Date of Birth');
+    if (_profile.gender.trim().isEmpty) missing.add('Gender');
+    
+    // Address
+    if (_profile.house.trim().isEmpty || 
+        _profile.street.trim().isEmpty || 
+        _profile.area.trim().isEmpty || 
+        _profile.state.trim().isEmpty || 
+        _profile.district.trim().isEmpty || 
+        _profile.city.trim().isEmpty || 
+        _profile.pinCode.trim().isEmpty) {
+      missing.add('Address Details');
+    }
+
+    if (_profile.community.trim().isEmpty) missing.add('Community');
+    if (_profile.qualification.trim().isEmpty) missing.add('Qualification');
+    if (_profile.employmentStatus.trim().isEmpty) missing.add('Employment');
+
+    if (_profile.existingBusiness) {
+      if (_profile.businessStage.trim().isEmpty || _profile.businessIndustry.trim().isEmpty) {
+        missing.add('Business Details');
+      }
+    }
     return missing;
   }
 
@@ -805,14 +850,12 @@ class AppProvider with ChangeNotifier {
         permission = await Geolocator.requestPermission();
         if (permission == LocationPermission.denied) {
           debugPrint('Location permissions are denied');
-          _setNullLocation();
           return null;
         }
       }
       
       if (permission == LocationPermission.deniedForever) {
         debugPrint('Location permissions are permanently denied');
-        _setNullLocation();
         return null;
       }
 
@@ -859,24 +902,8 @@ class AppProvider with ChangeNotifier {
       }
     } catch (e) {
       debugPrint('Error fetching location: $e');
-      _setNullLocation();
     }
     return null;
-  }
-
-  void _setNullLocation() {
-    _profile = _profile.copyWith(
-      house: '',
-      street: '',
-      area: '',
-      village: '',
-      state: '',
-      district: '',
-      city: '',
-      pinCode: '',
-    );
-    notifyListeners();
-    _saveProfile();
   }
 
   List<Map<String, dynamic>> get downloadedDocs => _downloadedDocs;

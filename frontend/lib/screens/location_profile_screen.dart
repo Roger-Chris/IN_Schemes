@@ -31,6 +31,42 @@ class _LocationProfileScreenState extends State<LocationProfileScreen> {
   static const Color kBorderGrey = Color(0xFFE2E8F0);
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final provider = Provider.of<AppProvider>(context, listen: false);
+      final profile = provider.profile;
+      
+      // Reconstruct door/street field from house/street
+      String doorStreet = profile.house;
+      if (profile.street.isNotEmpty) {
+        if (doorStreet.isNotEmpty) {
+          doorStreet = '$doorStreet, ${profile.street}';
+        } else {
+          doorStreet = profile.street;
+        }
+      }
+      _doorStreetController.text = doorStreet;
+      
+      _areaLocalityController.text = profile.area;
+      
+      // Reconstruct city/district field
+      String cityDistrict = profile.district;
+      if (profile.city.isNotEmpty && profile.city != profile.district) {
+        if (cityDistrict.isNotEmpty) {
+          cityDistrict = '${profile.city}, $cityDistrict';
+        } else {
+          cityDistrict = profile.city;
+        }
+      }
+      _cityDistrictController.text = cityDistrict;
+      
+      _stateController.text = profile.state;
+      _pincodeController.text = profile.pinCode;
+    });
+  }
+
+  @override
   void dispose() {
     _doorStreetController.dispose();
     _areaLocalityController.dispose();
@@ -360,10 +396,37 @@ class _LocationProfileScreenState extends State<LocationProfileScreen> {
                                   ),
                                   onPressed: () {
                                     final provider = Provider.of<AppProvider>(context, listen: false);
+                                    
+                                    // Parse house & street from _doorStreetController
+                                    final doorStreetParts = _doorStreetController.text.split(',');
+                                    String house = '';
+                                    String street = '';
+                                    if (doorStreetParts.isNotEmpty) {
+                                      house = doorStreetParts[0].trim();
+                                      if (doorStreetParts.length > 1) {
+                                        street = doorStreetParts.sublist(1).join(',').trim();
+                                      }
+                                    }
+                                    
+                                    // Parse city & district from _cityDistrictController
+                                    final cityDistrictParts = _cityDistrictController.text.split(',');
+                                    String city = '';
+                                    String district = '';
+                                    if (cityDistrictParts.isNotEmpty) {
+                                      city = cityDistrictParts[0].trim();
+                                      if (cityDistrictParts.length > 1) {
+                                        district = cityDistrictParts.sublist(1).join(',').trim();
+                                      } else {
+                                        district = city; // fallback
+                                      }
+                                    }
+
                                     provider.updateProfile(provider.profile.copyWith(
-                                      house: _doorStreetController.text.trim(),
+                                      house: house,
+                                      street: street,
                                       area: _areaLocalityController.text.trim(),
-                                      district: _cityDistrictController.text.trim(),
+                                      city: city,
+                                      district: district,
                                       state: _stateController.text.trim(),
                                       pinCode: _pincodeController.text.trim(),
                                     ));

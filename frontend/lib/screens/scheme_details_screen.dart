@@ -166,19 +166,13 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                   pinned: true,
                   backgroundColor: Colors.white,
                   elevation: 0,
-                  leading: IconButton(
-                    icon: const Icon(
-                      Icons.arrow_back,
-                      color: Color(0xFF0F172A),
-                      size: 24,
-                    ),
-                    onPressed: () => Navigator.pop(context),
-                  ),
+                  scrolledUnderElevation: 0,
+                  automaticallyImplyLeading: false,
                   title: Text(
                     "Scheme Details",
                     style: GoogleFonts.poppins(
                       color: const Color(0xFF0F172A),
-                      fontSize: 20.0,
+                      fontSize: 18.0,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -271,7 +265,7 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                                     fontWeight: isSelected
                                         ? FontWeight.bold
                                         : FontWeight.w500,
-                                    fontSize: 14,
+                                    fontSize: 13.0,
                                   ),
                                 ),
                               ),
@@ -300,7 +294,7 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                           scheme.overview,
                           style: GoogleFonts.inter(
                             color: const Color(0xFF64748B),
-                            fontSize: 12,
+                            fontSize: 12.0,
                             height: 1.5,
                           ),
                         ),
@@ -447,11 +441,17 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
 
   Widget _buildSchemeHighlightsCard(Scheme scheme) {
     final matches = [
-      scheme.governmentLevel,
+      scheme.governmentLevel.isNotEmpty ? '${scheme.governmentLevel} Level' : '',
       scheme.state,
       scheme.sector,
       scheme.targetBeneficiary,
-    ].where((value) => value.isNotEmpty).toSet().take(4).toList();
+    ]
+        .where((value) => value.isNotEmpty)
+        .toSet()
+        .toList();
+    matches.sort((a, b) => a.length.compareTo(b.length));
+
+    final maxPillWidth = MediaQuery.of(context).size.width - 56;
 
     return Container(
       padding: const EdgeInsets.all(12),
@@ -477,7 +477,7 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
               Text(
                 "Scheme at a glance",
                 style: GoogleFonts.poppins(
-                  fontSize: 14,
+                  fontSize: 13.0,
                   fontWeight: FontWeight.bold,
                   color: const Color(0xFF0F172A),
                 ),
@@ -490,13 +490,15 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
             runSpacing: 8,
             children: matches.map((match) {
               return Container(
+                constraints: BoxConstraints(maxWidth: maxPillWidth),
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: const Color(0xFFEFF6FF),
-                  borderRadius: BorderRadius.circular(30),
+                  borderRadius: BorderRadius.circular(6),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     const Icon(
                       Icons.check_circle,
@@ -504,12 +506,14 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                       size: 11,
                     ),
                     const SizedBox(width: 4),
-                    Text(
-                      match,
-                      style: GoogleFonts.inter(
-                        color: const Color(0xFF2563EB),
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
+                    Flexible(
+                      child: Text(
+                        match,
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFF2563EB),
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   ],
@@ -553,7 +557,7 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                   style: GoogleFonts.inter(
                     color: const Color(0xFF0F172A),
                     fontWeight: FontWeight.w700,
-                    fontSize: 11.5,
+                    fontSize: 11.0,
                   ),
                 ),
                 if (scheme.lastUpdated.isNotEmpty)
@@ -561,7 +565,7 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                     'Last updated: ${scheme.lastUpdated}',
                     style: GoogleFonts.inter(
                       color: const Color(0xFF64748B),
-                      fontSize: 10,
+                      fontSize: 9.5,
                     ),
                   ),
               ],
@@ -669,7 +673,7 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                         card["title"] as String,
                         textAlign: TextAlign.center,
                         style: GoogleFonts.inter(
-                          fontSize: 11,
+                          fontSize: 11.0,
                           fontWeight: FontWeight.bold,
                           color: const Color(0xFF0F172A),
                         ),
@@ -679,7 +683,7 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                         card["desc"] as String,
                         textAlign: TextAlign.center,
                         style: GoogleFonts.inter(
-                          fontSize: 9,
+                          fontSize: 9.5,
                           color: const Color(0xFF64748B),
                         ),
                       ),
@@ -733,7 +737,7 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
             'Verification note',
             style: GoogleFonts.inter(
               color: const Color(0xFF0F172A),
-              fontSize: 11,
+              fontSize: 11.0,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -819,7 +823,7 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                           color: document.isMandatory
                               ? const Color(0xFFB91C1C)
                               : const Color(0xFF475569),
-                          fontSize: 9,
+                          fontSize: 9.0,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
@@ -843,7 +847,7 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                   'Issued by: ${document.issuingAuthority}',
                   style: GoogleFonts.inter(
                     color: const Color(0xFF475569),
-                    fontSize: 9.5,
+                    fontSize: 9.0,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -854,7 +858,7 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                   'Estimated cost: ${document.estimatedCost}',
                   style: GoogleFonts.inter(
                     color: const Color(0xFF475569),
-                    fontSize: 9.5,
+                    fontSize: 9.0,
                   ),
                 ),
             ],
@@ -870,7 +874,7 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
         'No separate service requirement is listed for this scheme.',
         style: GoogleFonts.inter(
           color: const Color(0xFF64748B),
-          fontSize: 11.5,
+          fontSize: 11.0,
         ),
       );
     }
@@ -892,7 +896,7 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
             service.name,
             style: GoogleFonts.inter(
               color: const Color(0xFF0F172A),
-              fontSize: 11.5,
+              fontSize: 11.0,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -903,7 +907,7 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
             ].where((value) => value.isNotEmpty).join(' • '),
             style: GoogleFonts.inter(
               color: const Color(0xFF64748B),
-              fontSize: 10.5,
+              fontSize: 10.0,
               height: 1.35,
             ),
           ),
@@ -937,7 +941,7 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                     "${index + 1}",
                     style: GoogleFonts.poppins(
                       color: const Color(0xFF2563EB),
-                      fontSize: 11,
+                      fontSize: 10.5,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -960,7 +964,7 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                     style: GoogleFonts.inter(
                       color: const Color(0xFF0F172A),
                       fontWeight: FontWeight.bold,
-                      fontSize: 12,
+                      fontSize: 11.5,
                     ),
                   ),
                   const SizedBox(height: 2),
@@ -968,7 +972,7 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                     "Complete this phase to progress further.",
                     style: GoogleFonts.inter(
                       color: const Color(0xFF64748B),
-                      fontSize: 9.5,
+                      fontSize: 9.0,
                     ),
                   ),
                   const SizedBox(height: 14),
@@ -1084,7 +1088,7 @@ class _HeroSection extends StatelessWidget {
                         Text(
                           shortForm,
                           style: GoogleFonts.poppins(
-                            fontSize: 14.5,
+                            fontSize: 13.5,
                             fontWeight: FontWeight.bold,
                             color: const Color(0xFF0F172A),
                             height: 1.3,
@@ -1097,7 +1101,7 @@ class _HeroSection extends StatelessWidget {
                           Text(
                             "($fullName)",
                             style: GoogleFonts.inter(
-                              fontSize: 9.5,
+                              fontSize: 10.0,
                               fontWeight: FontWeight.w500,
                               color: const Color(0xFF64748B),
                               height: 1.25,
@@ -1223,7 +1227,7 @@ class _HeroSection extends StatelessWidget {
         label,
         style: GoogleFonts.inter(
           color: text,
-          fontSize: 9,
+          fontSize: 9.0,
           fontWeight: FontWeight.bold,
         ),
       ),
@@ -1307,7 +1311,7 @@ class _ExpandableSection extends StatelessWidget {
           title: Text(
             title,
             style: GoogleFonts.poppins(
-              fontSize: 13.5,
+              fontSize: 13.0,
               fontWeight: FontWeight.bold,
               color: const Color(0xFF0F172A),
             ),
@@ -1399,7 +1403,7 @@ class _BottomActionBar extends StatelessWidget {
                         style: GoogleFonts.inter(
                           color: const Color(0xFF2563EB),
                           fontWeight: FontWeight.bold,
-                          fontSize: 15,
+                          fontSize: 14.0,
                         ),
                       ),
                     ],
@@ -1434,7 +1438,7 @@ class _BottomActionBar extends StatelessWidget {
                         style: GoogleFonts.inter(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
-                          fontSize: 15,
+                          fontSize: 14.0,
                         ),
                       ),
                       const SizedBox(width: 8),
