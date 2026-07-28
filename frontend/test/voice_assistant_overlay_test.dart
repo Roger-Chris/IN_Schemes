@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frontend/models/scheme_model.dart';
 import 'package:frontend/models/user_profile.dart';
@@ -34,6 +35,10 @@ void main() {
       expect(find.byKey(const Key('voice-edge-outline')), findsOneWidget);
       expect(find.byKey(const Key('voice-assistant-panel')), findsOneWidget);
       expect(find.byKey(const Key('voice-level-bars')), findsOneWidget);
+      expect(
+        find.byType(AnnotatedRegion<SystemUiOverlayStyle>),
+        findsOneWidget,
+      );
       expect(find.byType(BackdropFilter), findsNothing);
       expect(find.byType(RepaintBoundary), findsWidgets);
       expect(find.text('Ask IN AI'), findsOneWidget);
@@ -528,8 +533,25 @@ void main() {
   });
 
   test('edge painter repaints when animation values change', () {
-    const original = VoiceEdgePainter(progress: 0, intensity: 0.2, radius: 28);
-    const changed = VoiceEdgePainter(progress: 0.5, intensity: 0.2, radius: 28);
+    final cache = VoiceEdgeGeometryCache();
+    final original = VoiceEdgePainter(
+      entranceProgress: 1,
+      ambientProgress: 0,
+      activityIntensity: 0.2,
+      activity: VoiceEdgeActivity.idle,
+      radius: 28,
+      reduceMotion: false,
+      geometryCache: cache,
+    );
+    final changed = VoiceEdgePainter(
+      entranceProgress: 1,
+      ambientProgress: 0.5,
+      activityIntensity: 0.2,
+      activity: VoiceEdgeActivity.idle,
+      radius: 28,
+      reduceMotion: false,
+      geometryCache: cache,
+    );
 
     expect(changed.shouldRepaint(original), isTrue);
   });
