@@ -11,7 +11,6 @@ import 'companion/saarthi_welcome_screen.dart';
 import 'login_screen.dart';
 import '../widgets/smart_assessment_bottom_sheet.dart';
 import 'discover_results_screen.dart';
-import 'settings_screen.dart';
 import 'profile_setup_screen.dart';
 
 class HomeScreen extends StatefulWidget {
