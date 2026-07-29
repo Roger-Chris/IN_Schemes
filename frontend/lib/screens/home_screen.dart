@@ -60,6 +60,11 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _openVoiceAssistant() async {
+    final provider = Provider.of<AppProvider>(context, listen: false);
+    final schemes = provider.allSchemes.isNotEmpty
+        ? provider.allSchemes
+        : await SchemeRepository.instance.getAllSchemes();
+    if (!mounted) return;
     await showGeneralDialog<void>(
       context: context,
       barrierDismissible: false,
@@ -69,6 +74,9 @@ class _HomeScreenState extends State<HomeScreen> {
       pageBuilder: (overlayContext, animation, secondaryAnimation) {
         return VoiceAssistantOverlay(
           onClose: () => Navigator.of(overlayContext, rootNavigator: true).pop(),
+          schemes: schemes,
+          profile: provider.profile,
+          onProfileConfirmed: provider.updateProfile,
           onSearch: (query) => SchemeRepository.instance.searchSchemeMatches(
             query,
             limit: 20,
