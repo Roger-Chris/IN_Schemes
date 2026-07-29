@@ -273,7 +273,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     value: _darkMode,
                     onChanged: (val) => setState(() => _darkMode = val),
                     activeThumbColor: Colors.white,
-                    activeTrackColor: const Color(0xFFEA580C),
+                    activeTrackColor: const Color(0xFF2563EB),
                     inactiveThumbColor: Colors.white,
                     inactiveTrackColor: const Color(0xFFE2E8F0),
                   ),
@@ -305,7 +305,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       );
                     },
                     activeThumbColor: Colors.white,
-                    activeTrackColor: const Color(0xFFEA580C),
+                    activeTrackColor: const Color(0xFF2563EB),
                     inactiveThumbColor: Colors.white,
                     inactiveTrackColor: const Color(0xFFE2E8F0),
                   ),
@@ -345,7 +345,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             'Done',
                             style: GoogleFonts.inter(
                               fontWeight: FontWeight.bold,
-                              color: const Color(0xFFEA580C),
+                              color: const Color(0xFF2563EB),
                             ),
                           ),
                         ),
@@ -383,7 +383,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             'Done',
                             style: GoogleFonts.inter(
                               fontWeight: FontWeight.bold,
-                              color: const Color(0xFFEA580C),
+                              color: const Color(0xFF2563EB),
                             ),
                           ),
                         ),
@@ -421,8 +421,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             // Logout Button
             OutlinedButton.icon(
               style: OutlinedButton.styleFrom(
-                foregroundColor: const Color(0xFFEA580C),
-                side: const BorderSide(color: Color(0xFFEA580C), width: 1.5),
+                foregroundColor: const Color(0xFF2563EB),
+                side: const BorderSide(color: Color(0xFF2563EB), width: 1.5),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -510,7 +510,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           leading: Icon(
             icon,
-            color: titleColor ?? const Color(0xFFEA580C),
+            color: titleColor ?? const Color(0xFF2563EB),
             size: 20,
           ),
           title: Text(
