@@ -453,6 +453,7 @@ class _HomeScreenState extends State<HomeScreen> {
       "Search Startup India",
       "Search MSME Loans",
       "Search Women Entrepreneur Schemes",
+      "Search ASCEND Workshops",
     ];
 
     return SizedBox(
