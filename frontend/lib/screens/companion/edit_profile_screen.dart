@@ -62,7 +62,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     // Step 1 Init
     _fullNameController = TextEditingController(text: profile.name);
     _emailController = TextEditingController(text: profile.email);
-    _mobileController = TextEditingController(text: profile.mobile.replaceAll('+91 ', ''));
+    final String initialMobile = profile.mobile.isNotEmpty
+        ? profile.mobile
+        : Provider.of<AppProvider>(context, listen: false).mobileNumber;
+    _mobileController = TextEditingController(text: initialMobile.replaceAll('+91 ', ''));
     _dobController = TextEditingController(text: profile.dob != null ? "${profile.dob!.day.toString().padLeft(2, '0')}/${profile.dob!.month.toString().padLeft(2, '0')}/${profile.dob!.year}" : "");
     if (["Male", "Female", "Other"].contains(profile.gender)) {
       _gender = profile.gender;

@@ -49,7 +49,7 @@ class AppConstants {
   // UI Translation Map for English & Hindi
   static const Map<String, Map<String, String>> translations = {
     'en': {
-      'app_name': 'IN schemes',
+      'app_name': 'MSS',
       'tagline': 'Discover every Government Scheme in India',
       'launch_info': 'National Entrepreneurs\' Day Special Release',
       'continue': 'Continue',
@@ -73,7 +73,7 @@ class AppConstants {
       'help_support': 'Help & Support',
     },
     'hi': {
-      'app_name': 'आईएन स्कीम्स',
+      'app_name': 'एमएसएस',
       'tagline': 'भारत में हर सरकारी योजना की खोज करें',
       'launch_info': 'राष्ट्रीय उद्यमी दिवस विशेष संस्करण',
       'continue': 'आगे बढ़ें',

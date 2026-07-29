@@ -1695,34 +1695,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     fit: BoxFit.contain,
                   ),
                 ),
-                Positioned(
-                  left: 2,
-                  top: 15,
-                  child: Container(
-                    width: 22,
-                    height: 22,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF59E0B),
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFFF59E0B).withValues(alpha: 0.3),
-                          blurRadius: 4,
-                          spreadRadius: 1,
-                        ),
-                      ],
-                    ),
-                    alignment: Alignment.center,
-                    child: Text(
-                      "₹",
-                      style: GoogleFonts.inter(
-                        color: Colors.white,
-                        fontSize: 13,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
               ],
             ),
           ),
@@ -1749,7 +1721,11 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             GestureDetector(
               onTap: () {
-                // Navigate to Updates list
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => const NotificationsScreen(initialFilter: 'updates'),
+                  ),
+                );
               },
               child: Row(
                 children: [

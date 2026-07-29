@@ -50,8 +50,17 @@ class InSchemesApp extends StatelessWidget {
     return Consumer<AppProvider>(
       builder: (context, provider, child) {
         return MaterialApp(
-          title: 'IN schemes',
+          title: 'MSS',
           debugShowCheckedModeBanner: false,
+          builder: (context, child) {
+            final mediaQueryData = MediaQuery.of(context);
+            return MediaQuery(
+              data: mediaQueryData.copyWith(
+                textScaler: const TextScaler.linear(1.20),
+              ),
+              child: child!,
+            );
+          },
           theme: ThemeData(
             primaryColor: AppConstants.primaryColor,
             scaffoldBackgroundColor: AppConstants.backgroundColor,

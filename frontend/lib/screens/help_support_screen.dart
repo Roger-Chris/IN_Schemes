@@ -30,8 +30,8 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
       'answer': 'Since application submissions are processed directly on official government portals, you can track your status by logging into the respective portal using the application ID provided during submission.'
     },
     {
-      'question': 'Is IN Schemes app free to use?',
-      'answer': 'Yes, IN Schemes is completely free to use. Our goal is to make citizen benefits and government schemes accessible to everyone in India without any hidden fees.'
+      'question': 'Is MSS app free to use?',
+      'answer': 'Yes, MSS is completely free to use. Our goal is to make citizen benefits and government schemes accessible to everyone in India without any hidden fees.'
     },
     {
       'question': 'How often is new data updated?',
@@ -136,7 +136,7 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
       },
       {
         'question': 'Is my personal data shared with the government?',
-        'answer': 'No. IN schemes is a recommendation tool that runs fully on your device. We do not share your profile details with external departments. You apply directly on official portals.'
+        'answer': 'No. MSS is a recommendation tool that runs fully on your device. We do not share your profile details with external departments. You apply directly on official portals.'
       },
       {
         'question': 'How do I obtain missing documents?',
@@ -793,118 +793,58 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                 ),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFF8FAFC),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: const Color(0xFFE2E8F0)),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              _buildCircleIcon(
-                                icon: Icons.mail_outline_rounded,
-                                bgColor: const Color(0xFFEFF6FF),
-                                iconColor: const Color(0xFF2563EB),
-                                size: 36,
-                                iconSize: 18,
-                              ),
-                              const SizedBox(height: 12),
-                              Text(
-                                'Email Us',
-                                style: GoogleFonts.inter(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 13.5,
-                                  color: const Color(0xFF0F172A),
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              GestureDetector(
-                                onTap: () => _copyToClipboard(
-                                  'support@inschemes.gov.in',
-                                  'Support email copied to clipboard!',
-                                ),
-                                child: Text(
-                                  'support@inschemes.gov.in',
-                                  style: GoogleFonts.inter(
-                                    color: const Color(0xFF2563EB),
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                'We typically reply within 24 hours',
-                                style: GoogleFonts.inter(
-                                  fontSize: 10,
-                                  color: const Color(0xFF64748B),
-                                ),
-                              ),
-                            ],
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF8FAFC),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildCircleIcon(
+                          icon: Icons.mail_outline_rounded,
+                          bgColor: const Color(0xFFEFF6FF),
+                          iconColor: const Color(0xFF2563EB),
+                          size: 36,
+                          iconSize: 18,
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          'Email Us',
+                          style: GoogleFonts.inter(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13.5,
+                            color: const Color(0xFF0F172A),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFF8FAFC),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: const Color(0xFFE2E8F0)),
+                        const SizedBox(height: 4),
+                        GestureDetector(
+                          onTap: () => _copyToClipboard(
+                            'inschemes.support@gmail.com',
+                            'Support email copied to clipboard!',
                           ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              _buildCircleIcon(
-                                icon: Icons.phone_outlined,
-                                bgColor: const Color(0xFFEFF6FF),
-                                iconColor: const Color(0xFF2563EB),
-                                size: 36,
-                                iconSize: 18,
-                              ),
-                              const SizedBox(height: 12),
-                              Text(
-                                'Call Us',
-                                style: GoogleFonts.inter(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 13.5,
-                                  color: const Color(0xFF0F172A),
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              GestureDetector(
-                                onTap: () => _copyToClipboard(
-                                  '1800 123 4567',
-                                  'Support hotline copied to clipboard!',
-                                ),
-                                child: Text(
-                                  '1800 123 4567',
-                                  style: GoogleFonts.inter(
-                                    color: const Color(0xFF2563EB),
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                'Mon – Sat | 9:00 AM – 6:00 PM',
-                                style: GoogleFonts.inter(
-                                  fontSize: 10,
-                                  color: const Color(0xFF64748B),
-                                ),
-                              ),
-                            ],
+                          child: Text(
+                            'inschemes.support@gmail.com',
+                            style: GoogleFonts.inter(
+                              color: const Color(0xFF2563EB),
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 8),
+                        Text(
+                          'We typically reply within 24 hours',
+                          style: GoogleFonts.inter(
+                            fontSize: 10,
+                            color: const Color(0xFF64748B),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],

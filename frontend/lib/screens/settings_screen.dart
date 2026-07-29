@@ -5,6 +5,7 @@ import '../providers/app_state_provider.dart';
 import '../utils/constants.dart';
 import 'language_selection_screen.dart';
 import 'profile_setup_screen.dart';
+import 'help_support_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -371,7 +372,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         style: GoogleFonts.inter(fontWeight: FontWeight.bold),
                       ),
                       content: Text(
-                        'By using IN Schemes, you agree to our terms of service. All scheme information is aggregated from official government portals.',
+                        'By using MSS, you agree to our terms of service. All scheme information is aggregated from official government portals.',
                         style: GoogleFonts.inter(
                           color: const Color(0xFF64748B),
                         ),
@@ -407,12 +408,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
               _buildSettingRow(
                 icon: Icons.help_outline,
                 title: "Help & FAQ",
-                onTap: () {},
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const HelpSupportScreen(),
+                    ),
+                  );
+                },
               ),
               _buildSettingRow(
                 icon: Icons.contact_support_outlined,
                 title: "Contact Us",
-                onTap: () {},
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const HelpSupportScreen(),
+                    ),
+                  );
+                },
                 isLast: true,
               ),
             ]),

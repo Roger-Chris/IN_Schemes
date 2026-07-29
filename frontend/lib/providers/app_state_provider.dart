@@ -71,6 +71,16 @@ class AppProvider with ChangeNotifier {
   // Mock Notifications
   final List<Map<String, dynamic>> notifications = [
     {
+      'id': 'latest_fisheries_update',
+      'title': 'Fisheries and Aquaculture Infra Development Fund Scheme Launched',
+      'body':
+          'Government has launched the Fisheries and Aquaculture Infrastructure Development Fund to provide concessionary finance.',
+      'time': '2d ago',
+      'read': false,
+      'category': 'updates',
+      'iconType': 'emblem',
+    },
+    {
       'id': '1',
       'title': 'PM Vidyalaxmi Education Loan Scheme',
       'body':

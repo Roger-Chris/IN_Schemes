@@ -1630,7 +1630,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     final String nameEmailStr =
         "${userProfile.name}, ${_ageController.text}, $_selectedGender";
     final String contactStr =
-        "${userProfile.email}, ${userProfile.mobile.isNotEmpty ? userProfile.mobile : '+91 98765 43210'}";
+        "${userProfile.email}, ${userProfile.mobile.isNotEmpty ? userProfile.mobile : (provider.mobileNumber.isNotEmpty ? '+91 ${provider.mobileNumber}' : '+91 98765 43210')}";
     final String locationStr =
         "${_selectedDistrict ?? 'Chennai'}, ${_selectedState ?? 'Tamil Nadu'} - ${_pincodeController.text.isNotEmpty ? _pincodeController.text : '600097'}";
     final String businessStr = "$_selectedStatus, $_selectedSector";

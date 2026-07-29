@@ -144,7 +144,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                               ),
                               const SizedBox(height: 16),
                               Text(
-                                'IN schemes',
+                                'MSS',
                                 style: GoogleFonts.poppins(
                                   fontSize: 32,
                                   fontWeight: FontWeight.bold,
