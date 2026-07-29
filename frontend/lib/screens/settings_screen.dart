@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../providers/app_state_provider.dart';
 import '../utils/constants.dart';
 import 'language_selection_screen.dart';
+import 'profile_setup_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -222,6 +223,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
           physics: const BouncingScrollPhysics(),
           padding: const EdgeInsets.all(20.0),
           children: [
+            // GROUP 0: Profile
+            _buildGroupHeader("Profile"),
+            _buildGroupContainer([
+              _buildSettingRow(
+                icon: Icons.person_outline,
+                title: "Complete Profile",
+                value: "${provider.profileCompletionPercentage}% completed",
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const ProfileSetupScreen(),
+                    ),
+                  );
+                },
+                isLast: true,
+              ),
+            ]),
+
             // GROUP 1: Preferences
             _buildGroupHeader("Preferences"),
             _buildGroupContainer([
