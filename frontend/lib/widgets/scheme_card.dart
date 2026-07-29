@@ -137,10 +137,21 @@ class SchemeCard extends StatelessWidget {
         'tag2': 'Education',
         'tag3': 'Women Students',
       },
+      'IN009': {
+        'benefit': 'Free Mentorship',
+        'target': 'Entrepreneurs',
+        'deadline': 'Ongoing',
+        'tag1': 'Central Scheme',
+        'tag2': 'Startup India',
+        'tag3': 'Capacity Building',
+      },
     };
 
     if (specialDetails.containsKey(scheme.id)) {
       return specialDetails[scheme.id]!;
+    }
+    if (specialDetails.containsKey(scheme.schemeCode)) {
+      return specialDetails[scheme.schemeCode]!;
     }
 
     // Default fallbacks based on scheme attributes
