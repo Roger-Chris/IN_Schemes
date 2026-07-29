@@ -155,6 +155,10 @@ abstract interface class SchemeUnderstandingEngine {
   );
 }
 
+abstract interface class ClosableSchemeUnderstandingEngine {
+  Future<void> close();
+}
+
 /// Offline English/Tamil/Tanglish statement understanding and scheme ranking.
 ///
 /// The engine deliberately uses only bundled catalog data. It never performs a
@@ -311,6 +315,17 @@ class LocalSchemeUnderstandingEngine implements SchemeUnderstandingEngine {
       'ஆடு',
       'கோழி',
       'கால்நடை',
+    ],
+    'food': [
+      'food',
+      'ration',
+      'nutrition',
+      'food security',
+      'unavu',
+      'ration card',
+      'உணவு',
+      'ரேஷன்',
+      'ஊட்டச்சத்து',
     ],
   };
 

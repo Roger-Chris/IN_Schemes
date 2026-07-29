@@ -9,10 +9,12 @@ import 'package:google_fonts/google_fonts.dart';
 import '../models/scheme_model.dart';
 import '../models/user_profile.dart';
 import '../services/assistant_session_controller.dart';
+import '../services/edge_slm_understanding_engine.dart';
 import '../services/intelligent_scheme_search.dart';
 import '../services/scheme_understanding_engine.dart';
 import '../services/speech_output_controller.dart';
 import '../services/voice_recognition_controller.dart';
+import '../services/voice_agent_controller.dart';
 
 enum _VoiceAssistantPhase {
   starting,
@@ -40,6 +42,9 @@ class VoiceAssistantOverlay extends StatefulWidget {
     this.speechOutputController,
     this.understandingEngine,
     this.sessionController,
+    this.voiceAgentController,
+    this.surface = VoiceAgentSurface.regular,
+    this.initialText,
     this.autoStart = true,
   });
 
@@ -54,6 +59,9 @@ class VoiceAssistantOverlay extends StatefulWidget {
   final SpeechOutputController? speechOutputController;
   final SchemeUnderstandingEngine? understandingEngine;
   final AssistantSessionController? sessionController;
+  final VoiceAgentController? voiceAgentController;
+  final VoiceAgentSurface surface;
+  final String? initialText;
   final bool autoStart;
 
   @override
@@ -61,12 +69,17 @@ class VoiceAssistantOverlay extends StatefulWidget {
 }
 
 class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
-    with TickerProviderStateMixin {
+    with TickerProviderStateMixin, WidgetsBindingObserver {
   late final VoiceRecognitionController _recognitionController;
   late final SpeechOutputController _speechOutputController;
   late final bool _ownsRecognitionController;
   late final bool _ownsSpeechOutputController;
   late final bool _ownsSessionController;
+  bool _ownsUnderstandingEngine = false;
+  EdgeSlmUnderstandingEngine? _edgeSlmEngine;
+  VoiceAgentController? _voiceAgentController;
+  final bool _ownsVoiceAgentController = false;
+  StreamSubscription<VoiceAgentEvent>? _voiceAgentEvents;
   AssistantSessionController? _sessionController;
   late final AnimationController _edgeController;
   late final AnimationController _edgeRevealController;
@@ -89,13 +102,21 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
   bool _startingRecognition = false;
   bool _speaking = false;
   bool _closing = false;
+  bool _fallingBackToLocal = false;
   List<SchemeSearchMatch> _legacyMatches = const [];
   bool _legacySearching = false;
   int _operationGeneration = 0;
   String? _lastSpokenQuestion;
   DateTime _lastSoundLevelUpdate = DateTime.fromMillisecondsSinceEpoch(0);
+  final TextEditingController _typedController = TextEditingController();
 
   bool get _isListening => _voicePhase == _VoiceAssistantPhase.listening;
+  bool get _cloudActive =>
+      _voiceAgentController?.state.usingCloud == true &&
+      _voiceAgentController?.state.phase == VoiceAgentConnectionPhase.connected;
+  bool get _isCompanion => widget.surface == VoiceAgentSurface.companion;
+  Color get _accent =>
+      _isCompanion ? const Color(0xFFEA580C) : const Color(0xFF2563EB);
   bool get _hasConversation => _sessionController != null;
   AssistantSessionState? get _session => _sessionController?.state;
   VoiceEdgeActivity get _edgeActivity {
@@ -165,6 +186,7 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _ownsRecognitionController = widget.recognitionController == null;
     _recognitionController =
         widget.recognitionController ?? AutomaticVoiceRecognitionController();
@@ -175,10 +197,16 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
     if (widget.sessionController != null) {
       _sessionController = widget.sessionController;
     } else if (widget.schemes.isNotEmpty) {
+      final engine =
+          widget.understandingEngine ?? EdgeSlmUnderstandingEngine.standard();
+      _ownsUnderstandingEngine = widget.understandingEngine == null;
+      if (engine is EdgeSlmUnderstandingEngine) {
+        _edgeSlmEngine = engine;
+        engine.addListener(_handleEdgeSlmChanged);
+        unawaited(engine.prepare());
+      }
       _sessionController = AssistantSessionController(
-        engine:
-            widget.understandingEngine ??
-            const LocalSchemeUnderstandingEngine(),
+        engine: engine,
         schemes: widget.schemes,
         profile: widget.profile ?? UserProfile(),
       );
@@ -219,11 +247,132 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
       duration: const Duration(milliseconds: 900),
     );
     unawaited(_initializeSpeechOutput());
-    if (widget.autoStart) {
-      WidgetsBinding.instance.addPostFrameCallback((_) => _startListening());
-    } else {
-      _voicePhase = _VoiceAssistantPhase.ready;
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => _initializeVoiceAgent(),
+    );
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.detached) {
+      unawaited(_voiceAgentController?.close());
+      unawaited(_recognitionController.cancel());
+      unawaited(_speechOutputController.stop());
+      _setListeningAnimations(false);
     }
+  }
+
+  Future<void> _initializeVoiceAgent() async {
+    if (!mounted) return;
+    if (widget.voiceAgentController != null) {
+      _voiceAgentController = widget.voiceAgentController;
+    }
+    final agent = _voiceAgentController;
+    if (agent != null) {
+      agent.addListener(_handleVoiceAgentChanged);
+      _voiceAgentEvents = agent.events.listen(_handleVoiceAgentEvent);
+      try {
+        await agent.initialize();
+        await agent.connect();
+        if (mounted && agent.state.usingCloud) {
+          _handleVoiceAgentChanged();
+          if (widget.initialText?.trim().isNotEmpty == true) {
+            await agent.sendText(widget.initialText!.trim());
+          }
+          return;
+        }
+      } catch (_) {
+        await agent.close();
+        if (mounted) {
+          setState(() {
+            _fallbackReason =
+                'Cloud voice is unavailable. Using private on-device voice.';
+          });
+        }
+      }
+    }
+    if (widget.initialText?.trim().isNotEmpty == true) {
+      final value = widget.initialText!.trim();
+      if (mounted) setState(() => _transcript = value);
+      await _processFinalTranscript(value);
+    } else if (widget.autoStart) {
+      await _startListening();
+    } else if (mounted) {
+      setState(() => _voicePhase = _VoiceAssistantPhase.ready);
+    }
+  }
+
+  void _handleEdgeSlmChanged() {
+    if (mounted) setState(() {});
+  }
+
+  Future<void> _installEdgeAi() async {
+    final engine = _edgeSlmEngine;
+    if (engine == null ||
+        engine.snapshot.phase == EdgeSlmPhase.downloading ||
+        engine.snapshot.phase == EdgeSlmPhase.loading) {
+      return;
+    }
+    await _recognitionController.cancel();
+    if (!mounted) return;
+    _setListeningAnimations(false);
+    setState(() => _voicePhase = _VoiceAssistantPhase.processing);
+    await engine.prepare(downloadIfMissing: true);
+    if (!mounted) return;
+    setState(() {
+      _voicePhase = _VoiceAssistantPhase.ready;
+      _message = engine.snapshot.isReady ? null : engine.snapshot.message;
+    });
+  }
+
+  void _handleVoiceAgentChanged() {
+    if (!mounted || _voiceAgentController == null) return;
+    final state = _voiceAgentController!.state;
+    if (!state.usingCloud && !_cloudActive) return;
+    final level = state.audioLevel.clamp(0.0, 1.0);
+    _soundLevel.value = level;
+    _edgeIntensity.value = math.max(0.18, level);
+    _setListeningAnimations(state.isListening && !state.isMuted);
+    setState(() {
+      _voicePhase = state.isListening && !state.isMuted
+          ? _VoiceAssistantPhase.listening
+          : state.isSpeaking
+          ? _VoiceAssistantPhase.processing
+          : _VoiceAssistantPhase.ready;
+      _speaking = state.isSpeaking;
+      if (state.inputTranscript.isNotEmpty) {
+        _transcript = state.inputTranscript;
+      }
+      _message = state.message;
+    });
+  }
+
+  void _handleVoiceAgentEvent(VoiceAgentEvent event) {
+    if (!mounted) return;
+    if (event.type == VoiceAgentEventType.recoverableError ||
+        event.type == VoiceAgentEventType.fatalError) {
+      setState(() {
+        _fallbackReason =
+            'Cloud voice disconnected. Tap the microphone to use on-device voice.';
+      });
+      unawaited(_fallBackToLocalVoice());
+    }
+  }
+
+  Future<void> _fallBackToLocalVoice() async {
+    if (_fallingBackToLocal || _closing) return;
+    _fallingBackToLocal = true;
+    await _voiceAgentController?.close();
+    if (mounted && !_closing) {
+      setState(() {
+        _fallbackReason =
+            'Cloud voice disconnected. Continuing with private on-device voice.';
+      });
+      await _startListening(preserveTranscript: _transcript.isNotEmpty);
+    }
+    _fallingBackToLocal = false;
   }
 
   @override
@@ -267,7 +416,9 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
       }
     });
     final question = state.question;
-    if (state.phase == AssistantSessionPhase.asking && question != null) {
+    if (!_cloudActive &&
+        state.phase == AssistantSessionPhase.asking &&
+        question != null) {
       final text = question.text(tamilLanguage: state.isTamil);
       if (_lastSpokenQuestion != text) {
         _lastSpokenQuestion = text;
@@ -280,6 +431,10 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
 
   Future<void> _startListening({bool preserveTranscript = false}) async {
     if (!mounted || _startingRecognition || _speaking) return;
+    if (_cloudActive) {
+      await _voiceAgentController!.setMuted(false);
+      return;
+    }
     _startingRecognition = true;
     _operationGeneration++;
     await _speechOutputController.stop();
@@ -473,6 +628,15 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
 
   Future<void> _stopListening() async {
     _operationGeneration++;
+    if (_cloudActive) {
+      await _voiceAgentController!.setMuted(true);
+      if (!mounted) return;
+      _edgeIntensity.value = 0.12;
+      _soundLevel.value = 0.1;
+      _setListeningAnimations(false);
+      setState(() => _voicePhase = _VoiceAssistantPhase.ready);
+      return;
+    }
     await _recognitionController.stop();
     if (!mounted) return;
     _edgeIntensity.value = 0.12;
@@ -482,6 +646,11 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
   }
 
   Future<void> _toggleListening() async {
+    if (_cloudActive && _speaking) {
+      await _voiceAgentController!.interrupt();
+      await _voiceAgentController!.setMuted(false);
+      return;
+    }
     if (_isListening) {
       await _stopListening();
     } else {
@@ -506,6 +675,7 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
   }
 
   Future<void> _speakQuestionAndListen() async {
+    if (_cloudActive) return;
     final state = _session;
     final question = state?.question;
     if (state == null || question == null || _speaking) return;
@@ -553,7 +723,58 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
       _transcript = query;
       _message = null;
     });
-    await _processFinalTranscript(query);
+    if (_cloudActive) {
+      await _voiceAgentController!.sendText(query);
+    } else {
+      await _processFinalTranscript(query);
+    }
+  }
+
+  Future<void> _sendTypedInput() async {
+    final value = _typedController.text.trim();
+    if (value.isEmpty) return;
+    _typedController.clear();
+    await _recognitionController.cancel();
+    if (_cloudActive) {
+      await _voiceAgentController!.sendText(value);
+    } else {
+      setState(() => _transcript = value);
+      await _processFinalTranscript(value);
+    }
+  }
+
+  Future<void> _showTypedInputDialog() async {
+    final controller = TextEditingController();
+    final value = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(_isCompanion ? 'Type to Saarthi' : 'Type to Ask IN AI'),
+        content: TextField(
+          key: const Key('voice-typed-dialog-input'),
+          controller: controller,
+          autofocus: true,
+          textInputAction: TextInputAction.send,
+          onSubmitted: (value) => Navigator.of(dialogContext).pop(value),
+          decoration: const InputDecoration(
+            hintText: 'Tell me your situation naturally...',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(controller.text),
+            child: const Text('Send'),
+          ),
+        ],
+      ),
+    );
+    controller.dispose();
+    if (value == null || value.trim().isEmpty || !mounted) return;
+    _typedController.text = value;
+    await _sendTypedInput();
   }
 
   Future<void> _editFact(EligibilityFact fact) async {
@@ -671,13 +892,26 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
     // cancellation. Disposal still performs the full native cleanup.
     unawaited(_speechOutputController.stop());
     unawaited(_recognitionController.cancel());
+    unawaited(_voiceAgentController?.close());
     widget.onClose();
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _voiceAgentController?.removeListener(_handleVoiceAgentChanged);
+    unawaited(_voiceAgentEvents?.cancel());
+    if (_ownsVoiceAgentController) {
+      unawaited(_voiceAgentController?.dispose());
+    } else {
+      unawaited(_voiceAgentController?.close());
+    }
     _sessionController?.removeListener(_handleSessionChanged);
     if (_ownsSessionController) _sessionController?.dispose();
+    _edgeSlmEngine?.removeListener(_handleEdgeSlmChanged);
+    if (_ownsUnderstandingEngine) {
+      unawaited(_edgeSlmEngine?.close());
+    }
     if (_ownsRecognitionController) {
       unawaited(_recognitionController.dispose());
     } else {
@@ -695,6 +929,7 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
     _waveController.dispose();
     _edgeIntensity.dispose();
     _soundLevel.dispose();
+    _typedController.dispose();
     super.dispose();
   }
 
@@ -742,6 +977,7 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
                       activity: _edgeActivity,
                       radius: edgeRadius,
                       reduceMotion: _reduceEdgeMotion,
+                      companion: _isCompanion,
                     ),
                   ),
                 ),
@@ -760,11 +996,13 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
                 child: Container(
                   key: const Key('voice-assistant-panel'),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF07111F).withValues(alpha: 0.98),
+                    color:
+                        (_isCompanion
+                                ? const Color(0xFF1C1008)
+                                : const Color(0xFF07111F))
+                            .withValues(alpha: 0.98),
                     borderRadius: BorderRadius.circular(28),
-                    border: Border.all(
-                      color: const Color(0xFF60A5FA).withValues(alpha: 0.24),
-                    ),
+                    border: Border.all(color: _accent.withValues(alpha: 0.34)),
                     boxShadow: const [
                       BoxShadow(
                         color: Color(0x66020A16),
@@ -782,6 +1020,35 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
                         _buildHeader(),
                         const SizedBox(height: 12),
                         _buildListeningArea(),
+                        if (_edgeSlmEngine != null) ...[
+                          const SizedBox(height: 8),
+                          _buildEdgeAiStatus(),
+                        ],
+                        if (_cloudActive) ...[
+                          const SizedBox(height: 8),
+                          Row(
+                            key: const Key('voice-cloud-disclosure'),
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.cloud_outlined,
+                                size: 13,
+                                color: _accent,
+                              ),
+                              const SizedBox(width: 5),
+                              Flexible(
+                                child: Text(
+                                  'Live audio is sent to OpenAI. This app does not save audio or raw transcripts.',
+                                  textAlign: TextAlign.center,
+                                  style: GoogleFonts.inter(
+                                    color: const Color(0xFFCBD5E1),
+                                    fontSize: 9.5,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                         if (_fallbackReason != null) ...[
                           const SizedBox(height: 8),
                           Text(
@@ -816,11 +1083,11 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
                             _session?.phase ==
                                 AssistantSessionPhase.understanding) ...[
                           const SizedBox(height: 12),
-                          const LinearProgressIndicator(
+                          LinearProgressIndicator(
                             key: Key('voice-search-progress'),
                             minHeight: 2,
-                            color: Color(0xFF60A5FA),
-                            backgroundColor: Color(0xFF172554),
+                            color: _accent,
+                            backgroundColor: _accent.withValues(alpha: 0.20),
                           ),
                         ] else if (_session?.recommendations.isNotEmpty ==
                             true) ...[
@@ -883,6 +1150,76 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
     );
   }
 
+  Widget _buildEdgeAiStatus() {
+    final snapshot = _edgeSlmEngine!.snapshot;
+    final downloading =
+        snapshot.phase == EdgeSlmPhase.downloading ||
+        snapshot.phase == EdgeSlmPhase.loading ||
+        snapshot.phase == EdgeSlmPhase.checking;
+    final ready = snapshot.isReady;
+    final color = ready
+        ? const Color(0xFF34D399)
+        : downloading
+        ? const Color(0xFF60A5FA)
+        : const Color(0xFFFBBF24);
+    final label = switch (snapshot.phase) {
+      EdgeSlmPhase.ready => 'Private Edge AI · Offline',
+      EdgeSlmPhase.downloading =>
+        'Downloading Edge AI ${(snapshot.progress * 100).round()}%',
+      EdgeSlmPhase.loading =>
+        snapshot.progress >= 1
+            ? 'Loading private Edge AI…'
+            : 'Verifying private Edge AI…',
+      EdgeSlmPhase.checking => 'Checking private Edge AI…',
+      EdgeSlmPhase.failed => 'Edge AI unavailable · Retry',
+      EdgeSlmPhase.modelMissing => 'Enable private Edge AI · 378 MB',
+    };
+    return Semantics(
+      container: true,
+      label: label,
+      button: !ready && !downloading,
+      child: InkWell(
+        key: const Key('edge-ai-model-status'),
+        borderRadius: BorderRadius.circular(12),
+        onTap: ready || downloading ? null : _installEdgeAi,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: color.withValues(alpha: 0.24)),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                ready
+                    ? Icons.memory_rounded
+                    : downloading
+                    ? Icons.downloading_rounded
+                    : Icons.download_for_offline_outlined,
+                color: color,
+                size: 15,
+              ),
+              const SizedBox(width: 7),
+              Flexible(
+                child: Text(
+                  label,
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.inter(
+                    color: color,
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildHeader() {
     return Row(
       children: [
@@ -893,7 +1230,9 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
             width: 56,
             height: 56,
             child: Image.asset(
-              'assets/images/compoanion bot.png',
+              _isCompanion
+                  ? 'assets/saarthi_expressions/01_happy.png'
+                  : 'assets/images/compoanion bot.png',
               key: const Key('voice-assistant-image'),
               fit: BoxFit.contain,
             ),
@@ -905,7 +1244,7 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Ask IN AI',
+                _isCompanion ? 'Talk to Saarthi' : 'Ask IN AI',
                 style: GoogleFonts.inter(
                   color: Colors.white,
                   fontSize: 15,
@@ -937,6 +1276,20 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
           ),
         ),
         _buildLanguageSelector(),
+        if (_cloudActive)
+          IconButton(
+            key: const Key('voice-mute-button'),
+            tooltip: _voiceAgentController!.state.isMuted ? 'Unmute' : 'Mute',
+            onPressed: () => _voiceAgentController!.setMuted(
+              !_voiceAgentController!.state.isMuted,
+            ),
+            icon: Icon(
+              _voiceAgentController!.state.isMuted
+                  ? Icons.mic_off_rounded
+                  : Icons.volume_up_rounded,
+              color: const Color(0xFFCBD5E1),
+            ),
+          ),
         IconButton(
           key: const Key('voice-close-button'),
           tooltip: 'Cancel assistant',
@@ -980,6 +1333,16 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
                 ),
               ),
               const SizedBox(width: 10),
+              if (!_isCompanion)
+                IconButton(
+                  key: const Key('voice-open-typed-input'),
+                  tooltip: 'Type instead',
+                  onPressed: _showTypedInputDialog,
+                  icon: const Icon(
+                    Icons.keyboard_alt_outlined,
+                    color: Color(0xFF94A3B8),
+                  ),
+                ),
               VoiceLevelBars(
                 key: const Key('voice-level-bars'),
                 animation: _waveController,
@@ -995,7 +1358,7 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
                   style: IconButton.styleFrom(
                     backgroundColor: _isListening
                         ? const Color(0xFF10B981)
-                        : const Color(0xFF2563EB),
+                        : _accent,
                     minimumSize: const Size(48, 48),
                   ),
                   icon: Icon(
@@ -1019,6 +1382,42 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
               ],
             ),
           ],
+          if (_isCompanion) ...[
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    key: const Key('voice-typed-input'),
+                    controller: _typedController,
+                    textInputAction: TextInputAction.send,
+                    onSubmitted: (_) => _sendTypedInput(),
+                    style: GoogleFonts.inter(color: Colors.white, fontSize: 12),
+                    decoration: InputDecoration(
+                      isDense: true,
+                      hintText: _isCompanion
+                          ? 'Type to Saarthi...'
+                          : 'Type instead...',
+                      hintStyle: const TextStyle(color: Color(0xFF64748B)),
+                      filled: true,
+                      fillColor: Colors.white.withValues(alpha: 0.04),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 6),
+                IconButton(
+                  key: const Key('voice-send-text'),
+                  tooltip: 'Send message',
+                  onPressed: _sendTypedInput,
+                  icon: Icon(Icons.send_rounded, color: _accent),
+                ),
+              ],
+            ),
+          ],
         ],
       ),
     );
@@ -1034,8 +1433,8 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
       ),
     ),
     onPressed: () => _useSuggestion(label),
-    side: const BorderSide(color: Color(0xFF3B82F6)),
-    backgroundColor: const Color(0xFF172554),
+    side: BorderSide(color: _accent),
+    backgroundColor: _accent.withValues(alpha: 0.18),
     labelStyle: const TextStyle(color: Colors.white),
     visualDensity: VisualDensity.compact,
   );
@@ -1599,6 +1998,7 @@ class VoiceEdgePainter extends CustomPainter {
     required this.activity,
     required this.radius,
     required this.reduceMotion,
+    this.companion = false,
   });
 
   final double entranceProgress;
@@ -1607,6 +2007,7 @@ class VoiceEdgePainter extends CustomPainter {
   final VoiceEdgeActivity activity;
   final double radius;
   final bool reduceMotion;
+  final bool companion;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -1681,7 +2082,7 @@ class VoiceEdgePainter extends CustomPainter {
       center: Offset(-12 + horizontalDrift, size.height * 0.80),
       width: 150,
       height: sideHeight * 0.58,
-      color: const Color(0xFF62E58F),
+      color: companion ? const Color(0xFFF97316) : const Color(0xFF62E58F),
       opacity: opacity * 0.44,
     );
     _drawGlow(
@@ -1689,7 +2090,7 @@ class VoiceEdgePainter extends CustomPainter {
       center: Offset(-20 - horizontalDrift * 0.4, size.height * 0.47),
       width: 105,
       height: sideHeight * 0.66,
-      color: const Color(0xFF93C5FD),
+      color: companion ? const Color(0xFFFDBA74) : const Color(0xFF93C5FD),
       opacity: opacity * 0.20,
     );
     _drawGlow(
@@ -1697,7 +2098,7 @@ class VoiceEdgePainter extends CustomPainter {
       center: Offset(size.width * 0.48 + horizontalDrift, size.height + 12),
       width: size.width * 0.64,
       height: 125,
-      color: const Color(0xFFFACC15),
+      color: companion ? const Color(0xFFFB923C) : const Color(0xFFFACC15),
       opacity: opacity * 0.48,
     );
     _drawGlow(
@@ -1767,5 +2168,6 @@ class VoiceEdgePainter extends CustomPainter {
       oldDelegate.activityIntensity != activityIntensity ||
       oldDelegate.activity != activity ||
       oldDelegate.radius != radius ||
-      oldDelegate.reduceMotion != reduceMotion;
+      oldDelegate.reduceMotion != reduceMotion ||
+      oldDelegate.companion != companion;
 }

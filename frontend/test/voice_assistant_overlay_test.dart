@@ -450,6 +450,7 @@ void main() {
           autoStart: false,
           schemes: const [scheme],
           profile: UserProfile(),
+          understandingEngine: const LocalSchemeUnderstandingEngine(),
           recognitionController: recognition,
           speechOutputController: _FakeSpeechOutputController(),
           onProfileConfirmed: (profile) => saved = profile,
@@ -509,6 +510,7 @@ void main() {
         home: VoiceAssistantOverlay(
           schemes: const [scheme],
           profile: UserProfile(),
+          understandingEngine: const LocalSchemeUnderstandingEngine(),
           recognitionController: recognition,
           speechOutputController: speech,
           onClose: () {},
