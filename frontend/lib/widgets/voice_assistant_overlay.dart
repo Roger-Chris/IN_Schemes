@@ -9,13 +9,12 @@ import 'package:google_fonts/google_fonts.dart';
 import '../models/scheme_model.dart';
 import '../models/user_profile.dart';
 import '../services/assistant_session_controller.dart';
+import '../services/edge_slm_understanding_engine.dart';
 import '../services/intelligent_scheme_search.dart';
 import '../services/scheme_understanding_engine.dart';
 import '../services/speech_output_controller.dart';
 import '../services/voice_recognition_controller.dart';
-import '../services/realtime_voice_agent_transport.dart';
 import '../services/voice_agent_controller.dart';
-import '../services/voice_agent_preferences.dart';
 
 enum _VoiceAssistantPhase {
   starting,
@@ -76,8 +75,10 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
   late final bool _ownsRecognitionController;
   late final bool _ownsSpeechOutputController;
   late final bool _ownsSessionController;
+  bool _ownsUnderstandingEngine = false;
+  EdgeSlmUnderstandingEngine? _edgeSlmEngine;
   VoiceAgentController? _voiceAgentController;
-  bool _ownsVoiceAgentController = false;
+  final bool _ownsVoiceAgentController = false;
   StreamSubscription<VoiceAgentEvent>? _voiceAgentEvents;
   AssistantSessionController? _sessionController;
   late final AnimationController _edgeController;
@@ -196,10 +197,16 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
     if (widget.sessionController != null) {
       _sessionController = widget.sessionController;
     } else if (widget.schemes.isNotEmpty) {
+      final engine =
+          widget.understandingEngine ?? EdgeSlmUnderstandingEngine.standard();
+      _ownsUnderstandingEngine = widget.understandingEngine == null;
+      if (engine is EdgeSlmUnderstandingEngine) {
+        _edgeSlmEngine = engine;
+        engine.addListener(_handleEdgeSlmChanged);
+        unawaited(engine.prepare());
+      }
       _sessionController = AssistantSessionController(
-        engine:
-            widget.understandingEngine ??
-            const LocalSchemeUnderstandingEngine(),
+        engine: engine,
         schemes: widget.schemes,
         profile: widget.profile ?? UserProfile(),
       );
@@ -259,20 +266,8 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
 
   Future<void> _initializeVoiceAgent() async {
     if (!mounted) return;
-    final session = _sessionController;
     if (widget.voiceAgentController != null) {
       _voiceAgentController = widget.voiceAgentController;
-    } else if (openAiRealtimeEnabled && session != null) {
-      final voice = await VoiceAgentPreferences.loadVoice();
-      if (!mounted) return;
-      _ownsVoiceAgentController = true;
-      _voiceAgentController = OpenAiRealtimeVoiceAgentController(
-        session: session,
-        transport: RealtimeVoiceAgentTransport(),
-        surface: widget.surface,
-        voice: voice,
-        onOpenScheme: widget.onSchemeSelected,
-      );
     }
     final agent = _voiceAgentController;
     if (agent != null) {
@@ -307,6 +302,29 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
     } else if (mounted) {
       setState(() => _voicePhase = _VoiceAssistantPhase.ready);
     }
+  }
+
+  void _handleEdgeSlmChanged() {
+    if (mounted) setState(() {});
+  }
+
+  Future<void> _installEdgeAi() async {
+    final engine = _edgeSlmEngine;
+    if (engine == null ||
+        engine.snapshot.phase == EdgeSlmPhase.downloading ||
+        engine.snapshot.phase == EdgeSlmPhase.loading) {
+      return;
+    }
+    await _recognitionController.cancel();
+    if (!mounted) return;
+    _setListeningAnimations(false);
+    setState(() => _voicePhase = _VoiceAssistantPhase.processing);
+    await engine.prepare(downloadIfMissing: true);
+    if (!mounted) return;
+    setState(() {
+      _voicePhase = _VoiceAssistantPhase.ready;
+      _message = engine.snapshot.isReady ? null : engine.snapshot.message;
+    });
   }
 
   void _handleVoiceAgentChanged() {
@@ -890,6 +908,10 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
     }
     _sessionController?.removeListener(_handleSessionChanged);
     if (_ownsSessionController) _sessionController?.dispose();
+    _edgeSlmEngine?.removeListener(_handleEdgeSlmChanged);
+    if (_ownsUnderstandingEngine) {
+      unawaited(_edgeSlmEngine?.close());
+    }
     if (_ownsRecognitionController) {
       unawaited(_recognitionController.dispose());
     } else {
@@ -998,6 +1020,10 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
                         _buildHeader(),
                         const SizedBox(height: 12),
                         _buildListeningArea(),
+                        if (_edgeSlmEngine != null) ...[
+                          const SizedBox(height: 8),
+                          _buildEdgeAiStatus(),
+                        ],
                         if (_cloudActive) ...[
                           const SizedBox(height: 8),
                           Row(
@@ -1120,6 +1146,76 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildEdgeAiStatus() {
+    final snapshot = _edgeSlmEngine!.snapshot;
+    final downloading =
+        snapshot.phase == EdgeSlmPhase.downloading ||
+        snapshot.phase == EdgeSlmPhase.loading ||
+        snapshot.phase == EdgeSlmPhase.checking;
+    final ready = snapshot.isReady;
+    final color = ready
+        ? const Color(0xFF34D399)
+        : downloading
+        ? const Color(0xFF60A5FA)
+        : const Color(0xFFFBBF24);
+    final label = switch (snapshot.phase) {
+      EdgeSlmPhase.ready => 'Private Edge AI · Offline',
+      EdgeSlmPhase.downloading =>
+        'Downloading Edge AI ${(snapshot.progress * 100).round()}%',
+      EdgeSlmPhase.loading =>
+        snapshot.progress >= 1
+            ? 'Loading private Edge AI…'
+            : 'Verifying private Edge AI…',
+      EdgeSlmPhase.checking => 'Checking private Edge AI…',
+      EdgeSlmPhase.failed => 'Edge AI unavailable · Retry',
+      EdgeSlmPhase.modelMissing => 'Enable private Edge AI · 378 MB',
+    };
+    return Semantics(
+      container: true,
+      label: label,
+      button: !ready && !downloading,
+      child: InkWell(
+        key: const Key('edge-ai-model-status'),
+        borderRadius: BorderRadius.circular(12),
+        onTap: ready || downloading ? null : _installEdgeAi,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: color.withValues(alpha: 0.24)),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                ready
+                    ? Icons.memory_rounded
+                    : downloading
+                    ? Icons.downloading_rounded
+                    : Icons.download_for_offline_outlined,
+                color: color,
+                size: 15,
+              ),
+              const SizedBox(width: 7),
+              Flexible(
+                child: Text(
+                  label,
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.inter(
+                    color: color,
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

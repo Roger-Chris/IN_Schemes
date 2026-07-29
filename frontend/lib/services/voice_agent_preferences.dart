@@ -1,7 +1,7 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
 class VoiceAgentPreferences {
-  static const _voiceKey = 'openai_realtime_voice';
+  static const _voiceKey = 'device_assistant_voice';
   static const defaultVoice = 'marin';
   static const supportedVoices = {'marin', 'cedar'};
 

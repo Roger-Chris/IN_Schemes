@@ -91,7 +91,7 @@ class _SaarthiWelcomeScreenState extends State<SaarthiWelcomeScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          '${voice == 'marin' ? 'Marin' : 'Cedar'} will be used for the next cloud voice session.',
+          '${voice == 'marin' ? 'Marin' : 'Cedar'} is selected. Device speech stays private.',
         ),
         duration: const Duration(seconds: 2),
       ),

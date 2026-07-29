@@ -1,0 +1,12 @@
+# Large local inference artifacts are downloaded or delivered as model packs.
+# They must never be committed to the application repository.
+*.gguf
+*.gguf.download
+*.gguf.part
+Modelfile.edge-*
+artifacts/
+training-output/
+.venv-edge/
+frontend/android/build/
+__pycache__/
+*.pyc

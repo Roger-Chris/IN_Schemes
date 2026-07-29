@@ -107,6 +107,31 @@ void main() {
     expect(result.recommendations.first.scheme.id, 'IN-FARM');
   });
 
+  test('keeps Tamil ration requests in the required food category', () async {
+    const foodScheme = Scheme(
+      id: 'IN-FOOD',
+      schemeCode: 'IN-FOOD',
+      name: 'Family Food Security Assistance',
+      sector: 'Food security ration nutrition',
+      targetBeneficiary: 'Families requiring ration support',
+      benefits: 'Subsidized food and nutrition assistance',
+      status: 'Current',
+      verificationStatus: 'Verified official source',
+      sourceUrl: 'https://example.gov.in/food',
+    );
+    final result = await engine.understand(
+      const SchemeUnderstandingRequest(
+        statement: 'ரேஷன் உணவு உதவி வேண்டும்',
+        schemes: [foodScheme, womenBusiness],
+        knownFacts: {},
+        questionsAsked: 0,
+      ),
+    );
+
+    expect(result.concepts, contains('food'));
+    expect(result.recommendations.first.scheme.id, 'IN-FOOD');
+  });
+
   test('negation does not turn a non-student into a student', () async {
     final result = await engine.understand(
       const SchemeUnderstandingRequest(

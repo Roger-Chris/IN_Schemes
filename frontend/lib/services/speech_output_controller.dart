@@ -48,12 +48,18 @@ class NativeSpeechOutputController implements SpeechOutputController {
         tamil: response?['tamil'] == true,
       );
     } on PlatformException {
-      return _capabilities = const SpeechOutputCapabilities(
-        available: false,
-        english: false,
-        tamil: false,
-      );
+      return _unavailableCapabilities();
+    } on MissingPluginException {
+      return _unavailableCapabilities();
     }
+  }
+
+  SpeechOutputCapabilities _unavailableCapabilities() {
+    return _capabilities = const SpeechOutputCapabilities(
+      available: false,
+      english: false,
+      tamil: false,
+    );
   }
 
   @override
@@ -77,6 +83,8 @@ class NativeSpeechOutputController implements SpeechOutputController {
         },
       );
     } on PlatformException {
+      return false;
+    } on MissingPluginException {
       return false;
     }
   }
@@ -105,6 +113,8 @@ class NativeSpeechOutputController implements SpeechOutputController {
       await _channel.invokeMethod<void>('stop');
     } on PlatformException {
       // The displayed question remains usable when native TTS is unavailable.
+    } on MissingPluginException {
+      // The displayed question remains usable when native TTS is unavailable.
     }
   }
 
@@ -114,10 +124,8 @@ class NativeSpeechOutputController implements SpeechOutputController {
     await stop();
     _disposed = true;
     _channel.setMethodCallHandler(null);
-    try {
-      await _channel.invokeMethod<void>('dispose');
-    } on PlatformException {
-      // Native activity cleanup also destroys the engine.
-    }
+    // SpeechOutputBridge belongs to the Activity, not an individual overlay.
+    // MainActivity cleans it up with the FlutterEngine. Disposing it here would
+    // leave future Regular/Companion sessions without a method-channel handler.
   }
 }
