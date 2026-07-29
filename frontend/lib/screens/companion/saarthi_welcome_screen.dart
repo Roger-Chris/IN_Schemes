@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'profile_setup_screen.dart';
+import '../../services/voice_agent_preferences.dart';
+import '../../services/voice_agent_preview_service.dart';
 
 // Controller to manage widget attention/focus inside AI Companion Mode
 class SaarthiAttentionController {
@@ -62,8 +64,9 @@ class SaarthiWelcomeScreen extends StatefulWidget {
 
 class _SaarthiWelcomeScreenState extends State<SaarthiWelcomeScreen> {
   String _selectedLanguage = 'English';
-  String _selectedVoice = 'female'; // 'female' or 'male'
+  String _selectedVoice = VoiceAgentPreferences.defaultVoice;
   bool _debugPanelExpanded = false;
+  String? _previewingVoice;
 
   // Constant colors for premium theme matching description
   static const Color kBgCream = Color(0xFFFFFDF9);
@@ -72,6 +75,43 @@ class _SaarthiWelcomeScreenState extends State<SaarthiWelcomeScreen> {
   static const Color kDarkSlate = Color(0xFF0F172A);
   static const Color kSlate500 = Color(0xFF64748B);
   static const Color kBorderGrey = Color(0xFFE2E8F0);
+
+  @override
+  void initState() {
+    super.initState();
+    VoiceAgentPreferences.loadVoice().then((voice) {
+      if (mounted) setState(() => _selectedVoice = voice);
+    });
+  }
+
+  Future<void> _selectVoice(String voice) async {
+    setState(() => _selectedVoice = voice);
+    await VoiceAgentPreferences.saveVoice(voice);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          '${voice == 'marin' ? 'Marin' : 'Cedar'} will be used for the next cloud voice session.',
+        ),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
+  Future<void> _previewVoice(String voice) async {
+    if (_previewingVoice != null) return;
+    setState(() => _previewingVoice = voice);
+    try {
+      await VoiceAgentPreviewService.preview(voice);
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error.toString().replaceFirst('Bad state: ', ''))),
+      );
+    } finally {
+      if (mounted) setState(() => _previewingVoice = null);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -328,31 +368,35 @@ class _SaarthiWelcomeScreenState extends State<SaarthiWelcomeScreen> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
-                            // Female Avatar Selection
+                            // Marin voice selection
                             Expanded(
                               child: SaarthiFocusRegion(
-                                id: 'voice_female',
+                                id: 'voice_marin',
                                 child: GestureDetector(
-                                  onTap: () => setState(() => _selectedVoice = 'female'),
+                                  onTap: () => _selectVoice('marin'),
                                   child: _buildVoiceAvatar(
-                                    label: 'Female',
+                                    label: 'Marin',
                                     imageAsset: 'assets/images/support_agent.png',
-                                    isSelected: _selectedVoice == 'female',
+                                    isSelected: _selectedVoice == 'marin',
+                                    onPreview: () => _previewVoice('marin'),
+                                    isPreviewing: _previewingVoice == 'marin',
                                   ),
                                 ),
                               ),
                             ),
                             const SizedBox(width: 8),
-                            // Male Avatar Selection
+                            // Cedar voice selection
                             Expanded(
                               child: SaarthiFocusRegion(
-                                id: 'voice_male',
+                                id: 'voice_cedar',
                                 child: GestureDetector(
-                                  onTap: () => setState(() => _selectedVoice = 'male'),
+                                  onTap: () => _selectVoice('cedar'),
                                   child: _buildVoiceAvatar(
-                                    label: 'Male',
+                                    label: 'Cedar',
                                     imageAsset: 'assets/images/user_avatar.png',
-                                    isSelected: _selectedVoice == 'male',
+                                    isSelected: _selectedVoice == 'cedar',
+                                    onPreview: () => _previewVoice('cedar'),
+                                    isPreviewing: _previewingVoice == 'cedar',
                                   ),
                                 ),
                               ),
@@ -513,8 +557,8 @@ class _SaarthiWelcomeScreenState extends State<SaarthiWelcomeScreen> {
                         runSpacing: 6,
                         children: [
                           _buildDebugButton('[Test Language]', 'language_card'),
-                          _buildDebugButton('[Test Voice Female]', 'voice_female'),
-                          _buildDebugButton('[Test Voice Male]', 'voice_male'),
+                          _buildDebugButton('[Test Voice Marin]', 'voice_marin'),
+                          _buildDebugButton('[Test Voice Cedar]', 'voice_cedar'),
                           _buildDebugButton('[Test Start Button]', 'start_button'),
                           _buildDebugButton('[Test Business Type]', 'business_type'),
                           _buildDebugButton('[Test Upload Document]', 'upload_document'),
@@ -659,6 +703,8 @@ class _SaarthiWelcomeScreenState extends State<SaarthiWelcomeScreen> {
     required String label,
     required String imageAsset,
     required bool isSelected,
+    required VoidCallback onPreview,
+    required bool isPreviewing,
   }) {
     return Column(
       children: [
@@ -680,7 +726,7 @@ class _SaarthiWelcomeScreenState extends State<SaarthiWelcomeScreen> {
                 return Container(
                   color: Colors.grey.shade200,
                   child: Icon(
-                    label == 'Female' ? Icons.woman : Icons.man,
+                    Icons.record_voice_over,
                     color: isSelected ? kBrandOrange : kSlate500,
                   ),
                 );
@@ -695,6 +741,23 @@ class _SaarthiWelcomeScreenState extends State<SaarthiWelcomeScreen> {
             fontSize: 11,
             fontWeight: FontWeight.bold,
             color: isSelected ? kBrandOrange : kSlate500,
+          ),
+        ),
+        SizedBox(
+          width: 32,
+          height: 28,
+          child: IconButton(
+            key: Key('preview-${label.toLowerCase()}'),
+            tooltip: 'Preview $label',
+            padding: EdgeInsets.zero,
+            onPressed: onPreview,
+            icon: isPreviewing
+                ? const SizedBox(
+                    width: 14,
+                    height: 14,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.play_circle_outline, size: 18),
           ),
         ),
       ],

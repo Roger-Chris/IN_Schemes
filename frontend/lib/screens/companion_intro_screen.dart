@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../providers/app_state_provider.dart';
 import '../main.dart';
 import 'profile_setup_screen.dart';
+import '../services/voice_agent_preferences.dart';
 
 
 class CompanionIntroScreen extends StatefulWidget {
@@ -15,7 +16,17 @@ class CompanionIntroScreen extends StatefulWidget {
 
 class _CompanionIntroScreenState extends State<CompanionIntroScreen> {
   String _selectedLanguage = 'English';
-  String _selectedVoice = 'Female';
+  String _selectedVoice = 'Marin';
+
+  @override
+  void initState() {
+    super.initState();
+    VoiceAgentPreferences.loadVoice().then((voice) {
+      if (mounted) {
+        setState(() => _selectedVoice = voice == 'cedar' ? 'Cedar' : 'Marin');
+      }
+    });
+  }
 
   Widget _buildSecureBadge() {
     return Container(
@@ -363,18 +374,24 @@ class _CompanionIntroScreenState extends State<CompanionIntroScreen> {
               ),
               const SizedBox(height: 12),
               ListTile(
-                title: const Text('Female'),
-                trailing: _selectedVoice == 'Female' ? const Icon(Icons.check, color: Color(0xFF2563EB)) : null,
-                onTap: () {
-                  setState(() => _selectedVoice = 'Female');
+                title: const Text('Marin'),
+                subtitle: const Text('Warm, natural voice'),
+                trailing: _selectedVoice == 'Marin' ? const Icon(Icons.check, color: Color(0xFF2563EB)) : null,
+                onTap: () async {
+                  setState(() => _selectedVoice = 'Marin');
+                  await VoiceAgentPreferences.saveVoice('marin');
+                  if (!context.mounted) return;
                   Navigator.pop(context);
                 },
               ),
               ListTile(
-                title: const Text('Male'),
-                trailing: _selectedVoice == 'Male' ? const Icon(Icons.check, color: Color(0xFF2563EB)) : null,
-                onTap: () {
-                  setState(() => _selectedVoice = 'Male');
+                title: const Text('Cedar'),
+                subtitle: const Text('Clear, grounded voice'),
+                trailing: _selectedVoice == 'Cedar' ? const Icon(Icons.check, color: Color(0xFF2563EB)) : null,
+                onTap: () async {
+                  setState(() => _selectedVoice = 'Cedar');
+                  await VoiceAgentPreferences.saveVoice('cedar');
+                  if (!context.mounted) return;
                   Navigator.pop(context);
                 },
               ),

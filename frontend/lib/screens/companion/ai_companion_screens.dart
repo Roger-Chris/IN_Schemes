@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../main.dart';
 import 'search_results_screen.dart';
 import 'custom_navigation_drawer.dart';
+import 'companion_voice_agent_launcher.dart';
 
 // Brand colors matching the app palette
 const Color kBrandOrange = Color(0xFFEA580C);
@@ -261,13 +262,10 @@ class _AiCompanionHomeScreenState extends State<AiCompanionHomeScreen> {
               children: [
                 // Left: Type instead
                 GestureDetector(
-                  onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => const SearchWithSaarthiScreen(),
-                      ),
-                    );
-                  },
+                  onTap: () => openCompanionVoiceAgent(
+                    context,
+                    autoStart: false,
+                  ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -301,9 +299,12 @@ class _AiCompanionHomeScreenState extends State<AiCompanionHomeScreen> {
                 ),
 
                 // Center: Large glowing mic button
-                Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
+                GestureDetector(
+                  key: const Key('companion-main-microphone'),
+                  onTap: () => openCompanionVoiceAgent(context),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
                     Container(
                       width: 68,
                       height: 68,
@@ -341,13 +342,17 @@ class _AiCompanionHomeScreenState extends State<AiCompanionHomeScreen> {
                         color: kBrandOrange,
                       ),
                     ),
-                  ],
+                    ],
+                  ),
                 ),
 
                 // Right: Talk to Saarthi
-                Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
+                GestureDetector(
+                  key: const Key('companion-talk-to-saarthi'),
+                  onTap: () => openCompanionVoiceAgent(context),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
                     Container(
                       width: 44,
                       height: 44,
@@ -373,7 +378,8 @@ class _AiCompanionHomeScreenState extends State<AiCompanionHomeScreen> {
                         color: kSlate500,
                       ),
                     ),
-                  ],
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -710,12 +716,10 @@ class _SearchWithSaarthiScreenState extends State<SearchWithSaarthiScreen> {
                             style: GoogleFonts.inter(fontSize: 13, color: kDarkSlate),
                             onSubmitted: (value) {
                               if (value.trim().isNotEmpty) {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (_) => SearchResultsScreen(
-                                      searchQuery: value.trim(),
-                                    ),
-                                  ),
+                                openCompanionVoiceAgent(
+                                  context,
+                                  autoStart: false,
+                                  initialText: value.trim(),
                                 );
                               }
                             },
@@ -745,16 +749,8 @@ class _SearchWithSaarthiScreenState extends State<SearchWithSaarthiScreen> {
                           const SizedBox(height: 16),
                           // Microphone button below
                           GestureDetector(
-                            onTap: () {
-                              final query = _searchController.text.trim();
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (_) => SearchResultsScreen(
-                                    searchQuery: query.isNotEmpty ? query : "MSME Scheme",
-                                  ),
-                                ),
-                              );
-                            },
+                            key: const Key('companion-search-microphone'),
+                            onTap: () => openCompanionVoiceAgent(context),
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
