@@ -33,7 +33,6 @@ class AppProvider with ChangeNotifier {
   bool _schemesLoading = false;
   String? _schemesError;
 
-
   // Active Filters state
   Map<String, dynamic> _filters = {
     'state': 'Tamil Nadu',
@@ -74,7 +73,8 @@ class AppProvider with ChangeNotifier {
     {
       'id': '1',
       'title': 'PM Vidyalaxmi Education Loan Scheme',
-      'body': 'A new scheme for students to provide collateral-free education loans for higher studies.',
+      'body':
+          'A new scheme for students to provide collateral-free education loans for higher studies.',
       'time': '2h ago',
       'read': false,
       'category': 'new_schemes',
@@ -84,7 +84,8 @@ class AppProvider with ChangeNotifier {
     {
       'id': '2',
       'title': 'PM Vishwakarma Yojana',
-      'body': 'Financial support for traditional artisans and craftspeople to upgrade their skills and tools.',
+      'body':
+          'Financial support for traditional artisans and craftspeople to upgrade their skills and tools.',
       'time': '1d ago',
       'read': false,
       'category': 'new_schemes',
@@ -114,7 +115,8 @@ class AppProvider with ChangeNotifier {
     {
       'id': '5',
       'title': 'New Update on Ayushman Bharat Yojana',
-      'body': 'Changes in empanelment process for hospitals. Check full details.',
+      'body':
+          'Changes in empanelment process for hospitals. Check full details.',
       'time': '1d ago',
       'read': false,
       'category': 'updates',
@@ -123,7 +125,8 @@ class AppProvider with ChangeNotifier {
     {
       'id': '6',
       'title': 'Income Limit Revised for Several Schemes',
-      'body': 'Revised income criteria effective from 1st April 2024 for multiple schemes.',
+      'body':
+          'Revised income criteria effective from 1st April 2024 for multiple schemes.',
       'time': '2d ago',
       'read': false,
       'category': 'updates',
@@ -165,7 +168,8 @@ class AppProvider with ChangeNotifier {
         } else {
           _profile = UserProfile(
             googleUserId: user.id,
-            name: user.userMetadata?['full_name'] ??
+            name:
+                user.userMetadata?['full_name'] ??
                 user.userMetadata?['name'] ??
                 'Google User',
             email: user.email ?? '',
@@ -218,18 +222,22 @@ class AppProvider with ChangeNotifier {
   // Bookmarked schemes list
   List<Scheme> get bookmarkedSchemes {
     return _allSchemes
-        .where((s) =>
-            _bookmarkedIds.contains(s.id) ||
-            _bookmarkedIds.contains(s.schemeCode))
+        .where(
+          (s) =>
+              _bookmarkedIds.contains(s.id) ||
+              _bookmarkedIds.contains(s.schemeCode),
+        )
         .toList();
   }
 
   // Recently viewed schemes list
   List<Scheme> get recentlyViewedSchemes {
     return _allSchemes
-        .where((s) =>
-            _recentlyViewedIds.contains(s.id) ||
-            _recentlyViewedIds.contains(s.schemeCode))
+        .where(
+          (s) =>
+              _recentlyViewedIds.contains(s.id) ||
+              _recentlyViewedIds.contains(s.schemeCode),
+        )
         .toList();
   }
 
@@ -244,8 +252,10 @@ class AppProvider with ChangeNotifier {
 
     try {
       _allSchemes = await SchemeRepository.instance.getAllSchemes();
-      _recommendedSchemes =
-          RecommendationEngine.getRecommendations(_profile, _allSchemes);
+      _recommendedSchemes = RecommendationEngine.getRecommendations(
+        _profile,
+        _allSchemes,
+      );
     } catch (e) {
       _schemesError = e.toString();
       debugPrint('[AppProvider] loadSchemes error: $e');
@@ -258,8 +268,10 @@ class AppProvider with ChangeNotifier {
   // Load state from SharedPreferences (for session continue support)
   Future<void> _loadState() async {
     try {
-      _selectedLanguage = await SessionCacheService.instance.getLanguage() ?? 'en';
-      _currentTabIndex = await SessionCacheService.instance.getCurrentTabIndex();
+      _selectedLanguage =
+          await SessionCacheService.instance.getLanguage() ?? 'en';
+      _currentTabIndex = await SessionCacheService.instance
+          .getCurrentTabIndex();
 
       final cachedProfile = await SessionCacheService.instance.loadProfile();
       if (cachedProfile != null) {
@@ -267,12 +279,19 @@ class AppProvider with ChangeNotifier {
         _navigationMode = _profile.navigationMode;
       }
 
-      _bookmarkedIds = await SessionCacheService.instance.getBookmarks() ?? ['POST_MATRIC', 'PM_MATRU_VANDANA', 'PM_AWAS'];
-      _recentlyViewedIds = await SessionCacheService.instance.getRecentlyViewed() ?? ['NSP_PORTAL', 'PM_EDRIVE', 'AYUSHMAN_BHARAT', 'MUDRA'];
+      _bookmarkedIds =
+          await SessionCacheService.instance.getBookmarks() ??
+          ['POST_MATRIC', 'PM_MATRU_VANDANA', 'PM_AWAS'];
+      _recentlyViewedIds =
+          await SessionCacheService.instance.getRecentlyViewed() ??
+          ['NSP_PORTAL', 'PM_EDRIVE', 'AYUSHMAN_BHARAT', 'MUDRA'];
 
-      final downloadedDocsStr = await SessionCacheService.instance.getDownloadedDocs();
+      final downloadedDocsStr = await SessionCacheService.instance
+          .getDownloadedDocs();
       if (downloadedDocsStr != null) {
-        _downloadedDocs = List<Map<String, dynamic>>.from(jsonDecode(downloadedDocsStr));
+        _downloadedDocs = List<Map<String, dynamic>>.from(
+          jsonDecode(downloadedDocsStr),
+        );
       } else {
         _downloadedDocs = [
           {
@@ -299,11 +318,15 @@ class AppProvider with ChangeNotifier {
 
       final session = Supabase.instance.client.auth.currentSession;
       if (session != null) {
-        debugPrint('[AppProvider] Active Supabase session found during _loadState: user=${session.user.id}');
+        debugPrint(
+          '[AppProvider] Active Supabase session found during _loadState: user=${session.user.id}',
+        );
         _isLoggedIn = true;
         _mobileNumber = session.user.phone ?? '';
       } else {
-        debugPrint('[AppProvider] No active Supabase session found during _loadState.');
+        debugPrint(
+          '[AppProvider] No active Supabase session found during _loadState.',
+        );
       }
 
       notifyListeners();
@@ -339,14 +362,17 @@ class AppProvider with ChangeNotifier {
       if (user != null) {
         try {
           await SchemeRepository.instance.createProfile(_profile);
-          debugPrint('[AppProvider] Successfully synced navigation mode ($mode) to Supabase.');
+          debugPrint(
+            '[AppProvider] Successfully synced navigation mode ($mode) to Supabase.',
+          );
         } catch (e) {
-          debugPrint('[AppProvider] Error syncing navigation mode to database: $e');
+          debugPrint(
+            '[AppProvider] Error syncing navigation mode to database: $e',
+          );
         }
       }
     }
   }
-
 
   void login(String mobile) async {
     _isLoggedIn = true;
@@ -378,18 +404,25 @@ class AppProvider with ChangeNotifier {
 
           await SessionCacheService.instance.saveProfile(_profile);
           await SessionCacheService.instance.saveLanguage(_selectedLanguage);
-          await SessionCacheService.instance.saveNavigationMode(_navigationMode);
+          await SessionCacheService.instance.saveNavigationMode(
+            _navigationMode,
+          );
 
           _currentTabIndex = 0;
           await SessionCacheService.instance.saveCurrentTabIndex(0);
 
           notifyListeners();
-          debugPrint('[AppProvider] loginWithGoogle returning user: ${user.id}');
+          debugPrint(
+            '[AppProvider] loginWithGoogle returning user: ${user.id}',
+          );
           return true; // Profile exists and complete
         } else {
           _profile = UserProfile(
             googleUserId: user.id,
-            name: user.userMetadata?['full_name'] ?? user.userMetadata?['name'] ?? '',
+            name:
+                user.userMetadata?['full_name'] ??
+                user.userMetadata?['name'] ??
+                '',
             email: user.email ?? '',
             mobile: user.phone ?? '',
             profilePhoto: user.userMetadata?['avatar_url'] ?? '',
@@ -440,7 +473,8 @@ class AppProvider with ChangeNotifier {
     } else {
       _profile = UserProfile(
         googleUserId: user.id,
-        name: user.userMetadata?['full_name'] ?? user.userMetadata?['name'] ?? '',
+        name:
+            user.userMetadata?['full_name'] ?? user.userMetadata?['name'] ?? '',
         email: user.email ?? '',
         mobile: user.phone ?? '',
         profilePhoto: user.userMetadata?['avatar_url'] ?? '',
@@ -453,7 +487,6 @@ class AppProvider with ChangeNotifier {
       return false;
     }
   }
-
 
   Future<void> logout(BuildContext context) async {
     debugPrint('[AppProvider] logout initiated...');
@@ -497,8 +530,13 @@ class AppProvider with ChangeNotifier {
       final user = Supabase.instance.client.auth.currentUser;
       if (user != null) {
         try {
-          debugPrint('[AppProvider] Deleting profile data from Supabase for user: ${user.id}');
-          await Supabase.instance.client.from('profiles').delete().eq('id', user.id);
+          debugPrint(
+            '[AppProvider] Deleting profile data from Supabase for user: ${user.id}',
+          );
+          await Supabase.instance.client
+              .from('profiles')
+              .delete()
+              .eq('id', user.id);
           debugPrint('[AppProvider] Supabase profile data deleted.');
         } catch (e) {
           debugPrint('[AppProvider] Error deleting profile from database: $e');
@@ -550,9 +588,11 @@ class AppProvider with ChangeNotifier {
     try {
       final lastSync = await SessionCacheService.instance.getLastProfileSync();
       final now = DateTime.now();
-      
+
       if (lastSync != null && now.difference(lastSync).inMinutes < 10) {
-        debugPrint('[AppProvider] Silent profile sync skipped (interval threshold not met).');
+        debugPrint(
+          '[AppProvider] Silent profile sync skipped (interval threshold not met).',
+        );
         return;
       }
 
@@ -561,10 +601,12 @@ class AppProvider with ChangeNotifier {
 
       debugPrint('[AppProvider] Starting silent background sync...');
       final dbProfile = await SchemeRepository.instance.getProfile(user.id);
-      
+
       if (dbProfile != null) {
-        final remoteUpdated = dbProfile.updatedAt ?? DateTime.fromMillisecondsSinceEpoch(0);
-        final localUpdated = _profile.updatedAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+        final remoteUpdated =
+            dbProfile.updatedAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+        final localUpdated =
+            _profile.updatedAt ?? DateTime.fromMillisecondsSinceEpoch(0);
 
         if (remoteUpdated.isAfter(localUpdated)) {
           _profile = dbProfile;
@@ -572,7 +614,9 @@ class AppProvider with ChangeNotifier {
           _navigationMode = dbProfile.navigationMode;
           await SessionCacheService.instance.saveProfile(_profile);
           notifyListeners();
-          debugPrint('[AppProvider] Silent background sync updated local profile.');
+          debugPrint(
+            '[AppProvider] Silent background sync updated local profile.',
+          );
         } else {
           debugPrint('[AppProvider] Stale remote profile skipped during sync.');
         }
@@ -781,14 +825,14 @@ class AppProvider with ChangeNotifier {
     if (_profile.mobile.trim().isEmpty) missing.add('Phone');
     if (_profile.dob == null) missing.add('Date of Birth');
     if (_profile.gender.trim().isEmpty) missing.add('Gender');
-    
+
     // Address
-    if (_profile.house.trim().isEmpty || 
-        _profile.street.trim().isEmpty || 
-        _profile.area.trim().isEmpty || 
-        _profile.state.trim().isEmpty || 
-        _profile.district.trim().isEmpty || 
-        _profile.city.trim().isEmpty || 
+    if (_profile.house.trim().isEmpty ||
+        _profile.street.trim().isEmpty ||
+        _profile.area.trim().isEmpty ||
+        _profile.state.trim().isEmpty ||
+        _profile.district.trim().isEmpty ||
+        _profile.city.trim().isEmpty ||
         _profile.pinCode.trim().isEmpty) {
       missing.add('Address Details');
     }
@@ -798,7 +842,8 @@ class AppProvider with ChangeNotifier {
     if (_profile.employmentStatus.trim().isEmpty) missing.add('Employment');
 
     if (_profile.existingBusiness) {
-      if (_profile.businessStage.trim().isEmpty || _profile.businessIndustry.trim().isEmpty) {
+      if (_profile.businessStage.trim().isEmpty ||
+          _profile.businessIndustry.trim().isEmpty) {
         missing.add('Business Details');
       }
     }
@@ -831,9 +876,15 @@ class AppProvider with ChangeNotifier {
           final Map<String, dynamic> startupData = {
             'user_id': user.id,
             'profile_name': '${_profile.name} Business',
-            'industry': _profile.businessIndustry.isNotEmpty ? _profile.businessIndustry : 'Technology',
-            'applicant_type': _profile.employmentStatus.isNotEmpty ? _profile.employmentStatus : 'Student',
-            'business_stage': _profile.businessStage.isNotEmpty ? _profile.businessStage : 'Idea',
+            'industry': _profile.businessIndustry.isNotEmpty
+                ? _profile.businessIndustry
+                : 'Technology',
+            'applicant_type': _profile.employmentStatus.isNotEmpty
+                ? _profile.employmentStatus
+                : 'Student',
+            'business_stage': _profile.businessStage.isNotEmpty
+                ? _profile.businessStage
+                : 'Idea',
             'business_registered': _profile.existingBusiness,
             'funding_required_amount': _profile.fundingRequired,
             'registration_numbers': _profile.registrationNumbers,
@@ -844,7 +895,9 @@ class AppProvider with ChangeNotifier {
             startupData['id'] = existingStartups.first['id'];
           }
 
-          await Supabase.instance.client.from('startup_profiles').upsert(startupData);
+          await Supabase.instance.client
+              .from('startup_profiles')
+              .upsert(startupData);
         } catch (e) {
           debugPrint('Error syncing profile updates: $e');
         }
@@ -869,7 +922,7 @@ class AppProvider with ChangeNotifier {
           return null;
         }
       }
-      
+
       if (permission == LocationPermission.deniedForever) {
         debugPrint('Location permissions are permanently denied');
         return null;
@@ -887,14 +940,21 @@ class AppProvider with ChangeNotifier {
 
       if (placemarks.isNotEmpty) {
         final placemark = placemarks.first;
-        
+
         final locData = {
           'house': placemark.subThoroughfare ?? '',
           'street': placemark.thoroughfare ?? '',
           'area': placemark.subLocality ?? placemark.name ?? '',
-          'village': placemark.subLocality != null && placemark.name != null && placemark.subLocality != placemark.name ? placemark.name : '',
+          'village':
+              placemark.subLocality != null &&
+                  placemark.name != null &&
+                  placemark.subLocality != placemark.name
+              ? placemark.name
+              : '',
           'state': placemark.administrativeArea ?? '',
-          'district': (placemark.subAdministrativeArea != null && placemark.subAdministrativeArea!.isNotEmpty)
+          'district':
+              (placemark.subAdministrativeArea != null &&
+                  placemark.subAdministrativeArea!.isNotEmpty)
               ? placemark.subAdministrativeArea!
               : (placemark.locality ?? ''),
           'city': placemark.locality ?? placemark.subLocality ?? '',
@@ -934,9 +994,23 @@ class AppProvider with ChangeNotifier {
   void downloadDoc(String id, String title, String size) {
     if (!_downloadedDocs.any((doc) => doc['id'] == id)) {
       final now = DateTime.now();
-      final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-      final dateStr = 'Downloaded on ${now.day} ${months[now.month - 1]} ${now.year}';
-      
+      final months = [
+        'Jan',
+        'Feb',
+        'Mar',
+        'Apr',
+        'May',
+        'Jun',
+        'Jul',
+        'Aug',
+        'Sep',
+        'Oct',
+        'Nov',
+        'Dec',
+      ];
+      final dateStr =
+          'Downloaded on ${now.day} ${months[now.month - 1]} ${now.year}';
+
       _downloadedDocs.add({
         'id': id,
         'title': title,
