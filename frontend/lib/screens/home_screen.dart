@@ -334,26 +334,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
-            const SizedBox(width: 10),
-            GestureDetector(
-              onTap: () {
-                provider.updateTabIndex(4);
-              },
-              child: Container(
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: const Color(0xFFE2E8F0), width: 1.5),
-                ),
-                child: CircleAvatar(
-                  radius: 20,
-                  backgroundImage: provider.profile.profilePhoto.isNotEmpty &&
-                          File(provider.profile.profilePhoto).existsSync()
-                      ? FileImage(File(provider.profile.profilePhoto))
-                      : const AssetImage('assets/images/user_avatar.png') as ImageProvider,
-                  backgroundColor: const Color(0xFFF1F5F9),
-                ),
-              ),
-            ),
           ],
         ),
       ],
