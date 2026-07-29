@@ -391,7 +391,7 @@ class _BasicProfileScreenState extends State<BasicProfileScreen> {
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              "We'll use this information to personalize your IN Schemes experience and keep you updated.",
+              "We'll use this information to personalize your MSS experience and keep you updated.",
               style: GoogleFonts.inter(
                 fontSize: 11.5,
                 color: kSlate500,

@@ -6,16 +6,23 @@ import '../utils/constants.dart';
 import 'profile_setup_screen.dart';
 
 class NotificationsScreen extends StatefulWidget {
-  const NotificationsScreen({super.key});
+  final String? initialFilter;
+  const NotificationsScreen({super.key, this.initialFilter});
 
   @override
   State<NotificationsScreen> createState() => _NotificationsScreenState();
 }
 
 class _NotificationsScreenState extends State<NotificationsScreen> {
-  String _activeFilter = 'All';
+  late String _activeFilter;
   bool _isSelectionMode = false;
   final Set<String> _selectedIds = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _activeFilter = widget.initialFilter ?? 'All';
+  }
 
   final List<Map<String, dynamic>> _categories = [
     {'key': 'All', 'label': 'All', 'icon': Icons.notifications_none},

@@ -420,6 +420,9 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
 
     final updatedProfile = provider.profile.copyWith(
       name: _nameController.text.trim(),
+      mobile: provider.profile.mobile.isNotEmpty
+          ? provider.profile.mobile
+          : provider.mobileNumber,
       dob: _selectedDob,
       gender: _selectedGender ?? 'Female',
       house: _houseController.text.trim(),
@@ -581,31 +584,45 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                   child: Column(
                     children: [
                       const SizedBox(height: 16),
-                      Image.asset(
-                        'assets/images/Logo.png',
-                        height: 64,
-                        fit: BoxFit.contain,
+                      Row(
+                        children: [
+                          GestureDetector(
+                            onTap: () => Navigator.of(context).pop(),
+                            child: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(color: const Color(0xFFE2E8F0)),
+                              ),
+                              child: const Icon(
+                                Icons.arrow_back_ios_new,
+                                size: 16,
+                                color: Color(0xFF0F172A),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 14),
+                          Text(
+                            'Complete Your Profile',
+                            style: GoogleFonts.poppins(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xFF0F172A),
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 16),
                       Text(
-                        'Complete Your Profile',
-                        style: GoogleFonts.poppins(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: const Color(0xFF0F172A),
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        'Help us build your eligibility profile to\nfind the most relevant schemes for you.',
-                        textAlign: TextAlign.center,
+                        'Help us build your eligibility profile to find the most relevant schemes for you.',
                         style: GoogleFonts.inter(
-                          fontSize: 11.5,
+                          fontSize: 12,
                           color: const Color(0xFF64748B),
                           height: 1.4,
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 16),
                       // Profile Completion Percentage Bar
                       Container(
                         padding: const EdgeInsets.all(12),
@@ -778,7 +795,15 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                                     border: Border.all(color: const Color(0xFFE2E8F0)),
                                   ),
                                   child: Text(
-                                    provider.mobileNumber.isNotEmpty ? '+91 ${provider.mobileNumber}' : '+91 98765 43210',
+                                    provider.profile.mobile.isNotEmpty
+                                        ? (provider.profile.mobile.startsWith('+91')
+                                            ? provider.profile.mobile
+                                            : '+91 ${provider.profile.mobile}')
+                                        : (provider.mobileNumber.isNotEmpty
+                                            ? (provider.mobileNumber.startsWith('+91')
+                                                ? provider.mobileNumber
+                                                : '+91 ${provider.mobileNumber}')
+                                            : '+91 98765 43210'),
                                     style: GoogleFonts.inter(
                                       fontSize: 14,
                                       color: const Color(0xFF64748B),

@@ -40,7 +40,7 @@ class SaarthiFocusRegion extends StatelessWidget {
             boxShadow: isFocused
                 ? [
                     BoxShadow(
-                      color: const Color(0xFFEA580C).withOpacity(0.5), // Saarthi Orange glow
+                      color: const Color(0xFFEA580C).withValues(alpha: 0.5), // Saarthi Orange glow
                       blurRadius: 16,
                       spreadRadius: 3,
                     ),
@@ -169,7 +169,7 @@ class _SaarthiWelcomeScreenState extends State<SaarthiWelcomeScreen> {
                         height: 3,
                         margin: const EdgeInsets.only(top: 2),
                         decoration: BoxDecoration(
-                          color: kBrandOrange.withOpacity(0.8),
+                          color: kBrandOrange.withValues(alpha: 0.8),
                           borderRadius: BorderRadius.circular(2),
                         ),
                       ),
@@ -258,7 +258,7 @@ class _SaarthiWelcomeScreenState extends State<SaarthiWelcomeScreen> {
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.06),
+                                  color: Colors.black.withValues(alpha: 0.06),
                                   blurRadius: 10,
                                   offset: const Offset(0, 4),
                                 ),
@@ -461,7 +461,7 @@ class _SaarthiWelcomeScreenState extends State<SaarthiWelcomeScreen> {
                       borderRadius: BorderRadius.circular(30),
                       boxShadow: [
                         BoxShadow(
-                          color: kBrandOrange.withOpacity(0.3),
+                          color: kBrandOrange.withValues(alpha: 0.3),
                           blurRadius: 10,
                           offset: const Offset(0, 4),
                         ),
@@ -548,7 +548,7 @@ class _SaarthiWelcomeScreenState extends State<SaarthiWelcomeScreen> {
                     Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: Colors.amber.shade50.withOpacity(0.5),
+                        color: Colors.amber.shade50.withValues(alpha: 0.5),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(color: Colors.amber.shade200, width: 0.8),
                       ),
@@ -612,7 +612,7 @@ class _SaarthiWelcomeScreenState extends State<SaarthiWelcomeScreen> {
             height: 1,
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [kBrandOrange.withOpacity(0.01), kBrandOrange.withOpacity(0.4)],
+                colors: [kBrandOrange.withValues(alpha: 0.01), kBrandOrange.withValues(alpha: 0.4)],
               ),
             ),
           ),
@@ -633,7 +633,7 @@ class _SaarthiWelcomeScreenState extends State<SaarthiWelcomeScreen> {
             height: 1,
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [kBrandOrange.withOpacity(0.4), kBrandOrange.withOpacity(0.01)],
+                colors: [kBrandOrange.withValues(alpha: 0.4), kBrandOrange.withValues(alpha: 0.01)],
               ),
             ),
           ),
@@ -655,12 +655,12 @@ class _SaarthiWelcomeScreenState extends State<SaarthiWelcomeScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: const Color(0xFFFDBA74).withOpacity(0.3),
+          color: const Color(0xFFFDBA74).withValues(alpha: 0.3),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),

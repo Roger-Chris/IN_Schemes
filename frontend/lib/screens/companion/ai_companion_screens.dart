@@ -45,7 +45,7 @@ class _AiCompanionHomeScreenState extends State<AiCompanionHomeScreen> {
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.04),
+                              color: Colors.black.withValues(alpha: 0.04),
                               blurRadius: 8,
                               offset: const Offset(0, 2),
                             ),
@@ -114,8 +114,8 @@ class _AiCompanionHomeScreenState extends State<AiCompanionHomeScreen> {
                         shape: BoxShape.circle,
                         gradient: RadialGradient(
                           colors: [
-                            kBrandOrange.withOpacity(0.18),
-                            kBrandOrange.withOpacity(0.04),
+                            kBrandOrange.withValues(alpha: 0.18),
+                            kBrandOrange.withValues(alpha: 0.04),
                             Colors.transparent,
                           ],
                           stops: const [0.0, 0.5, 1.0],
@@ -181,7 +181,7 @@ class _AiCompanionHomeScreenState extends State<AiCompanionHomeScreen> {
                           height: 170,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: kBrandOrange.withOpacity(0.1),
+                            color: kBrandOrange.withValues(alpha: 0.1),
                           ),
                           child: const Icon(
                             Icons.support_agent,
@@ -210,12 +210,12 @@ class _AiCompanionHomeScreenState extends State<AiCompanionHomeScreen> {
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.04),
+                            color: Colors.black.withValues(alpha: 0.04),
                             blurRadius: 8,
                             offset: const Offset(0, 3),
                           ),
                         ],
-                        border: Border.all(color: kGreyBorder.withOpacity(0.8)),
+                        border: Border.all(color: kGreyBorder.withValues(alpha: 0.8)),
                       ),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -278,7 +278,7 @@ class _AiCompanionHomeScreenState extends State<AiCompanionHomeScreen> {
                           border: Border.all(color: kGreyBorder),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.02),
+                              color: Colors.black.withValues(alpha: 0.02),
                               blurRadius: 4,
                             ),
                           ],
@@ -313,7 +313,7 @@ class _AiCompanionHomeScreenState extends State<AiCompanionHomeScreen> {
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: kBrandOrange.withOpacity(0.3),
+                            color: kBrandOrange.withValues(alpha: 0.3),
                             blurRadius: 18,
                             spreadRadius: 6,
                           ),
@@ -362,7 +362,7 @@ class _AiCompanionHomeScreenState extends State<AiCompanionHomeScreen> {
                         border: Border.all(color: kGreyBorder),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.02),
+                            color: Colors.black.withValues(alpha: 0.02),
                             blurRadius: 4,
                           ),
                         ],
@@ -523,7 +523,7 @@ class SuggestionTile extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFFFEE2E2).withOpacity(0.5)),
+          border: Border.all(color: const Color(0xFFFEE2E2).withValues(alpha: 0.5)),
         ),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Row(
@@ -597,7 +597,7 @@ class _SearchWithSaarthiScreenState extends State<SearchWithSaarthiScreen> {
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.04),
+                          color: Colors.black.withValues(alpha: 0.04),
                           blurRadius: 8,
                           offset: const Offset(0, 2),
                         ),
@@ -657,7 +657,7 @@ class _SearchWithSaarthiScreenState extends State<SearchWithSaarthiScreen> {
                           height: 44,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            border: Border.all(color: kBrandOrange.withOpacity(0.4), width: 1.5),
+                            border: Border.all(color: kBrandOrange.withValues(alpha: 0.4), width: 1.5),
                             image: const DecorationImage(
                               image: AssetImage('assets/saarthi_expressions/01_happy.png'),
                               fit: BoxFit.contain,
@@ -677,7 +677,7 @@ class _SearchWithSaarthiScreenState extends State<SearchWithSaarthiScreen> {
                                 bottomLeft: Radius.circular(4),
                                 bottomRight: Radius.circular(16),
                               ),
-                              border: Border.all(color: const Color(0xFFFEE2E2).withOpacity(0.4)),
+                              border: Border.all(color: const Color(0xFFFEE2E2).withValues(alpha: 0.4)),
                             ),
                             child: Text(
                               "Tell me what you're looking for. I'll find the best schemes for you.",
@@ -702,7 +702,7 @@ class _SearchWithSaarthiScreenState extends State<SearchWithSaarthiScreen> {
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.03),
+                            color: Colors.black.withValues(alpha: 0.03),
                             blurRadius: 12,
                             offset: const Offset(0, 4),
                           ),
@@ -969,7 +969,7 @@ class _SearchWithSaarthiScreenState extends State<SearchWithSaarthiScreen> {
                       decoration: BoxDecoration(
                         color: kBrandOrangeLight,
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: const Color(0xFFFEE2E2).withOpacity(0.4)),
+                        border: Border.all(color: const Color(0xFFFEE2E2).withValues(alpha: 0.4)),
                       ),
                       child: Row(
                         children: [

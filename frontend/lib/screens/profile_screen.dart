@@ -33,7 +33,7 @@ class ProfileScreen extends StatelessWidget {
             ),
           ),
           content: Text(
-            'Are you sure you want to log out from IN schemes?',
+            'Are you sure you want to log out from MSS?',
             style: GoogleFonts.inter(color: const Color(0xFF64748B)),
           ),
           actions: [
@@ -718,12 +718,12 @@ class ProfileScreen extends StatelessWidget {
                 iconColor: const Color(0xFFCA8A04),
                 iconBgColor: const Color(0xFFFEF9C3),
                 title: 'About',
-                subtitle: 'About IN Schemes app',
+                subtitle: 'About MSS app',
                 showDivider: false,
                 onTap: () {
                   showAboutDialog(
                     context: context,
-                    applicationName: 'IN schemes',
+                    applicationName: 'MSS',
                     applicationVersion: '1.0.0',
                     applicationIcon: const Icon(Icons.info, color: Color(0xFF0D47A1)),
                     children: [

@@ -165,7 +165,7 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.03),
+                          color: Colors.black.withValues(alpha: 0.03),
                           blurRadius: 10,
                           offset: const Offset(0, 4),
                         ),
@@ -221,7 +221,7 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                                   return Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                                     decoration: BoxDecoration(
-                                      color: Colors.white.withOpacity(0.7),
+                                      color: Colors.white.withValues(alpha: 0.7),
                                       borderRadius: BorderRadius.circular(6),
                                     ),
                                     child: Text(
@@ -280,7 +280,7 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                                   borderRadius: BorderRadius.circular(12),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.black.withOpacity(0.03),
+                                      color: Colors.black.withValues(alpha: 0.03),
                                       blurRadius: 4,
                                     ),
                                   ],
@@ -336,7 +336,7 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.04),
+                          color: Colors.black.withValues(alpha: 0.04),
                           blurRadius: 10,
                           offset: const Offset(0, 4),
                         ),
@@ -378,7 +378,7 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                               width: 3,
                               height: height,
                               decoration: BoxDecoration(
-                                color: const Color(0xFFEA580C).withOpacity(0.6),
+                                color: const Color(0xFFEA580C).withValues(alpha: 0.6),
                                 borderRadius: BorderRadius.circular(1),
                               ),
                             );
@@ -736,7 +736,7 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                           borderRadius: BorderRadius.circular(30),
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xFFEA580C).withOpacity(0.3),
+                              color: const Color(0xFFEA580C).withValues(alpha: 0.3),
                               blurRadius: 8,
                               offset: const Offset(0, 4),
                             ),
@@ -934,7 +934,7 @@ class HighlightGridItem extends StatelessWidget {
         border: Border.all(color: const Color(0xFFE2E8F0)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -992,7 +992,7 @@ class BenefitCard extends StatelessWidget {
         border: Border.all(color: const Color(0xFFE2E8F0)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),

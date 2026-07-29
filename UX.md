@@ -239,7 +239,7 @@ Separated feed for updates:
 
 ### 21. Help & Support Screen
 *   Frequently Asked Questions.
-*   Quick Contact Channels: **Email Support** (`support@inschemes.gov.in`) and **Phone Support** (`1800 123 4567`).
+*   Quick Contact Channels: **Email Support** (`inschemes.support@gmail.com`) and **Phone Support** (`1800 123 4567`).
 *   **Report an Issue / Feedback Form:** Launches interactive ticketing and rating sheets.
 
 ---

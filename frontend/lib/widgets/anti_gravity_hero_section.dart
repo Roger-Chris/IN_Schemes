@@ -117,78 +117,10 @@ class _AntiGravityHeroSectionState extends State<AntiGravityHeroSection> with Ti
                     Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        // --- CUSTOM 'iN' LOGO ---
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Container(
-                                  width: 14,
-                                  height: 14,
-                                  decoration: const BoxDecoration(
-                                    color: Color(0xFFF97316), // Orange
-                                    shape: BoxShape.circle,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Container(
-                                  width: 14,
-                                  height: 42,
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF1644A6), // Blue
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(width: 4),
-                            Stack(
-                              clipBehavior: Clip.none,
-                              children: [
-                                const Text(
-                                  'N',
-                                  style: TextStyle(
-                                    fontSize: 64,
-                                    fontWeight: FontWeight.w900,
-                                    color: Color(0xFF1644A6),
-                                    height: 1.0,
-                                    letterSpacing: -4,
-                                  ),
-                                ),
-                                Positioned(
-                                  right: -2,
-                                  bottom: 10,
-                                  child: Container(
-                                    width: 18,
-                                    height: 18,
-                                    decoration: const BoxDecoration(
-                                      color: Color(0xFF15803D), // Green
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: const Center(
-                                      child: Icon(
-                                        Icons.settings, 
-                                        color: Colors.white, 
-                                        size: 11
-                                      ),
-                                    ),
-                                  ),
-                                )
-                              ],
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        const Text(
-                          'IN Schemes',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w800,
-                            color: Color(0xFF1644A6),
-                          ),
+                        Image.asset(
+                          'assets/images/Logo.png',
+                          height: 125,
+                          fit: BoxFit.contain,
                         ),
                         const SizedBox(height: 6),
                         Row(

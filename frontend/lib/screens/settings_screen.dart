@@ -4,6 +4,8 @@ import 'package:google_fonts/google_fonts.dart';
 import '../providers/app_state_provider.dart';
 import '../utils/constants.dart';
 import 'language_selection_screen.dart';
+import 'profile_setup_screen.dart';
+import 'help_support_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -222,6 +224,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
           physics: const BouncingScrollPhysics(),
           padding: const EdgeInsets.all(20.0),
           children: [
+            // GROUP 0: Profile
+            _buildGroupHeader("Profile"),
+            _buildGroupContainer([
+              _buildSettingRow(
+                icon: Icons.person_outline,
+                title: "Complete Profile",
+                value: "${provider.profileCompletionPercentage}% completed",
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const ProfileSetupScreen(),
+                    ),
+                  );
+                },
+                isLast: true,
+              ),
+            ]),
+
             // GROUP 1: Preferences
             _buildGroupHeader("Preferences"),
             _buildGroupContainer([
@@ -254,7 +274,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     value: _darkMode,
                     onChanged: (val) => setState(() => _darkMode = val),
                     activeThumbColor: Colors.white,
-                    activeTrackColor: const Color(0xFFEA580C),
+                    activeTrackColor: const Color(0xFF2563EB),
                     inactiveThumbColor: Colors.white,
                     inactiveTrackColor: const Color(0xFFE2E8F0),
                   ),
@@ -286,7 +306,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       );
                     },
                     activeThumbColor: Colors.white,
-                    activeTrackColor: const Color(0xFFEA580C),
+                    activeTrackColor: const Color(0xFF2563EB),
                     inactiveThumbColor: Colors.white,
                     inactiveTrackColor: const Color(0xFFE2E8F0),
                   ),
@@ -326,7 +346,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             'Done',
                             style: GoogleFonts.inter(
                               fontWeight: FontWeight.bold,
-                              color: const Color(0xFFEA580C),
+                              color: const Color(0xFF2563EB),
                             ),
                           ),
                         ),
@@ -352,7 +372,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         style: GoogleFonts.inter(fontWeight: FontWeight.bold),
                       ),
                       content: Text(
-                        'By using IN Schemes, you agree to our terms of service. All scheme information is aggregated from official government portals.',
+                        'By using MSS, you agree to our terms of service. All scheme information is aggregated from official government portals.',
                         style: GoogleFonts.inter(
                           color: const Color(0xFF64748B),
                         ),
@@ -364,7 +384,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             'Done',
                             style: GoogleFonts.inter(
                               fontWeight: FontWeight.bold,
-                              color: const Color(0xFFEA580C),
+                              color: const Color(0xFF2563EB),
                             ),
                           ),
                         ),
@@ -388,12 +408,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
               _buildSettingRow(
                 icon: Icons.help_outline,
                 title: "Help & FAQ",
-                onTap: () {},
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const HelpSupportScreen(),
+                    ),
+                  );
+                },
               ),
               _buildSettingRow(
                 icon: Icons.contact_support_outlined,
                 title: "Contact Us",
-                onTap: () {},
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const HelpSupportScreen(),
+                    ),
+                  );
+                },
                 isLast: true,
               ),
             ]),
@@ -402,8 +434,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             // Logout Button
             OutlinedButton.icon(
               style: OutlinedButton.styleFrom(
-                foregroundColor: const Color(0xFFEA580C),
-                side: const BorderSide(color: Color(0xFFEA580C), width: 1.5),
+                foregroundColor: const Color(0xFF2563EB),
+                side: const BorderSide(color: Color(0xFF2563EB), width: 1.5),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -463,7 +495,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         border: Border.all(color: const Color(0xFFE2E8F0), width: 1),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -491,7 +523,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           leading: Icon(
             icon,
-            color: titleColor ?? const Color(0xFFEA580C),
+            color: titleColor ?? const Color(0xFF2563EB),
             size: 20,
           ),
           title: Text(

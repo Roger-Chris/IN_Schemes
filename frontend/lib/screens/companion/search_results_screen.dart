@@ -292,7 +292,7 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
                         height: 44,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          border: Border.all(color: const Color(0xFFEA580C).withOpacity(0.4), width: 1.5),
+                          border: Border.all(color: const Color(0xFFEA580C).withValues(alpha: 0.4), width: 1.5),
                           image: const DecorationImage(
                             image: AssetImage('assets/saarthi_expressions/01_happy.png'),
                             fit: BoxFit.contain,
@@ -311,7 +311,7 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
                               bottomLeft: Radius.circular(4),
                               bottomRight: Radius.circular(16),
                             ),
-                            border: Border.all(color: const Color(0xFFFEE2E2).withOpacity(0.4)),
+                            border: Border.all(color: const Color(0xFFFEE2E2).withValues(alpha: 0.4)),
                           ),
                           child: Text(
                             "Great! I found ${allModels.length} schemes that match your search for \"${widget.searchQuery}\"",
@@ -453,12 +453,12 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
                   borderRadius: BorderRadius.circular(30),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.06),
+                      color: Colors.black.withValues(alpha: 0.06),
                       blurRadius: 15,
                       offset: const Offset(0, 4),
                     ),
                   ],
-                  border: Border.all(color: const Color(0xFFEA580C).withOpacity(0.2)),
+                  border: Border.all(color: const Color(0xFFEA580C).withValues(alpha: 0.2)),
                 ),
                 child: Row(
                   children: [
@@ -567,7 +567,7 @@ class SearchResultCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.04),
+                color: Colors.black.withValues(alpha: 0.04),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
@@ -684,7 +684,7 @@ class SearchResultCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: Colors.black.withValues(alpha: 0.04),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -780,7 +780,7 @@ class SearchResultCard extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: matchBg,
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: matchColor.withOpacity(0.2)),
+                    border: Border.all(color: matchColor.withValues(alpha: 0.2)),
                   ),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,

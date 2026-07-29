@@ -60,7 +60,7 @@ class CustomNavigationDrawer extends StatelessWidget {
                           height: 48,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            border: Border.all(color: const Color(0xFFEA580C).withOpacity(0.3), width: 1.5),
+                            border: Border.all(color: const Color(0xFFEA580C).withValues(alpha: 0.3), width: 1.5),
                           ),
                           child: CircleAvatar(
                             backgroundColor: Colors.transparent,
