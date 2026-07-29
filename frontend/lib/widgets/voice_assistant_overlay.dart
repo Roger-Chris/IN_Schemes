@@ -3,6 +3,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../models/scheme_model.dart';
@@ -22,6 +23,8 @@ enum _VoiceAssistantPhase {
 }
 
 enum VoiceInputLanguage { english, tamil }
+
+enum VoiceEdgeActivity { idle, listening, processing, speaking }
 
 class VoiceAssistantOverlay extends StatefulWidget {
   const VoiceAssistantOverlay({
@@ -66,11 +69,13 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
   late final bool _ownsSessionController;
   AssistantSessionController? _sessionController;
   late final AnimationController _edgeController;
+  late final AnimationController _edgeRevealController;
   late final AnimationController _pulseController;
   late final AnimationController _waveController;
   late final ValueNotifier<double> _edgeIntensity;
   late final ValueNotifier<double> _soundLevel;
   late final Listenable _edgeRepaint;
+  bool _reduceEdgeMotion = false;
 
   _VoiceAssistantPhase _voicePhase = _VoiceAssistantPhase.starting;
   String _transcript = '';
@@ -93,6 +98,16 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
   bool get _isListening => _voicePhase == _VoiceAssistantPhase.listening;
   bool get _hasConversation => _sessionController != null;
   AssistantSessionState? get _session => _sessionController?.state;
+  VoiceEdgeActivity get _edgeActivity {
+    if (_speaking) return VoiceEdgeActivity.speaking;
+    if (_isListening) return VoiceEdgeActivity.listening;
+    if (_voicePhase == _VoiceAssistantPhase.processing ||
+        _session?.phase == AssistantSessionPhase.understanding) {
+      return VoiceEdgeActivity.processing;
+    }
+    return VoiceEdgeActivity.idle;
+  }
+
   bool get _presentInTamil {
     if (_session?.isTamil == true) return true;
     if (_detectedLanguage?.toLowerCase().startsWith('ta') == true) return true;
@@ -176,11 +191,22 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
         : VoiceInputLanguage.english;
     _edgeController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 2400),
-    )..repeat();
+      duration: const Duration(milliseconds: 3400),
+    );
+    _edgeRevealController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2800),
+    );
+    _edgeRevealController.addStatusListener(_handleEdgeBloomStatus);
+    _edgeController.repeat();
+    _edgeRevealController.forward();
     _edgeIntensity = ValueNotifier<double>(0.12);
     _soundLevel = ValueNotifier<double>(0.1);
-    _edgeRepaint = Listenable.merge([_edgeController, _edgeIntensity]);
+    _edgeRepaint = Listenable.merge([
+      _edgeController,
+      _edgeRevealController,
+      _edgeIntensity,
+    ]);
     _pulseController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 800),
@@ -198,6 +224,32 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
     } else {
       _voicePhase = _VoiceAssistantPhase.ready;
     }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final reduceMotion = MediaQuery.of(context).disableAnimations;
+    if (reduceMotion == _reduceEdgeMotion) return;
+    _reduceEdgeMotion = reduceMotion;
+    if (reduceMotion) {
+      _edgeController.stop();
+      _edgeController.value = 0;
+      _edgeRevealController.stop();
+      _edgeRevealController.value = 0.5;
+    } else {
+      _startEdgeBloom();
+    }
+  }
+
+  void _handleEdgeBloomStatus(AnimationStatus status) {
+    if (status == AnimationStatus.completed) _edgeController.stop();
+  }
+
+  void _startEdgeBloom() {
+    if (_reduceEdgeMotion) return;
+    if (!_edgeController.isAnimating) _edgeController.repeat();
+    _edgeRevealController.forward(from: 0);
   }
 
   Future<void> _initializeSpeechOutput() async {
@@ -396,6 +448,7 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
   void _handleStatus(String status) {
     if (!mounted) return;
     if (status == 'listening') {
+      _startEdgeBloom();
       _edgeIntensity.value = 0.25;
       _setListeningAnimations(true);
       if (_voicePhase != _VoiceAssistantPhase.listening) {
@@ -636,6 +689,8 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
       unawaited(_speechOutputController.stop());
     }
     _edgeController.dispose();
+    _edgeRevealController.removeStatusListener(_handleEdgeBloomStatus);
+    _edgeRevealController.dispose();
     _pulseController.dispose();
     _waveController.dispose();
     _edgeIntensity.dispose();
@@ -652,6 +707,20 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
       color: Colors.transparent,
       child: Stack(
         children: [
+          const Positioned.fill(
+            child: AnnotatedRegion<SystemUiOverlayStyle>(
+              value: SystemUiOverlayStyle(
+                statusBarColor: Colors.transparent,
+                statusBarIconBrightness: Brightness.dark,
+                systemStatusBarContrastEnforced: false,
+                systemNavigationBarColor: Colors.transparent,
+                systemNavigationBarDividerColor: Colors.transparent,
+                systemNavigationBarIconBrightness: Brightness.light,
+                systemNavigationBarContrastEnforced: false,
+              ),
+              child: SizedBox.expand(),
+            ),
+          ),
           Positioned.fill(
             child: ColoredBox(
               color: const Color(0xFF020617).withValues(alpha: 0.10),
@@ -667,9 +736,12 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
                     isComplex: true,
                     willChange: true,
                     painter: VoiceEdgePainter(
-                      progress: _edgeController.value,
-                      intensity: _edgeIntensity.value,
+                      entranceProgress: _edgeRevealController.value,
+                      ambientProgress: _edgeController.value,
+                      activityIntensity: _edgeIntensity.value,
+                      activity: _edgeActivity,
                       radius: edgeRadius,
+                      reduceMotion: _reduceEdgeMotion,
                     ),
                   ),
                 ),
@@ -1521,68 +1593,179 @@ class VoiceLevelPainter extends CustomPainter {
 
 class VoiceEdgePainter extends CustomPainter {
   const VoiceEdgePainter({
-    required this.progress,
-    required this.intensity,
+    required this.entranceProgress,
+    required this.ambientProgress,
+    required this.activityIntensity,
+    required this.activity,
     required this.radius,
+    required this.reduceMotion,
   });
 
-  final double progress;
-  final double intensity;
+  final double entranceProgress;
+  final double ambientProgress;
+  final double activityIntensity;
+  final VoiceEdgeActivity activity;
   final double radius;
+  final bool reduceMotion;
 
   @override
   void paint(Canvas canvas, Size size) {
-    const inset = 1.25;
-    final rect = Rect.fromLTWH(
-      inset,
-      inset,
-      math.max(0, size.width - inset * 2),
-      math.max(0, size.height - inset * 2),
-    );
-    final rrect = RRect.fromRectAndRadius(rect, Radius.circular(radius));
-    final gradient = SweepGradient(
-      transform: GradientRotation(progress * math.pi * 2),
-      colors: const [
-        Color(0x001D4ED8),
-        Color(0xFF38BDF8),
-        Color(0xFF2563EB),
-        Color(0xFFA855F7),
-        Color(0xFF22D3EE),
-        Color(0x001D4ED8),
-      ],
-      stops: const [0, 0.16, 0.38, 0.62, 0.82, 1],
-    );
-    final haloGradient = SweepGradient(
-      transform: GradientRotation(progress * math.pi * 2),
-      colors: const [
-        Color(0x001D4ED8),
-        Color(0x5538BDF8),
-        Color(0x662563EB),
-        Color(0x66A855F7),
-        Color(0x5522D3EE),
-        Color(0x001D4ED8),
-      ],
-      stops: const [0, 0.16, 0.38, 0.62, 0.82, 1],
-    );
-    canvas.drawRRect(
-      rrect,
+    if (size.isEmpty) return;
+    final timeline = entranceProgress.clamp(0.0, 1.0);
+    final envelope = reduceMotion
+        ? switch (activity) {
+            VoiceEdgeActivity.listening => 0.50,
+            VoiceEdgeActivity.processing => 0.34,
+            VoiceEdgeActivity.speaking => 0.42,
+            VoiceEdgeActivity.idle => 0.28,
+          }
+        : _bloomEnvelope(timeline);
+    if (envelope <= 0.001) return;
+
+    final spread = reduceMotion
+        ? 1.0
+        : Curves.easeOutCubic.transform((timeline / 0.34).clamp(0.0, 1.0));
+    final phase = reduceMotion ? 0.0 : ambientProgress * math.pi * 2;
+    final level = activityIntensity.clamp(0.0, 1.0);
+    final strength = switch (activity) {
+      VoiceEdgeActivity.idle => 0.72,
+      VoiceEdgeActivity.listening => 0.82 + level * 0.16,
+      VoiceEdgeActivity.processing => 0.64,
+      VoiceEdgeActivity.speaking => 0.74,
+    };
+    final opacity = envelope * strength;
+    final horizontalDrift = reduceMotion ? 0.0 : math.sin(phase) * 8;
+    final verticalDrift = reduceMotion ? 0.0 : math.sin(phase * 1.4) * 12;
+    final cornerRadius = radius.clamp(24.0, 58.0);
+    final sideTop = size.height * (1 - 0.92 * spread);
+
+    // Gemini's effect is a wide U-shaped wash, not a bordered rectangle. The
+    // two neutral strokes create a cloudy inner edge with no crisp core and no
+    // line across the top of the screen.
+    final ambientRail = Path()
+      ..moveTo(0, sideTop)
+      ..lineTo(0, size.height - cornerRadius)
+      ..quadraticBezierTo(0, size.height, cornerRadius, size.height)
+      ..lineTo(size.width - cornerRadius, size.height)
+      ..quadraticBezierTo(
+        size.width,
+        size.height,
+        size.width,
+        size.height - cornerRadius,
+      )
+      ..lineTo(size.width, sideTop);
+    canvas.drawPath(
+      ambientRail,
       Paint()
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 8 + intensity * 3
-        ..shader = haloGradient.createShader(rect),
+        ..strokeWidth = 40
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 26)
+        ..color = const Color(0xFFE8EDF3).withValues(alpha: opacity * 0.22),
     );
-    canvas.drawRRect(
-      rrect,
+    canvas.drawPath(
+      ambientRail,
       Paint()
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 2.2 + intensity * 1.3
-        ..shader = gradient.createShader(rect),
+        ..strokeWidth = 18
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 14)
+        ..color = const Color(0xFFF8FAFC).withValues(alpha: opacity * 0.38),
+    );
+
+    final sideHeight = size.height * (0.24 + spread * 0.56);
+    _drawGlow(
+      canvas,
+      center: Offset(-12 + horizontalDrift, size.height * 0.80),
+      width: 150,
+      height: sideHeight * 0.58,
+      color: const Color(0xFF62E58F),
+      opacity: opacity * 0.44,
+    );
+    _drawGlow(
+      canvas,
+      center: Offset(-20 - horizontalDrift * 0.4, size.height * 0.47),
+      width: 105,
+      height: sideHeight * 0.66,
+      color: const Color(0xFF93C5FD),
+      opacity: opacity * 0.20,
+    );
+    _drawGlow(
+      canvas,
+      center: Offset(size.width * 0.48 + horizontalDrift, size.height + 12),
+      width: size.width * 0.64,
+      height: 125,
+      color: const Color(0xFFFACC15),
+      opacity: opacity * 0.48,
+    );
+    _drawGlow(
+      canvas,
+      center: Offset(size.width * 0.82 - horizontalDrift, size.height + 6),
+      width: size.width * 0.46,
+      height: 120,
+      color: const Color(0xFF60A5FA),
+      opacity: opacity * 0.30,
+    );
+    _drawGlow(
+      canvas,
+      center: Offset(size.width + 12 - horizontalDrift, size.height * 0.76),
+      width: 145,
+      height: sideHeight * 0.62,
+      color: const Color(0xFFC084FC),
+      opacity: opacity * 0.40,
+    );
+    _drawGlow(
+      canvas,
+      center: Offset(
+        size.width + 18 + horizontalDrift * 0.5,
+        size.height * 0.27 + verticalDrift,
+      ),
+      width: 110,
+      height: sideHeight * 0.72,
+      color: const Color(0xFFFB7185),
+      opacity: opacity * 0.34,
+    );
+  }
+
+  double _bloomEnvelope(double timeline) {
+    if (timeline < 0.10) {
+      return Curves.easeOut.transform(timeline / 0.10);
+    }
+    if (timeline < 0.56) return 1;
+    return 1 - Curves.easeInCubic.transform((timeline - 0.56) / 0.44);
+  }
+
+  void _drawGlow(
+    Canvas canvas, {
+    required Offset center,
+    required double width,
+    required double height,
+    required Color color,
+    required double opacity,
+  }) {
+    final rect = Rect.fromCenter(center: center, width: width, height: height);
+    canvas.drawOval(
+      rect,
+      Paint()
+        ..shader = RadialGradient(
+          colors: [
+            color.withValues(alpha: opacity),
+            color.withValues(alpha: opacity * 0.46),
+            color.withValues(alpha: 0),
+          ],
+          stops: const [0, 0.42, 1],
+        ).createShader(rect),
     );
   }
 
   @override
   bool shouldRepaint(covariant VoiceEdgePainter oldDelegate) =>
-      oldDelegate.progress != progress ||
-      oldDelegate.intensity != intensity ||
-      oldDelegate.radius != radius;
+      oldDelegate.entranceProgress != entranceProgress ||
+      oldDelegate.ambientProgress != ambientProgress ||
+      oldDelegate.activityIntensity != activityIntensity ||
+      oldDelegate.activity != activity ||
+      oldDelegate.radius != radius ||
+      oldDelegate.reduceMotion != reduceMotion;
 }
