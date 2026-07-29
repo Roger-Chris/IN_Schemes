@@ -1321,16 +1321,18 @@ class _HomeScreenState extends State<HomeScreen> {
           'match': "$match% Match",
           'isBookmarked': provider.bookmarkedIds.contains(s.id) || provider.bookmarkedIds.contains(s.schemeCode),
           'schemeCode': s.schemeCode,
-          'chips': [
-            if (s.sponsoringBody.isNotEmpty)
-              ...s.sponsoringBody.split(',').map((x) => x.trim()).where((x) => x.isNotEmpty),
-            s.governmentLevel.isNotEmpty ? s.governmentLevel : 'Central',
-            s.schemeType.isNotEmpty ? s.schemeType : 'Loan',
-          ]
-              .map((x) => x.trim())
-              .where((x) => x.isNotEmpty && x.toLowerCase() != 'pending official verification')
-              .take(3)
-              .toList(),
+          'chips': (s.id.toLowerCase() == 'in009' || s.schemeCode.toLowerCase() == 'in009')
+              ? ['Central Scheme', 'Startup India', 'Capacity Building']
+              : [
+                  if (s.sponsoringBody.isNotEmpty)
+                    ...s.sponsoringBody.split(',').map((x) => x.trim()).where((x) => x.isNotEmpty),
+                  s.governmentLevel.isNotEmpty ? s.governmentLevel : 'Central',
+                  s.schemeType.isNotEmpty ? s.schemeType : 'Loan',
+                ]
+                    .map((x) => x.trim())
+                    .where((x) => x.isNotEmpty && x.toLowerCase() != 'pending official verification')
+                    .take(3)
+                    .toList(),
           'location': s.state.isNotEmpty ? s.state : 'All India',
           'scheme': s,
         });
