@@ -208,7 +208,10 @@ class SchemeCatalog {
                 ),
               );
             })
-            .where((scheme) => scheme.schemeCode.isNotEmpty)
+            .where((scheme) =>
+                scheme.schemeCode.isNotEmpty &&
+                scheme.id.toLowerCase() != 'in009' &&
+                !scheme.name.toLowerCase().contains('ascend'))
             .toList()
           ..sort((a, b) => a.name.compareTo(b.name));
 
