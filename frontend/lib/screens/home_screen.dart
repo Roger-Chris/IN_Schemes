@@ -8,9 +8,10 @@ import '../services/scheme_repository.dart';
 import 'scheme_details_screen.dart';
 import 'notifications_screen.dart';
 import '../widgets/voice_assistant_overlay.dart';
-import 'find_my_schemes_screen.dart';
 import 'companion/saarthi_welcome_screen.dart';
 import 'login_screen.dart';
+import '../widgets/smart_assessment_bottom_sheet.dart';
+import 'discover_results_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key, this.onVoiceQuery});
@@ -283,34 +284,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ],
             ),
-            const SizedBox(height: 4),
-            GestureDetector(
-              onTap: () => _showLocationSelectionDialog(context, provider),
-              child: Row(
-                children: [
-                  const Icon(
-                    Icons.location_on_outlined,
-                    color: Color(0xFF475569),
-                    size: 14,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    "${provider.profile.city.isNotEmpty ? provider.profile.city : 'Chennai'}, ${provider.profile.state}",
-                    style: GoogleFonts.inter(
-                      fontSize: 13,
-                      color: const Color(0xFF475569),
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(width: 2),
-                  const Icon(
-                    Icons.keyboard_arrow_down,
-                    color: Color(0xFF475569),
-                    size: 16,
-                  ),
-                ],
-              ),
-            ),
           ],
         ),
         Row(
@@ -386,55 +359,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void _showLocationSelectionDialog(BuildContext context, AppProvider provider) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: Text(
-            'Select Location',
-            style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                title: const Text('Chennai, Tamil Nadu'),
-                onTap: () {
-                  provider.updateProfile(provider.profile.copyWith(
-                    city: 'Chennai',
-                    state: 'Tamil Nadu',
-                  ));
-                  Navigator.of(context).pop();
-                },
-              ),
-              ListTile(
-                title: const Text('Coimbatore, Tamil Nadu'),
-                onTap: () {
-                  provider.updateProfile(provider.profile.copyWith(
-                    city: 'Coimbatore',
-                    state: 'Tamil Nadu',
-                  ));
-                  Navigator.of(context).pop();
-                },
-              ),
-              ListTile(
-                title: const Text('Madurai, Tamil Nadu'),
-                onTap: () {
-                  provider.updateProfile(provider.profile.copyWith(
-                    city: 'Madurai',
-                    state: 'Tamil Nadu',
-                  ));
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
+
 
   // Search & Filter Box
   Widget _buildSearchAndFilter(BuildContext context, AppProvider provider) {
@@ -1109,168 +1034,258 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Choose Your Journey (2x2 Grid)
+  // Choose Your Journey (What would you like to do today?)
   Widget _buildChooseYourJourney(BuildContext context, AppProvider provider) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              "Choose Your Journey",
-              style: GoogleFonts.poppins(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: const Color(0xFF0F172A),
-              ),
-            ),
-            GestureDetector(
-              onTap: () {
-                provider.updateTabIndex(2);
-              },
-              child: Row(
-                children: [
-                  Text(
-                    "View All",
-                    style: GoogleFonts.inter(
-                      fontSize: 12.5,
-                      fontWeight: FontWeight.bold,
-                      color: const Color(0xFF2563EB),
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                  const Icon(
-                    Icons.arrow_forward,
-                    size: 13,
-                    color: Color(0xFF2563EB),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 14),
-        Row(
-          children: [
-            Expanded(
-              child: _buildJourneyCard(
-                title: "Start Business",
-                icon: Icons.rocket_launch,
-                iconColor: const Color(0xFF2563EB),
-                bgColor: const Color(0xFFEFF6FF),
-                onTap: () {
-                  provider.updateSearchQuery("Startup");
-                  provider.updateTabIndex(1);
-                },
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildJourneyCard(
-                title: "Existing Business",
-                icon: Icons.storefront,
-                iconColor: const Color(0xFF10B981),
-                bgColor: const Color(0xFFECFDF5),
-                onTap: () {
-                  provider.updateSearchQuery("MSME");
-                  provider.updateTabIndex(1);
-                },
-              ),
-            ),
-          ],
+        Text(
+          "What would you like to do today?",
+          style: GoogleFonts.poppins(
+            fontSize: 16.5,
+            fontWeight: FontWeight.bold,
+            color: const Color(0xFF0F172A),
+          ),
         ),
         const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: _buildJourneyCard(
-                title: "Find Schemes",
-                icon: Icons.search_sharp,
-                iconColor: const Color(0xFFF59E0B),
-                bgColor: const Color(0xFFFFFBEB),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          physics: const BouncingScrollPhysics(),
+          child: Row(
+            children: [
+              _buildGoalCard(
+                title: "Start a\nBusiness",
+                iconWidget: const Icon(
+                  Icons.rocket_launch,
+                  color: Color(0xFF2563EB),
+                  size: 28,
+                ),
                 onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => const FindMySchemesScreen()),
-                  );
+                  SmartAssessmentBottomSheet.show(context, 'Business & MSME', 'category', () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const DiscoverResultsScreen(title: 'Business & MSME', type: 'category'),
+                      ),
+                    );
+                  });
                 },
               ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildJourneyCard(
-                title: "Learn",
-                icon: Icons.menu_book,
-                iconColor: const Color(0xFF8B5CF6),
-                bgColor: const Color(0xFFF5F3FF),
+              const SizedBox(width: 10),
+              _buildGoalCard(
+                title: "Grow My\nBusiness",
+                iconWidget: const Icon(
+                  Icons.trending_up,
+                  color: Color(0xFF2563EB),
+                  size: 28,
+                ),
+                onTap: () {
+                  SmartAssessmentBottomSheet.show(context, 'Business & MSME', 'category', () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const DiscoverResultsScreen(title: 'Business & MSME', type: 'category'),
+                      ),
+                    );
+                  });
+                },
+              ),
+              const SizedBox(width: 10),
+              _buildGoalCard(
+                title: "Continue\nEducation",
+                iconWidget: const Icon(
+                  Icons.school,
+                  color: Color(0xFF2563EB),
+                  size: 28,
+                ),
+                onTap: () {
+                  SmartAssessmentBottomSheet.show(context, 'Education', 'category', () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const DiscoverResultsScreen(title: 'Education', type: 'category'),
+                      ),
+                    );
+                  });
+                },
+              ),
+              const SizedBox(width: 10),
+              _buildGoalCard(
+                title: "Find a\nJob",
+                iconWidget: const Icon(
+                  Icons.business_center,
+                  color: Color(0xFF2563EB),
+                  size: 28,
+                ),
+                onTap: () {
+                  SmartAssessmentBottomSheet.show(context, 'Employment', 'category', () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const DiscoverResultsScreen(title: 'Employment', type: 'category'),
+                      ),
+                    );
+                  });
+                },
+              ),
+              const SizedBox(width: 10),
+              _buildGoalCard(
+                title: "Housing\nSupport",
+                iconWidget: const Icon(
+                  Icons.home,
+                  color: Color(0xFF2563EB),
+                  size: 28,
+                ),
+                onTap: () {
+                  SmartAssessmentBottomSheet.show(context, 'Housing', 'category', () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const DiscoverResultsScreen(title: 'Housing', type: 'category'),
+                      ),
+                    );
+                  });
+                },
+              ),
+              const SizedBox(width: 10),
+              _buildGoalCard(
+                title: "Healthcare\nSupport",
+                iconWidget: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    const Icon(
+                      Icons.favorite,
+                      color: Color(0xFF2563EB),
+                      size: 28,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 2.0),
+                      child: const Icon(
+                        Icons.add,
+                        color: Colors.white,
+                        size: 11,
+                      ),
+                    ),
+                  ],
+                ),
+                onTap: () {
+                  SmartAssessmentBottomSheet.show(context, 'Healthcare', 'category', () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const DiscoverResultsScreen(title: 'Healthcare', type: 'category'),
+                      ),
+                    );
+                  });
+                },
+              ),
+              const SizedBox(width: 10),
+              _buildViewAllGoalCard(
                 onTap: () {
                   provider.updateTabIndex(2);
                 },
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ],
     );
   }
 
-  Widget _buildJourneyCard({
+  Widget _buildGoalCard({
     required String title,
-    required IconData icon,
-    required Color iconColor,
-    required Color bgColor,
+    required Widget iconWidget,
     required VoidCallback onTap,
   }) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        height: 56,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        width: 88,
+        height: 104,
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: const Color(0xFFF8FAFC),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFFE2E8F0)),
+          border: Border.all(color: const Color(0xFFE2E8F0), width: 1.0),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.015),
               blurRadius: 6,
-              offset: const Offset(0, 1.5),
+              offset: const Offset(0, 2),
             ),
           ],
         ),
-        child: Row(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SizedBox(
+              height: 36,
+              child: Center(child: iconWidget),
+            ),
+            const SizedBox(height: 8),
+            Expanded(
+              child: Align(
+                alignment: Alignment.center,
+                child: Text(
+                  title,
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.inter(
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF0F172A),
+                    height: 1.2,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildViewAllGoalCard({
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 88,
+        height: 104,
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
+        decoration: BoxDecoration(
+          color: const Color(0xFFEFF6FF),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFBFDBFE), width: 1.0),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF2563EB).withValues(alpha: 0.04),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                color: bgColor,
+              width: 32,
+              height: 32,
+              decoration: const BoxDecoration(
+                color: Color(0xFF2563EB),
                 shape: BoxShape.circle,
               ),
               alignment: Alignment.center,
-              child: Icon(
-                icon,
-                color: iconColor,
-                size: 18,
+              child: const Icon(
+                Icons.arrow_forward,
+                color: Colors.white,
+                size: 16,
               ),
             ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                title,
-                style: GoogleFonts.poppins(
-                  fontSize: 11.5,
-                  fontWeight: FontWeight.bold,
-                  color: const Color(0xFF0F172A),
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
+            const SizedBox(height: 12),
+            Text(
+              "View All\nGoals",
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(
+                fontSize: 10.5,
+                fontWeight: FontWeight.bold,
+                color: const Color(0xFF2563EB),
+                height: 1.2,
               ),
-            ),
-            const Icon(
-              Icons.chevron_right,
-              size: 14,
-              color: Color(0xFF94A3B8),
             ),
           ],
         ),

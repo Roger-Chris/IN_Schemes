@@ -87,6 +87,11 @@ flutter:
     - assets/images/Home_screen_bg.webp
     - assets/images/Login_bg.webp
     - assets/images/onboarding_bg.png
+    - assets/images/tamil_nadu.png
+    - assets/images/maharashtra.png
+    - assets/images/uttar_pradesh.png
+    - assets/images/karnataka.png
+    - assets/images/gujarat.png
     - assets/data/government_schemes.json
     - assets/saarthi_expressions/
 

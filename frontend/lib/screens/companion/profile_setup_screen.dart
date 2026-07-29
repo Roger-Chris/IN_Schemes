@@ -1010,7 +1010,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
             physics: const NeverScrollableScrollPhysics(),
             crossAxisSpacing: 12,
             mainAxisSpacing: 12,
-            childAspectRatio: 3.2,
+            childAspectRatio: 2.2,
             children: [
               SaarthiFocusRegion(
                 id: 'sector_manufacturing',
@@ -1298,7 +1298,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                   physics: const NeverScrollableScrollPhysics(),
                   crossAxisSpacing: 10,
                   mainAxisSpacing: 10,
-                  childAspectRatio: 2.3,
+                  childAspectRatio: 1.6,
                   children: [
                     SaarthiFocusRegion(
                       id: 'category_woman',
@@ -1846,7 +1846,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFFEA580C).withOpacity(0.2),
+                          color: const Color(0xFFEA580C).withValues(alpha: 0.2),
                           blurRadius: 15,
                           spreadRadius: 4,
                         ),
@@ -1905,7 +1905,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.04),
+                        color: Colors.black.withValues(alpha: 0.04),
                         blurRadius: 10,
                         offset: const Offset(0, 4),
                       ),
@@ -2067,7 +2067,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                       borderRadius: BorderRadius.circular(30),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFFEA580C).withOpacity(0.3),
+                          color: const Color(0xFFEA580C).withValues(alpha: 0.3),
                           blurRadius: 8,
                           offset: const Offset(0, 4),
                         ),
@@ -2169,14 +2169,14 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
         padding: const EdgeInsets.all(12),
         height: 95,
         decoration: BoxDecoration(
-          color: const Color(0xFFF3E8FF).withOpacity(0.5),
+          color: const Color(0xFFF3E8FF).withValues(alpha: 0.5),
           borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(16),
             topRight: Radius.circular(16),
             bottomLeft: Radius.circular(16),
             bottomRight: Radius.circular(4),
           ),
-          border: Border.all(color: const Color(0xFFD8B4FE).withOpacity(0.3)),
+          border: Border.all(color: const Color(0xFFD8B4FE).withValues(alpha: 0.3)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -2227,7 +2227,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
       ),
     );
 
-    return Container(
+    return SizedBox(
       height: 120,
       child: Stack(
         alignment: Alignment.bottomCenter,
@@ -2299,7 +2299,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
         decoration: BoxDecoration(
           color: const Color(
             0xFFF3E8FF,
-          ).withOpacity(0.5), // Low opacity light purple
+          ).withValues(alpha: 0.5), // Low opacity light purple
           borderRadius: BorderRadius.only(
             topLeft: const Radius.circular(16),
             topRight: const Radius.circular(16),
@@ -2310,7 +2310,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                 ? const Radius.circular(4)
                 : const Radius.circular(16),
           ),
-          border: Border.all(color: const Color(0xFFD8B4FE).withOpacity(0.3)),
+          border: Border.all(color: const Color(0xFFD8B4FE).withValues(alpha: 0.3)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -2435,7 +2435,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                       borderRadius: BorderRadius.circular(30),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFFEA580C).withOpacity(0.3),
+                          color: const Color(0xFFEA580C).withValues(alpha: 0.3),
                           blurRadius: 10,
                           offset: const Offset(0, 4),
                         ),
@@ -2511,7 +2511,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFFEA580C).withOpacity(0.3),
+                      color: const Color(0xFFEA580C).withValues(alpha: 0.3),
                       blurRadius: 12,
                       spreadRadius: 2,
                     ),
@@ -2710,7 +2710,7 @@ class LockedFieldCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: iconColor.withOpacity(0.1),
+              color: iconColor.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(icon, color: iconColor, size: 20),
@@ -2941,7 +2941,7 @@ class CustomCheckboxRow extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(6),
               decoration: BoxDecoration(
-                color: iconColor.withOpacity(0.1),
+                color: iconColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(icon, color: iconColor, size: 18),

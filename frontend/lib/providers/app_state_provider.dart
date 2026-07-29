@@ -850,12 +850,18 @@ class AppProvider with ChangeNotifier {
     return missing;
   }
 
-  // Sync profile details
   Future<void> updateProfile(UserProfile updated) async {
     _profile = updated;
     _filters['state'] = _profile.state;
     _filters['community'] = _profile.community;
     _filters['gender'] = _profile.gender;
+    
+    // Recalculate recommendations based on updated profile
+    _recommendedSchemes = RecommendationEngine.getRecommendations(
+      _profile,
+      _allSchemes,
+    );
+
     notifyListeners();
     await _saveProfile();
 
