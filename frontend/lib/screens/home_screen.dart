@@ -9,6 +9,7 @@ import 'scheme_details_screen.dart';
 import 'notifications_screen.dart';
 import '../widgets/voice_assistant_overlay.dart';
 import 'companion/saarthi_welcome_screen.dart';
+import 'companion/edit_profile_screen.dart';
 import 'login_screen.dart';
 import '../widgets/smart_assessment_bottom_sheet.dart';
 import 'discover_results_screen.dart';
@@ -511,139 +512,148 @@ class _HomeScreenState extends State<HomeScreen> {
     final completion = provider.profileCompletionPercentage;
     final isComplete = completion == 100;
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [
-            Color(0xFFEFF6FF),
-            Color(0xFFDBEAFE),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFBFDBFE)),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF2563EB).withValues(alpha: 0.02),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          // Left: Progress ring with checkmark or percent text
-          Stack(
-            alignment: Alignment.center,
-            children: [
-              Container(
-                width: 58,
-                height: 58,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white,
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF2563EB).withValues(alpha: 0.08),
-                      blurRadius: 6,
-                      spreadRadius: 1,
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(
-                width: 50,
-                height: 50,
-                child: CircularProgressIndicator(
-                  value: completion / 100.0,
-                  strokeWidth: 5,
-                  backgroundColor: const Color(0xFFEFF6FF),
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    isComplete ? const Color(0xFF10B981) : const Color(0xFF2563EB),
-                  ),
-                ),
-              ),
-              if (isComplete)
-                Container(
-                  width: 24,
-                  height: 24,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF10B981),
-                    shape: BoxShape.circle,
-                  ),
-                  alignment: Alignment.center,
-                  child: const Icon(
-                    Icons.check,
-                    color: Colors.white,
-                    size: 15,
-                  ),
-                )
-              else
-                Text(
-                  "$completion%",
-                  style: GoogleFonts.poppins(
-                    fontSize: 11.5,
-                    fontWeight: FontWeight.bold,
-                    color: const Color(0xFF2563EB),
-                  ),
-                ),
+    return GestureDetector(
+      onTap: () {
+        Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => const EditProfileScreen()),
+        ).then((_) {
+          provider.fetchLatestProfile();
+        });
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [
+              Color(0xFFEFF6FF),
+              Color(0xFFDBEAFE),
             ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
-          const SizedBox(width: 14),
-          
-          // Middle: Text
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFBFDBFE)),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF2563EB).withValues(alpha: 0.02),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            // Left: Progress ring with checkmark or percent text
+            Stack(
+              alignment: Alignment.center,
               children: [
-                Row(
-                  children: [
-                    Text(
-                      isComplete ? "Profile Complete!" : "Complete Your Profile",
-                      style: GoogleFonts.inter(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: isComplete ? const Color(0xFF0D9488) : const Color(0xFF1E3A8A),
+                Container(
+                  width: 58,
+                  height: 58,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white,
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF2563EB).withValues(alpha: 0.08),
+                        blurRadius: 6,
+                        spreadRadius: 1,
                       ),
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      isComplete ? "🎉" : "📋",
-                      style: GoogleFonts.inter(fontSize: 12),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 1),
-                Text(
-                  "$completion%",
-                  style: GoogleFonts.poppins(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: const Color(0xFF0F172A),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 1),
-                Text(
-                  isComplete
-                      ? "Your profile is complete! You'll get the best scheme recommendations."
-                      : "Add details to unlock personalized scheme recommendations.",
-                  style: GoogleFonts.inter(
-                    fontSize: 10.5,
-                    color: const Color(0xFF475569),
-                    height: 1.3,
+                SizedBox(
+                  width: 50,
+                  height: 50,
+                  child: CircularProgressIndicator(
+                    value: completion / 100.0,
+                    strokeWidth: 5,
+                    backgroundColor: const Color(0xFFEFF6FF),
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      isComplete ? const Color(0xFF10B981) : const Color(0xFF2563EB),
+                    ),
                   ),
                 ),
+                if (isComplete)
+                  Container(
+                    width: 24,
+                    height: 24,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFF10B981),
+                      shape: BoxShape.circle,
+                    ),
+                    alignment: Alignment.center,
+                    child: const Icon(
+                      Icons.check,
+                      color: Colors.white,
+                      size: 15,
+                    ),
+                  )
+                else
+                  Text(
+                    "$completion%",
+                    style: GoogleFonts.poppins(
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF2563EB),
+                    ),
+                  ),
               ],
             ),
-          ),
-          const SizedBox(width: 10),
-          
-          // Right: Dynamic Checklist Clipboard
-          _buildClipboardGraphic(isComplete, completion),
-        ],
+            const SizedBox(width: 14),
+            
+            // Middle: Text
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        isComplete ? "Profile Complete!" : "Complete Your Profile",
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: isComplete ? const Color(0xFF0D9488) : const Color(0xFF1E3A8A),
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        isComplete ? "🎉" : "📋",
+                        style: GoogleFonts.inter(fontSize: 12),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 1),
+                  Text(
+                    "$completion%",
+                    style: GoogleFonts.poppins(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF0F172A),
+                    ),
+                  ),
+                  const SizedBox(height: 1),
+                  Text(
+                    isComplete
+                        ? "Your profile is complete! You'll get the best scheme recommendations."
+                        : "Add details to unlock personalized scheme recommendations.",
+                    style: GoogleFonts.inter(
+                      fontSize: 10.5,
+                      color: const Color(0xFF475569),
+                      height: 1.3,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 10),
+            
+            // Right: Dynamic Checklist Clipboard
+            _buildClipboardGraphic(isComplete, completion),
+          ],
+        ),
       ),
     );
   }
