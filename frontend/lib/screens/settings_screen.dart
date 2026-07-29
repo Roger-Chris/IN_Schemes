@@ -48,7 +48,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppConstants.errorColor,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
                 elevation: 0,
               ),
               onPressed: provider.isLoggingOut
@@ -71,7 +73,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  void _showNavigationModeBottomSheet(BuildContext context, AppProvider provider) {
+  void _showNavigationModeBottomSheet(
+    BuildContext context,
+    AppProvider provider,
+  ) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.white,
@@ -98,7 +103,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           color: Color(0xFFFFF7ED),
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(Icons.explore_outlined, color: Color(0xFFEA580C), size: 20),
+                        child: const Icon(
+                          Icons.explore_outlined,
+                          color: Color(0xFFEA580C),
+                          size: 20,
+                        ),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
@@ -121,11 +130,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                   const SizedBox(height: 16),
                   ListTile(
-                    title: Text('Regular Navigation', style: GoogleFonts.inter(fontWeight: FontWeight.bold)),
-                    subtitle: Text('Traditional mobile experience', style: GoogleFonts.inter(fontSize: 12)),
+                    title: Text(
+                      'Regular Navigation',
+                      style: GoogleFonts.inter(fontWeight: FontWeight.bold),
+                    ),
+                    subtitle: Text(
+                      'Traditional mobile experience',
+                      style: GoogleFonts.inter(fontSize: 12),
+                    ),
                     trailing: provider.navigationMode == 'regular'
-                        ? const Icon(Icons.check_circle_rounded, color: Color(0xFFEA580C), size: 24)
-                        : const Icon(Icons.circle_outlined, color: Color(0xFFCBD5E1), size: 24),
+                        ? const Icon(
+                            Icons.check_circle_rounded,
+                            color: Color(0xFFEA580C),
+                            size: 24,
+                          )
+                        : const Icon(
+                            Icons.circle_outlined,
+                            color: Color(0xFFCBD5E1),
+                            size: 24,
+                          ),
                     onTap: () {
                       provider.changeNavigationMode('regular');
                       setModalState(() {});
@@ -135,11 +158,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                   const Divider(),
                   ListTile(
-                    title: Text('Companion Navigation', style: GoogleFonts.inter(fontWeight: FontWeight.bold)),
-                    subtitle: Text('Voice-first guided experience', style: GoogleFonts.inter(fontSize: 12)),
+                    title: Text(
+                      'Companion Navigation',
+                      style: GoogleFonts.inter(fontWeight: FontWeight.bold),
+                    ),
+                    subtitle: Text(
+                      'Voice-first guided experience',
+                      style: GoogleFonts.inter(fontSize: 12),
+                    ),
                     trailing: provider.navigationMode == 'companion'
-                        ? const Icon(Icons.check_circle_rounded, color: Color(0xFFEA580C), size: 24)
-                        : const Icon(Icons.circle_outlined, color: Color(0xFFCBD5E1), size: 24),
+                        ? const Icon(
+                            Icons.check_circle_rounded,
+                            color: Color(0xFFEA580C),
+                            size: 24,
+                          )
+                        : const Icon(
+                            Icons.circle_outlined,
+                            color: Color(0xFFCBD5E1),
+                            size: 24,
+                          ),
                     onTap: () {
                       provider.changeNavigationMode('companion');
                       setModalState(() {});
@@ -185,46 +222,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
           physics: const BouncingScrollPhysics(),
           padding: const EdgeInsets.all(20.0),
           children: [
-<<<<<<< HEAD
-            // Header Section
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      GestureDetector(
-                        onTap: () => Navigator.pop(context),
-                        behavior: HitTestBehavior.opaque,
-                        child: const Icon(
-                          Icons.arrow_back_rounded,
-                          color: Color(0xFF0F172A),
-                          size: 26,
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Text(
-                        'Settings',
-                        style: GoogleFonts.poppins(
-                          fontSize: 18.0,
-                          fontWeight: FontWeight.bold,
-                          color: const Color(0xFF0F172A),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Manage your app preferences and account settings',
-                    style: GoogleFonts.inter(
-                      fontSize: 14,
-                      color: const Color(0xFF64748B),
-                      fontWeight: FontWeight.w400,
-                    ),
-                  ),
-                ],
-=======
             // GROUP 1: Preferences
             _buildGroupHeader("Preferences"),
             _buildGroupContainer([
@@ -234,15 +231,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 value: provider.selectedLanguage == 'hi' ? 'हिन्दी' : 'English',
                 onTap: () {
                   Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => const LanguageSelectionScreen()),
+                    MaterialPageRoute(
+                      builder: (_) => const LanguageSelectionScreen(),
+                    ),
                   );
                 },
->>>>>>> bd32780 (Your commit message)
               ),
               _buildSettingRow(
                 icon: Icons.explore_outlined,
                 title: "Navigation Mode",
-                value: provider.navigationMode == 'companion' ? 'Companion' : 'Regular',
+                value: provider.navigationMode == 'companion'
+                    ? 'Companion'
+                    : 'Regular',
                 onTap: () => _showNavigationModeBottomSheet(context, provider),
               ),
               _buildSettingRow(
@@ -277,7 +277,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text(
-                            _pushNotifications ? 'Notifications enabled' : 'Notifications disabled',
+                            _pushNotifications
+                                ? 'Notifications enabled'
+                                : 'Notifications disabled',
                           ),
                           duration: const Duration(seconds: 1),
                         ),
@@ -313,7 +315,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                       content: Text(
                         'Your privacy is important to us. All personal data is encrypted and saved locally on this device.',
-                        style: GoogleFonts.inter(color: const Color(0xFF64748B)),
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFF64748B),
+                        ),
                       ),
                       actions: [
                         TextButton(
@@ -349,7 +353,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                       content: Text(
                         'By using IN Schemes, you agree to our terms of service. All scheme information is aggregated from official government portals.',
-                        style: GoogleFonts.inter(color: const Color(0xFF64748B)),
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFF64748B),
+                        ),
                       ),
                       actions: [
                         TextButton(
@@ -463,9 +469,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         ],
       ),
-      child: Column(
-        children: children,
-      ),
+      child: Column(children: children),
     );
   }
 
@@ -481,8 +485,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Column(
       children: [
         ListTile(
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
-          leading: Icon(icon, color: titleColor ?? const Color(0xFFEA580C), size: 20),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 2,
+          ),
+          leading: Icon(
+            icon,
+            color: titleColor ?? const Color(0xFFEA580C),
+            size: 20,
+          ),
           title: Text(
             title,
             style: GoogleFonts.inter(
@@ -491,7 +502,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               color: titleColor ?? const Color(0xFF0F172A),
             ),
           ),
-          trailing: widget ??
+          trailing:
+              widget ??
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -505,7 +517,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                     ),
                   const SizedBox(width: 4),
-                  const Icon(Icons.chevron_right, color: Color(0xFF94A3B8), size: 16),
+                  const Icon(
+                    Icons.chevron_right,
+                    color: Color(0xFF94A3B8),
+                    size: 16,
+                  ),
                 ],
               ),
           onTap: onTap,
