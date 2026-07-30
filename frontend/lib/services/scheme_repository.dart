@@ -4,12 +4,13 @@ import '../models/scheme_model.dart';
 import '../models/user_profile.dart';
 import 'intelligent_scheme_search.dart';
 import 'scheme_catalog.dart';
+import 'scheme_catalog_store.dart';
 
 /// SchemeRepository
 /// ─────────────────
-/// Single source of truth for all scheme-related data. The curated bundled
-/// catalog is loaded first so search and details work offline; Supabase remains
-/// a fallback for deployments that provide additional database-only records.
+/// Single source of truth for all scheme-related data. A verified published
+/// catalog cached on-device is preferred, with the bundled catalog retained as
+/// the guaranteed offline fallback.
 class SchemeRepository {
   SchemeRepository._();
   static final SchemeRepository instance = SchemeRepository._();
@@ -33,8 +34,10 @@ class SchemeRepository {
     _catalogFuture = null;
   }
 
-  Future<SchemeCatalog> _loadCatalog() =>
-      _catalogFuture ??= SchemeCatalog.load();
+  Future<SchemeCatalog> _loadCatalog() => _catalogFuture ??= SchemeCatalogStore
+      .instance
+      .loadBestAvailable()
+      .then((stored) => stored.catalog);
 
   // ── 1. getAllSchemes() ────────────────────────────────────────────────
   /// Returns the complete curated catalog. Uses cache when valid.
@@ -274,7 +277,7 @@ class SchemeRepository {
   }
 
   // ── 7. Profile Database Management Methods ────────────────────────────
-  
+
   /// Retrieves a user profile by their UUID from public.profiles table.
   Future<UserProfile?> getProfile(String uid) async {
     try {
@@ -293,7 +296,9 @@ class SchemeRepository {
   /// Creates a new profile record in the database.
   Future<void> createProfile(UserProfile profile) async {
     try {
-      debugPrint('[SchemeRepository] Creating profile for user UUID: ${profile.googleUserId}');
+      debugPrint(
+        '[SchemeRepository] Creating profile for user UUID: ${profile.googleUserId}',
+      );
       await _db.from('profiles').upsert(profile.toSupabase());
       debugPrint('[SchemeRepository] Profile successfully created.');
     } catch (e) {
@@ -305,8 +310,13 @@ class SchemeRepository {
   /// Updates an existing profile record in the database.
   Future<void> updateProfile(UserProfile profile) async {
     try {
-      debugPrint('[SchemeRepository] Updating profile for user UUID: ${profile.googleUserId}');
-      await _db.from('profiles').update(profile.toSupabase()).eq('id', profile.googleUserId);
+      debugPrint(
+        '[SchemeRepository] Updating profile for user UUID: ${profile.googleUserId}',
+      );
+      await _db
+          .from('profiles')
+          .update(profile.toSupabase())
+          .eq('id', profile.googleUserId);
       debugPrint('[SchemeRepository] Profile successfully updated.');
     } catch (e) {
       debugPrint('[SchemeRepository] Error updating profile: $e');
@@ -317,11 +327,16 @@ class SchemeRepository {
   /// Updates the last login timestamp for the user.
   Future<void> updateLastLogin(String uid) async {
     try {
-      debugPrint('[SchemeRepository] Updating last login timestamp for user UUID: $uid');
-      await _db.from('profiles').update({
-        'last_login_at': DateTime.now().toIso8601String(),
-      }).eq('id', uid);
-      debugPrint('[SchemeRepository] Last login timestamp successfully updated.');
+      debugPrint(
+        '[SchemeRepository] Updating last login timestamp for user UUID: $uid',
+      );
+      await _db
+          .from('profiles')
+          .update({'last_login_at': DateTime.now().toIso8601String()})
+          .eq('id', uid);
+      debugPrint(
+        '[SchemeRepository] Last login timestamp successfully updated.',
+      );
     } catch (e) {
       debugPrint('[SchemeRepository] Error updating last login: $e');
       // Do not rethrow since this shouldn't block the auth flow if it fails

@@ -145,10 +145,16 @@ class Scheme {
       guidelinesUrl: row['guidelines_url'] as String? ?? '',
       sourceUrl: row['source_url'] as String? ?? '',
       districtApplicable: row['district_applicable'] as String? ?? '',
-      subsidyAmount: row['subsidy_amount'] as String? ?? '',
-      verificationStatus: row['verification_status'] as String? ?? '',
-      verificationNotes: row['verification_notes'] as String? ?? '',
-      lastUpdated: row['last_updated'] as String? ?? '',
+      subsidyAmount:
+          row['subsidy_amount_display']?.toString() ??
+          row['subsidy_amount']?.toString() ??
+          '',
+      verificationStatus: row['verification_status']?.toString() ?? '',
+      verificationNotes: row['verification_notes']?.toString() ?? '',
+      lastUpdated:
+          row['source_last_updated']?.toString() ??
+          row['last_updated']?.toString() ??
+          '',
       searchKeywords: row['search_keywords'] as String? ?? '',
       status: row['status'] as String? ?? 'ACTIVE',
       isActive: row['is_active'] as bool? ?? true,

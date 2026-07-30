@@ -10,6 +10,9 @@
     "db:test": "supabase test db",
     "db:lint": "supabase db lint --local --level warning --fail-on warning",
     "db:validate": "npm run db:reset && npm run db:test && npm run db:lint",
+    "catalog:import": "node scripts/import_catalog.mjs",
+    "catalog:validate": "node scripts/import_catalog.mjs --validate-only --expect-schemes=217 --expect-documents=556 --expect-services=217",
+    "catalog:bootstrap": "node scripts/import_catalog.mjs --publish --expect-schemes=217 --expect-documents=556 --expect-services=217",
     "openapi:lint": "redocly lint openapi/openapi.yaml",
     "voice:test": "python -m unittest discover -s voice/tests -v",
     "types:generate": "supabase gen types typescript --local > supabase/database.types.ts"

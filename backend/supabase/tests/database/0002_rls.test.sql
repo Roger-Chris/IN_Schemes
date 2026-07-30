@@ -14,12 +14,12 @@ values
   ('92000000-0000-0000-0000-000000000003', 'authenticated', 'authenticated', 'auditor-a@example.test'),
   ('92000000-0000-0000-0000-000000000004', 'authenticated', 'authenticated', 'member-b@example.test');
 
-insert into public.users (id, full_name)
+insert into public.profiles (id, email, name)
 values
-  ('92000000-0000-0000-0000-000000000001', 'Admin A'),
-  ('92000000-0000-0000-0000-000000000002', 'Editor A'),
-  ('92000000-0000-0000-0000-000000000003', 'Auditor A'),
-  ('92000000-0000-0000-0000-000000000004', 'Member B');
+  ('92000000-0000-0000-0000-000000000001', 'admin-a@example.test', 'Admin A'),
+  ('92000000-0000-0000-0000-000000000002', 'editor-a@example.test', 'Editor A'),
+  ('92000000-0000-0000-0000-000000000003', 'auditor-a@example.test', 'Auditor A'),
+  ('92000000-0000-0000-0000-000000000004', 'member-b@example.test', 'Member B');
 
 insert into public.organization_memberships (user_id, organization_id, display_name)
 values
