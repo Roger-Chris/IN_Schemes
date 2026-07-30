@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../providers/app_state_provider.dart';
-import '../models/scheme_model.dart';
-import '../services/scheme_repository.dart';
+import '../../providers/app_state_provider.dart';
+import '../../models/scheme_model.dart';
+import '../../services/scheme_repository.dart';
 import 'scheme_details_screen.dart';
-import 'notifications_screen.dart';
-import '../widgets/voice_assistant_overlay.dart';
-import 'companion/saarthi_welcome_screen.dart';
-import 'login_screen.dart';
-import '../widgets/smart_assessment_bottom_sheet.dart';
+import '../notifications_screen.dart';
+import '../../widgets/voice_assistant_overlay.dart';
+import '../companion_mode/saarthi_welcome_screen.dart';
+import '../login_screen.dart';
+import '../../widgets/smart_assessment_bottom_sheet.dart';
 import 'discover_results_screen.dart';
 import 'profile_setup_screen.dart';
 
@@ -74,14 +74,13 @@ class _HomeScreenState extends State<HomeScreen> {
       transitionDuration: const Duration(milliseconds: 320),
       pageBuilder: (overlayContext, animation, secondaryAnimation) {
         return VoiceAssistantOverlay(
-          onClose: () => Navigator.of(overlayContext, rootNavigator: true).pop(),
+          onClose: () =>
+              Navigator.of(overlayContext, rootNavigator: true).pop(),
           schemes: schemes,
           profile: provider.profile,
           onProfileConfirmed: provider.updateProfile,
-          onSearch: (query) => SchemeRepository.instance.searchSchemeMatches(
-            query,
-            limit: 20,
-          ),
+          onSearch: (query) =>
+              SchemeRepository.instance.searchSchemeMatches(query, limit: 20),
           onSchemeSelected: (scheme) {
             Navigator.of(overlayContext, rootNavigator: true).pop();
             Navigator.of(context).push(
@@ -113,20 +112,19 @@ class _HomeScreenState extends State<HomeScreen> {
       },
     );
   }
+
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<AppProvider>(context);
     if (!provider.isLoggedIn) {
-      return const Scaffold(
-        body: Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
     final recommended = provider.allSchemes.take(4).toList();
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC), // Slate 50 (Premium clean background)
+      backgroundColor: const Color(
+        0xFFF8FAFC,
+      ), // Slate 50 (Premium clean background)
       body: Stack(
         children: [
           // 1. Background image alignment (sky with building)
@@ -160,7 +158,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
           ),
-          
+
           // 2. Scrollable content
           SafeArea(
             child: SingleChildScrollView(
@@ -171,64 +169,62 @@ class _HomeScreenState extends State<HomeScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SizedBox(height: 12),
-                    
+
                     // Unified Header
                     _buildHeader(context, provider),
-                    
+
                     const SizedBox(height: 16),
-                    
+
                     // Search Bar & Filter Button
                     _buildSearchAndFilter(context, provider),
-                    
+
                     const SizedBox(height: 14),
-                    
+
                     // Quick search horizontal pills
                     _buildQuickPills(context, provider),
-                    
+
                     if (provider.profileCompletionPercentage < 100) ...[
                       const SizedBox(height: 18),
                       // Profile Completion (Real & Compact)
                       _buildProfileCompleteCard(context, provider),
                     ],
-                    
+
                     const SizedBox(height: 20),
-                    
+
                     // Carousel Cards (Alerts, New Scheme, AI Recommendation)
                     _buildCarouselSection(context),
-                    
+
                     const SizedBox(height: 24),
-                    
+
                     // Choose Your Journey (2x2 Grid)
                     _buildChooseYourJourney(context, provider),
-                    
+
                     const SizedBox(height: 24),
-                    
+
                     // Recommended For You (Horizontal List)
                     _buildRecommendedSection(context, recommended, provider),
-                    
+
                     const SizedBox(height: 24),
-                    
+
                     // Latest Updates Card
                     _buildLatestUpdates(context, provider),
-                    
+
                     const SizedBox(height: 24),
-                    
+
                     // Tip of the Day
                     _buildTipOfTheDay(context),
-                    
-                    const SizedBox(height: 100), // Spacing for sticky floating Ask AI button
+
+                    const SizedBox(
+                      height: 100,
+                    ), // Spacing for sticky floating Ask AI button
                   ],
                 ),
               ),
             ),
           ),
-          
+
           // 3. Floating Action Ask AI widget
-          Positioned(
-            bottom: 24,
-            right: 18,
-            child: _buildAskAiFab(context),
-          ),
+          Positioned(bottom: 24, right: 18, child: _buildAskAiFab(context)),
         ],
       ),
     );
@@ -236,8 +232,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // Unified Header Widget: Greeting on left, Notification/Avatar on right
   Widget _buildHeader(BuildContext context, AppProvider provider) {
-    final displayName = provider.profile.name.isNotEmpty 
-        ? provider.profile.name.split(' ').first 
+    final displayName = provider.profile.name.isNotEmpty
+        ? provider.profile.name.split(' ').first
         : 'User';
 
     return Row(
@@ -257,10 +253,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 const SizedBox(width: 4),
-                Text(
-                  "👋",
-                  style: GoogleFonts.inter(fontSize: 14),
-                ),
+                Text("👋", style: GoogleFonts.inter(fontSize: 14)),
               ],
             ),
             const SizedBox(height: 2),
@@ -291,7 +284,9 @@ class _HomeScreenState extends State<HomeScreen> {
             GestureDetector(
               onTap: () {
                 Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+                  MaterialPageRoute(
+                    builder: (_) => const NotificationsScreen(),
+                  ),
                 );
               },
               child: Container(
@@ -339,8 +334,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-
-
   // Search & Filter Box
   Widget _buildSearchAndFilter(BuildContext context, AppProvider provider) {
     return Container(
@@ -359,11 +352,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       child: Row(
         children: [
-          const Icon(
-            Icons.search,
-            color: Color(0xFF2563EB),
-            size: 22,
-          ),
+          const Icon(Icons.search, color: Color(0xFF2563EB), size: 22),
           const SizedBox(width: 10),
           Expanded(
             child: GestureDetector(
@@ -384,11 +373,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           const SizedBox(width: 8),
-          Container(
-            height: 20,
-            width: 1,
-            color: const Color(0xFFE2E8F0),
-          ),
+          Container(height: 20, width: 1, color: const Color(0xFFE2E8F0)),
           const SizedBox(width: 8),
           GestureDetector(
             onTap: () {
@@ -464,11 +449,7 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(
-                    Icons.search,
-                    size: 13,
-                    color: Color(0xFF64748B),
-                  ),
+                  const Icon(Icons.search, size: 13, color: Color(0xFF64748B)),
                   const SizedBox(width: 6),
                   Text(
                     text,
@@ -496,19 +477,16 @@ class _HomeScreenState extends State<HomeScreen> {
       color: Colors.transparent,
       child: InkWell(
         onTap: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => const ProfileSetupScreen()),
-          );
+          Navigator.of(
+            context,
+          ).push(MaterialPageRoute(builder: (_) => const ProfileSetupScreen()));
         },
         borderRadius: BorderRadius.circular(16),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
-              colors: [
-                Color(0xFFEFF6FF),
-                Color(0xFFDBEAFE),
-              ],
+              colors: [Color(0xFFEFF6FF), Color(0xFFDBEAFE)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -536,7 +514,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       color: Colors.white,
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF2563EB).withValues(alpha: 0.08),
+                          color: const Color(
+                            0xFF2563EB,
+                          ).withValues(alpha: 0.08),
                           blurRadius: 6,
                           spreadRadius: 1,
                         ),
@@ -551,7 +531,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       strokeWidth: 5,
                       backgroundColor: const Color(0xFFEFF6FF),
                       valueColor: AlwaysStoppedAnimation<Color>(
-                        isComplete ? const Color(0xFF10B981) : const Color(0xFF2563EB),
+                        isComplete
+                            ? const Color(0xFF10B981)
+                            : const Color(0xFF2563EB),
                       ),
                     ),
                   ),
@@ -582,7 +564,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
               const SizedBox(width: 14),
-              
+
               // Middle: Text
               Expanded(
                 child: Column(
@@ -592,11 +574,15 @@ class _HomeScreenState extends State<HomeScreen> {
                     Row(
                       children: [
                         Text(
-                          isComplete ? "Profile Complete!" : "Complete Your Profile",
+                          isComplete
+                              ? "Profile Complete!"
+                              : "Complete Your Profile",
                           style: GoogleFonts.inter(
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
-                            color: isComplete ? const Color(0xFF0D9488) : const Color(0xFF1E3A8A),
+                            color: isComplete
+                                ? const Color(0xFF0D9488)
+                                : const Color(0xFF1E3A8A),
                           ),
                         ),
                         const SizedBox(width: 4),
@@ -630,7 +616,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               const SizedBox(width: 10),
-              
+
               // Right: Dynamic Checklist Clipboard
               _buildClipboardGraphic(isComplete, completion),
             ],
@@ -661,7 +647,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(6),
                 border: Border.all(
-                  color: isComplete ? const Color(0xFF93C5FD) : const Color(0xFFCBD5E1),
+                  color: isComplete
+                      ? const Color(0xFF93C5FD)
+                      : const Color(0xFFCBD5E1),
                   width: 1.2,
                 ),
                 boxShadow: [
@@ -672,7 +660,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ],
               ),
-              padding: const EdgeInsets.only(top: 10, left: 4, right: 4, bottom: 4),
+              padding: const EdgeInsets.only(
+                top: 10,
+                left: 4,
+                right: 4,
+                bottom: 4,
+              ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -690,7 +683,9 @@ class _HomeScreenState extends State<HomeScreen> {
               width: 18,
               height: 9,
               decoration: BoxDecoration(
-                color: isComplete ? const Color(0xFF3B82F6) : const Color(0xFF64748B),
+                color: isComplete
+                    ? const Color(0xFF3B82F6)
+                    : const Color(0xFF64748B),
                 borderRadius: BorderRadius.circular(3),
               ),
             ),
@@ -709,12 +704,20 @@ class _HomeScreenState extends State<HomeScreen> {
                       children: [
                         Transform.rotate(
                           angle: 0.3,
-                          child: Container(width: 4, height: 9, color: const Color(0xFF2563EB)),
+                          child: Container(
+                            width: 4,
+                            height: 9,
+                            color: const Color(0xFF2563EB),
+                          ),
                         ),
                         const SizedBox(width: 1),
                         Transform.rotate(
                           angle: -0.3,
-                          child: Container(width: 4, height: 9, color: const Color(0xFF2563EB)),
+                          child: Container(
+                            width: 4,
+                            height: 9,
+                            color: const Color(0xFF2563EB),
+                          ),
                         ),
                       ],
                     ),
@@ -723,7 +726,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   width: 16,
                   height: 16,
                   decoration: BoxDecoration(
-                    color: isComplete ? const Color(0xFF10B981) : const Color(0xFF94A3B8),
+                    color: isComplete
+                        ? const Color(0xFF10B981)
+                        : const Color(0xFF94A3B8),
                     shape: BoxShape.circle,
                   ),
                   alignment: Alignment.center,
@@ -789,7 +794,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 btnColor: const Color(0xFFEA580C),
                 onBtnTap: () {
                   Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+                    MaterialPageRoute(
+                      builder: (_) => const NotificationsScreen(),
+                    ),
                   );
                 },
                 rightGraphic: _buildCalendarGraphic(),
@@ -827,11 +834,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 btnColor: const Color(0xFF7C3AED),
                 onBtnTap: () {
                   Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => const SaarthiWelcomeScreen()),
+                    MaterialPageRoute(
+                      builder: (_) => const SaarthiWelcomeScreen(),
+                    ),
                   );
                 },
                 rightGraphic: Image.asset(
-                  'assets/images/compoanion bot.png',
+                  'assets/saarthi_expressions/Ai companion.png',
                   height: 52,
                   fit: BoxFit.contain,
                 ),
@@ -883,7 +892,10 @@ class _HomeScreenState extends State<HomeScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2.5),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2.5,
+                  ),
                   decoration: BoxDecoration(
                     color: badgeBgColor,
                     borderRadius: BorderRadius.circular(6),
@@ -958,7 +970,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ],
             ),
-            padding: const EdgeInsets.only(top: 10, left: 4, right: 4, bottom: 3),
+            padding: const EdgeInsets.only(
+              top: 10,
+              left: 4,
+              right: 4,
+              bottom: 3,
+            ),
             child: GridView.count(
               crossAxisCount: 4,
               padding: EdgeInsets.zero,
@@ -968,7 +985,9 @@ class _HomeScreenState extends State<HomeScreen> {
               children: List.generate(12, (index) {
                 return Container(
                   decoration: BoxDecoration(
-                    color: index == 9 ? const Color(0xFFDC2626) : const Color(0xFFEFF6FF),
+                    color: index == 9
+                        ? const Color(0xFFDC2626)
+                        : const Color(0xFFEFF6FF),
                     shape: BoxShape.circle,
                   ),
                 );
@@ -997,7 +1016,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 shape: BoxShape.circle,
               ),
               alignment: Alignment.center,
-              child: const Icon(Icons.access_time_filled, size: 10, color: Colors.white),
+              child: const Icon(
+                Icons.access_time_filled,
+                size: 10,
+                color: Colors.white,
+              ),
             ),
           ),
         ],
@@ -1020,9 +1043,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return SizedBox(
       width: 60,
       height: 54,
-      child: CustomPaint(
-        painter: ShipPainter(),
-      ),
+      child: CustomPaint(painter: ShipPainter()),
     );
   }
 
@@ -1053,13 +1074,21 @@ class _HomeScreenState extends State<HomeScreen> {
                   size: 28,
                 ),
                 onTap: () {
-                  SmartAssessmentBottomSheet.show(context, 'Business & MSME', 'category', () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => const DiscoverResultsScreen(title: 'Business & MSME', type: 'category'),
-                      ),
-                    );
-                  });
+                  SmartAssessmentBottomSheet.show(
+                    context,
+                    'Business & MSME',
+                    'category',
+                    () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const DiscoverResultsScreen(
+                            title: 'Business & MSME',
+                            type: 'category',
+                          ),
+                        ),
+                      );
+                    },
+                  );
                 },
               ),
               const SizedBox(width: 10),
@@ -1071,13 +1100,21 @@ class _HomeScreenState extends State<HomeScreen> {
                   size: 28,
                 ),
                 onTap: () {
-                  SmartAssessmentBottomSheet.show(context, 'Business & MSME', 'category', () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => const DiscoverResultsScreen(title: 'Business & MSME', type: 'category'),
-                      ),
-                    );
-                  });
+                  SmartAssessmentBottomSheet.show(
+                    context,
+                    'Business & MSME',
+                    'category',
+                    () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const DiscoverResultsScreen(
+                            title: 'Business & MSME',
+                            type: 'category',
+                          ),
+                        ),
+                      );
+                    },
+                  );
                 },
               ),
               const SizedBox(width: 10),
@@ -1089,13 +1126,21 @@ class _HomeScreenState extends State<HomeScreen> {
                   size: 28,
                 ),
                 onTap: () {
-                  SmartAssessmentBottomSheet.show(context, 'Education', 'category', () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => const DiscoverResultsScreen(title: 'Education', type: 'category'),
-                      ),
-                    );
-                  });
+                  SmartAssessmentBottomSheet.show(
+                    context,
+                    'Education',
+                    'category',
+                    () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const DiscoverResultsScreen(
+                            title: 'Education',
+                            type: 'category',
+                          ),
+                        ),
+                      );
+                    },
+                  );
                 },
               ),
               const SizedBox(width: 10),
@@ -1107,13 +1152,21 @@ class _HomeScreenState extends State<HomeScreen> {
                   size: 28,
                 ),
                 onTap: () {
-                  SmartAssessmentBottomSheet.show(context, 'Employment', 'category', () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => const DiscoverResultsScreen(title: 'Employment', type: 'category'),
-                      ),
-                    );
-                  });
+                  SmartAssessmentBottomSheet.show(
+                    context,
+                    'Employment',
+                    'category',
+                    () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const DiscoverResultsScreen(
+                            title: 'Employment',
+                            type: 'category',
+                          ),
+                        ),
+                      );
+                    },
+                  );
                 },
               ),
               const SizedBox(width: 10),
@@ -1125,13 +1178,21 @@ class _HomeScreenState extends State<HomeScreen> {
                   size: 28,
                 ),
                 onTap: () {
-                  SmartAssessmentBottomSheet.show(context, 'Housing', 'category', () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => const DiscoverResultsScreen(title: 'Housing', type: 'category'),
-                      ),
-                    );
-                  });
+                  SmartAssessmentBottomSheet.show(
+                    context,
+                    'Housing',
+                    'category',
+                    () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const DiscoverResultsScreen(
+                            title: 'Housing',
+                            type: 'category',
+                          ),
+                        ),
+                      );
+                    },
+                  );
                 },
               ),
               const SizedBox(width: 10),
@@ -1156,13 +1217,21 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
                 onTap: () {
-                  SmartAssessmentBottomSheet.show(context, 'Healthcare', 'category', () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => const DiscoverResultsScreen(title: 'Healthcare', type: 'category'),
-                      ),
-                    );
-                  });
+                  SmartAssessmentBottomSheet.show(
+                    context,
+                    'Healthcare',
+                    'category',
+                    () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const DiscoverResultsScreen(
+                            title: 'Healthcare',
+                            type: 'category',
+                          ),
+                        ),
+                      );
+                    },
+                  );
                 },
               ),
               const SizedBox(width: 10),
@@ -1204,10 +1273,7 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            SizedBox(
-              height: 36,
-              child: Center(child: iconWidget),
-            ),
+            SizedBox(height: 36, child: Center(child: iconWidget)),
             const SizedBox(height: 8),
             Expanded(
               child: Align(
@@ -1230,9 +1296,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildViewAllGoalCard({
-    required VoidCallback onTap,
-  }) {
+  Widget _buildViewAllGoalCard({required VoidCallback onTap}) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -1286,9 +1350,13 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // Recommended For You section (horizontal lists)
-  Widget _buildRecommendedSection(BuildContext context, List<Scheme> schemes, AppProvider provider) {
+  Widget _buildRecommendedSection(
+    BuildContext context,
+    List<Scheme> schemes,
+    AppProvider provider,
+  ) {
     final List<Map<String, dynamic>> items = [];
-    
+
     if (schemes.isNotEmpty) {
       for (int i = 0; i < schemes.length; i++) {
         final s = schemes[i];
@@ -1298,18 +1366,31 @@ class _HomeScreenState extends State<HomeScreen> {
           'title': s.name,
           'subtitle': s.overview.isNotEmpty ? s.overview : s.objectives,
           'match': "$match% Match",
-          'isBookmarked': provider.bookmarkedIds.contains(s.id) || provider.bookmarkedIds.contains(s.schemeCode),
+          'isBookmarked':
+              provider.bookmarkedIds.contains(s.id) ||
+              provider.bookmarkedIds.contains(s.schemeCode),
           'schemeCode': s.schemeCode,
-          'chips': (s.id.toLowerCase() == 'in009' || s.schemeCode.toLowerCase() == 'in009')
+          'chips':
+              (s.id.toLowerCase() == 'in009' ||
+                  s.schemeCode.toLowerCase() == 'in009')
               ? ['Central Scheme', 'Startup India', 'Capacity Building']
               : [
-                  if (s.sponsoringBody.isNotEmpty)
-                    ...s.sponsoringBody.split(',').map((x) => x.trim()).where((x) => x.isNotEmpty),
-                  s.governmentLevel.isNotEmpty ? s.governmentLevel : 'Central',
-                  s.schemeType.isNotEmpty ? s.schemeType : 'Loan',
-                ]
+                      if (s.sponsoringBody.isNotEmpty)
+                        ...s.sponsoringBody
+                            .split(',')
+                            .map((x) => x.trim())
+                            .where((x) => x.isNotEmpty),
+                      s.governmentLevel.isNotEmpty
+                          ? s.governmentLevel
+                          : 'Central',
+                      s.schemeType.isNotEmpty ? s.schemeType : 'Loan',
+                    ]
                     .map((x) => x.trim())
-                    .where((x) => x.isNotEmpty && x.toLowerCase() != 'pending official verification')
+                    .where(
+                      (x) =>
+                          x.isNotEmpty &&
+                          x.toLowerCase() != 'pending official verification',
+                    )
                     .take(3)
                     .toList(),
           'location': s.state.isNotEmpty ? s.state : 'All India',
@@ -1424,7 +1505,7 @@ class _HomeScreenState extends State<HomeScreen> {
               final item = items[index];
               final Scheme? schemeObj = item['scheme'] as Scheme?;
               final isBookmarked = item['isBookmarked'] as bool;
-              
+
               final double screenWidth = MediaQuery.of(context).size.width;
               final double spacing = 12.0;
               final double cardWidth = (screenWidth - 32 - spacing) / 1.08;
@@ -1434,13 +1515,17 @@ class _HomeScreenState extends State<HomeScreen> {
               final matchObj = regex.firstMatch(title);
               String shortForm = title;
               String fullName = '';
-              
+
               if (matchObj != null) {
                 final bracketText = matchObj.group(1)!.trim();
-                final outsideText = title.replaceAll(regex, '').replaceAll(RegExp(r'\s+'), ' ').trim();
-                final isBracketAcronym = bracketText.length <= 10 && 
-                                         !bracketText.contains(' ') && 
-                                         bracketText == bracketText.toUpperCase();
+                final outsideText = title
+                    .replaceAll(regex, '')
+                    .replaceAll(RegExp(r'\s+'), ' ')
+                    .trim();
+                final isBracketAcronym =
+                    bracketText.length <= 10 &&
+                    !bracketText.contains(' ') &&
+                    bracketText == bracketText.toUpperCase();
                 if (isBracketAcronym) {
                   shortForm = bracketText;
                   fullName = outsideText;
@@ -1454,7 +1539,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 onTap: () {
                   if (schemeObj != null) {
                     Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => SchemeDetailsScreen(scheme: schemeObj)),
+                      MaterialPageRoute(
+                        builder: (_) => SchemeDetailsScreen(scheme: schemeObj),
+                      ),
                     );
                   }
                 },
@@ -1482,7 +1569,10 @@ class _HomeScreenState extends State<HomeScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
                             decoration: BoxDecoration(
                               color: const Color(0xFFDCFCE7),
                               borderRadius: BorderRadius.circular(6),
@@ -1502,8 +1592,12 @@ class _HomeScreenState extends State<HomeScreen> {
                               provider.toggleBookmark(sCode);
                             },
                             child: Icon(
-                              isBookmarked ? Icons.bookmark : Icons.bookmark_border,
-                              color: isBookmarked ? const Color(0xFF2563EB) : const Color(0xFF94A3B8),
+                              isBookmarked
+                                  ? Icons.bookmark
+                                  : Icons.bookmark_border,
+                              color: isBookmarked
+                                  ? const Color(0xFF2563EB)
+                                  : const Color(0xFF94A3B8),
                               size: 20,
                             ),
                           ),
@@ -1519,7 +1613,9 @@ class _HomeScreenState extends State<HomeScreen> {
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               color: Colors.white,
-                              border: Border.all(color: const Color(0xFFE2E8F0)),
+                              border: Border.all(
+                                color: const Color(0xFFE2E8F0),
+                              ),
                             ),
                             alignment: Alignment.center,
                             child: Text(
@@ -1527,7 +1623,10 @@ class _HomeScreenState extends State<HomeScreen> {
                               style: GoogleFonts.poppins(
                                 fontSize: 9.0,
                                 fontWeight: FontWeight.bold,
-                                color: (item['logoColor'] ?? const Color(0xFF2563EB)) as Color,
+                                color:
+                                    (item['logoColor'] ??
+                                            const Color(0xFF2563EB))
+                                        as Color,
                               ),
                             ),
                           ),
@@ -1569,14 +1668,18 @@ class _HomeScreenState extends State<HomeScreen> {
                       // Chips Row
                       Builder(
                         builder: (context) {
-                          final chipsList = List<String>.from(item['chips'] as List<String>)
-                            ..sort((a, b) => a.length.compareTo(b.length));
+                          final chipsList = List<String>.from(
+                            item['chips'] as List<String>,
+                          )..sort((a, b) => a.length.compareTo(b.length));
                           return Wrap(
                             spacing: 4,
                             runSpacing: 4,
                             children: chipsList.map((tag) {
                               return Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 6,
+                                  vertical: 2,
+                                ),
                                 decoration: BoxDecoration(
                                   color: const Color(0xFFF1F5F9),
                                   borderRadius: BorderRadius.circular(4),
@@ -1611,20 +1714,14 @@ class _HomeScreenState extends State<HomeScreen> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [
-            Color(0xFFFFFDF5),
-            Color(0xFFFEF3C7),
-          ],
+          colors: [Color(0xFFFFFDF5), Color(0xFFFEF3C7)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(18),
         border: Border.all(color: const Color(0xFFFEF3C7)),
         boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
-            blurRadius: 6,
-          ),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 6),
         ],
       ),
       child: Row(
@@ -1723,7 +1820,8 @@ class _HomeScreenState extends State<HomeScreen> {
               onTap: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (_) => const NotificationsScreen(initialFilter: 'updates'),
+                    builder: (_) =>
+                        const NotificationsScreen(initialFilter: 'updates'),
                   ),
                 );
               },
@@ -1785,7 +1883,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         border: Border.all(color: const Color(0xFFBFDBFE)),
@@ -1846,7 +1947,9 @@ class _HomeScreenState extends State<HomeScreen> {
             height: 60,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: const Color(0xFFEFF6FF), // Soft premium light blue background
+              color: const Color(
+                0xFFEFF6FF,
+              ), // Soft premium light blue background
               border: Border.all(color: const Color(0xFF93C5FD), width: 1.5),
               boxShadow: [
                 BoxShadow(
@@ -1858,7 +1961,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             padding: const EdgeInsets.all(2),
             child: Image.asset(
-              'assets/images/compoanion bot.png',
+              'assets/saarthi_expressions/Ai companion.png',
               fit: BoxFit.contain,
             ),
           ),
@@ -1906,8 +2009,18 @@ class ShipPainter extends CustomPainter {
     paint.color = const Color(0xFF93C5FD);
     final waterPath = Path()
       ..moveTo(0, size.height * 0.7)
-      ..quadraticBezierTo(size.width * 0.25, size.height * 0.65, size.width * 0.5, size.height * 0.7)
-      ..quadraticBezierTo(size.width * 0.75, size.height * 0.75, size.width, size.height * 0.7)
+      ..quadraticBezierTo(
+        size.width * 0.25,
+        size.height * 0.65,
+        size.width * 0.5,
+        size.height * 0.7,
+      )
+      ..quadraticBezierTo(
+        size.width * 0.75,
+        size.height * 0.75,
+        size.width,
+        size.height * 0.7,
+      )
       ..lineTo(size.width, size.height)
       ..lineTo(0, size.height)
       ..close();
@@ -1923,14 +2036,35 @@ class ShipPainter extends CustomPainter {
     canvas.drawPath(hullPath, paint);
 
     paint.color = const Color(0xFF1E3A8A);
-    canvas.drawRect(Rect.fromLTWH(size.width * 0.6, size.height * 0.44, 10, 12), paint);
+    canvas.drawRect(
+      Rect.fromLTWH(size.width * 0.6, size.height * 0.44, 10, 12),
+      paint,
+    );
 
     paint.color = const Color(0xFFEF4444);
-    canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromLTWH(size.width * 0.25, size.height * 0.50, 10, 10), const Radius.circular(1)), paint);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(size.width * 0.25, size.height * 0.50, 10, 10),
+        const Radius.circular(1),
+      ),
+      paint,
+    );
     paint.color = const Color(0xFF10B981);
-    canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromLTWH(size.width * 0.36, size.height * 0.50, 10, 10), const Radius.circular(1)), paint);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(size.width * 0.36, size.height * 0.50, 10, 10),
+        const Radius.circular(1),
+      ),
+      paint,
+    );
     paint.color = const Color(0xFFF59E0B);
-    canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromLTWH(size.width * 0.47, size.height * 0.50, 10, 10), const Radius.circular(1)), paint);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(size.width * 0.47, size.height * 0.50, 10, 10),
+        const Radius.circular(1),
+      ),
+      paint,
+    );
   }
 
   @override

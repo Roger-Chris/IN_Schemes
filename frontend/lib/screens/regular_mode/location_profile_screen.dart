@@ -4,7 +4,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'about_you_profile_screen.dart';
 import 'package:provider/provider.dart';
-import '../providers/app_state_provider.dart';
+import '../../providers/app_state_provider.dart';
 
 class LocationProfileScreen extends StatefulWidget {
   const LocationProfileScreen({super.key});

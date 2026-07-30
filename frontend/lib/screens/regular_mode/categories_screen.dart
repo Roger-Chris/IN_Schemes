@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../providers/app_state_provider.dart';
-import '../utils/constants.dart';
-import '../widgets/filter_panel.dart';
-import 'companion/saarthi_welcome_screen.dart';
-import '../widgets/smart_assessment_bottom_sheet.dart';
+import '../../providers/app_state_provider.dart';
+import '../../utils/constants.dart';
+import '../../widgets/filter_panel.dart';
+import '../companion_mode/saarthi_welcome_screen.dart';
+import '../../widgets/smart_assessment_bottom_sheet.dart';
 import 'discover_results_screen.dart';
 
 class CategoryItem {
@@ -40,7 +40,6 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
   final _scrollController = ScrollController();
   String _searchQuery = '';
 
-
   // Section keys for scrolling
   final GlobalKey _categorySectionKey = GlobalKey();
   final GlobalKey _ministrySectionKey = GlobalKey();
@@ -57,7 +56,8 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
   static const List<CategoryItem> allCategoriesList = [
     CategoryItem(
       title: 'Agriculture',
-      description: 'Crop loans, subsidies for fertilizers, machinery, and allied fields',
+      description:
+          'Crop loans, subsidies for fertilizers, machinery, and allied fields',
       icon: Icons.grass,
       iconColor: Color(0xFF2E7D32),
       backgroundColor: Color(0xFFE8F5E9),
@@ -73,7 +73,8 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     ),
     CategoryItem(
       title: 'Women & Child Welfare',
-      description: 'Financial support, safety, self-employment, and skill development',
+      description:
+          'Financial support, safety, self-employment, and skill development',
       icon: Icons.family_restroom,
       iconColor: Color(0xFFD81B60),
       backgroundColor: Color(0xFFFCE4EC),
@@ -105,7 +106,8 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     ),
     CategoryItem(
       title: 'Housing',
-      description: 'Subsidies for building houses and urban/rural housing loans',
+      description:
+          'Subsidies for building houses and urban/rural housing loans',
       icon: Icons.home,
       iconColor: Color(0xFFFBC02D),
       backgroundColor: Color(0xFFFFFDE7),
@@ -113,7 +115,8 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     ),
     CategoryItem(
       title: 'Business & MSME',
-      description: 'Subsidies, loans, and setups for micro, small & medium businesses',
+      description:
+          'Subsidies, loans, and setups for micro, small & medium businesses',
       icon: Icons.domain,
       iconColor: Color(0xFF00796B),
       backgroundColor: Color(0xFFE0F2F1),
@@ -121,7 +124,8 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     ),
     CategoryItem(
       title: 'Students',
-      description: 'Specialized student entrepreneurship and incubation programs',
+      description:
+          'Specialized student entrepreneurship and incubation programs',
       icon: Icons.school_outlined,
       iconColor: Color(0xFF1976D2),
       backgroundColor: Color(0xFFE3F2FD),
@@ -129,7 +133,8 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     ),
     CategoryItem(
       title: 'Farmers',
-      description: 'Direct income transfers, seed distributions, and equipment grants',
+      description:
+          'Direct income transfers, seed distributions, and equipment grants',
       icon: Icons.agriculture,
       iconColor: Color(0xFF4CAF50),
       backgroundColor: Color(0xFFE8F5E9),
@@ -137,7 +142,8 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     ),
     CategoryItem(
       title: 'Transport',
-      description: 'Loans for commercial vehicles, transport subsidies, and licenses',
+      description:
+          'Loans for commercial vehicles, transport subsidies, and licenses',
       icon: Icons.directions_bus,
       iconColor: Color(0xFFFF9800),
       backgroundColor: Color(0xFFFFF3E0),
@@ -153,7 +159,8 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     ),
     CategoryItem(
       title: 'Pension',
-      description: 'Social security pensions, old age, and widow pension schemes',
+      description:
+          'Social security pensions, old age, and widow pension schemes',
       icon: Icons.blind,
       iconColor: Color(0xFFFFB300),
       backgroundColor: Color(0xFFFFF8E1),
@@ -161,7 +168,8 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     ),
     CategoryItem(
       title: 'Finance',
-      description: 'Collateral-free loans, interest subvention, and banking schemes',
+      description:
+          'Collateral-free loans, interest subvention, and banking schemes',
       icon: Icons.account_balance,
       iconColor: Color(0xFF0D47A1),
       backgroundColor: Color(0xFFE0F2FE),
@@ -169,7 +177,8 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     ),
     CategoryItem(
       title: 'Marriage Assistance',
-      description: 'Support grants for marriages of daughters from low-income groups',
+      description:
+          'Support grants for marriages of daughters from low-income groups',
       icon: Icons.favorite_border,
       iconColor: Color(0xFFEC407A),
       backgroundColor: Color(0xFFFCE4EC),
@@ -177,7 +186,8 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     ),
     CategoryItem(
       title: 'Insurance',
-      description: 'Accident insurance, life covers, and health insurance plans',
+      description:
+          'Accident insurance, life covers, and health insurance plans',
       icon: Icons.shield,
       iconColor: Color(0xFF00897B),
       backgroundColor: Color(0xFFE0F2F1),
@@ -185,7 +195,8 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     ),
     CategoryItem(
       title: 'Startup',
-      description: 'Seed funding, grants, incubation, and equity assistance programs',
+      description:
+          'Seed funding, grants, incubation, and equity assistance programs',
       icon: Icons.rocket_launch,
       iconColor: Color(0xFF7B1FA2),
       backgroundColor: Color(0xFFF3E5F5),
@@ -225,7 +236,8 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     ),
     CategoryItem(
       title: 'Digital India',
-      description: 'Digital training, internet vouchers, and tech startups assistance',
+      description:
+          'Digital training, internet vouchers, and tech startups assistance',
       icon: Icons.desktop_windows,
       iconColor: Color(0xFF1E88E5),
       backgroundColor: Color(0xFFE3F2FD),
@@ -233,7 +245,8 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     ),
     CategoryItem(
       title: 'Artisan',
-      description: 'Support, toolkits distribution, and exhibitions for craftsmen',
+      description:
+          'Support, toolkits distribution, and exhibitions for craftsmen',
       icon: Icons.brush,
       iconColor: Color(0xFF4E342E),
       backgroundColor: Color(0xFFD7CCC8),
@@ -276,49 +289,19 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
   ];
 
   final List<Map<String, dynamic>> _displayMinistries = [
-    {
-      'title': 'Ministry of MSME',
-      'count': '186 Schemes',
-    },
-    {
-      'title': 'Ministry of Education',
-      'count': '158 Schemes',
-    },
-    {
-      'title': 'Ministry of Finance',
-      'count': '142 Schemes',
-    },
-    {
-      'title': 'Ministry of Agriculture',
-      'count': '118 Schemes',
-    },
-    {
-      'title': 'Ministry of Rural Development',
-      'count': '96 Schemes',
-    },
+    {'title': 'Ministry of MSME', 'count': '186 Schemes'},
+    {'title': 'Ministry of Education', 'count': '158 Schemes'},
+    {'title': 'Ministry of Finance', 'count': '142 Schemes'},
+    {'title': 'Ministry of Agriculture', 'count': '118 Schemes'},
+    {'title': 'Ministry of Rural Development', 'count': '96 Schemes'},
   ];
 
   final List<Map<String, dynamic>> _displayStates = [
-    {
-      'title': 'Tamil Nadu',
-      'count': '185 Schemes',
-    },
-    {
-      'title': 'Maharashtra',
-      'count': '212 Schemes',
-    },
-    {
-      'title': 'Uttar Pradesh',
-      'count': '198 Schemes',
-    },
-    {
-      'title': 'Karnataka',
-      'count': '154 Schemes',
-    },
-    {
-      'title': 'Gujarat',
-      'count': '126 Schemes',
-    },
+    {'title': 'Tamil Nadu', 'count': '185 Schemes'},
+    {'title': 'Maharashtra', 'count': '212 Schemes'},
+    {'title': 'Uttar Pradesh', 'count': '198 Schemes'},
+    {'title': 'Karnataka', 'count': '154 Schemes'},
+    {'title': 'Gujarat', 'count': '126 Schemes'},
   ];
 
   void _scrollToSection(GlobalKey key) {
@@ -341,13 +324,12 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     );
   }
 
-
-
   void _onCategorySelected(String categoryName, AppProvider provider) {
     SmartAssessmentBottomSheet.show(context, categoryName, 'category', () {
       Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (_) => DiscoverResultsScreen(title: categoryName, type: 'category'),
+          builder: (_) =>
+              DiscoverResultsScreen(title: categoryName, type: 'category'),
         ),
       );
     });
@@ -357,7 +339,8 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     SmartAssessmentBottomSheet.show(context, ministryName, 'ministry', () {
       Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (_) => DiscoverResultsScreen(title: ministryName, type: 'ministry'),
+          builder: (_) =>
+              DiscoverResultsScreen(title: ministryName, type: 'ministry'),
         ),
       );
     });
@@ -367,7 +350,8 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     SmartAssessmentBottomSheet.show(context, stateName, 'state', () {
       Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (_) => DiscoverResultsScreen(title: stateName, type: 'state'),
+          builder: (_) =>
+              DiscoverResultsScreen(title: stateName, type: 'state'),
         ),
       );
     });
@@ -382,9 +366,21 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
       ),
       builder: (context) {
         final stages = [
-          {'title': 'Student', 'desc': 'Scholarships, education loans, and skill dev', 'icon': Icons.school},
-          {'title': 'Youth', 'desc': 'Self-employment schemes and incubation setups', 'icon': Icons.emoji_people},
-          {'title': 'Senior Citizen', 'desc': 'Pension plans, insurance, savings schemes', 'icon': Icons.elderly},
+          {
+            'title': 'Student',
+            'desc': 'Scholarships, education loans, and skill dev',
+            'icon': Icons.school,
+          },
+          {
+            'title': 'Youth',
+            'desc': 'Self-employment schemes and incubation setups',
+            'icon': Icons.emoji_people,
+          },
+          {
+            'title': 'Senior Citizen',
+            'desc': 'Pension plans, insurance, savings schemes',
+            'icon': Icons.elderly,
+          },
         ];
 
         return SafeArea(
@@ -407,10 +403,19 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                   return ListTile(
                     leading: CircleAvatar(
                       backgroundColor: const Color(0xFFEFF6FF),
-                      child: Icon(stage['icon'] as IconData, color: const Color(0xFF2563EB)),
+                      child: Icon(
+                        stage['icon'] as IconData,
+                        color: const Color(0xFF2563EB),
+                      ),
                     ),
-                    title: Text(stage['title'] as String, style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
-                    subtitle: Text(stage['desc'] as String, style: GoogleFonts.inter(fontSize: 11)),
+                    title: Text(
+                      stage['title'] as String,
+                      style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+                    ),
+                    subtitle: Text(
+                      stage['desc'] as String,
+                      style: GoogleFonts.inter(fontSize: 11),
+                    ),
                     onTap: () {
                       Navigator.pop(context);
                       provider.clearFilters();
@@ -431,20 +436,22 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     );
   }
 
-
-
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<AppProvider>(context);
 
     return Scaffold(
-      backgroundColor: Colors.transparent, // Uses MainTabsContainer blue gradient background
+      backgroundColor:
+          Colors.transparent, // Uses MainTabsContainer blue gradient background
       body: SafeArea(
         child: Column(
           children: [
             // Premium Header (Discover, Search, AI avatar)
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 12.0,
+              ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -476,7 +483,11 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                         onPressed: () {
                           provider.updateTabIndex(1); // Go to Search Screen tab
                         },
-                        icon: const Icon(Icons.search, color: Color(0xFF0F172A), size: 24),
+                        icon: const Icon(
+                          Icons.search,
+                          color: Color(0xFF0F172A),
+                          size: 24,
+                        ),
                       ),
                       const SizedBox(width: 4),
                       GestureDetector(
@@ -492,26 +503,32 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                           backgroundColor: const Color(0xFFE2E8F0),
                           child: ClipOval(
                             child: Image.asset(
-                              'assets/images/compoanion bot.png',
+                              'assets/saarthi_expressions/Ai companion.png',
                               width: 36,
                               height: 36,
                               fit: BoxFit.cover,
                               errorBuilder: (context, error, stackTrace) {
-                                return const Icon(Icons.android, color: AppConstants.primaryColor);
+                                return const Icon(
+                                  Icons.android,
+                                  color: AppConstants.primaryColor,
+                                );
                               },
                             ),
                           ),
                         ),
                       ),
                     ],
-                  )
+                  ),
                 ],
               ),
             ),
 
             // Search Bar with Integrated Filter Button
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 8.0,
+              ),
               child: Container(
                 height: 48,
                 decoration: BoxDecoration(
@@ -535,7 +552,11 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                     }
                   },
                   decoration: InputDecoration(
-                    prefixIcon: const Icon(Icons.search, color: Color(0xFF64748B), size: 20),
+                    prefixIcon: const Icon(
+                      Icons.search,
+                      color: Color(0xFF64748B),
+                      size: 20,
+                    ),
                     hintText: 'Search schemes, benefits, departments...',
                     hintStyle: GoogleFonts.inter(
                       color: const Color(0xFF94A3B8),
@@ -544,10 +565,18 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                     border: InputBorder.none,
                     contentPadding: const EdgeInsets.symmetric(vertical: 12),
                     suffixIcon: Container(
-                      margin: const EdgeInsets.only(right: 6, top: 4, bottom: 4),
+                      margin: const EdgeInsets.only(
+                        right: 6,
+                        top: 4,
+                        bottom: 4,
+                      ),
                       child: TextButton.icon(
                         onPressed: _openFilterPanel,
-                        icon: const Icon(Icons.tune_outlined, size: 14, color: Color(0xFF2563EB)),
+                        icon: const Icon(
+                          Icons.tune_outlined,
+                          size: 14,
+                          color: Color(0xFF2563EB),
+                        ),
                         label: Text(
                           "Filter",
                           style: GoogleFonts.inter(
@@ -585,7 +614,8 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                     _buildSectionHeader(
                       key: _categorySectionKey,
                       title: 'By Category',
-                      onViewAll: () => _showAllCategoriesBottomSheet(context, provider),
+                      onViewAll: () =>
+                          _showAllCategoriesBottomSheet(context, provider),
                     ),
                     _buildCategoryHorizontalList(provider),
                     const SizedBox(height: 16),
@@ -594,7 +624,8 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                     _buildSectionHeader(
                       key: _ministrySectionKey,
                       title: 'By Ministry',
-                      onViewAll: () => _showAllMinistriesBottomSheet(context, provider),
+                      onViewAll: () =>
+                          _showAllMinistriesBottomSheet(context, provider),
                     ),
                     _buildMinistryHorizontalList(provider),
                     const SizedBox(height: 16),
@@ -603,7 +634,8 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                     _buildSectionHeader(
                       key: _stateSectionKey,
                       title: 'By State',
-                      onViewAll: () => _showAllStatesBottomSheet(context, provider),
+                      onViewAll: () =>
+                          _showAllStatesBottomSheet(context, provider),
                     ),
                     _buildStateHorizontalList(provider),
                     const SizedBox(height: 16),
@@ -623,16 +655,40 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
 
   Widget _buildQuickLinksRow(AppProvider provider) {
     final List<Map<String, dynamic>> items = [
-      {'title': 'All Categories', 'icon': Icons.grid_view_rounded, 'action': () => _scrollToSection(_categorySectionKey)},
-      {'title': 'All Ministries', 'icon': Icons.account_balance_rounded, 'action': () => _scrollToSection(_ministrySectionKey)},
-      {'title': 'All States', 'icon': Icons.location_on_rounded, 'action': () => _scrollToSection(_stateSectionKey)},
-      {'title': 'By Life Stage', 'icon': Icons.people_alt_rounded, 'action': () => _openLifeStageSelector(provider)},
-      {'title': 'Popular', 'icon': Icons.star_rounded, 'action': () {
-        _onCategorySelected('Popular Schemes', provider);
-      }},
-      {'title': 'Newly Added', 'icon': Icons.fiber_new_rounded, 'action': () {
-        _onCategorySelected('Newly Added Schemes', provider);
-      }},
+      {
+        'title': 'All Categories',
+        'icon': Icons.grid_view_rounded,
+        'action': () => _scrollToSection(_categorySectionKey),
+      },
+      {
+        'title': 'All Ministries',
+        'icon': Icons.account_balance_rounded,
+        'action': () => _scrollToSection(_ministrySectionKey),
+      },
+      {
+        'title': 'All States',
+        'icon': Icons.location_on_rounded,
+        'action': () => _scrollToSection(_stateSectionKey),
+      },
+      {
+        'title': 'By Life Stage',
+        'icon': Icons.people_alt_rounded,
+        'action': () => _openLifeStageSelector(provider),
+      },
+      {
+        'title': 'Popular',
+        'icon': Icons.star_rounded,
+        'action': () {
+          _onCategorySelected('Popular Schemes', provider);
+        },
+      },
+      {
+        'title': 'Newly Added',
+        'icon': Icons.fiber_new_rounded,
+        'action': () {
+          _onCategorySelected('Newly Added Schemes', provider);
+        },
+      },
     ];
 
     return SizedBox(
@@ -665,7 +721,10 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                           offset: const Offset(0, 3),
                         ),
                       ],
-                      border: Border.all(color: const Color(0xFFEFF6FF), width: 1.5),
+                      border: Border.all(
+                        color: const Color(0xFFEFF6FF),
+                        width: 1.5,
+                      ),
                     ),
                     child: Center(
                       child: Icon(
@@ -784,7 +843,11 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                         color: Color(0xFFEFF6FF),
                         shape: BoxShape.circle,
                       ),
-                      child: Icon(icon, color: const Color(0xFF2563EB), size: 18),
+                      child: Icon(
+                        icon,
+                        color: const Color(0xFF2563EB),
+                        size: 18,
+                      ),
                     ),
                     const Spacer(),
                     Text(
@@ -859,7 +922,10 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                       decoration: BoxDecoration(
                         color: const Color(0xFFEFF6FF),
                         shape: BoxShape.circle,
-                        border: Border.all(color: const Color(0xFF2563EB).withValues(alpha: 0.2), width: 1),
+                        border: Border.all(
+                          color: const Color(0xFF2563EB).withValues(alpha: 0.2),
+                          width: 1,
+                        ),
                       ),
                       child: Center(
                         child: Container(
@@ -867,7 +933,12 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                           height: 26,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            border: Border.all(color: const Color(0xFF2563EB).withValues(alpha: 0.4), width: 1),
+                            border: Border.all(
+                              color: const Color(
+                                0xFF2563EB,
+                              ).withValues(alpha: 0.4),
+                              width: 1,
+                            ),
                           ),
                           child: const Center(
                             child: Icon(
@@ -1005,8 +1076,6 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     );
   }
 
-
-
   Widget _buildAICompanionBanner(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -1048,7 +1117,11 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                         ),
                       );
                     },
-                    icon: const Icon(Icons.chat_bubble_outline, size: 14, color: Color(0xFF1E3A8A)),
+                    icon: const Icon(
+                      Icons.chat_bubble_outline,
+                      size: 14,
+                      color: Color(0xFF1E3A8A),
+                    ),
                     label: Text(
                       'Ask AI',
                       style: GoogleFonts.poppins(
@@ -1063,7 +1136,10 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20),
                       ),
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
                       minimumSize: Size.zero,
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     ),
@@ -1074,14 +1150,11 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
             const SizedBox(width: 8),
             // Avatar
             Image.asset(
-              'assets/images/compoanion bot.png',
+              'assets/saarthi_expressions/Ai companion.png',
               width: 60,
               height: 60,
-              errorBuilder: (context, error, stackTrace) => const Icon(
-                Icons.android,
-                size: 50,
-                color: Color(0xFF2563EB),
-              ),
+              errorBuilder: (context, error, stackTrace) =>
+                  const Icon(Icons.android, size: 50, color: Color(0xFF2563EB)),
             ),
           ],
         ),
@@ -1089,7 +1162,10 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     );
   }
 
-  void _showAllCategoriesBottomSheet(BuildContext context, AppProvider provider) {
+  void _showAllCategoriesBottomSheet(
+    BuildContext context,
+    AppProvider provider,
+  ) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -1098,7 +1174,9 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
         return StatefulBuilder(
           builder: (context, setModalState) {
             final filtered = allCategoriesList.where((cat) {
-              return cat.title.toLowerCase().contains(_searchQuery.toLowerCase());
+              return cat.title.toLowerCase().contains(
+                _searchQuery.toLowerCase(),
+              );
             }).toList();
 
             return Container(
@@ -1144,7 +1222,10 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                             });
                             Navigator.pop(context);
                           },
-                          icon: const Icon(Icons.close, color: Color(0xFF64748B)),
+                          icon: const Icon(
+                            Icons.close,
+                            color: Color(0xFF64748B),
+                          ),
                         ),
                       ],
                     ),
@@ -1166,9 +1247,14 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                         style: GoogleFonts.inter(fontSize: 14),
                         decoration: InputDecoration(
                           hintText: 'Search categories...',
-                          prefixIcon: const Icon(Icons.search, color: Color(0xFF64748B)),
+                          prefixIcon: const Icon(
+                            Icons.search,
+                            color: Color(0xFF64748B),
+                          ),
                           border: InputBorder.none,
-                          contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 12,
+                          ),
                         ),
                       ),
                     ),
@@ -1176,13 +1262,17 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                   const SizedBox(height: 16),
                   Expanded(
                     child: GridView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 3,
-                        crossAxisSpacing: 10,
-                        mainAxisSpacing: 12,
-                        childAspectRatio: 0.78,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20.0,
+                        vertical: 8.0,
                       ),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 3,
+                            crossAxisSpacing: 10,
+                            mainAxisSpacing: 12,
+                            childAspectRatio: 0.78,
+                          ),
                       itemCount: filtered.length,
                       itemBuilder: (context, index) {
                         final category = filtered[index];
@@ -1199,7 +1289,11 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     );
   }
 
-  Widget _buildCategoryCard(BuildContext context, CategoryItem category, AppProvider provider) {
+  Widget _buildCategoryCard(
+    BuildContext context,
+    CategoryItem category,
+    AppProvider provider,
+  ) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -1262,7 +1356,10 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     );
   }
 
-  void _showAllMinistriesBottomSheet(BuildContext context, AppProvider provider) {
+  void _showAllMinistriesBottomSheet(
+    BuildContext context,
+    AppProvider provider,
+  ) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -1338,9 +1435,19 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                           color: Color(0xFFEFF6FF),
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(Icons.account_balance_rounded, color: Color(0xFF2563EB), size: 18),
+                        child: const Icon(
+                          Icons.account_balance_rounded,
+                          color: Color(0xFF2563EB),
+                          size: 18,
+                        ),
                       ),
-                      title: Text(title, style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 13.5)),
+                      title: Text(
+                        title,
+                        style: GoogleFonts.poppins(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13.5,
+                        ),
+                      ),
                       trailing: const Icon(Icons.chevron_right, size: 16),
                       onTap: () {
                         Navigator.pop(context);
@@ -1433,7 +1540,13 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                         size: const Size(36, 32),
                         painter: StateMapPainter(title),
                       ),
-                      title: Text(title, style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 13.5)),
+                      title: Text(
+                        title,
+                        style: GoogleFonts.poppins(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13.5,
+                        ),
+                      ),
                       trailing: const Icon(Icons.chevron_right, size: 16),
                       onTap: () {
                         Navigator.pop(context);

@@ -423,9 +423,9 @@ class AppProvider with ChangeNotifier {
 
           notifyListeners();
           debugPrint(
-            '[AppProvider] loginWithGoogle returning user: ${user.id}',
+            '[AppProvider] loginWithGoogle returning user: ${user.id}, isComplete: ${dbProfile.profileCompleted}',
           );
-          return true; // Profile exists and complete
+          return dbProfile.profileCompleted;
         } else {
           _profile = UserProfile(
             googleUserId: user.id,
@@ -503,16 +503,11 @@ class AppProvider with ChangeNotifier {
     _isLoggingOut = true;
     notifyListeners();
 
-    // 1. Navigate instantly to SplashScreen to perform the fresh welcome animation sequence
-    Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (_) => const SplashScreen()),
-      (route) => false,
-    );
-
-    // 2. Perform cleanup in the background
+    // 1. Perform cleanup and await asynchronous operations
     _isLoggedIn = false;
     _mobileNumber = '';
     _selectedLanguage = 'en';
+    _navigationMode = 'regular';
     _profile = UserProfile();
     _bookmarkedIds.clear();
     _recentlyViewedIds.clear();
@@ -529,6 +524,13 @@ class AppProvider with ChangeNotifier {
 
     _isLoggingOut = false;
     notifyListeners();
+
+    // 2. Navigate after cleanup is fully complete
+    if (!context.mounted) return;
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const SplashScreen()),
+      (route) => false,
+    );
   }
 
   Future<void> deleteAccount(BuildContext context) async {
@@ -536,6 +538,7 @@ class AppProvider with ChangeNotifier {
     _isLoggingOut = true;
     notifyListeners();
 
+    // 1. Delete profile from Supabase first while session is active
     if (_isLoggedIn) {
       final user = Supabase.instance.client.auth.currentUser;
       if (user != null) {
@@ -554,15 +557,11 @@ class AppProvider with ChangeNotifier {
       }
     }
 
-    if (!context.mounted) return;
-    Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (_) => const SplashScreen()),
-      (route) => false,
-    );
-
+    // 2. Perform local state cleanup and await async operations
     _isLoggedIn = false;
     _mobileNumber = '';
     _selectedLanguage = 'en';
+    _navigationMode = 'regular';
     _profile = UserProfile();
     _bookmarkedIds.clear();
     _recentlyViewedIds.clear();
@@ -579,6 +578,13 @@ class AppProvider with ChangeNotifier {
 
     _isLoggingOut = false;
     notifyListeners();
+
+    // 3. Navigate after all cleanup is fully complete
+    if (!context.mounted) return;
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const SplashScreen()),
+      (route) => false,
+    );
   }
 
   void updateTabIndex(int index, {bool addToHistory = true}) async {

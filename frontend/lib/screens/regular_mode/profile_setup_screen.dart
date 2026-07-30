@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../providers/app_state_provider.dart';
-import '../utils/constants.dart';
-import '../main.dart';
+import '../../providers/app_state_provider.dart';
+import '../../utils/constants.dart';
+import '../../main.dart';
 import 'eligibility_results_screen.dart';
+import '../companion_mode/saarthi_profile_setup_screen.dart';
 
 class ProfileSetupScreen extends StatefulWidget {
   final bool fromEligibilityCheck;
@@ -540,6 +541,14 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<AppProvider>(context);
+    final isCompanion = provider.navigationMode == 'companion';
+
+    if (isCompanion) {
+      return SaarthiProfileSetupScreen(
+        fromEligibilityCheck: widget.fromEligibilityCheck,
+      );
+    }
+
     final size = MediaQuery.of(context).size;
 
     return Scaffold(

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../models/scheme_model.dart';
-import '../services/scheme_repository.dart';
+import '../../models/scheme_model.dart';
+import '../../services/scheme_repository.dart';
 
 class SchemeDetailsScreen extends StatefulWidget {
   final Scheme scheme;
@@ -441,14 +441,13 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
 
   Widget _buildSchemeHighlightsCard(Scheme scheme) {
     final matches = [
-      scheme.governmentLevel.isNotEmpty ? '${scheme.governmentLevel} Level' : '',
+      scheme.governmentLevel.isNotEmpty
+          ? '${scheme.governmentLevel} Level'
+          : '',
       scheme.state,
       scheme.sector,
       scheme.targetBeneficiary,
-    ]
-        .where((value) => value.isNotEmpty)
-        .toSet()
-        .toList();
+    ].where((value) => value.isNotEmpty).toSet().toList();
     matches.sort((a, b) => a.length.compareTo(b.length));
 
     final maxPillWidth = MediaQuery.of(context).size.width - 56;

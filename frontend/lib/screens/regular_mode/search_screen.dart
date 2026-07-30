@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../providers/app_state_provider.dart';
-import '../widgets/filter_bottom_sheet.dart';
-import '../models/scheme_model.dart';
-import '../services/scheme_repository.dart';
+import '../../providers/app_state_provider.dart';
+import '../../widgets/filter_bottom_sheet.dart';
+import '../../models/scheme_model.dart';
+import '../../services/scheme_repository.dart';
 import 'scheme_details_screen.dart';
-import '../engine/recommendation_engine.dart';
+import '../../engine/recommendation_engine.dart';
 
 enum SearchState { idle, loading, results }
 
@@ -1104,7 +1104,8 @@ class _ResultSchemeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tags = List<String>.from(_otherTags)..sort((a, b) => a.length.compareTo(b.length));
+    final tags = List<String>.from(_otherTags)
+      ..sort((a, b) => a.length.compareTo(b.length));
     final provider = Provider.of<AppProvider>(context);
 
     // Display the full scheme name as requested

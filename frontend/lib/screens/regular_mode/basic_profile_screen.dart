@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import '../providers/app_state_provider.dart';
+import '../../providers/app_state_provider.dart';
 import 'location_profile_screen.dart';
 
 class BasicProfileScreen extends StatefulWidget {

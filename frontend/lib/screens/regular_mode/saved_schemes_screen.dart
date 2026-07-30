@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../providers/app_state_provider.dart';
-import '../models/scheme_model.dart';
+import '../../providers/app_state_provider.dart';
+import '../../models/scheme_model.dart';
 import 'scheme_details_screen.dart';
-import 'notifications_screen.dart';
+import '../notifications_screen.dart';
 
 class SavedSchemesScreen extends StatefulWidget {
   const SavedSchemesScreen({super.key});
@@ -13,10 +13,11 @@ class SavedSchemesScreen extends StatefulWidget {
   State<SavedSchemesScreen> createState() => _SavedSchemesScreenState();
 }
 
-class _SavedSchemesScreenState extends State<SavedSchemesScreen> with SingleTickerProviderStateMixin {
+class _SavedSchemesScreenState extends State<SavedSchemesScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final ScrollController _scrollController = ScrollController();
-  
+
   // Section keys for scroll synchronization
   final GlobalKey _bookmarkKey = GlobalKey();
   final GlobalKey _recentKey = GlobalKey();
@@ -142,7 +143,11 @@ class _SavedSchemesScreenState extends State<SavedSchemesScreen> with SingleTick
   }
 
   // Bookmarked Scheme Card (recreating the mockup)
-  Widget _buildBookmarkedCard(BuildContext context, Scheme scheme, AppProvider provider) {
+  Widget _buildBookmarkedCard(
+    BuildContext context,
+    Scheme scheme,
+    AppProvider provider,
+  ) {
     Color iconColor;
     Color iconBgColor;
     IconData icon;
@@ -196,7 +201,9 @@ class _SavedSchemesScreenState extends State<SavedSchemesScreen> with SingleTick
         onTap: () {
           provider.addToRecentlyViewed(scheme.id);
           Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => SchemeDetailsScreen(scheme: scheme)),
+            MaterialPageRoute(
+              builder: (_) => SchemeDetailsScreen(scheme: scheme),
+            ),
           );
         },
         child: Padding(
@@ -236,17 +243,37 @@ class _SavedSchemesScreenState extends State<SavedSchemesScreen> with SingleTick
                         Builder(
                           builder: (context) {
                             final tagList = [
-                              {'text': scheme.category, 'bg': const Color(0xFFF3E8FF), 'fg': const Color(0xFF7C3AED)},
-                              {'text': 'Central Scheme', 'bg': const Color(0xFFDBEAFE), 'fg': const Color(0xFF2563EB)},
-                              {'text': 'Active', 'bg': const Color(0xFFDCFCE7), 'fg': const Color(0xFF16A34A)},
+                              {
+                                'text': scheme.category,
+                                'bg': const Color(0xFFF3E8FF),
+                                'fg': const Color(0xFF7C3AED),
+                              },
+                              {
+                                'text': 'Central Scheme',
+                                'bg': const Color(0xFFDBEAFE),
+                                'fg': const Color(0xFF2563EB),
+                              },
+                              {
+                                'text': 'Active',
+                                'bg': const Color(0xFFDCFCE7),
+                                'fg': const Color(0xFF16A34A),
+                              },
                             ];
-                            tagList.sort((a, b) => (a['text'] as String).length.compareTo((b['text'] as String).length));
+                            tagList.sort(
+                              (a, b) => (a['text'] as String).length.compareTo(
+                                (b['text'] as String).length,
+                              ),
+                            );
 
                             return Wrap(
                               spacing: 6,
                               runSpacing: 4,
                               children: tagList.map((t) {
-                                return _buildTag(t['text'] as String, t['bg'] as Color, t['fg'] as Color);
+                                return _buildTag(
+                                  t['text'] as String,
+                                  t['bg'] as Color,
+                                  t['fg'] as Color,
+                                );
                               }).toList(),
                             );
                           },
@@ -257,13 +284,20 @@ class _SavedSchemesScreenState extends State<SavedSchemesScreen> with SingleTick
                   Column(
                     children: [
                       IconButton(
-                        icon: const Icon(Icons.bookmark, color: Color(0xFF2563EB)),
+                        icon: const Icon(
+                          Icons.bookmark,
+                          color: Color(0xFF2563EB),
+                        ),
                         onPressed: () => provider.toggleBookmark(scheme.id),
                         constraints: const BoxConstraints(),
                         padding: const EdgeInsets.all(4),
                       ),
                       IconButton(
-                        icon: const Icon(Icons.share_outlined, color: Color(0xFF64748B), size: 18),
+                        icon: const Icon(
+                          Icons.share_outlined,
+                          color: Color(0xFF64748B),
+                          size: 18,
+                        ),
                         onPressed: () {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
@@ -300,7 +334,10 @@ class _SavedSchemesScreenState extends State<SavedSchemesScreen> with SingleTick
                 children: [
                   _buildBottomDetailItem(Icons.currency_rupee, benefitText),
                   _buildBottomDetailItem(Icons.people_outline, targetText),
-                  _buildBottomDetailItem(Icons.calendar_today_outlined, deadlineText),
+                  _buildBottomDetailItem(
+                    Icons.calendar_today_outlined,
+                    deadlineText,
+                  ),
                 ],
               ),
             ],
@@ -311,7 +348,11 @@ class _SavedSchemesScreenState extends State<SavedSchemesScreen> with SingleTick
   }
 
   // Recently Viewed Card Widget
-  Widget _buildRecentlyViewedCard(BuildContext context, Scheme scheme, AppProvider provider) {
+  Widget _buildRecentlyViewedCard(
+    BuildContext context,
+    Scheme scheme,
+    AppProvider provider,
+  ) {
     Color iconColor;
     Color iconBgColor;
     IconData icon;
@@ -349,10 +390,18 @@ class _SavedSchemesScreenState extends State<SavedSchemesScreen> with SingleTick
     }
 
     String shortTitle = scheme.name;
-    if (scheme.id == 'NSP_PORTAL') shortTitle = 'National Scholarship\nPortal (NSP)';
-    if (scheme.id == 'PM_EDRIVE') shortTitle = 'PM E-DRIVE\nScheme';
-    if (scheme.id == 'AYUSHMAN_BHARAT') shortTitle = 'Ayushman Bharat\nYojana';
-    if (scheme.id == 'MUDRA') shortTitle = 'PM Mudra\nYojana';
+    if (scheme.id == 'NSP_PORTAL') {
+      shortTitle = 'National Scholarship\nPortal (NSP)';
+    }
+    if (scheme.id == 'PM_EDRIVE') {
+      shortTitle = 'PM E-DRIVE\nScheme';
+    }
+    if (scheme.id == 'AYUSHMAN_BHARAT') {
+      shortTitle = 'Ayushman Bharat\nYojana';
+    }
+    if (scheme.id == 'MUDRA') {
+      shortTitle = 'PM Mudra\nYojana';
+    }
 
     return Container(
       width: 140,
@@ -367,7 +416,9 @@ class _SavedSchemesScreenState extends State<SavedSchemesScreen> with SingleTick
         onTap: () {
           provider.addToRecentlyViewed(scheme.id);
           Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => SchemeDetailsScreen(scheme: scheme)),
+            MaterialPageRoute(
+              builder: (_) => SchemeDetailsScreen(scheme: scheme),
+            ),
           );
         },
         child: Padding(
@@ -401,7 +452,11 @@ class _SavedSchemesScreenState extends State<SavedSchemesScreen> with SingleTick
                 ),
               ),
               const SizedBox(height: 4),
-              _buildTag(scheme.category, iconBgColor.withValues(alpha: 0.5), iconColor),
+              _buildTag(
+                scheme.category,
+                iconBgColor.withValues(alpha: 0.5),
+                iconColor,
+              ),
               const SizedBox(height: 6),
               Text(
                 timeText,
@@ -418,7 +473,11 @@ class _SavedSchemesScreenState extends State<SavedSchemesScreen> with SingleTick
   }
 
   // Download Document Item Widget
-  Widget _buildDownloadItem(BuildContext context, Map<String, dynamic> doc, AppProvider provider) {
+  Widget _buildDownloadItem(
+    BuildContext context,
+    Map<String, dynamic> doc,
+    AppProvider provider,
+  ) {
     return Card(
       elevation: 0,
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
@@ -439,7 +498,11 @@ class _SavedSchemesScreenState extends State<SavedSchemesScreen> with SingleTick
                 borderRadius: BorderRadius.circular(8),
               ),
               alignment: Alignment.center,
-              child: const Icon(Icons.picture_as_pdf, color: Color(0xFFD32F2F), size: 22),
+              child: const Icon(
+                Icons.picture_as_pdf,
+                color: Color(0xFFD32F2F),
+                size: 22,
+              ),
             ),
             const SizedBox(width: 14),
             Expanded(
@@ -469,7 +532,10 @@ class _SavedSchemesScreenState extends State<SavedSchemesScreen> with SingleTick
                       const SizedBox(width: 8),
                       const Text(
                         '•',
-                        style: TextStyle(color: Color(0xFFCBD5E1), fontSize: 11),
+                        style: TextStyle(
+                          color: Color(0xFFCBD5E1),
+                          fontSize: 11,
+                        ),
                       ),
                       const SizedBox(width: 8),
                       Expanded(
@@ -496,11 +562,19 @@ class _SavedSchemesScreenState extends State<SavedSchemesScreen> with SingleTick
                 color: Color(0xFFF1F5F9),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.download_done, color: Color(0xFF16A34A), size: 18),
+              child: const Icon(
+                Icons.download_done,
+                color: Color(0xFF16A34A),
+                size: 18,
+              ),
             ),
             const SizedBox(width: 4),
             PopupMenuButton<String>(
-              icon: const Icon(Icons.more_vert, color: Color(0xFF64748B), size: 20),
+              icon: const Icon(
+                Icons.more_vert,
+                color: Color(0xFF64748B),
+                size: 20,
+              ),
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints(),
               onSelected: (value) {
@@ -536,9 +610,16 @@ class _SavedSchemesScreenState extends State<SavedSchemesScreen> with SingleTick
                   value: 'delete',
                   child: Row(
                     children: [
-                      Icon(Icons.delete_outline, size: 18, color: Color(0xFFD32F2F)),
+                      Icon(
+                        Icons.delete_outline,
+                        size: 18,
+                        color: Color(0xFFD32F2F),
+                      ),
                       SizedBox(width: 8),
-                      Text('Delete Guide', style: TextStyle(color: Color(0xFFD32F2F))),
+                      Text(
+                        'Delete Guide',
+                        style: TextStyle(color: Color(0xFFD32F2F)),
+                      ),
                     ],
                   ),
                 ),
@@ -616,7 +697,11 @@ class _SavedSchemesScreenState extends State<SavedSchemesScreen> with SingleTick
                   ),
                 ),
                 const SizedBox(width: 2),
-                const Icon(Icons.chevron_right, size: 14, color: Color(0xFF2563EB)),
+                const Icon(
+                  Icons.chevron_right,
+                  size: 14,
+                  color: Color(0xFF2563EB),
+                ),
               ],
             ),
           ),
@@ -653,7 +738,11 @@ class _SavedSchemesScreenState extends State<SavedSchemesScreen> with SingleTick
   }
 
   // View All Bottom Sheets
-  void _showViewAllBottomSheet(BuildContext context, String title, Widget child) {
+  void _showViewAllBottomSheet(
+    BuildContext context,
+    String title,
+    Widget child,
+  ) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -736,7 +825,9 @@ class _SavedSchemesScreenState extends State<SavedSchemesScreen> with SingleTick
             child: GestureDetector(
               onTap: () {
                 Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+                  MaterialPageRoute(
+                    builder: (_) => const NotificationsScreen(),
+                  ),
                 );
               },
               child: Stack(
@@ -766,7 +857,10 @@ class _SavedSchemesScreenState extends State<SavedSchemesScreen> with SingleTick
                           color: Color(0xFFEF4444),
                           shape: BoxShape.circle,
                         ),
-                        constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                        constraints: const BoxConstraints(
+                          minWidth: 16,
+                          minHeight: 16,
+                        ),
                         alignment: Alignment.center,
                         child: Text(
                           '$unreadCount',
@@ -816,8 +910,14 @@ class _SavedSchemesScreenState extends State<SavedSchemesScreen> with SingleTick
               indicatorSize: TabBarIndicatorSize.tab,
               labelColor: const Color(0xFF2563EB),
               unselectedLabelColor: const Color(0xFF64748B),
-              labelStyle: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.bold),
-              unselectedLabelStyle: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.normal),
+              labelStyle: GoogleFonts.inter(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+              ),
+              unselectedLabelStyle: GoogleFonts.inter(
+                fontSize: 12,
+                fontWeight: FontWeight.normal,
+              ),
               onTap: _scrollToSection,
               tabs: const [
                 Tab(
@@ -871,18 +971,31 @@ class _SavedSchemesScreenState extends State<SavedSchemesScreen> with SingleTick
                       context,
                       'Bookmarked Schemes',
                       bookmarks.isEmpty
-                          ? _buildEmptyState(Icons.bookmark_outline, 'No bookmarked schemes yet')
+                          ? _buildEmptyState(
+                              Icons.bookmark_outline,
+                              'No bookmarked schemes yet',
+                            )
                           : ListView.builder(
                               padding: const EdgeInsets.only(bottom: 24),
                               itemCount: bookmarks.length,
-                              itemBuilder: (context, idx) => _buildBookmarkedCard(context, bookmarks[idx], provider),
+                              itemBuilder: (context, idx) =>
+                                  _buildBookmarkedCard(
+                                    context,
+                                    bookmarks[idx],
+                                    provider,
+                                  ),
                             ),
                     ),
                   ),
                   if (bookmarks.isEmpty)
-                    _buildEmptyState(Icons.bookmark_outline, 'No bookmarked schemes yet')
+                    _buildEmptyState(
+                      Icons.bookmark_outline,
+                      'No bookmarked schemes yet',
+                    )
                   else
-                    ...bookmarks.take(3).map((s) => _buildBookmarkedCard(context, s, provider)),
+                    ...bookmarks
+                        .take(3)
+                        .map((s) => _buildBookmarkedCard(context, s, provider)),
 
                   // Recently Viewed Section
                   _buildSectionHeader(
@@ -894,31 +1007,49 @@ class _SavedSchemesScreenState extends State<SavedSchemesScreen> with SingleTick
                       context,
                       'Recently Viewed Schemes',
                       recentlyViewed.isEmpty
-                          ? _buildEmptyState(Icons.access_time, 'No recently viewed schemes yet')
+                          ? _buildEmptyState(
+                              Icons.access_time,
+                              'No recently viewed schemes yet',
+                            )
                           : GridView.builder(
                               padding: const EdgeInsets.all(16),
-                              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 2,
-                                childAspectRatio: 0.88, // Adjusted to prevent vertical overflow on narrow screens
-                                crossAxisSpacing: 12,
-                                mainAxisSpacing: 12,
-                              ),
+                              gridDelegate:
+                                  const SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: 2,
+                                    childAspectRatio:
+                                        0.88, // Adjusted to prevent vertical overflow on narrow screens
+                                    crossAxisSpacing: 12,
+                                    mainAxisSpacing: 12,
+                                  ),
                               itemCount: recentlyViewed.length,
-                              itemBuilder: (context, idx) => _buildRecentlyViewedCard(context, recentlyViewed[idx], provider),
+                              itemBuilder: (context, idx) =>
+                                  _buildRecentlyViewedCard(
+                                    context,
+                                    recentlyViewed[idx],
+                                    provider,
+                                  ),
                             ),
                     ),
                   ),
                   if (recentlyViewed.isEmpty)
-                    _buildEmptyState(Icons.access_time, 'No recently viewed schemes yet')
+                    _buildEmptyState(
+                      Icons.access_time,
+                      'No recently viewed schemes yet',
+                    )
                   else
                     SizedBox(
-                      height: 155, // Increased from 145 to prevent vertical card title overflow
+                      height:
+                          155, // Increased from 145 to prevent vertical card title overflow
                       child: ListView.builder(
                         padding: const EdgeInsets.symmetric(horizontal: 10),
                         scrollDirection: Axis.horizontal,
                         itemCount: recentlyViewed.length,
                         itemBuilder: (context, index) {
-                          return _buildRecentlyViewedCard(context, recentlyViewed[index], provider);
+                          return _buildRecentlyViewedCard(
+                            context,
+                            recentlyViewed[index],
+                            provider,
+                          );
                         },
                       ),
                     ),
@@ -933,18 +1064,32 @@ class _SavedSchemesScreenState extends State<SavedSchemesScreen> with SingleTick
                       context,
                       'Downloaded Information',
                       downloads.isEmpty
-                          ? _buildEmptyState(Icons.file_download_outlined, 'No downloaded guides yet')
+                          ? _buildEmptyState(
+                              Icons.file_download_outlined,
+                              'No downloaded guides yet',
+                            )
                           : ListView.builder(
                               padding: const EdgeInsets.only(bottom: 24),
                               itemCount: downloads.length,
-                              itemBuilder: (context, idx) => _buildDownloadItem(context, downloads[idx], provider),
+                              itemBuilder: (context, idx) => _buildDownloadItem(
+                                context,
+                                downloads[idx],
+                                provider,
+                              ),
                             ),
                     ),
                   ),
                   if (downloads.isEmpty)
-                    _buildEmptyState(Icons.file_download_outlined, 'No downloaded guides yet')
+                    _buildEmptyState(
+                      Icons.file_download_outlined,
+                      'No downloaded guides yet',
+                    )
                   else
-                    ...downloads.take(3).map((doc) => _buildDownloadItem(context, doc, provider)),
+                    ...downloads
+                        .take(3)
+                        .map(
+                          (doc) => _buildDownloadItem(context, doc, provider),
+                        ),
 
                   // Large padding block to ensure scroll-spy reaches the bottom tab smoothly
                   const SizedBox(height: 320),
