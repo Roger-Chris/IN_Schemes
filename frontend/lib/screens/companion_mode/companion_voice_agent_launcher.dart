@@ -5,8 +5,8 @@ import '../../providers/app_state_provider.dart';
 import '../../services/scheme_repository.dart';
 import '../../services/voice_agent_controller.dart';
 import '../../widgets/voice_assistant_overlay.dart';
-import 'scheme_details_screen.dart';
-import 'search_results_screen.dart';
+import '../regular_mode/scheme_details_screen.dart';
+import '../regular_mode/search_results_screen.dart';
 
 Future<void> openCompanionVoiceAgent(
   BuildContext context, {
@@ -37,7 +37,7 @@ Future<void> openCompanionVoiceAgent(
           Navigator.of(overlayContext, rootNavigator: true).pop();
           Navigator.of(context).push(
             MaterialPageRoute(
-              builder: (_) => SearchResultsScreen(searchQuery: query),
+              builder: (_) => SearchResultsScreen(title: query),
             ),
           );
         },
@@ -45,7 +45,7 @@ Future<void> openCompanionVoiceAgent(
           Navigator.of(overlayContext, rootNavigator: true).pop();
           Navigator.of(context).push(
             MaterialPageRoute(
-              builder: (_) => SchemeDetailsScreen(schemeId: scheme.id),
+              builder: (_) => SchemeDetailsScreen(scheme: scheme),
             ),
           );
         },

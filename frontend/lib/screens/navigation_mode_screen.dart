@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import 'companion/saarthi_welcome_screen.dart';
-import 'language_selection_screen.dart';
-import 'basic_profile_screen.dart';
+import 'companion_mode/saarthi_welcome_screen.dart';
+import 'regular_mode/language_selection_screen.dart';
+import 'regular_mode/basic_profile_screen.dart';
 import '../providers/app_state_provider.dart';
 
 enum NavigationMode { regular, companion }

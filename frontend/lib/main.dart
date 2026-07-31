@@ -5,11 +5,12 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'providers/app_state_provider.dart';
 import 'screens/splash_screen.dart';
-import 'screens/home_screen.dart';
-import 'screens/categories_screen.dart';
-import 'screens/search_screen.dart';
+import 'screens/regular_mode/home_screen.dart';
+import 'screens/regular_mode/categories_screen.dart';
+import 'screens/regular_mode/search_screen.dart';
 import 'screens/profile_screen.dart';
-import 'screens/saved_schemes_screen.dart';
+import 'screens/regular_mode/saved_schemes_screen.dart';
+import 'screens/companion_mode/saarthi_home_screen.dart';
 import 'utils/constants.dart';
 
 void main() async {
@@ -73,19 +74,59 @@ class InSchemesApp extends StatelessWidget {
             useMaterial3: true,
             textTheme: TextTheme(
               // Poppins for App Logo & Titles
-              headlineLarge: GoogleFonts.poppins(fontSize: 34, fontWeight: FontWeight.bold, color: AppConstants.primaryText),
-              titleLarge: GoogleFonts.poppins(fontSize: 30, fontWeight: FontWeight.bold, color: AppConstants.primaryText),
-              titleMedium: GoogleFonts.poppins(fontSize: 22, fontWeight: FontWeight.w600, color: AppConstants.primaryText),
-              titleSmall: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w600, color: AppConstants.primaryText),
-              
+              headlineLarge: GoogleFonts.poppins(
+                fontSize: 34,
+                fontWeight: FontWeight.bold,
+                color: AppConstants.primaryText,
+              ),
+              titleLarge: GoogleFonts.poppins(
+                fontSize: 30,
+                fontWeight: FontWeight.bold,
+                color: AppConstants.primaryText,
+              ),
+              titleMedium: GoogleFonts.poppins(
+                fontSize: 22,
+                fontWeight: FontWeight.w600,
+                color: AppConstants.primaryText,
+              ),
+              titleSmall: GoogleFonts.poppins(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: AppConstants.primaryText,
+              ),
+
               // Inter for Body and Form Elements
-              bodyLarge: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.normal, color: AppConstants.primaryText),
-              bodyMedium: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.normal, color: AppConstants.primaryText),
-              bodySmall: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.normal, color: AppConstants.secondaryText),
-              
-              labelLarge: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white), // Button
-              labelMedium: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w500, color: AppConstants.secondaryText), // Form Label
-              labelSmall: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.normal, color: AppConstants.secondaryText), // Small Info
+              bodyLarge: GoogleFonts.inter(
+                fontSize: 16,
+                fontWeight: FontWeight.normal,
+                color: AppConstants.primaryText,
+              ),
+              bodyMedium: GoogleFonts.inter(
+                fontSize: 15,
+                fontWeight: FontWeight.normal,
+                color: AppConstants.primaryText,
+              ),
+              bodySmall: GoogleFonts.inter(
+                fontSize: 13,
+                fontWeight: FontWeight.normal,
+                color: AppConstants.secondaryText,
+              ),
+
+              labelLarge: GoogleFonts.inter(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ), // Button
+              labelMedium: GoogleFonts.inter(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: AppConstants.secondaryText,
+              ), // Form Label
+              labelSmall: GoogleFonts.inter(
+                fontSize: 12,
+                fontWeight: FontWeight.normal,
+                color: AppConstants.secondaryText,
+              ), // Small Info
             ),
             // Styling for premium light cards
             cardTheme: CardThemeData(
@@ -114,7 +155,8 @@ class MainTabsContainer extends StatefulWidget {
 }
 
 class _MainTabsContainerState extends State<MainTabsContainer> {
-  final GlobalKey<SearchScreenState> searchTabKey = GlobalKey<SearchScreenState>();
+  final GlobalKey<SearchScreenState> searchTabKey =
+      GlobalKey<SearchScreenState>();
 
   Widget _buildNavItem(
     int index,
@@ -124,7 +166,9 @@ class _MainTabsContainerState extends State<MainTabsContainer> {
     AppProvider provider,
   ) {
     final isSelected = provider.currentTabIndex == index;
-    final color = isSelected ? const Color(0xFF0D47A1) : const Color(0xFF64748B);
+    final color = isSelected
+        ? const Color(0xFF0D47A1)
+        : const Color(0xFF64748B);
 
     Widget iconWidget = Icon(
       isSelected ? activeIcon : icon,
@@ -164,14 +208,16 @@ class _MainTabsContainerState extends State<MainTabsContainer> {
 
     // List of screens matching tabs
     final List<Widget> tabs = [
-      HomeScreen(
-        onVoiceQuery: (query) {
-          provider.updateTabIndex(1);
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            searchTabKey.currentState?.submitVoiceQuery(query);
-          });
-        },
-      ),
+      provider.navigationMode == 'companion'
+          ? const SaarthiHomeScreen()
+          : HomeScreen(
+              onVoiceQuery: (query) {
+                provider.updateTabIndex(1);
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  searchTabKey.currentState?.submitVoiceQuery(query);
+                });
+              },
+            ),
       SearchScreen(key: searchTabKey),
       CategoriesScreen(
         onCategorySelected: (category) {
@@ -186,9 +232,7 @@ class _MainTabsContainerState extends State<MainTabsContainer> {
     ];
 
     return Container(
-      decoration: const BoxDecoration(
-        gradient: AppConstants.blueGradient,
-      ),
+      decoration: const BoxDecoration(gradient: AppConstants.blueGradient),
       child: PopScope(
         canPop: false,
         onPopInvokedWithResult: (didPop, result) {
@@ -213,35 +257,61 @@ class _MainTabsContainerState extends State<MainTabsContainer> {
         },
         child: Scaffold(
           backgroundColor: Colors.transparent,
-          body: IndexedStack(
-            index: provider.currentTabIndex,
-            children: tabs,
-          ),
-          bottomNavigationBar: Container(
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              border: Border(
-                top: BorderSide(
-                  color: Color(0xFFE2E8F0),
-                  width: 1,
+          body: IndexedStack(index: provider.currentTabIndex, children: tabs),
+          bottomNavigationBar: provider.navigationMode == 'companion'
+              ? null
+              : Container(
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    border: Border(
+                      top: BorderSide(color: Color(0xFFE2E8F0), width: 1),
+                    ),
+                  ),
+                  padding: const EdgeInsets.only(top: 8, bottom: 8),
+                  child: SafeArea(
+                    top: false,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        _buildNavItem(
+                          0,
+                          Icons.home_outlined,
+                          Icons.home,
+                          'Home',
+                          provider,
+                        ),
+                        _buildNavItem(
+                          1,
+                          Icons.search,
+                          Icons.search_sharp,
+                          'Search',
+                          provider,
+                        ),
+                        _buildNavItem(
+                          2,
+                          Icons.explore_outlined,
+                          Icons.explore,
+                          'Discover',
+                          provider,
+                        ),
+                        _buildNavItem(
+                          3,
+                          Icons.bookmark_border,
+                          Icons.bookmark,
+                          'Saved',
+                          provider,
+                        ),
+                        _buildNavItem(
+                          4,
+                          Icons.person_outline,
+                          Icons.person,
+                          'Profile',
+                          provider,
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
-            ),
-            padding: const EdgeInsets.only(top: 8, bottom: 8),
-            child: SafeArea(
-              top: false,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  _buildNavItem(0, Icons.home_outlined, Icons.home, 'Home', provider),
-                  _buildNavItem(1, Icons.search, Icons.search_sharp, 'Search', provider),
-                  _buildNavItem(2, Icons.explore_outlined, Icons.explore, 'Discover', provider),
-                  _buildNavItem(3, Icons.bookmark_border, Icons.bookmark, 'Saved', provider),
-                  _buildNavItem(4, Icons.person_outline, Icons.person, 'Profile', provider),
-                ],
-              ),
-            ),
-          ),
         ),
       ),
     );

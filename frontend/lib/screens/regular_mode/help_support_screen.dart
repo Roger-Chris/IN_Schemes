@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../utils/constants.dart';
+import '../../utils/constants.dart';
 
 class HelpSupportScreen extends StatefulWidget {
   const HelpSupportScreen({super.key});
@@ -19,23 +19,28 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
   final List<Map<String, String>> _faqs = [
     {
       'question': 'How do I check my eligibility for a scheme?',
-      'answer': 'Go to the \'Find My Schemes\' tab, fill out your profile details (age, gender, state, income, etc.), and the matcher engine will instantly show your eligibility score for all available schemes!'
+      'answer':
+          'Go to the \'Find My Schemes\' tab, fill out your profile details (age, gender, state, income, etc.), and the matcher engine will instantly show your eligibility score for all available schemes!',
     },
     {
       'question': 'How can I apply for a scheme?',
-      'answer': 'Select any scheme to see its detailed description, benefits, and required documents. Tap the \'Apply Now\' button to open the official government application portal in your browser.'
+      'answer':
+          'Select any scheme to see its detailed description, benefits, and required documents. Tap the \'Apply Now\' button to open the official government application portal in your browser.',
     },
     {
       'question': 'Where can I track my application status?',
-      'answer': 'Since application submissions are processed directly on official government portals, you can track your status by logging into the respective portal using the application ID provided during submission.'
+      'answer':
+          'Since application submissions are processed directly on official government portals, you can track your status by logging into the respective portal using the application ID provided during submission.',
     },
     {
       'question': 'Is MSS app free to use?',
-      'answer': 'Yes, MSS is completely free to use. Our goal is to make citizen benefits and government schemes accessible to everyone in India without any hidden fees.'
+      'answer':
+          'Yes, MSS is completely free to use. Our goal is to make citizen benefits and government schemes accessible to everyone in India without any hidden fees.',
     },
     {
       'question': 'How often is new data updated?',
-      'answer': 'Our database is updated daily to reflect the latest announcements, schemes, subsidies, and application guidelines from the central and state ministries.'
+      'answer':
+          'Our database is updated daily to reflect the latest announcements, schemes, subsidies, and application guidelines from the central and state ministries.',
     },
   ];
 
@@ -82,7 +87,11 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                       color: Color(0xFFEFF6FF),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.help_outline_rounded, color: Color(0xFF2563EB), size: 20),
+                    child: const Icon(
+                      Icons.help_outline_rounded,
+                      color: Color(0xFF2563EB),
+                      size: 20,
+                    ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -96,7 +105,10 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.close_rounded, color: Color(0xFF94A3B8)),
+                    icon: const Icon(
+                      Icons.close_rounded,
+                      color: Color(0xFF94A3B8),
+                    ),
                     onPressed: () => Navigator.pop(context),
                   ),
                 ],
@@ -132,15 +144,18 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
       ..._faqs,
       {
         'question': 'How does the recommendation scoring work?',
-        'answer': 'We evaluate your profile (residency, age, gender, education, and community) against the criteria set by each scheme. A match score is calculated out of 100% depending on the percentage of conditions met.'
+        'answer':
+            'We evaluate your profile (residency, age, gender, education, and community) against the criteria set by each scheme. A match score is calculated out of 100% depending on the percentage of conditions met.',
       },
       {
         'question': 'Is my personal data shared with the government?',
-        'answer': 'No. MSS is a recommendation tool that runs fully on your device. We do not share your profile details with external departments. You apply directly on official portals.'
+        'answer':
+            'No. MSS is a recommendation tool that runs fully on your device. We do not share your profile details with external departments. You apply directly on official portals.',
       },
       {
         'question': 'How do I obtain missing documents?',
-        'answer': 'In the Scheme Details view, any document marked as "Missing" has a "Get Document" link that redirects you directly to the official portal (e.g., UIDAI for Aadhaar, NSDL for PAN).'
+        'answer':
+            'In the Scheme Details view, any document marked as "Missing" has a "Get Document" link that redirects you directly to the official portal (e.g., UIDAI for Aadhaar, NSDL for PAN).',
       },
     ];
 
@@ -173,7 +188,11 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                           color: Color(0xFFEFF6FF),
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(Icons.help_outline_rounded, color: Color(0xFF2563EB), size: 20),
+                        child: const Icon(
+                          Icons.help_outline_rounded,
+                          color: Color(0xFF2563EB),
+                          size: 20,
+                        ),
                       ),
                       const SizedBox(width: 12),
                       Text(
@@ -186,7 +205,10 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                       ),
                       const Spacer(),
                       IconButton(
-                        icon: const Icon(Icons.close_rounded, color: Color(0xFF94A3B8)),
+                        icon: const Icon(
+                          Icons.close_rounded,
+                          color: Color(0xFF94A3B8),
+                        ),
                         onPressed: () => Navigator.pop(context),
                       ),
                     ],
@@ -218,7 +240,12 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                           iconColor: const Color(0xFF2563EB),
                           collapsedIconColor: const Color(0xFF64748B),
                           shape: const Border(),
-                          childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                          childrenPadding: const EdgeInsets.fromLTRB(
+                            16,
+                            0,
+                            16,
+                            16,
+                          ),
                           children: [
                             Text(
                               faq['answer']!,
@@ -275,7 +302,11 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                           color: Color(0xFFF0FDF4),
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(Icons.bug_report_outlined, color: Color(0xFF16A34A), size: 20),
+                        child: const Icon(
+                          Icons.bug_report_outlined,
+                          color: Color(0xFF16A34A),
+                          size: 20,
+                        ),
                       ),
                       const SizedBox(width: 12),
                       Text(
@@ -288,7 +319,10 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                       ),
                       const Spacer(),
                       IconButton(
-                        icon: const Icon(Icons.close_rounded, color: Color(0xFF94A3B8)),
+                        icon: const Icon(
+                          Icons.close_rounded,
+                          color: Color(0xFF94A3B8),
+                        ),
                         onPressed: () => Navigator.pop(context),
                       ),
                     ],
@@ -296,13 +330,19 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                   const SizedBox(height: 16),
                   Text(
                     'Facing a problem? Fill out the details below and our team will get back to you shortly.',
-                    style: GoogleFonts.inter(fontSize: 13, color: const Color(0xFF64748B)),
+                    style: GoogleFonts.inter(
+                      fontSize: 13,
+                      color: const Color(0xFF64748B),
+                    ),
                   ),
                   const SizedBox(height: 20),
                   DropdownButtonFormField<String>(
                     initialValue: _issueCategory,
                     dropdownColor: Colors.white,
-                    style: GoogleFonts.inter(color: const Color(0xFF0F172A), fontSize: 14),
+                    style: GoogleFonts.inter(
+                      color: const Color(0xFF0F172A),
+                      fontSize: 14,
+                    ),
                     decoration: InputDecoration(
                       labelText: 'Category',
                       labelStyle: const TextStyle(color: Color(0xFF64748B)),
@@ -316,10 +356,22 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                       ),
                     ),
                     items: const [
-                      DropdownMenuItem(value: 'General Inquiry', child: Text('General Inquiry')),
-                      DropdownMenuItem(value: 'Eligibility Matcher Bug', child: Text('Eligibility Matcher Bug')),
-                      DropdownMenuItem(value: 'Wrong Scheme Details', child: Text('Wrong Scheme Details')),
-                      DropdownMenuItem(value: 'Feature Request', child: Text('Feature Request')),
+                      DropdownMenuItem(
+                        value: 'General Inquiry',
+                        child: Text('General Inquiry'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'Eligibility Matcher Bug',
+                        child: Text('Eligibility Matcher Bug'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'Wrong Scheme Details',
+                        child: Text('Wrong Scheme Details'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'Feature Request',
+                        child: Text('Feature Request'),
+                      ),
                     ],
                     onChanged: (val) {
                       if (val != null) {
@@ -331,7 +383,10 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                   TextFormField(
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
-                    style: GoogleFonts.inter(color: const Color(0xFF0F172A), fontSize: 14),
+                    style: GoogleFonts.inter(
+                      color: const Color(0xFF0F172A),
+                      fontSize: 14,
+                    ),
                     decoration: InputDecoration(
                       labelText: 'Contact Email Address',
                       hintText: 'Enter your email for follow-up',
@@ -351,7 +406,10 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                   TextFormField(
                     controller: _feedbackController,
                     maxLines: 4,
-                    style: GoogleFonts.inter(color: const Color(0xFF0F172A), fontSize: 14),
+                    style: GoogleFonts.inter(
+                      color: const Color(0xFF0F172A),
+                      fontSize: 14,
+                    ),
                     decoration: InputDecoration(
                       labelText: 'Description',
                       hintText: 'Describe the issue in detail...',
@@ -375,45 +433,60 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF2563EB),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                         elevation: 0,
                       ),
-                      onPressed: _isSubmitting 
-                        ? null 
-                        : () {
-                            final text = _feedbackController.text.trim();
-                            if (text.isEmpty) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Please describe the issue.')),
-                              );
-                              return;
-                            }
-                            setModalState(() => _isSubmitting = true);
-                            Future.delayed(const Duration(milliseconds: 1200), () {
-                              if (context.mounted) {
-                                setModalState(() => _isSubmitting = false);
-                                Navigator.pop(context);
+                      onPressed: _isSubmitting
+                          ? null
+                          : () {
+                              final text = _feedbackController.text.trim();
+                              if (text.isEmpty) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
-                                    content: Text('Thank you! Your ticket has been submitted.'),
-                                    backgroundColor: Color(0xFF16A34A),
+                                    content: Text('Please describe the issue.'),
                                   ),
                                 );
-                                _feedbackController.clear();
-                                _emailController.clear();
+                                return;
                               }
-                            });
-                          },
-                      child: _isSubmitting 
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                          )
-                        : Text(
-                            'Submit Ticket',
-                            style: GoogleFonts.inter(fontWeight: FontWeight.bold, color: Colors.white),
-                          ),
+                              setModalState(() => _isSubmitting = true);
+                              Future.delayed(
+                                const Duration(milliseconds: 1200),
+                                () {
+                                  if (context.mounted) {
+                                    setModalState(() => _isSubmitting = false);
+                                    Navigator.pop(context);
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                          'Thank you! Your ticket has been submitted.',
+                                        ),
+                                        backgroundColor: Color(0xFF16A34A),
+                                      ),
+                                    );
+                                    _feedbackController.clear();
+                                    _emailController.clear();
+                                  }
+                                },
+                              );
+                            },
+                      child: _isSubmitting
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : Text(
+                              'Submit Ticket',
+                              style: GoogleFonts.inter(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
                     ),
                   ),
                 ],
@@ -462,7 +535,11 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                           color: Color(0xFFFFF7ED),
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(Icons.chat_bubble_outline_rounded, color: Color(0xFFEA580C), size: 20),
+                        child: const Icon(
+                          Icons.chat_bubble_outline_rounded,
+                          color: Color(0xFFEA580C),
+                          size: 20,
+                        ),
                       ),
                       const SizedBox(width: 12),
                       Text(
@@ -475,7 +552,10 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                       ),
                       const Spacer(),
                       IconButton(
-                        icon: const Icon(Icons.close_rounded, color: Color(0xFF94A3B8)),
+                        icon: const Icon(
+                          Icons.close_rounded,
+                          color: Color(0xFF94A3B8),
+                        ),
                         onPressed: () => Navigator.pop(context),
                       ),
                     ],
@@ -483,7 +563,10 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                   const SizedBox(height: 16),
                   Text(
                     'We value your feedback. Let us know how we can improve your experience!',
-                    style: GoogleFonts.inter(fontSize: 13, color: const Color(0xFF64748B)),
+                    style: GoogleFonts.inter(
+                      fontSize: 13,
+                      color: const Color(0xFF64748B),
+                    ),
                   ),
                   const SizedBox(height: 20),
                   Center(
@@ -491,7 +574,11 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                       children: [
                         Text(
                           'Rate your experience',
-                          style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 14, color: const Color(0xFF0F172A)),
+                          style: GoogleFonts.inter(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                            color: const Color(0xFF0F172A),
+                          ),
                         ),
                         const SizedBox(height: 8),
                         Row(
@@ -500,7 +587,9 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                             final starRating = index + 1;
                             return IconButton(
                               icon: Icon(
-                                starRating <= rating ? Icons.star_rounded : Icons.star_outline_rounded,
+                                starRating <= rating
+                                    ? Icons.star_rounded
+                                    : Icons.star_outline_rounded,
                                 color: const Color(0xFFF59E0B),
                                 size: 36,
                               ),
@@ -519,7 +608,10 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                   TextFormField(
                     controller: feedbackTextController,
                     maxLines: 3,
-                    style: GoogleFonts.inter(color: const Color(0xFF0F172A), fontSize: 14),
+                    style: GoogleFonts.inter(
+                      color: const Color(0xFF0F172A),
+                      fontSize: 14,
+                    ),
                     decoration: InputDecoration(
                       labelText: 'Your suggestions',
                       hintText: 'What can we do better?',
@@ -542,36 +634,51 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFEA580C),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                         elevation: 0,
                       ),
-                      onPressed: submittingFeedback 
-                        ? null 
-                        : () {
-                            setModalState(() => submittingFeedback = true);
-                            Future.delayed(const Duration(milliseconds: 1000), () {
-                              if (context.mounted) {
-                                setModalState(() => submittingFeedback = false);
-                                Navigator.pop(context);
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Thank you for your valuable feedback!'),
-                                    backgroundColor: Color(0xFF16A34A),
-                                  ),
-                                );
-                              }
-                            });
-                          },
-                      child: submittingFeedback 
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                          )
-                        : Text(
-                            'Submit Feedback',
-                            style: GoogleFonts.inter(fontWeight: FontWeight.bold, color: Colors.white),
-                          ),
+                      onPressed: submittingFeedback
+                          ? null
+                          : () {
+                              setModalState(() => submittingFeedback = true);
+                              Future.delayed(
+                                const Duration(milliseconds: 1000),
+                                () {
+                                  if (context.mounted) {
+                                    setModalState(
+                                      () => submittingFeedback = false,
+                                    );
+                                    Navigator.pop(context);
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                          'Thank you for your valuable feedback!',
+                                        ),
+                                        backgroundColor: Color(0xFF16A34A),
+                                      ),
+                                    );
+                                  }
+                                },
+                              );
+                            },
+                      child: submittingFeedback
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : Text(
+                              'Submit Feedback',
+                              style: GoogleFonts.inter(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
                     ),
                   ),
                 ],
@@ -615,10 +722,7 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
     return Container(
       width: size,
       height: size,
-      decoration: BoxDecoration(
-        color: bgColor,
-        shape: BoxShape.circle,
-      ),
+      decoration: BoxDecoration(color: bgColor, shape: BoxShape.circle),
       alignment: Alignment.center,
       child: Icon(icon, color: iconColor, size: iconSize),
     );
@@ -711,7 +815,11 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                           ],
                         ),
                       ),
-                      const Icon(Icons.chevron_right_rounded, color: Color(0xFF94A3B8), size: 18),
+                      const Icon(
+                        Icons.chevron_right_rounded,
+                        color: Color(0xFF94A3B8),
+                        size: 18,
+                      ),
                     ],
                   ),
                 ),
@@ -720,7 +828,10 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                   return Column(
                     children: [
                       ListTile(
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 2,
+                        ),
                         title: Text(
                           faq['question']!,
                           style: GoogleFonts.inter(
@@ -729,15 +840,25 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                             color: const Color(0xFF0F172A),
                           ),
                         ),
-                        trailing: const Icon(Icons.chevron_right_rounded, color: Color(0xFF94A3B8), size: 18),
-                        onTap: () => _showFAQBottomSheet(faq['question']!, faq['answer']!),
+                        trailing: const Icon(
+                          Icons.chevron_right_rounded,
+                          color: Color(0xFF94A3B8),
+                          size: 18,
+                        ),
+                        onTap: () => _showFAQBottomSheet(
+                          faq['question']!,
+                          faq['answer']!,
+                        ),
                       ),
                       const Divider(color: Color(0xFFF1F5F9), height: 1),
                     ],
                   );
                 }),
                 ListTile(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 2,
+                  ),
                   title: Text(
                     'View all FAQs',
                     style: GoogleFonts.inter(
@@ -746,7 +867,11 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                       color: const Color(0xFF2563EB),
                     ),
                   ),
-                  trailing: const Icon(Icons.chevron_right_rounded, color: Color(0xFF2563EB), size: 18),
+                  trailing: const Icon(
+                    Icons.chevron_right_rounded,
+                    color: Color(0xFF2563EB),
+                    size: 18,
+                  ),
                   onTap: _showAllFAQsBottomSheet,
                 ),
               ],
@@ -854,7 +979,10 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
             _buildGroupCard(
               children: [
                 ListTile(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
                   leading: _buildCircleIcon(
                     icon: Icons.bug_report_outlined,
                     bgColor: const Color(0xFFF0FDF4),
@@ -875,12 +1003,19 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                       color: const Color(0xFF64748B),
                     ),
                   ),
-                  trailing: const Icon(Icons.chevron_right_rounded, color: Color(0xFF94A3B8), size: 18),
+                  trailing: const Icon(
+                    Icons.chevron_right_rounded,
+                    color: Color(0xFF94A3B8),
+                    size: 18,
+                  ),
                   onTap: _showReportIssueBottomSheet,
                 ),
                 const Divider(color: Color(0xFFF1F5F9), height: 1),
                 ListTile(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
                   leading: _buildCircleIcon(
                     icon: Icons.chat_bubble_outline_rounded,
                     bgColor: const Color(0xFFFFF7ED),
@@ -901,7 +1036,11 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                       color: const Color(0xFF64748B),
                     ),
                   ),
-                  trailing: const Icon(Icons.chevron_right_rounded, color: Color(0xFF94A3B8), size: 18),
+                  trailing: const Icon(
+                    Icons.chevron_right_rounded,
+                    color: Color(0xFF94A3B8),
+                    size: 18,
+                  ),
                   onTap: _showFeedbackBottomSheet,
                 ),
               ],
@@ -976,4 +1115,3 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
     );
   }
 }
-

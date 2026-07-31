@@ -5,6 +5,8 @@ import '../providers/app_state_provider.dart';
 import '../utils/constants.dart';
 import 'otp_screen.dart';
 import 'navigation_mode_screen.dart';
+import 'regular_mode/basic_profile_screen.dart';
+import 'companion_mode/saarthi_welcome_screen.dart';
 import '../main.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -387,11 +389,25 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                               );
                             } else {
-                              Navigator.of(context).pushReplacement(
-                                MaterialPageRoute(
-                                  builder: (_) => const NavigationModeScreen(),
-                                ),
-                              );
+                              if (provider.navigationMode == 'companion') {
+                                Navigator.of(context).pushReplacement(
+                                  MaterialPageRoute(
+                                    builder: (_) => const SaarthiWelcomeScreen(),
+                                  ),
+                                );
+                              } else if (provider.navigationMode == 'regular') {
+                                Navigator.of(context).pushReplacement(
+                                  MaterialPageRoute(
+                                    builder: (_) => const BasicProfileScreen(),
+                                  ),
+                                );
+                              } else {
+                                Navigator.of(context).pushReplacement(
+                                  MaterialPageRoute(
+                                    builder: (_) => const NavigationModeScreen(),
+                                  ),
+                                );
+                              }
                             }
                           }
                         } catch (e) {

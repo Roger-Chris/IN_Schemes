@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../main.dart';
+import '../../main.dart';
 import 'package:provider/provider.dart';
-import '../providers/app_state_provider.dart';
+import '../../providers/app_state_provider.dart';
 
 class AboutYouProfileScreen extends StatefulWidget {
   const AboutYouProfileScreen({super.key});
