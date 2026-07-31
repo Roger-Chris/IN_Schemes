@@ -3,11 +3,9 @@ import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../providers/app_state_provider.dart';
 import '../../models/scheme_model.dart';
-import '../../services/scheme_repository.dart';
+
 import 'scheme_details_screen.dart';
 import '../notifications_screen.dart';
-import '../../widgets/voice_assistant_overlay.dart';
-import '../companion_mode/saarthi_welcome_screen.dart';
 import '../login_screen.dart';
 import '../../widgets/smart_assessment_bottom_sheet.dart';
 import 'discover_results_screen.dart';
@@ -60,58 +58,7 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
-  Future<void> _openVoiceAssistant() async {
-    final provider = Provider.of<AppProvider>(context, listen: false);
-    final schemes = provider.allSchemes.isNotEmpty
-        ? provider.allSchemes
-        : await SchemeRepository.instance.getAllSchemes();
-    if (!mounted) return;
-    await showGeneralDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      barrierLabel: 'Voice assistant',
-      barrierColor: Colors.transparent,
-      transitionDuration: const Duration(milliseconds: 320),
-      pageBuilder: (overlayContext, animation, secondaryAnimation) {
-        return VoiceAssistantOverlay(
-          onClose: () =>
-              Navigator.of(overlayContext, rootNavigator: true).pop(),
-          schemes: schemes,
-          profile: provider.profile,
-          onProfileConfirmed: provider.updateProfile,
-          onSearch: (query) =>
-              SchemeRepository.instance.searchSchemeMatches(query, limit: 20),
-          onSchemeSelected: (scheme) {
-            Navigator.of(overlayContext, rootNavigator: true).pop();
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => SchemeDetailsScreen(scheme: scheme),
-              ),
-            );
-          },
-          onSubmit: (query) {
-            Navigator.of(overlayContext, rootNavigator: true).pop();
-            widget.onVoiceQuery?.call(query);
-          },
-        );
-      },
-      transitionBuilder: (context, animation, secondaryAnimation, child) {
-        final curved = CurvedAnimation(
-          parent: animation,
-          curve: Curves.easeOutBack,
-          reverseCurve: Curves.easeInCubic,
-        );
-        return FadeTransition(
-          opacity: animation,
-          child: ScaleTransition(
-            alignment: Alignment.bottomRight,
-            scale: Tween<double>(begin: 0.72, end: 1).animate(curved),
-            child: child,
-          ),
-        );
-      },
-    );
-  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -215,16 +162,13 @@ class _HomeScreenState extends State<HomeScreen> {
                     _buildTipOfTheDay(context),
 
                     const SizedBox(
-                      height: 100,
-                    ), // Spacing for sticky floating Ask AI button
+                      height: 24,
+                    ),
                   ],
                 ),
               ),
             ),
           ),
-
-          // 3. Floating Action Ask AI widget
-          Positioned(bottom: 24, right: 18, child: _buildAskAiFab(context)),
         ],
       ),
     );
@@ -819,37 +763,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 },
                 rightGraphic: _buildShipGraphic(),
               ),
-              _buildCarouselCard(
-                width: 290,
-                bgGradient: const LinearGradient(
-                  colors: [Color(0xFFF5F3FF), Color(0xFFEDE9FE)],
-                ),
-                borderColor: const Color(0xFFDDD6FE),
-                badgeText: "AI Recommended",
-                badgeTextColor: const Color(0xFF7C3AED),
-                badgeBgColor: const Color(0xFFEDE9FE),
-                title: "12 Schemes Match Your Profile",
-                titleColor: const Color(0xFF1E293B),
-                btnText: "Explore",
-                btnColor: const Color(0xFF7C3AED),
-                onBtnTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => const SaarthiWelcomeScreen(),
-                    ),
-                  );
-                },
-                rightGraphic: Image.asset(
-                  'assets/saarthi_expressions/Ai companion.png',
-                  height: 52,
-                  fit: BoxFit.contain,
-                ),
-              ),
             ],
           ),
         ),
         const SizedBox(height: 8),
-        _buildDotIndicator(3, _activeCarouselIndex, const Color(0xFF2563EB)),
+        _buildDotIndicator(2, _activeCarouselIndex, const Color(0xFF2563EB)),
       ],
     );
   }
@@ -1932,50 +1850,6 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ],
-    );
-  }
-
-  // Sticky Floating Action Ask AI widget
-  Widget _buildAskAiFab(BuildContext context) {
-    return GestureDetector(
-      onTap: _openVoiceAssistant,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 60,
-            height: 60,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: const Color(
-                0xFFEFF6FF,
-              ), // Soft premium light blue background
-              border: Border.all(color: const Color(0xFF93C5FD), width: 1.5),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF2563EB).withValues(alpha: 0.24),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            padding: const EdgeInsets.all(2),
-            child: Image.asset(
-              'assets/saarthi_expressions/Ai companion.png',
-              fit: BoxFit.contain,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            "Ask AI",
-            style: GoogleFonts.inter(
-              color: const Color(0xFF2563EB),
-              fontSize: 10.5,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
-      ),
     );
   }
 
