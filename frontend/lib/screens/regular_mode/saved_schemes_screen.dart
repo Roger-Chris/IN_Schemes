@@ -137,21 +137,6 @@ class _SavedSchemesScreenState extends State<SavedSchemesScreen> {
     Scheme scheme,
     AppProvider provider,
   ) {
-    Color badgeColor = const Color(0xFF2563EB);
-    Color badgeBgColor = const Color(0xFFEFF6FF);
-    String relevanceText = "Relevant";
-
-    final lowercaseTitle = scheme.name.toLowerCase();
-    if (lowercaseTitle.contains('pmegp') || lowercaseTitle.contains('cgtmse')) {
-      badgeColor = const Color(0xFF16A34A);
-      badgeBgColor = const Color(0xFFDCFCE7);
-      relevanceText = "Highly Relevant";
-    } else if (lowercaseTitle.contains('mudra') || lowercaseTitle.contains('stand')) {
-      badgeColor = const Color(0xFFEA580C);
-      badgeBgColor = const Color(0xFFFFF7ED);
-      relevanceText = "Moderately Relevant";
-    }
-
     IconData iconData = Icons.rocket_launch_rounded;
     Color iconColor = const Color(0xFF2563EB);
     Color iconBgColor = const Color(0xFFEFF6FF);
@@ -170,8 +155,8 @@ class _SavedSchemesScreenState extends State<SavedSchemesScreen> {
       iconBgColor = const Color(0xFFF0FDF4);
     } else {
       iconData = Icons.article_rounded;
-      iconColor = const Color(0xFFEA580C);
-      iconBgColor = const Color(0xFFFFF7ED);
+      iconColor = const Color(0xFF2563EB);
+      iconBgColor = const Color(0xFFEFF6FF);
     }
 
     return Card(
@@ -229,25 +214,6 @@ class _SavedSchemesScreenState extends State<SavedSchemesScreen> {
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 3,
-                      ),
-                      decoration: BoxDecoration(
-                        color: badgeBgColor,
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(
-                        relevanceText,
-                        style: GoogleFonts.inter(
-                          fontSize: 8.5,
-                          fontWeight: FontWeight.bold,
-                          color: badgeColor,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 4),
                     _isManageMode
                         ? IconButton(
                             constraints: const BoxConstraints(),
