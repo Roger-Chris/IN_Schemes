@@ -5,6 +5,7 @@ import 'companion_mode/saarthi_welcome_screen.dart';
 import 'regular_mode/language_selection_screen.dart';
 import 'regular_mode/basic_profile_screen.dart';
 import '../providers/app_state_provider.dart';
+import '../main.dart';
 
 enum NavigationMode { regular, companion }
 
@@ -199,7 +200,13 @@ class _NavigationModeScreenState extends State<NavigationModeScreen> {
                           widget.onContinue!(_selectedMode);
                         } else {
                           // Default UI transition flow
-                          if (_selectedMode == NavigationMode.companion) {
+                          if (provider.profile.profileCompleted) {
+                            Navigator.of(context).pushReplacement(
+                              MaterialPageRoute(
+                                builder: (_) => const MainTabsContainer(),
+                              ),
+                            );
+                          } else if (_selectedMode == NavigationMode.companion) {
                             Navigator.of(context).push(
                               MaterialPageRoute(
                                 builder: (_) => const SaarthiWelcomeScreen(),
