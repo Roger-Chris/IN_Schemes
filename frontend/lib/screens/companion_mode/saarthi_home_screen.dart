@@ -211,13 +211,13 @@ class _SaarthiHomeScreenState extends State<SaarthiHomeScreen> {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 6),
                     Center(
                       child: RichText(
                         textAlign: TextAlign.center,
                         text: TextSpan(
                           style: GoogleFonts.poppins(
-                            fontSize: 22,
+                            fontSize: 18,
                             fontWeight: FontWeight.bold,
                             color: kDarkSlate,
                           ),
@@ -231,7 +231,7 @@ class _SaarthiHomeScreenState extends State<SaarthiHomeScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 2),
                     Center(
                       child: RichText(
                         textAlign: TextAlign.center,
