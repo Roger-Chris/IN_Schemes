@@ -18,8 +18,8 @@ class _SavedSchemesScreenState extends State<SavedSchemesScreen> {
 
   Widget _buildFolderIllustration() {
     return Container(
-      width: 84,
-      height: 84,
+      width: 68,
+      height: 68,
       decoration: const BoxDecoration(
         color: Color(0xFFEFF6FF),
         shape: BoxShape.circle,
@@ -31,12 +31,12 @@ class _SavedSchemesScreenState extends State<SavedSchemesScreen> {
           const Icon(
             Icons.folder_rounded,
             color: Color(0xFF3B82F6),
-            size: 48,
+            size: 38,
           ),
           // Heart icon layered on folder
           Positioned(
-            right: 20,
-            top: 20,
+            right: 14,
+            top: 14,
             child: Container(
               padding: const EdgeInsets.all(2),
               decoration: const BoxDecoration(
@@ -46,7 +46,7 @@ class _SavedSchemesScreenState extends State<SavedSchemesScreen> {
               child: const Icon(
                 Icons.favorite_rounded,
                 color: Color(0xFF2563EB),
-                size: 14,
+                size: 10,
               ),
             ),
           ),
@@ -560,16 +560,16 @@ class _SavedSchemesScreenState extends State<SavedSchemesScreen> {
                         Text(
                           'Saved Schemes',
                           style: GoogleFonts.poppins(
-                            fontSize: 26.0,
+                            fontSize: 20.0,
                             fontWeight: FontWeight.bold,
                             color: const Color(0xFF0F172A),
                           ),
                         ),
-                        const SizedBox(height: 6),
+                        const SizedBox(height: 4),
                         Text(
                           "Schemes you've saved for future reference.",
                           style: GoogleFonts.inter(
-                            fontSize: 14,
+                            fontSize: 12,
                             color: const Color(0xFF64748B),
                             height: 1.3,
                           ),
