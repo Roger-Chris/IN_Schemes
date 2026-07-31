@@ -72,7 +72,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       child: Text(
                         'Navigation Mode',
                         style: GoogleFonts.poppins(
-                          fontSize: 18,
+                          fontSize: 15,
                           fontWeight: FontWeight.bold,
                           color: const Color(0xFF0F172A),
                         ),
@@ -88,7 +88,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 Text(
                   'Choose your preferred layout mode for navigating schemes and services.',
                   style: GoogleFonts.inter(
-                    fontSize: 13,
+                    fontSize: 11.5,
                     color: const Color(0xFF64748B),
                   ),
                 ),
@@ -172,7 +172,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     title,
                     style: GoogleFonts.inter(
                       fontWeight: FontWeight.bold,
-                      fontSize: 14,
+                      fontSize: 13,
                       color: isSelected ? const Color(0xFF1E3A8A) : const Color(0xFF0F172A),
                     ),
                   ),
@@ -180,7 +180,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   Text(
                     subtitle,
                     style: GoogleFonts.inter(
-                      fontSize: 11.5,
+                      fontSize: 10.5,
                       color: const Color(0xFF64748B),
                     ),
                   ),
