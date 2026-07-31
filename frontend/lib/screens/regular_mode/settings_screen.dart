@@ -6,6 +6,7 @@ import '../../utils/constants.dart';
 import 'language_selection_screen.dart';
 import 'profile_setup_screen.dart';
 import 'help_support_screen.dart';
+import '../../widgets/custom_confirm_dialog.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -16,62 +17,19 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   bool _pushNotifications = true;
-  bool _darkMode = false;
 
   void _handleDeleteAccount(BuildContext context, AppProvider provider) {
-    showDialog(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          backgroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-            side: const BorderSide(color: Color(0xFFE2E8F0)),
-          ),
-          title: Text(
-            'Delete Account',
-            style: GoogleFonts.inter(
-              color: AppConstants.errorColor,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          content: Text(
-            'This action is irreversible. All your saved profiles, bookmarks, and questionnaire answers will be permanently deleted.',
-            style: GoogleFonts.inter(color: AppConstants.secondaryText),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: Text(
-                'Cancel',
-                style: GoogleFonts.inter(color: AppConstants.secondaryText),
-              ),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppConstants.errorColor,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                elevation: 0,
-              ),
-              onPressed: provider.isLoggingOut
-                  ? null
-                  : () {
-                      Navigator.pop(dialogContext);
-                      provider.deleteAccount(context);
-                    },
-              child: Text(
-                'Delete Permanently',
-                style: GoogleFonts.inter(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ],
-        );
-      },
+    CustomConfirmDialog.show(
+      context,
+      icon: Icons.delete_forever_rounded,
+      iconColor: AppConstants.errorColor,
+      iconBgColor: const Color(0xFFFEE2E2),
+      title: 'Delete Account',
+      message: 'This action is irreversible. All your saved profiles, bookmarks, and questionnaire answers will be permanently deleted.',
+      confirmLabel: 'Delete',
+      confirmColor: AppConstants.errorColor,
+      onConfirm: () => provider.deleteAccount(context),
+      isDestructive: true,
     );
   }
 
@@ -153,9 +111,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           ),
                     onTap: () {
                       provider.changeNavigationMode('regular');
-                      setModalState(() {});
-                      Navigator.pop(context);
-                      setState(() {});
+                      provider.updateTabIndex(0);
+                      Navigator.of(context).popUntil((route) => route.isFirst);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Switched to Regular Navigation'),
+                          duration: Duration(seconds: 2),
+                        ),
+                      );
                     },
                   ),
                   const Divider(),
@@ -181,9 +144,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           ),
                     onTap: () {
                       provider.changeNavigationMode('companion');
-                      setModalState(() {});
-                      Navigator.pop(context);
-                      setState(() {});
+                      provider.updateTabIndex(0);
+                      Navigator.of(context).popUntil((route) => route.isFirst);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Switched to Companion Navigation'),
+                          duration: Duration(seconds: 2),
+                        ),
+                      );
                     },
                   ),
                   const SizedBox(height: 16),
@@ -264,21 +232,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ? 'Companion'
                     : 'Regular',
                 onTap: () => _showNavigationModeBottomSheet(context, provider),
-              ),
-              _buildSettingRow(
-                icon: Icons.nightlight_outlined,
-                title: "Dark Mode",
-                widget: SizedBox(
-                  height: 24,
-                  child: Switch(
-                    value: _darkMode,
-                    onChanged: (val) => setState(() => _darkMode = val),
-                    activeThumbColor: Colors.white,
-                    activeTrackColor: const Color(0xFF2563EB),
-                    inactiveThumbColor: Colors.white,
-                    inactiveTrackColor: const Color(0xFFE2E8F0),
-                  ),
-                ),
+                isLast: true,
               ),
             ]),
 
@@ -411,7 +365,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 onTap: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (_) => const HelpSupportScreen(),
+                      builder: (_) => const HelpSupportScreen(initialMode: 'faq'),
                     ),
                   );
                 },
@@ -422,7 +376,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 onTap: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (_) => const HelpSupportScreen(),
+                      builder: (_) => const HelpSupportScreen(initialMode: 'contact'),
                     ),
                   );
                 },
@@ -450,7 +404,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
               ),
               onPressed: () {
-                provider.logout(context);
+                CustomConfirmDialog.show(
+                  context,
+                  icon: Icons.logout_rounded,
+                  iconColor: const Color(0xFFEF4444),
+                  iconBgColor: const Color(0xFFFEE2E2),
+                  title: 'Confirm Logout',
+                  message: 'Are you sure you want to log out from MSS?',
+                  confirmLabel: 'Logout',
+                  confirmColor: const Color(0xFFEF4444),
+                  onConfirm: () => provider.logout(context),
+                );
               },
             ),
             const SizedBox(height: 16),
