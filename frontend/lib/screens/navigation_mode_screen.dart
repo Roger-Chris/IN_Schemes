@@ -156,8 +156,8 @@ class _NavigationModeScreenState extends State<NavigationModeScreen> {
                                 title: 'AI Companion',
                                 subtitle: 'Let your AI guide you step by step.',
                                 icon: Icons.support_agent_rounded,
-                                iconColor: const Color(0xFFEA580C),
-                                iconBgColor: const Color(0xFFFFF7ED),
+                                iconColor: const Color(0xFF2563EB),
+                                iconBgColor: const Color(0xFFEFF6FF),
                                 chips: const [
                                   ChipInfo(Icons.mic, 'Voice-first experience'),
                                   ChipInfo(Icons.person, 'Personalized guidance'),
@@ -259,8 +259,8 @@ class NavigationOptionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final activeColor = mode == NavigationMode.regular ? const Color(0xFF2563EB) : const Color(0xFFF97316);
-    final activeBg = mode == NavigationMode.regular ? const Color(0xFFF0F5FF) : const Color(0xFFFFF7ED);
+    final activeColor = const Color(0xFF2563EB);
+    final activeBg = const Color(0xFFF0F5FF);
 
     return GestureDetector(
       onTap: onTap,

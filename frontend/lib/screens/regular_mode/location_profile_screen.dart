@@ -298,7 +298,7 @@ class _LocationProfileScreenState extends State<LocationProfileScreen> {
                                               'OR FILL MANUALLY',
                                               style: GoogleFonts.inter(
                                                 fontSize: 11,
-                                                fontWeight: FontWeight.bold,
+                                                fontWeight: FontWeight.w500,
                                                 color: kSlate500,
                                               ),
                                             ),
@@ -536,7 +536,7 @@ class _LocationProfileScreenState extends State<LocationProfileScreen> {
                     'Use My Current Location',
                     style: GoogleFonts.inter(
                       fontSize: 14.5,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w500,
                       color: kSlate900,
                     ),
                   ),
@@ -567,7 +567,7 @@ class _LocationProfileScreenState extends State<LocationProfileScreen> {
       text,
       style: GoogleFonts.inter(
         fontSize: 12.5,
-        fontWeight: FontWeight.bold,
+        fontWeight: FontWeight.w500,
         color: kSlate900,
       ),
     );

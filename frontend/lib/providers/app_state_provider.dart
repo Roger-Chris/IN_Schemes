@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -13,6 +14,7 @@ import '../services/session_cache_service.dart';
 import '../screens/splash_screen.dart';
 
 class AppProvider with ChangeNotifier {
+  StreamSubscription<List<Map<String, dynamic>>>? _profileSubscription;
   bool _isLoggedIn = false;
   bool _isLoggingOut = false;
   String _mobileNumber = '';
@@ -68,8 +70,8 @@ class AppProvider with ChangeNotifier {
     },
   ];
 
-  // Mock Notifications
-  final List<Map<String, dynamic>> notifications = [
+  // Notifications state
+  List<Map<String, dynamic>> _notificationsList = [
     {
       'id': 'latest_fisheries_update',
       'title': 'Fisheries and Aquaculture Infra Development Fund Scheme Launched',
@@ -153,9 +155,199 @@ class AppProvider with ChangeNotifier {
     },
   ];
 
+  List<Map<String, dynamic>> get notifications => _notificationsList;
+  StreamSubscription<List<Map<String, dynamic>>>? _notificationsSubscription;
+
   AppProvider() {
     _loadState();
     _setupAuthListener();
+  }
+
+  void _subscribeToProfile(String userId) {
+    _profileSubscription?.cancel();
+    _profileSubscription = Supabase.instance.client
+        .from('profiles')
+        .stream(primaryKey: ['id'])
+        .eq('id', userId)
+        .listen((data) async {
+          if (data.isNotEmpty) {
+            final dbProfile = UserProfile.fromJson(data.first);
+            
+            final remoteUpdated = dbProfile.updatedAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+            final localUpdated = _profile.updatedAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+
+            if (remoteUpdated.isAfter(localUpdated) || 
+                dbProfile.name != _profile.name || 
+                dbProfile.language != _profile.language || 
+                dbProfile.navigationMode != _profile.navigationMode || 
+                dbProfile.state != _profile.state || 
+                dbProfile.district != _profile.district || 
+                dbProfile.pinCode != _profile.pinCode || 
+                dbProfile.gender != _profile.gender || 
+                dbProfile.employmentStatus != _profile.employmentStatus || 
+                dbProfile.profileCompleted != _profile.profileCompleted) {
+              
+              _profile = dbProfile;
+              _selectedLanguage = dbProfile.language;
+              _navigationMode = dbProfile.navigationMode;
+              _filters['state'] = _profile.state;
+              _filters['community'] = _profile.community;
+              _filters['gender'] = _profile.gender;
+              
+              _recommendedSchemes = RecommendationEngine.getRecommendations(_profile, _allSchemes);
+              notifyListeners();
+
+              await SessionCacheService.instance.saveProfile(_profile);
+              await SessionCacheService.instance.saveLanguage(_selectedLanguage);
+              await SessionCacheService.instance.saveNavigationMode(_navigationMode);
+            }
+          }
+        }, onError: (err) {
+          debugPrint('[AppProvider] Real-time profile subscription error: $err');
+        });
+  }
+
+  void _unsubscribeFromProfile() {
+    _profileSubscription?.cancel();
+    _profileSubscription = null;
+  }
+
+  void _subscribeToNotifications(String userId) {
+    _notificationsSubscription?.cancel();
+    _notificationsSubscription = Supabase.instance.client
+        .from('notifications')
+        .stream(primaryKey: ['id'])
+        .eq('user_id', userId)
+        .listen((data) async {
+          if (data.isEmpty) {
+            await _seedDefaultNotifications(userId);
+            return;
+          }
+
+          final sortedData = List<Map<String, dynamic>>.from(data);
+          sortedData.sort((a, b) {
+            final aTime = DateTime.tryParse(a['created_at'] ?? '') ?? DateTime.fromMillisecondsSinceEpoch(0);
+            final bTime = DateTime.tryParse(b['created_at'] ?? '') ?? DateTime.fromMillisecondsSinceEpoch(0);
+            return bTime.compareTo(aTime);
+          });
+
+          _notificationsList = sortedData.map((n) {
+            final createdAt = DateTime.tryParse(n['created_at'] ?? '') ?? DateTime.now();
+            final difference = DateTime.now().difference(createdAt);
+            String timeStr = 'Just now';
+            if (difference.inDays > 0) {
+              timeStr = '${difference.inDays}d ago';
+            } else if (difference.inHours > 0) {
+              timeStr = '${difference.inHours}h ago';
+            } else if (difference.inMinutes > 0) {
+              timeStr = '${difference.inMinutes}m ago';
+            }
+
+            final type = n['notification_type'] ?? 'updates';
+            
+            final Map<String, dynamic> mapped = {
+              'id': n['id'].toString(),
+              'title': n['title'] ?? '',
+              'body': n['message'] ?? '',
+              'time': timeStr,
+              'read': n['is_read'] ?? false,
+              'category': type,
+              'created_at': n['created_at'],
+            };
+
+            if (type == 'new_schemes') {
+              mapped['tag'] = n['title'].toString().contains('Vidyalaxmi') ? 'Education' : 'Skill Development';
+              mapped['isNew'] = true;
+            } else if (type == 'reminders') {
+              mapped['deadline'] = n['title'].toString().contains('Matric') ? '31 May 2026' : '15 Jun 2026';
+              mapped['daysLeft'] = n['title'].toString().contains('Matric') ? '5 days left' : '20 days left';
+            } else if (type == 'updates') {
+              mapped['iconType'] = n['title'].toString().contains('Ayushman') ? 'emblem' : 'bank';
+            } else if (type == 'profile') {
+              mapped['progress'] = 70;
+            }
+
+            return mapped;
+          }).toList();
+
+          notifyListeners();
+        }, onError: (err) {
+          debugPrint('[AppProvider] Real-time notifications subscription error: $err');
+        });
+  }
+
+  void _unsubscribeFromNotifications() {
+    _notificationsSubscription?.cancel();
+    _notificationsSubscription = null;
+  }
+
+  Future<void> _seedDefaultNotifications(String userId) async {
+    try {
+      final List<Map<String, dynamic>> defaultMocks = [
+        {
+          'user_id': userId,
+          'title': 'Fisheries and Aquaculture Infra Development Fund Scheme Launched',
+          'message': 'Government has launched the Fisheries and Aquaculture Infrastructure Development Fund to provide concessionary finance.',
+          'notification_type': 'updates',
+          'is_read': false,
+        },
+        {
+          'user_id': userId,
+          'title': 'PM Vidyalaxmi Education Loan Scheme',
+          'message': 'A new scheme for students to provide collateral-free education loans for higher studies.',
+          'notification_type': 'new_schemes',
+          'is_read': false,
+        },
+        {
+          'user_id': userId,
+          'title': 'PM Vishwakarma Yojana',
+          'message': 'Financial support for traditional artisans and craftspeople to upgrade their skills and tools.',
+          'notification_type': 'new_schemes',
+          'is_read': false,
+        },
+        {
+          'user_id': userId,
+          'title': 'Post Matric Scholarship Scheme',
+          'message': 'Last date to apply is approaching',
+          'notification_type': 'reminders',
+          'is_read': false,
+        },
+        {
+          'user_id': userId,
+          'title': 'PM Internship Scheme',
+          'message': 'Application window will close soon',
+          'notification_type': 'reminders',
+          'is_read': false,
+        },
+        {
+          'user_id': userId,
+          'title': 'New Update on Ayushman Bharat Yojana',
+          'message': 'Changes in empanelment process for hospitals. Check full details.',
+          'notification_type': 'updates',
+          'is_read': false,
+        },
+        {
+          'user_id': userId,
+          'title': 'Income Limit Revised for Several Schemes',
+          'message': 'Revised income criteria effective from 1st April 2024 for multiple schemes.',
+          'notification_type': 'updates',
+          'is_read': false,
+        },
+        {
+          'user_id': userId,
+          'title': 'Complete Your Profile',
+          'message': 'Add your income details to find schemes you are eligible for.',
+          'notification_type': 'profile',
+          'is_read': false,
+        },
+      ];
+
+      await Supabase.instance.client
+          .from('notifications')
+          .insert(defaultMocks);
+    } catch (e) {
+      debugPrint('[AppProvider] Error seeding notifications: $e');
+    }
   }
 
   void _setupAuthListener() {
@@ -190,6 +382,8 @@ class AppProvider with ChangeNotifier {
           );
         }
 
+        _subscribeToProfile(user.id);
+        _subscribeToNotifications(user.id);
         await _saveProfile();
         notifyListeners();
       } else if (event == AuthChangeEvent.signedOut) {
@@ -199,6 +393,9 @@ class AppProvider with ChangeNotifier {
         _bookmarkedIds.clear();
         _recentlyViewedIds.clear();
         _currentTabIndex = 0;
+        _unsubscribeFromProfile();
+        _unsubscribeFromNotifications();
+        _notificationsList = [];
         notifyListeners();
       }
     });
@@ -288,6 +485,10 @@ class AppProvider with ChangeNotifier {
         _profile = cachedProfile;
         _navigationMode = _profile.navigationMode;
       }
+      final cachedNavMode = await SessionCacheService.instance.getNavigationMode();
+      if (cachedNavMode != null && cachedNavMode.isNotEmpty) {
+        _navigationMode = cachedNavMode;
+      }
 
       _bookmarkedIds =
           await SessionCacheService.instance.getBookmarks() ??
@@ -333,6 +534,8 @@ class AppProvider with ChangeNotifier {
         );
         _isLoggedIn = true;
         _mobileNumber = session.user.phone ?? '';
+        _subscribeToProfile(session.user.id);
+        _subscribeToNotifications(session.user.id);
       } else {
         debugPrint(
           '[AppProvider] No active Supabase session found during _loadState.',
@@ -362,7 +565,7 @@ class AppProvider with ChangeNotifier {
 
   void changeNavigationMode(String mode) async {
     _navigationMode = mode;
-    _profile = _profile.copyWith(navigationMode: mode);
+    _profile = _profile.copyWith(navigationMode: mode, updatedAt: DateTime.now());
     notifyListeners();
     await SessionCacheService.instance.saveNavigationMode(mode);
     await SessionCacheService.instance.saveProfile(_profile);
@@ -458,6 +661,7 @@ class AppProvider with ChangeNotifier {
     final session = Supabase.instance.client.auth.currentSession;
     if (session == null) {
       _isLoggedIn = false;
+      _unsubscribeFromProfile();
       notifyListeners();
       return false;
     }
@@ -465,6 +669,8 @@ class AppProvider with ChangeNotifier {
     final user = session.user;
     _isLoggedIn = true;
     _mobileNumber = user.phone ?? '';
+
+    _subscribeToProfile(user.id);
 
     final dbProfile = await SchemeRepository.instance.getProfile(user.id);
     if (dbProfile != null) {
@@ -513,6 +719,7 @@ class AppProvider with ChangeNotifier {
     _recentlyViewedIds.clear();
     _currentTabIndex = 0;
     _tabHistory.clear();
+    _unsubscribeFromProfile();
 
     await SessionCacheService.instance.clearSession();
 
@@ -567,6 +774,7 @@ class AppProvider with ChangeNotifier {
     _recentlyViewedIds.clear();
     _currentTabIndex = 0;
     _tabHistory.clear();
+    _unsubscribeFromProfile();
 
     await SessionCacheService.instance.clearSession();
 
@@ -757,44 +965,70 @@ class AppProvider with ChangeNotifier {
       firstGenGraduate: _wizardAnswers['firstGenGraduate'] ?? false,
       annualIncome: (_wizardAnswers['annualIncome'] ?? 0.0) as double,
       mobile: _mobileNumber,
+      updatedAt: DateTime.now(),
     );
     notifyListeners();
     _saveProfile();
   }
 
   // Notification action
-  void markNotificationRead(String id) {
-    final idx = notifications.indexWhere((n) => n['id'] == id);
-    if (idx != -1) {
-      notifications[idx]['read'] = true;
-      notifyListeners();
+  Future<void> markNotificationRead(String id) async {
+    try {
+      await Supabase.instance.client
+          .from('notifications')
+          .update({'is_read': true})
+          .eq('id', id);
+    } catch (e) {
+      debugPrint('[AppProvider] Error marking notification read: $e');
     }
   }
 
-  void markAllNotificationsRead() {
-    for (var n in notifications) {
-      n['read'] = true;
+  Future<void> markAllNotificationsRead() async {
+    final userId = Supabase.instance.client.auth.currentUser?.id;
+    if (userId == null) return;
+    try {
+      await Supabase.instance.client
+          .from('notifications')
+          .update({'is_read': true})
+          .eq('user_id', userId);
+    } catch (e) {
+      debugPrint('[AppProvider] Error marking all notifications read: $e');
     }
-    notifyListeners();
   }
 
-  void deleteAllNotifications() {
-    notifications.clear();
-    notifyListeners();
-  }
-
-  void deleteNotifications(List<String> ids) {
-    notifications.removeWhere((n) => ids.contains(n['id']));
-    notifyListeners();
-  }
-
-  void markNotificationsRead(List<String> ids) {
-    for (var n in notifications) {
-      if (ids.contains(n['id'])) {
-        n['read'] = true;
-      }
+  Future<void> deleteAllNotifications() async {
+    final userId = Supabase.instance.client.auth.currentUser?.id;
+    if (userId == null) return;
+    try {
+      await Supabase.instance.client
+          .from('notifications')
+          .delete()
+          .eq('user_id', userId);
+    } catch (e) {
+      debugPrint('[AppProvider] Error deleting all notifications: $e');
     }
-    notifyListeners();
+  }
+
+  Future<void> deleteNotifications(List<String> ids) async {
+    try {
+      await Supabase.instance.client
+          .from('notifications')
+          .delete()
+          .inFilter('id', ids);
+    } catch (e) {
+      debugPrint('[AppProvider] Error deleting notifications: $e');
+    }
+  }
+
+  Future<void> markNotificationsRead(List<String> ids) async {
+    try {
+      await Supabase.instance.client
+          .from('notifications')
+          .update({'is_read': true})
+          .inFilter('id', ids);
+    } catch (e) {
+      debugPrint('[AppProvider] Error marking notifications read: $e');
+    }
   }
 
   // Completion calculation
@@ -867,7 +1101,7 @@ class AppProvider with ChangeNotifier {
   }
 
   Future<void> updateProfile(UserProfile updated) async {
-    _profile = updated;
+    _profile = updated.copyWith(updatedAt: DateTime.now());
     _filters['state'] = _profile.state;
     _filters['community'] = _profile.community;
     _filters['gender'] = _profile.gender;
@@ -928,7 +1162,7 @@ class AppProvider with ChangeNotifier {
   }
 
   Future<void> updateProfilePhoto(String path) async {
-    _profile = _profile.copyWith(profilePhoto: path);
+    _profile = _profile.copyWith(profilePhoto: path, updatedAt: DateTime.now());
     notifyListeners();
     await _saveProfile();
   }
@@ -1049,5 +1283,11 @@ class AppProvider with ChangeNotifier {
     _downloadedDocs.removeWhere((doc) => doc['id'] == id);
     _saveDownloadedDocs();
     notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _unsubscribeFromProfile();
+    super.dispose();
   }
 }

@@ -11,67 +11,22 @@ import 'regular_mode/language_selection_screen.dart';
 import 'regular_mode/settings_screen.dart';
 import 'regular_mode/help_support_screen.dart';
 import 'notifications_screen.dart';
+import '../widgets/custom_confirm_dialog.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
   void _handleLogout(BuildContext context, AppProvider provider) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          backgroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-            side: const BorderSide(color: Color(0xFFE2E8F0)),
-          ),
-          title: Text(
-            'Confirm Logout',
-            style: GoogleFonts.poppins(
-              color: const Color(0xFF0F172A),
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          content: Text(
-            'Are you sure you want to log out from MSS?',
-            style: GoogleFonts.inter(color: const Color(0xFF64748B)),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text(
-                'Cancel',
-                style: GoogleFonts.inter(
-                  color: const Color(0xFF64748B),
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFEF4444),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                elevation: 0,
-              ),
-              onPressed: provider.isLoggingOut
-                  ? null
-                  : () {
-                      Navigator.pop(context);
-                      provider.logout(context);
-                    },
-              child: Text(
-                'Logout',
-                style: GoogleFonts.inter(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ],
-        );
-      },
+    CustomConfirmDialog.show(
+      context,
+      icon: Icons.logout_rounded,
+      iconColor: const Color(0xFFEF4444),
+      iconBgColor: const Color(0xFFFEE2E2),
+      title: 'Confirm Logout',
+      message: 'Are you sure you want to log out from MSS?',
+      confirmLabel: 'Logout',
+      confirmColor: const Color(0xFFEF4444),
+      onConfirm: () => provider.logout(context),
     );
   }
 

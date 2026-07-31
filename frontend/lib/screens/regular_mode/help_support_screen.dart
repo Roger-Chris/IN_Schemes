@@ -4,7 +4,8 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../utils/constants.dart';
 
 class HelpSupportScreen extends StatefulWidget {
-  const HelpSupportScreen({super.key});
+  final String initialMode; // 'faq', 'contact', 'both'
+  const HelpSupportScreen({super.key, this.initialMode = 'both'});
 
   @override
   State<HelpSupportScreen> createState() => _HelpSupportScreenState();
@@ -756,7 +757,11 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                       ),
                       const SizedBox(width: 16),
                       Text(
-                        'Help & Support',
+                        widget.initialMode == 'faq'
+                            ? 'Help & FAQ'
+                            : widget.initialMode == 'contact'
+                                ? 'Contact Us'
+                                : 'Help & Support',
                         style: GoogleFonts.poppins(
                           fontSize: 20.0,
                           fontWeight: FontWeight.bold,
@@ -780,313 +785,135 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
             const SizedBox(height: 24),
 
             // Card 1: FAQs Group
-            _buildGroupCard(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Row(
-                    children: [
-                      _buildCircleIcon(
-                        icon: Icons.help_outline_rounded,
-                        bgColor: const Color(0xFFEFF6FF),
-                        iconColor: const Color(0xFF2563EB),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'FAQs',
-                              style: GoogleFonts.inter(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: const Color(0xFF0F172A),
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              'Find answers to common questions',
-                              style: GoogleFonts.inter(
-                                fontSize: 12.5,
-                                color: const Color(0xFF64748B),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const Icon(
-                        Icons.chevron_right_rounded,
-                        color: Color(0xFF94A3B8),
-                        size: 18,
-                      ),
-                    ],
-                  ),
-                ),
-                const Divider(color: Color(0xFFF1F5F9), height: 1),
-                ..._faqs.map((faq) {
-                  return Column(
-                    children: [
-                      ListTile(
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 2,
-                        ),
-                        title: Text(
-                          faq['question']!,
-                          style: GoogleFonts.inter(
-                            fontSize: 13.5,
-                            fontWeight: FontWeight.w600,
-                            color: const Color(0xFF0F172A),
-                          ),
-                        ),
-                        trailing: const Icon(
-                          Icons.chevron_right_rounded,
-                          color: Color(0xFF94A3B8),
-                          size: 18,
-                        ),
-                        onTap: () => _showFAQBottomSheet(
-                          faq['question']!,
-                          faq['answer']!,
-                        ),
-                      ),
-                      const Divider(color: Color(0xFFF1F5F9), height: 1),
-                    ],
-                  );
-                }),
-                ListTile(
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 2,
-                  ),
-                  title: Text(
-                    'View all FAQs',
-                    style: GoogleFonts.inter(
-                      fontSize: 13.5,
-                      fontWeight: FontWeight.bold,
-                      color: const Color(0xFF2563EB),
-                    ),
-                  ),
-                  trailing: const Icon(
-                    Icons.chevron_right_rounded,
-                    color: Color(0xFF2563EB),
-                    size: 18,
-                  ),
-                  onTap: _showAllFAQsBottomSheet,
-                ),
-              ],
-            ),
-
-            // Card 2: Contact Support Group
-            _buildGroupCard(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Row(
-                    children: [
-                      _buildCircleIcon(
-                        icon: Icons.headset_mic_outlined,
-                        bgColor: const Color(0xFFEFF6FF),
-                        iconColor: const Color(0xFF2563EB),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Contact Support',
-                              style: GoogleFonts.inter(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: const Color(0xFF0F172A),
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              'Get in touch with our support team',
-                              style: GoogleFonts.inter(
-                                fontSize: 12.5,
-                                color: const Color(0xFF64748B),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                  child: Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF8FAFC),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: const Color(0xFFE2E8F0)),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildCircleIcon(
-                          icon: Icons.mail_outline_rounded,
-                          bgColor: const Color(0xFFEFF6FF),
-                          iconColor: const Color(0xFF2563EB),
-                          size: 36,
-                          iconSize: 18,
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          'Email Us',
-                          style: GoogleFonts.inter(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13.5,
-                            color: const Color(0xFF0F172A),
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        GestureDetector(
-                          onTap: () => _copyToClipboard(
-                            'inschemes.support@gmail.com',
-                            'Support email copied to clipboard!',
-                          ),
-                          child: Text(
-                            'inschemes.support@gmail.com',
-                            style: GoogleFonts.inter(
-                              color: const Color(0xFF2563EB),
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'We typically reply within 24 hours',
-                          style: GoogleFonts.inter(
-                            fontSize: 10,
-                            color: const Color(0xFF64748B),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-
-            // Card 3: Report & Feedback Group
-            _buildGroupCard(
-              children: [
-                ListTile(
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
-                  leading: _buildCircleIcon(
-                    icon: Icons.bug_report_outlined,
-                    bgColor: const Color(0xFFF0FDF4),
-                    iconColor: const Color(0xFF16A34A),
-                  ),
-                  title: Text(
-                    'Report an Issue',
-                    style: GoogleFonts.inter(
-                      fontSize: 14.5,
-                      fontWeight: FontWeight.bold,
-                      color: const Color(0xFF0F172A),
-                    ),
-                  ),
-                  subtitle: Text(
-                    'Facing a problem? Let us know.',
-                    style: GoogleFonts.inter(
-                      fontSize: 11.5,
-                      color: const Color(0xFF64748B),
-                    ),
-                  ),
-                  trailing: const Icon(
-                    Icons.chevron_right_rounded,
-                    color: Color(0xFF94A3B8),
-                    size: 18,
-                  ),
-                  onTap: _showReportIssueBottomSheet,
-                ),
-                const Divider(color: Color(0xFFF1F5F9), height: 1),
-                ListTile(
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
-                  leading: _buildCircleIcon(
-                    icon: Icons.chat_bubble_outline_rounded,
-                    bgColor: const Color(0xFFFFF7ED),
-                    iconColor: const Color(0xFFEA580C),
-                  ),
-                  title: Text(
-                    'Feedback',
-                    style: GoogleFonts.inter(
-                      fontSize: 14.5,
-                      fontWeight: FontWeight.bold,
-                      color: const Color(0xFF0F172A),
-                    ),
-                  ),
-                  subtitle: Text(
-                    'Share your suggestions to help us improve.',
-                    style: GoogleFonts.inter(
-                      fontSize: 11.5,
-                      color: const Color(0xFF64748B),
-                    ),
-                  ),
-                  trailing: const Icon(
-                    Icons.chevron_right_rounded,
-                    color: Color(0xFF94A3B8),
-                    size: 18,
-                  ),
-                  onTap: _showFeedbackBottomSheet,
-                ),
-              ],
-            ),
-
-            // Still need help Banner
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF0FDF4),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFFDCFCE7), width: 1),
-              ),
-              clipBehavior: Clip.antiAlias,
-              child: Stack(
+            if (widget.initialMode == 'both' || widget.initialMode == 'faq')
+              _buildGroupCard(
                 children: [
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 16, 110, 16),
+                    padding: const EdgeInsets.all(16.0),
                     child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         _buildCircleIcon(
-                          icon: Icons.verified_user_outlined,
-                          bgColor: Colors.white,
-                          iconColor: const Color(0xFF16A34A),
-                          size: 36,
-                          iconSize: 18,
+                          icon: Icons.help_outline_rounded,
+                          bgColor: const Color(0xFFEFF6FF),
+                          iconColor: const Color(0xFF2563EB),
                         ),
-                        const SizedBox(width: 12),
+                        const SizedBox(width: 16),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Still need help?',
+                                'FAQs',
                                 style: GoogleFonts.inter(
-                                  fontSize: 14.5,
+                                  fontSize: 16,
                                   fontWeight: FontWeight.bold,
-                                  color: const Color(0xFF15803D),
+                                  color: const Color(0xFF0F172A),
                                 ),
                               ),
-                              const SizedBox(height: 4),
+                              const SizedBox(height: 2),
                               Text(
-                                'Our support team is always ready to assist you.',
+                                'Find answers to common questions',
                                 style: GoogleFonts.inter(
-                                  fontSize: 11.5,
+                                  fontSize: 12.5,
+                                  color: const Color(0xFF64748B),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Icon(
+                          Icons.chevron_right_rounded,
+                          color: Color(0xFF94A3B8),
+                          size: 18,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Divider(color: Color(0xFFF1F5F9), height: 1),
+                  ..._faqs.map((faq) {
+                    return Column(
+                      children: [
+                        ListTile(
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 2,
+                          ),
+                          title: Text(
+                            faq['question']!,
+                            style: GoogleFonts.inter(
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.w600,
+                              color: const Color(0xFF0F172A),
+                            ),
+                          ),
+                          trailing: const Icon(
+                            Icons.chevron_right_rounded,
+                            color: Color(0xFF94A3B8),
+                            size: 18,
+                          ),
+                          onTap: () => _showFAQBottomSheet(
+                            faq['question']!,
+                            faq['answer']!,
+                          ),
+                        ),
+                        const Divider(color: Color(0xFFF1F5F9), height: 1),
+                      ],
+                    );
+                  }),
+                  ListTile(
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 2,
+                    ),
+                    title: Text(
+                      'View all FAQs',
+                      style: GoogleFonts.inter(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF2563EB),
+                      ),
+                    ),
+                    trailing: const Icon(
+                      Icons.chevron_right_rounded,
+                      color: Color(0xFF2563EB),
+                      size: 18,
+                    ),
+                    onTap: _showAllFAQsBottomSheet,
+                  ),
+                ],
+              ),
+
+            // Card 2: Contact Support Group
+            if (widget.initialMode == 'both' || widget.initialMode == 'contact')
+              _buildGroupCard(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Row(
+                      children: [
+                        _buildCircleIcon(
+                          icon: Icons.headset_mic_outlined,
+                          bgColor: const Color(0xFFEFF6FF),
+                          iconColor: const Color(0xFF2563EB),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Contact Support',
+                                style: GoogleFonts.inter(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: const Color(0xFF0F172A),
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                'Get in touch with our support team',
+                                style: GoogleFonts.inter(
+                                  fontSize: 12.5,
                                   color: const Color(0xFF64748B),
                                 ),
                               ),
@@ -1096,18 +923,200 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                       ],
                     ),
                   ),
-                  Positioned(
-                    right: -10,
-                    bottom: -5,
-                    child: Image.asset(
-                      'assets/images/support_agent.png',
-                      height: 85,
-                      fit: BoxFit.contain,
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF8FAFC),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildCircleIcon(
+                            icon: Icons.mail_outline_rounded,
+                            bgColor: const Color(0xFFEFF6FF),
+                            iconColor: const Color(0xFF2563EB),
+                            size: 36,
+                            iconSize: 18,
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            'Email Us',
+                            style: GoogleFonts.inter(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13.5,
+                              color: const Color(0xFF0F172A),
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          GestureDetector(
+                            onTap: () => _copyToClipboard(
+                              'inschemes.support@gmail.com',
+                              'Support email copied to clipboard!',
+                            ),
+                            child: Text(
+                              'inschemes.support@gmail.com',
+                              style: GoogleFonts.inter(
+                                color: const Color(0xFF2563EB),
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'We typically reply within 24 hours',
+                            style: GoogleFonts.inter(
+                              fontSize: 10,
+                              color: const Color(0xFF64748B),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],
               ),
-            ),
+
+            // Card 3: Report & Feedback Group
+            if (widget.initialMode == 'both' || widget.initialMode == 'contact')
+              _buildGroupCard(
+                children: [
+                  ListTile(
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    leading: _buildCircleIcon(
+                      icon: Icons.bug_report_outlined,
+                      bgColor: const Color(0xFFF0FDF4),
+                      iconColor: const Color(0xFF16A34A),
+                    ),
+                    title: Text(
+                      'Report an Issue',
+                      style: GoogleFonts.inter(
+                        fontSize: 14.5,
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF0F172A),
+                      ),
+                    ),
+                    subtitle: Text(
+                      'Facing a problem? Let us know.',
+                      style: GoogleFonts.inter(
+                        fontSize: 11.5,
+                        color: const Color(0xFF64748B),
+                      ),
+                    ),
+                    trailing: const Icon(
+                      Icons.chevron_right_rounded,
+                      color: Color(0xFF94A3B8),
+                      size: 18,
+                    ),
+                    onTap: _showReportIssueBottomSheet,
+                  ),
+                  const Divider(color: Color(0xFFF1F5F9), height: 1),
+                  ListTile(
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    leading: _buildCircleIcon(
+                      icon: Icons.chat_bubble_outline_rounded,
+                      bgColor: const Color(0xFFFFF7ED),
+                      iconColor: const Color(0xFFEA580C),
+                    ),
+                    title: Text(
+                      'Feedback',
+                      style: GoogleFonts.inter(
+                        fontSize: 14.5,
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF0F172A),
+                      ),
+                    ),
+                    subtitle: Text(
+                      'Share your suggestions to help us improve.',
+                      style: GoogleFonts.inter(
+                        fontSize: 11.5,
+                        color: const Color(0xFF64748B),
+                      ),
+                    ),
+                    trailing: const Icon(
+                      Icons.chevron_right_rounded,
+                      color: Color(0xFF94A3B8),
+                      size: 18,
+                    ),
+                    onTap: _showFeedbackBottomSheet,
+                  ),
+                ],
+              ),
+
+            // Still need help Banner
+            if (widget.initialMode == 'both' || widget.initialMode == 'contact')
+              Container(
+                margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF0FDF4),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: const Color(0xFFDCFCE7), width: 1),
+                ),
+                clipBehavior: Clip.antiAlias,
+                child: Stack(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 16, 110, 16),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildCircleIcon(
+                            icon: Icons.verified_user_outlined,
+                            bgColor: Colors.white,
+                            iconColor: const Color(0xFF16A34A),
+                            size: 36,
+                            iconSize: 18,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Still need help?',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 14.5,
+                                    fontWeight: FontWeight.bold,
+                                    color: const Color(0xFF15803D),
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Our support team is always ready to assist you.',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 11.5,
+                                    color: const Color(0xFF64748B),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Positioned(
+                      right: -10,
+                      bottom: -5,
+                      child: Image.asset(
+                        'assets/images/support_agent.png',
+                        height: 85,
+                        fit: BoxFit.contain,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             const SizedBox(height: 16),
           ],
         ),

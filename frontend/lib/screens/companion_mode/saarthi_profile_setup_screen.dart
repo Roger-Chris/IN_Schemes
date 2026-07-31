@@ -5,6 +5,9 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../providers/app_state_provider.dart';
 import '../../main.dart';
 import '../regular_mode/eligibility_results_screen.dart';
+import '../../services/voice_recognition_controller.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
 
 class SaarthiProfileSetupScreen extends StatefulWidget {
   final bool fromEligibilityCheck;
@@ -27,12 +30,153 @@ class _SaarthiProfileSetupScreenState extends State<SaarthiProfileSetupScreen> {
   Timer? _listeningTimer;
   Timer? _transcriptTimer;
   late final List<_CompanionQuestion> _companionQuestions;
+  final VoiceRecognitionController _recognitionController = AutomaticVoiceRecognitionController();
+  bool _recognitionInitialized = false;
+  final ScrollController _scrollController = ScrollController();
+  int _activeStepNumber = 1;
 
   // Controllers for backing profile data
   final _nameController = TextEditingController();
   final _phoneController = TextEditingController();
   final _pinController = TextEditingController();
   final _cityController = TextEditingController();
+
+  List<int> get _currentStepQuestionIndices {
+    List<int> indices = [];
+    for (int i = 0; i < _companionQuestions.length; i++) {
+      if (_companionQuestions[i].stepNumber == _activeStepNumber) {
+        indices.add(i);
+      }
+    }
+    return indices;
+  }
+
+
+
+
+
+  void _moveToNextStep() {
+    setState(() {
+      _activeStepNumber++;
+    });
+    _startSimulatedListening();
+  }
+
+  bool _isLocationLoading = false;
+
+  Future<void> _fetchCurrentLocation() async {
+    setState(() {
+      _isLocationLoading = true;
+    });
+
+    try {
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) throw 'Location services are disabled.';
+
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) throw 'Permission denied.';
+      }
+
+      if (permission == LocationPermission.deniedForever) throw 'Permission permanently denied.';
+
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+        timeLimit: const Duration(seconds: 5),
+      );
+
+      List<Placemark> placemarks = await placemarkFromCoordinates(
+        position.latitude,
+        position.longitude,
+      );
+
+      if (placemarks.isNotEmpty) {
+        Placemark place = placemarks.first;
+        final String resolvedState = place.administrativeArea ?? 'Tamil Nadu';
+        final String resolvedDistrict = place.subAdministrativeArea ?? place.locality ?? 'Chennai';
+        final String resolvedCity = place.locality ?? place.subLocality ?? 'Chennai';
+        final String resolvedPin = place.postalCode ?? '600001';
+
+        setState(() {
+          if (!_districtsByState.containsKey(resolvedState)) {
+            _districtsByState[resolvedState] = [resolvedDistrict];
+          }
+          if (!_districtsByState[resolvedState]!.contains(resolvedDistrict)) {
+            _districtsByState[resolvedState]!.add(resolvedDistrict);
+          }
+          _selectedState = resolvedState;
+          _selectedDistrict = resolvedDistrict;
+          _selectedCity = resolvedCity;
+          _cityController.text = resolvedCity;
+          _pinController.text = resolvedPin;
+          
+          // Update answered values for companion questions in Step 2
+          for (var q in _companionQuestions) {
+            if (q.stepNumber == 2) {
+              if (q.confirmLabel == "State") {
+                q.answeredValue = resolvedState;
+              } else if (q.confirmLabel == "District") {
+                q.answeredValue = resolvedDistrict;
+              } else if (q.confirmLabel == "City/Town") {
+                q.answeredValue = resolvedCity;
+              } else if (q.confirmLabel == "PIN Code") {
+                q.answeredValue = resolvedPin;
+              }
+            }
+          }
+        });
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Current location detected successfully!'),
+              backgroundColor: Color(0xFF137C47),
+            ),
+          );
+        }
+      } else {
+        throw 'No address components found.';
+      }
+    } catch (e) {
+      debugPrint('[SaarthiProfile] Location fetch error, using fallback: $e');
+      setState(() {
+        _selectedState = 'Tamil Nadu';
+        _selectedDistrict = 'Chennai';
+        _selectedCity = 'Chennai';
+        _cityController.text = 'Chennai';
+        _pinController.text = '600040';
+
+        for (var q in _companionQuestions) {
+          if (q.stepNumber == 2) {
+            if (q.confirmLabel == "State") {
+              q.answeredValue = 'Tamil Nadu';
+            } else if (q.confirmLabel == "District") {
+              q.answeredValue = 'Chennai';
+            } else if (q.confirmLabel == "City/Town") {
+              q.answeredValue = 'Chennai';
+            } else if (q.confirmLabel == "PIN Code") {
+              q.answeredValue = '600040';
+            }
+          }
+        }
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Using fallback location (Chennai) due to mock/emulator environment.'),
+            backgroundColor: Color(0xFFE2B93B),
+          ),
+        );
+      }
+    } finally {
+      setState(() {
+        _isLocationLoading = false;
+      });
+    }
+  }
+
+
 
   DateTime? _selectedDob;
   String? _selectedGender = 'Female';
@@ -105,17 +249,15 @@ class _SaarthiProfileSetupScreenState extends State<SaarthiProfileSetupScreen> {
   void initState() {
     super.initState();
     // Prefill name and phone from google session if available
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final provider = Provider.of<AppProvider>(context, listen: false);
-      if (provider.profile.name.isNotEmpty) {
-        _nameController.text = provider.profile.name;
-      }
-      if (provider.profile.mobile.isNotEmpty) {
-        _phoneController.text = provider.profile.mobile;
-      } else if (provider.mobileNumber.isNotEmpty) {
-        _phoneController.text = provider.mobileNumber;
-      }
-    });
+    final provider = Provider.of<AppProvider>(context, listen: false);
+    if (provider.profile.name.isNotEmpty) {
+      _nameController.text = provider.profile.name;
+    }
+    if (provider.profile.mobile.isNotEmpty) {
+      _phoneController.text = provider.profile.mobile;
+    } else if (provider.mobileNumber.isNotEmpty) {
+      _phoneController.text = provider.mobileNumber;
+    }
 
     _initCompanionQuestions();
     _startSimulatedListening();
@@ -129,21 +271,32 @@ class _SaarthiProfileSetupScreenState extends State<SaarthiProfileSetupScreen> {
     _phoneController.dispose();
     _pinController.dispose();
     _cityController.dispose();
+    _recognitionController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
   void _initCompanionQuestions() {
+    final provider = Provider.of<AppProvider>(context, listen: false);
+    final String realName = provider.profile.name.isNotEmpty 
+        ? provider.profile.name 
+        : (provider.profile.email.isNotEmpty ? provider.profile.email.split('@').first : 'Praveen Kumar');
+    
+    final String realPhone = provider.profile.mobile.isNotEmpty 
+        ? provider.profile.mobile 
+        : (provider.mobileNumber.isNotEmpty ? provider.mobileNumber : '9876543210');
+
     _companionQuestions = [
       // STEP 1: About You
       _CompanionQuestion(
         stepName: 'About You',
         stepNumber: 1,
         saarthiPrompt: "Hi! 👋 Let's personalize your experience. First, what is your full name?",
-        sampleAnswer: "Praveen Kumar",
-        understoodTranscript: "My name is Praveen Kumar.",
+        sampleAnswer: realName,
+        understoodTranscript: "My name is $realName.",
         confirmLabel: "Full Name",
-        confirmValue: "Praveen Kumar",
-        quickOptions: const ["Praveen Kumar", "Aarav Sharma", "Aditi Patel"],
+        confirmValue: realName,
+        quickOptions: [realName, "Aarav Sharma", "Aditi Patel"],
         isText: true,
         textController: _nameController,
         onSave: (val, state) {
@@ -154,11 +307,11 @@ class _SaarthiProfileSetupScreenState extends State<SaarthiProfileSetupScreen> {
         stepName: 'About You',
         stepNumber: 1,
         saarthiPrompt: "Great! Can I have your mobile number?",
-        sampleAnswer: "9876543210",
-        understoodTranscript: "My mobile number is 9876543210.",
+        sampleAnswer: realPhone,
+        understoodTranscript: "My mobile number is $realPhone.",
         confirmLabel: "Mobile Number",
-        confirmValue: "9876543210",
-        quickOptions: const ["9876543210", "9988776655"],
+        confirmValue: realPhone,
+        quickOptions: [realPhone, "9988776655"],
         isText: true,
         textController: _phoneController,
         onSave: (val, state) {
@@ -460,55 +613,9 @@ class _SaarthiProfileSetupScreenState extends State<SaarthiProfileSetupScreen> {
     });
   }
 
-  void _handleQuickOptionSelect(String option) {
-    final currentQuestion = _companionQuestions[_activeQuestionIndex];
-    _listeningTimer?.cancel();
-    _transcriptTimer?.cancel();
 
-    if (currentQuestion.isMultiSelect) {
-      setState(() {
-        if (option == "None") {
-          _selectedSpecialCategories.clear();
-          _selectedSpecialCategories.add("None");
-        } else {
-          _selectedSpecialCategories.remove("None");
-          if (_selectedSpecialCategories.contains(option)) {
-            _selectedSpecialCategories.remove(option);
-          } else {
-            _selectedSpecialCategories.add(option);
-          }
-        }
-        _listeningState = 'confirm';
-        _userTranscript = 'I choose ${_selectedSpecialCategories.join(", ")}.';
-        _voiceSelectionVal = _selectedSpecialCategories.isEmpty ? 'None' : _selectedSpecialCategories.join(', ');
-      });
-    } else {
-      setState(() {
-        _listeningState = 'confirm';
-        _userTranscript = 'I choose $option.';
-        _voiceSelectionVal = option;
-        if (currentQuestion.isText && currentQuestion.textController != null) {
-          currentQuestion.textController!.text = option;
-        }
-      });
-    }
-  }
 
-  void _handleConfirmCorrect() {
-    final currentQuestion = _companionQuestions[_activeQuestionIndex];
-    final selectedVal = _voiceSelectionVal ?? currentQuestion.confirmValue;
 
-    currentQuestion.onSave(selectedVal, this);
-
-    if (_activeQuestionIndex == _companionQuestions.length - 1) {
-      _saveProfile();
-    } else {
-      setState(() {
-        _activeQuestionIndex++;
-      });
-      _startSimulatedListening();
-    }
-  }
 
   double _mapTurnoverToIncome(String turnover) {
     if (turnover.contains('< ₹5 Lakhs')) return 300000.0;
@@ -590,8 +697,312 @@ class _SaarthiProfileSetupScreenState extends State<SaarthiProfileSetupScreen> {
     }
   }
 
+  String? _getQuestionCurrentValue(_CompanionQuestion q) {
+    if (q.confirmLabel == "Age") {
+      if (_selectedDob == null) return null;
+      final age = DateTime.now().year - _selectedDob!.year;
+      if (age <= 25) return "18 – 25 years";
+      if (age <= 35) return "26 – 35 years";
+      if (age <= 45) return "36 – 45 years";
+      if (age <= 60) return "46 – 60 years";
+      return "60+ years";
+    }
+    if (q.confirmLabel == "Gender") return _selectedGender;
+    if (q.confirmLabel == "Business Status") return _selectedEmployment;
+    if (q.confirmLabel == "Business Sector") return _selectedBusinessIndustry;
+    if (q.confirmLabel == "Investment") return _selectedInvestment;
+    if (q.confirmLabel == "Turnover") return _selectedTurnover;
+    if (q.confirmLabel == "Employees") return _selectedEmployeesRange;
+    return q.answeredValue ?? q.confirmValue;
+  }
+
+  Widget _buildQuestionCard(int index) {
+    final q = _companionQuestions[index];
+    final bool isActive = _activeQuestionIndex == index;
+    final bool isAnswered = q.answeredValue != null || (q.isText && q.textController != null && q.textController!.text.isNotEmpty);
+    
+    const Color kBrandBlue = Color(0xFF2563EB);
+    const Color kDarkSlate = Color(0xFF0F172A);
+    const Color kSlate500 = Color(0xFF64748B);
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isActive ? kBrandBlue : const Color(0xFFE2E8F0),
+          width: isActive ? 2.0 : 1.0,
+        ),
+        boxShadow: isActive ? [
+          BoxShadow(
+            color: kBrandBlue.withValues(alpha: 0.08),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          )
+        ] : const [
+          BoxShadow(
+            color: Color(0x02000000),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          )
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 20,
+                height: 20,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: isAnswered ? const Color(0xFFEFF6FF) : const Color(0xFFF1F5F9),
+                ),
+                child: Icon(
+                  isAnswered ? Icons.check_circle : Icons.circle_outlined,
+                  color: isAnswered ? kBrandBlue : kSlate500,
+                  size: 14,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                q.confirmLabel,
+                style: GoogleFonts.inter(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.bold,
+                  color: isActive ? kBrandBlue : kDarkSlate,
+                ),
+              ),
+              const Spacer(),
+              GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _activeQuestionIndex = index;
+                  });
+                  _startSimulatedListening();
+                },
+                child: Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: isActive ? const Color(0xFFEFF6FF) : Colors.transparent,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.mic,
+                    color: isActive ? kBrandBlue : kSlate500,
+                    size: 16,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+
+          if (q.isText && q.textController != null)
+            TextField(
+              controller: q.textController,
+              keyboardType: q.confirmLabel == "Mobile Number" || q.confirmLabel == "PIN Code"
+                  ? TextInputType.phone
+                  : TextInputType.text,
+              style: GoogleFonts.inter(
+                fontSize: 13.5,
+                fontWeight: FontWeight.bold,
+                color: kDarkSlate,
+              ),
+              decoration: InputDecoration(
+                hintText: 'Type ${q.confirmLabel.toLowerCase()} here...',
+                hintStyle: GoogleFonts.inter(fontSize: 12.5, color: const Color(0xFF94A3B8)),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                isDense: true,
+                filled: true,
+                fillColor: const Color(0xFFF8FAFC),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(color: kBrandBlue, width: 1.5),
+                ),
+              ),
+              onTap: () {
+                if (_activeQuestionIndex != index) {
+                  setState(() {
+                    _activeQuestionIndex = index;
+                  });
+                }
+              },
+              onChanged: (val) {
+                q.onSave(val, this);
+                q.answeredValue = val;
+              },
+            )
+          else if (q.isMultiSelect)
+            Wrap(
+              spacing: 8.0,
+              runSpacing: 8.0,
+              children: q.quickOptions.map((option) {
+                final isSel = _selectedSpecialCategories.contains(option);
+                return FilterChip(
+                  label: Text(
+                    option,
+                    style: GoogleFonts.inter(
+                      fontSize: 11.5,
+                      fontWeight: isSel ? FontWeight.bold : FontWeight.normal,
+                      color: isSel ? Colors.white : kDarkSlate,
+                    ),
+                  ),
+                  selected: isSel,
+                  onSelected: (selected) {
+                    setState(() {
+                      if (option == "None") {
+                        _selectedSpecialCategories.clear();
+                        _selectedSpecialCategories.add("None");
+                      } else {
+                        _selectedSpecialCategories.remove("None");
+                        if (_selectedSpecialCategories.contains(option)) {
+                          _selectedSpecialCategories.remove(option);
+                        } else {
+                          _selectedSpecialCategories.add(option);
+                        }
+                      }
+                      q.onSave(option, this);
+                      q.answeredValue = _selectedSpecialCategories.isEmpty ? 'None' : _selectedSpecialCategories.join(', ');
+                    });
+                  },
+                  selectedColor: const Color(0xFF0D47A1),
+                  checkmarkColor: Colors.white,
+                  backgroundColor: const Color(0xFFF8FAFC),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                    side: BorderSide(
+                      color: isSel ? const Color(0xFF0D47A1) : const Color(0xFFE2E8F0),
+                    ),
+                  ),
+                );
+              }).toList(),
+            )
+          else if (q.confirmLabel == "State" || q.confirmLabel == "District")
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF8FAFC),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: const Color(0xFFCBD5E1)),
+              ),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<String>(
+                  value: q.confirmLabel == "State" ? _selectedState : _selectedDistrict,
+                  isExpanded: true,
+                  icon: const Icon(Icons.arrow_drop_down, color: kSlate500),
+                  style: GoogleFonts.inter(
+                    fontSize: 13,
+                    fontWeight: FontWeight.normal,
+                    color: kDarkSlate,
+                  ),
+                  items: (q.confirmLabel == "State" 
+                      ? _districtsByState.keys.toList() 
+                      : (_districtsByState[_selectedState] ?? []))
+                      .map((val) => DropdownMenuItem(
+                            value: val,
+                            child: Text(val),
+                          ))
+                      .toList(),
+                  onChanged: (newVal) {
+                    if (newVal != null) {
+                      setState(() {
+                        q.onSave(newVal, this);
+                        q.answeredValue = newVal;
+                      });
+                    }
+                  },
+                ),
+              ),
+            )
+          else
+            Wrap(
+              spacing: 8.0,
+              runSpacing: 8.0,
+              children: q.quickOptions.map((option) {
+                final String? currentVal = _getQuestionCurrentValue(q);
+                final isSel = currentVal == option;
+                return ChoiceChip(
+                  label: Text(
+                    option,
+                    style: GoogleFonts.inter(
+                      fontSize: 11.5,
+                      fontWeight: isSel ? FontWeight.bold : FontWeight.normal,
+                      color: isSel ? const Color(0xFF0D47A1) : kDarkSlate,
+                    ),
+                  ),
+                  selected: isSel,
+                  onSelected: (selected) {
+                    if (selected) {
+                      setState(() {
+                        q.onSave(option, this);
+                        q.answeredValue = option;
+                      });
+                    }
+                  },
+                  backgroundColor: const Color(0xFFF8FAFC),
+                  selectedColor: const Color(0xFFEFF6FF),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                    side: BorderSide(
+                      color: isSel ? const Color(0xFF0D47A1) : const Color(0xFFE2E8F0),
+                      width: isSel ? 1.5 : 1.0,
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+
+          if (isActive && _listeningState != 'confirm') ...[
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              decoration: BoxDecoration(
+                color: _listeningState == 'listening' ? const Color(0xFFF0F6FF) : const Color(0xFFF0FDF4),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: _listeningState == 'listening' ? const Color(0xFFBFDBFE) : const Color(0xFFDCFCE7),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    _listeningState == 'listening' ? Icons.mic : Icons.check_circle,
+                    color: _listeningState == 'listening' ? kBrandBlue : const Color(0xFF16A34A),
+                    size: 14,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      _listeningState == 'listening' 
+                          ? 'Listening: "$_userTranscript"' 
+                          : 'Understood: "$_userTranscript"',
+                      style: GoogleFonts.inter(
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.bold,
+                        color: _listeningState == 'listening' ? kBrandBlue : const Color(0xFF15803D),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final currentIndices = _currentStepQuestionIndices;
     final currentQuestion = _companionQuestions[_activeQuestionIndex];
 
     const Color kBrandBlue = Color(0xFF2563EB);
@@ -602,6 +1013,7 @@ class _SaarthiProfileSetupScreenState extends State<SaarthiProfileSetupScreen> {
       backgroundColor: const Color(0xFFF8FAFC),
       body: SafeArea(
         child: SingleChildScrollView(
+          controller: _scrollController,
           physics: const BouncingScrollPhysics(),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -692,7 +1104,7 @@ class _SaarthiProfileSetupScreenState extends State<SaarthiProfileSetupScreen> {
                             ],
                           ),
                           Text(
-                            '${currentQuestion.stepNumber} of 5',
+                            '$_activeStepNumber of 5',
                             style: GoogleFonts.inter(
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
@@ -707,9 +1119,9 @@ class _SaarthiProfileSetupScreenState extends State<SaarthiProfileSetupScreen> {
                         children: List.generate(5, (index) {
                           final stepNum = index + 1;
                           final isActive =
-                              stepNum == currentQuestion.stepNumber;
+                              stepNum == _activeStepNumber;
                           final isCompleted =
-                              stepNum < currentQuestion.stepNumber;
+                              stepNum < _activeStepNumber;
 
                           return Expanded(
                             child: Row(
@@ -767,23 +1179,23 @@ class _SaarthiProfileSetupScreenState extends State<SaarthiProfileSetupScreen> {
                         children: [
                           _StepLabel(
                             text: 'About You',
-                            active: currentQuestion.stepNumber == 1,
+                            active: _activeStepNumber == 1,
                           ),
                           _StepLabel(
                             text: 'Location',
-                            active: currentQuestion.stepNumber == 2,
+                            active: _activeStepNumber == 2,
                           ),
                           _StepLabel(
                             text: 'Your Business',
-                            active: currentQuestion.stepNumber == 3,
+                            active: _activeStepNumber == 3,
                           ),
                           _StepLabel(
                             text: 'Business Scale',
-                            active: currentQuestion.stepNumber == 4,
+                            active: _activeStepNumber == 4,
                           ),
                           _StepLabel(
                             text: 'Eligibility',
-                            active: currentQuestion.stepNumber == 5,
+                            active: _activeStepNumber == 5,
                           ),
                         ],
                       ),
@@ -858,670 +1270,278 @@ class _SaarthiProfileSetupScreenState extends State<SaarthiProfileSetupScreen> {
                 ),
               ),
 
-              // 4. Interactive Panel Card
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20.0,
-                  vertical: 12.0,
-                ),
-                child: _listeningState == 'listening'
-                    ? _buildListeningPanel(currentQuestion)
-                    : (_listeningState == 'understood'
-                          ? _buildUnderstoodPanel(currentQuestion)
-                          : _buildConfirmPanel(currentQuestion)),
-              ),
-
-              // 5. Quick Options row
-              if (currentQuestion.isMultiSelect)
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20.0,
-                    vertical: 8.0,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Choose all that apply',
-                        style: GoogleFonts.inter(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          color: kSlate500,
+              // 4. List of all questions for the current step
+              Column(
+                children: [
+                  if (_activeStepNumber == 2)
+                    Padding(
+                      padding: const EdgeInsets.only(left: 20.0, right: 20.0, bottom: 8.0),
+                      child: OutlinedButton.icon(
+                        onPressed: _isLocationLoading ? null : _fetchCurrentLocation,
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          side: const BorderSide(color: Color(0xFF2563EB), width: 1.5),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          minimumSize: const Size.fromHeight(48),
                         ),
-                      ),
-                      const SizedBox(height: 8),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: currentQuestion.quickOptions.map((opt) {
-                          final isSelected = _selectedSpecialCategories.contains(opt);
-                          return ChoiceChip(
-                            label: Text(opt),
-                            selected: isSelected,
-                            onSelected: (selected) {
-                              _handleQuickOptionSelect(opt);
-                            },
-                            labelStyle: GoogleFonts.inter(
-                              fontSize: 11.5,
-                              fontWeight: FontWeight.bold,
-                              color: isSelected
-                                  ? const Color(0xFF0D47A1)
-                                  : const Color(0xFF475569),
-                            ),
-                            backgroundColor: Colors.white,
-                            selectedColor: const Color(0xFFEFF6FF),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                              side: BorderSide(
-                                color: isSelected
-                                    ? const Color(0xFF0D47A1)
-                                    : const Color(0xFFE2E8F0),
-                                width: isSelected ? 1.5 : 1.0,
-                              ),
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                    ],
-                  ),
-                ),
-
-              // 6. Bottom controls bar
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20.0,
-                  vertical: 6.0,
-                ),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: const Color(0xFFE2E8F0)),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: InkWell(
-                          onTap: () {
-                            if (currentQuestion.quickOptions.isNotEmpty) {
-                              _handleQuickOptionSelect(
-                                currentQuestion.quickOptions.first,
-                              );
-                            }
-                          },
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(
-                                Icons.keyboard_alt_outlined,
-                                color: Color(0xFF64748B),
-                                size: 18,
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                'Keyboard',
-                                style: GoogleFonts.inter(
-                                  fontSize: 9.5,
-                                  color: const Color(0xFF64748B),
-                                  fontWeight: FontWeight.bold,
+                        icon: _isLocationLoading
+                            ? const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Color(0xFF2563EB),
                                 ),
-                              ),
-                            ],
+                              )
+                            : const Icon(Icons.my_location, size: 16, color: Color(0xFF2563EB)),
+                        label: Text(
+                          _isLocationLoading ? 'Fetching Location...' : 'Use Current Location',
+                          style: GoogleFonts.inter(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: const Color(0xFF2563EB),
                           ),
                         ),
                       ),
-                      Expanded(
-                        flex: 2,
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(
-                              width: 36,
-                              height: 36,
-                              decoration: const BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: Color(0xFF2563EB),
-                              ),
-                              child: const Icon(
-                                Icons.mic,
-                                color: Colors.white,
-                                size: 18,
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              'Hold to speak',
-                              style: GoogleFonts.inter(
-                                fontSize: 9.5,
-                                color: const Color(0xFF2563EB),
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Expanded(
-                        child: InkWell(
-                          onTap: () {},
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(
-                                Icons.mic_off_outlined,
-                                color: Color(0xFF64748B),
-                                size: 18,
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                'Mute',
-                                style: GoogleFonts.inter(
-                                  fontSize: 9.5,
-                                  color: const Color(0xFF64748B),
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              // 7. Tip Banner
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20.0,
-                  vertical: 8.0,
-                ),
-                child: Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFEFF6FF),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: const Color(0xFFBFDBFE)),
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 32,
-                        height: 32,
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Color(0xFFBFDBFE),
-                        ),
-                        child: ClipOval(
-                          child: Image.asset(
-                            'assets/saarthi_expressions/Ai companion.png',
-                            fit: BoxFit.contain,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              '💡 Tip from Saarthi',
-                              style: GoogleFonts.inter(
-                                fontSize: 11.5,
-                                fontWeight: FontWeight.bold,
-                                color: const Color(0xFF1E3A8A),
-                              ),
-                            ),
-                            Text(
-                              'You can answer in your own words. I understand natural language very well!',
-                              style: GoogleFonts.inter(
-                                fontSize: 10.5,
-                                color: const Color(0xFF2563EB),
-                                height: 1.3,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              // 8. Bottom Action Button
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20.0, 12.0, 20.0, 24.0),
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF0D47A1),
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
                     ),
-                    minimumSize: const Size.fromHeight(52),
-                    elevation: 0,
-                  ),
-                  onPressed: _handleConfirmCorrect,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        _activeQuestionIndex == _companionQuestions.length - 1
-                            ? 'Save & Find Schemes'
-                            : 'Next',
-                        style: GoogleFonts.inter(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      const Icon(Icons.arrow_forward, size: 18),
-                    ],
-                  ),
-                ),
+                  ...currentIndices.map((idx) => _buildQuestionCard(idx)),
+                ],
               ),
             ],
           ),
         ),
       ),
+      bottomNavigationBar: _buildVoiceNavbar(context, currentQuestion),
     );
   }
 
-  Widget _buildListeningPanel(_CompanionQuestion currentQuestion) {
+  Widget _buildVoiceNavbar(BuildContext context, _CompanionQuestion currentQuestion) {
     return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x05000000),
-            blurRadius: 10,
-            offset: Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 72,
-            height: 72,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: const Color(0xFFEFF6FF),
-              shape: BoxShape.circle,
-              border: Border.all(color: const Color(0xFFBFDBFE), width: 1.5),
-            ),
-            child: Container(
-              width: 52,
-              height: 52,
-              alignment: Alignment.center,
-              decoration: const BoxDecoration(
-                color: Color(0xFF2563EB),
-                shape: BoxShape.circle,
+      color: const Color(0xFFF8FAFC),
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+      child: SafeArea(
+        top: false,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // 1. Next Button (Upper position)
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF0D47A1),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                minimumSize: const Size.fromHeight(52),
+                elevation: 0,
               ),
-              child: const Icon(Icons.mic, color: Colors.white, size: 24),
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    const Icon(Icons.mic, color: Color(0xFF2563EB), size: 14),
-                    const SizedBox(width: 4),
-                    Text(
-                      'Listening...',
-                      style: GoogleFonts.inter(
-                        fontSize: 13,
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xFF2563EB),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 6),
-                Row(
-                  children: List.generate(15, (index) {
-                    final h = (index % 3 == 0)
-                        ? 14.0
-                        : ((index % 2 == 0) ? 8.0 : 4.0);
-                    return Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 1.5),
-                      width: 2.5,
-                      height: h,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF2563EB),
-                        borderRadius: BorderRadius.circular(1),
-                      ),
-                    );
-                  }),
-                ),
-                const SizedBox(height: 8),
-                if (currentQuestion.isText && currentQuestion.textController != null)
-                  Container(
-                    margin: const EdgeInsets.only(bottom: 6),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF8FAFC),
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: const Color(0xFFCBD5E1)),
-                    ),
-                    child: TextField(
-                      controller: currentQuestion.textController,
-                      style: GoogleFonts.inter(fontSize: 13.5, fontWeight: FontWeight.bold, color: const Color(0xFF0F172A)),
-                      keyboardType: currentQuestion.confirmLabel == "Mobile Number" || currentQuestion.confirmLabel == "PIN Code"
-                          ? TextInputType.phone
-                          : TextInputType.text,
-                      decoration: InputDecoration(
-                        hintText: 'Type your answer here...',
-                        hintStyle: GoogleFonts.inter(fontSize: 12.5, color: const Color(0xFF94A3B8)),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        border: InputBorder.none,
-                      ),
-                      onChanged: (val) {
-                        _voiceSelectionVal = val;
-                      },
-                    ),
-                  )
-                else
+              onPressed: () {
+                if (_activeStepNumber == 5) {
+                  _saveProfile();
+                } else {
+                  _moveToNextStep();
+                }
+              },
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
                   Text(
-                    "Speak naturally. For example:\n\"${currentQuestion.sampleAnswer}\"",
+                    _activeStepNumber == 5 ? 'Save & Find Schemes' : 'Next',
                     style: GoogleFonts.inter(
-                      fontSize: 11.5,
-                      color: const Color(0xFF64748B),
-                      height: 1.3,
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-                const SizedBox(height: 6),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: OutlinedButton.icon(
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 4,
-                      ),
-                      side: const BorderSide(color: Color(0xFFCBD5E1)),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    onPressed: () {
-                      _handleQuickOptionSelect(
-                        currentQuestion.quickOptions.isNotEmpty
-                            ? currentQuestion.quickOptions.first
-                            : "None",
-                      );
-                    },
-                    icon: const Icon(
-                      Icons.keyboard_alt_outlined,
-                      size: 14,
-                      color: Color(0xFF1E293B),
-                    ),
-                    label: Text(
-                      'Type instead',
-                      style: GoogleFonts.inter(
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xFF1E293B),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+                  const SizedBox(width: 8),
+                  const Icon(Icons.arrow_forward, size: 18),
+                ],
+              ),
             ),
-          ),
-        ],
-      ),
-    );
-  }
 
-  Widget _buildUnderstoodPanel(_CompanionQuestion currentQuestion) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF0FDF4),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFDCFCE7)),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x05000000),
-            blurRadius: 10,
-            offset: Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Icon(
-                Icons.check_circle,
-                color: Color(0xFF16A34A),
-                size: 16,
+            const SizedBox(height: 12),
+
+            // 2. White Hold to Speak Box (Static Bottom position)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(color: const Color(0xFFE2E8F0)),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x08000000),
+                    blurRadius: 10,
+                    offset: Offset(0, 2),
+                  ),
+                ],
               ),
-              const SizedBox(width: 6),
-              Text(
-                'I understood this',
-                style: GoogleFonts.inter(
-                  fontSize: 12.5,
-                  fontWeight: FontWeight.bold,
-                  color: const Color(0xFF16A34A),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0xFFE2E8F0)),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        currentQuestion.isText && currentQuestion.textController != null && currentQuestion.textController!.text.isNotEmpty
-                            ? '"${currentQuestion.textController!.text}"'
-                            : '"$_userTranscript"',
-                        style: GoogleFonts.inter(
-                          fontSize: 13,
-                          fontWeight: FontWeight.bold,
-                          color: const Color(0xFF1E293B),
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Row(
-                        children: List.generate(20, (index) {
-                          return Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 1),
-                            width: 2,
-                            height: 4,
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF3B82F6),
-                              borderRadius: BorderRadius.circular(1),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: InkWell(
+                      onTap: () {
+                        if (currentQuestion.isText && currentQuestion.textController != null) {
+                          FocusManager.instance.primaryFocus?.unfocus();
+                        }
+                      },
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.keyboard_alt_outlined,
+                            color: Color(0xFF64748B),
+                            size: 18,
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'Keyboard',
+                            style: GoogleFonts.inter(
+                              fontSize: 9.5,
+                              color: const Color(0xFF64748B),
+                              fontWeight: FontWeight.bold,
                             ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    flex: 2,
+                    child: GestureDetector(
+                      onTapDown: (_) async {
+                        _listeningTimer?.cancel();
+                        _transcriptTimer?.cancel();
+                        final provider = Provider.of<AppProvider>(context, listen: false);
+                        final localeId = provider.selectedLanguage == 'ta' ? 'ta-IN' : 'en-IN';
+                        setState(() {
+                          _listeningState = 'listening';
+                          _userTranscript = 'Listening...';
+                        });
+                        try {
+                          if (!_recognitionInitialized) {
+                            await _recognitionController.initialize(
+                              onStatus: (status) {
+                                debugPrint('[SaarthiProfile] Voice status: $status');
+                              },
+                              onResult: (result) {
+                                setState(() {
+                                  if (result.transcript.isNotEmpty) {
+                                    _userTranscript = result.transcript;
+                                    _voiceSelectionVal = result.transcript;
+                                  }
+                                });
+                              },
+                              onSoundLevel: (level) {},
+                              onLanguage: (lang) {},
+                              onError: (error) {
+                                debugPrint('[SaarthiProfile] Voice error: ${error.message}');
+                              },
+                            );
+                            _recognitionInitialized = true;
+                          }
+                          await _recognitionController.listen(
+                            localeId: localeId,
                           );
-                        }),
+                        } catch (e) {
+                          debugPrint('[SaarthiProfile] Error starting voice: $e');
+                        }
+                      },
+                      onTapUp: (_) async {
+                        try {
+                          await _recognitionController.stop();
+                        } catch (e) {
+                          debugPrint('[SaarthiProfile] Error stopping voice: $e');
+                        }
+                        final currentQuestion = _companionQuestions[_activeQuestionIndex];
+                        setState(() {
+                          _listeningState = 'understood';
+                          if (_userTranscript == 'Listening...' || _userTranscript.isEmpty) {
+                            _userTranscript = currentQuestion.understoodTranscript;
+                          }
+                        });
+                        _transcriptTimer = Timer(const Duration(milliseconds: 1000), () {
+                          if (!mounted) return;
+                          setState(() {
+                            _listeningState = 'confirm';
+                            String confirmedVal = _voiceSelectionVal ?? currentQuestion.confirmValue;
+                            if (confirmedVal == 'Listening...') {
+                              confirmedVal = currentQuestion.confirmValue;
+                            }
+                            currentQuestion.onSave(confirmedVal, this);
+                            currentQuestion.answeredValue = confirmedVal;
+                            if (currentQuestion.isText && currentQuestion.textController != null) {
+                              currentQuestion.textController!.text = confirmedVal;
+                            }
+                          });
+                        });
+                      },
+                      onTapCancel: () async {
+                        try {
+                          await _recognitionController.cancel();
+                        } catch (_) {}
+                        _startSimulatedListening();
+                      },
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: 40,
+                            height: 40,
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Color(0xFF2563EB),
+                            ),
+                            child: const Icon(
+                              Icons.mic,
+                              color: Colors.white,
+                              size: 20,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'Hold to speak',
+                            style: GoogleFonts.inter(
+                              fontSize: 10,
+                              color: const Color(0xFF2563EB),
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
-                ),
-                IconButton(
-                  icon: const Icon(
-                    Icons.edit_outlined,
-                    color: Color(0xFF16A34A),
-                    size: 20,
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      _listeningState = 'confirm';
-                    });
-                  },
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildConfirmPanel(_CompanionQuestion currentQuestion) {
-    String getDisplayValue() {
-      if (currentQuestion.isText && currentQuestion.textController != null && currentQuestion.textController!.text.isNotEmpty) {
-        return currentQuestion.textController!.text;
-      }
-      return _voiceSelectionVal ?? currentQuestion.confirmValue;
-    }
-
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: const Color(0xFFEFF6FF),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFBFDBFE)),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x05000000),
-            blurRadius: 10,
-            offset: Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text(
-            'Please confirm',
-            style: GoogleFonts.inter(
-              fontSize: 11.5,
-              fontWeight: FontWeight.bold,
-              color: const Color(0xFF1E3A8A),
-            ),
-          ),
-          const SizedBox(height: 8),
-          // Full-width extended name box
-          Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 10,
-              vertical: 6,
-            ),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0xFFBFDBFE)),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFDCFCE7),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.person,
-                    color: Color(0xFF15803D),
-                    size: 15,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        currentQuestion.confirmLabel,
-                        style: GoogleFonts.inter(
-                          fontSize: 10.0,
-                          color: const Color(0xFF64748B),
-                        ),
+                  Expanded(
+                    child: InkWell(
+                      onTap: () {},
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.mic_off_outlined,
+                            color: Color(0xFF64748B),
+                            size: 18,
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'Mute',
+                            style: GoogleFonts.inter(
+                              fontSize: 9.5,
+                              color: const Color(0xFF64748B),
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 1),
-                      Text(
-                        getDisplayValue(),
-                        style: GoogleFonts.inter(
-                          fontSize: 12.5,
-                          fontWeight: FontWeight.bold,
-                          color: const Color(0xFF1E293B),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 10),
-          // Actions below
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              OutlinedButton.icon(
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: const Color(0xFF2563EB),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 6,
-                  ),
-                  side: const BorderSide(color: Color(0xFFBFDBFE)),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                onPressed: () {
-                  setState(() {
-                    _listeningState = 'listening';
-                  });
-                },
-                icon: const Icon(Icons.edit, size: 12),
-                label: Text(
-                  'Edit',
-                  style: GoogleFonts.inter(
-                    fontSize: 10.0,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                ],
               ),
-              const SizedBox(width: 6),
-              ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  elevation: 0,
-                  backgroundColor: const Color(0xFFDCFCE7),
-                  foregroundColor: const Color(0xFF15803D),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 6,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    side: const BorderSide(color: Color(0xFF86EFAC)),
-                  ),
-                ),
-                onPressed: _handleConfirmCorrect,
-                icon: const Icon(Icons.check, size: 12),
-                label: Text(
-                  'Correct',
-                  style: GoogleFonts.inter(
-                    fontSize: 10.0,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -1540,8 +1560,11 @@ class _CompanionQuestion {
   final TextEditingController? textController;
   final bool isMultiSelect;
   final void Function(String val, _SaarthiProfileSetupScreenState state) onSave;
+  
+  // Non-final field to store the user's confirmed answer
+  String? answeredValue;
 
-  const _CompanionQuestion({
+  _CompanionQuestion({
     required this.stepName,
     required this.stepNumber,
     required this.saarthiPrompt,
