@@ -48,9 +48,9 @@ class NativeSpeechOutputController implements SpeechOutputController {
     if (_capabilities != null) return _capabilities!;
     _channel.setMethodCallHandler(_handleNativeCall);
     try {
-      final response = await _channel
-          .invokeMapMethod<String, dynamic>('capabilities')
-          .timeout(const Duration(seconds: 5));
+      final response = await _channel.invokeMapMethod<String, dynamic>(
+        'capabilities',
+      );
       return _capabilities = SpeechOutputCapabilities(
         available: response?['available'] == true,
         english: response?['english'] == true,
@@ -61,8 +61,6 @@ class NativeSpeechOutputController implements SpeechOutputController {
     } on PlatformException {
       return _unavailableCapabilities();
     } on MissingPluginException {
-      return _unavailableCapabilities();
-    } on TimeoutException {
       return _unavailableCapabilities();
     }
   }

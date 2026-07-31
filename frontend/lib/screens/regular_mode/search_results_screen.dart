@@ -1,20 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../widgets/gradient_scaffold.dart';
-import '../widgets/scheme_card.dart';
-import '../widgets/filter_panel.dart';
-import '../providers/app_state_provider.dart';
-import '../utils/constants.dart';
+import '../../widgets/gradient_scaffold.dart';
+import '../../widgets/scheme_card.dart';
+import '../../widgets/filter_panel.dart';
+import '../../providers/app_state_provider.dart';
+import '../../utils/constants.dart';
 import 'scheme_details_screen.dart';
 
 class SearchResultsScreen extends StatefulWidget {
   final String title;
 
-  const SearchResultsScreen({
-    super.key,
-    required this.title,
-  });
+  const SearchResultsScreen({super.key, required this.title});
 
   @override
   State<SearchResultsScreen> createState() => _SearchResultsScreenState();
@@ -73,9 +70,12 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
       if (query.isNotEmpty) {
         final nameMatch = scheme.name.toLowerCase().contains(query);
         final overviewMatch = scheme.overview.toLowerCase().contains(query);
-        final sponsorMatch = scheme.sponsoringBody.toLowerCase().contains(query);
+        final sponsorMatch = scheme.sponsoringBody.toLowerCase().contains(
+          query,
+        );
         final categoryMatch = scheme.category.toLowerCase().contains(query);
-        queryMatch = nameMatch || overviewMatch || sponsorMatch || categoryMatch;
+        queryMatch =
+            nameMatch || overviewMatch || sponsorMatch || categoryMatch;
       }
 
       // 2. Active filters match
@@ -83,13 +83,16 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
       if (filters['state'] != null && filters['state'] != 'All') {
         final st = filters['state'].toString().toLowerCase();
         // Check scheme's own state field or 'All India' (national) schemes always match
-        stateMatch = scheme.state.toLowerCase() == 'all india' ||
+        stateMatch =
+            scheme.state.toLowerCase() == 'all india' ||
             scheme.state.toLowerCase().contains(st);
       }
 
       bool categoryMatch = true;
       if (filters['category'] != null && filters['category'] != 'All') {
-        categoryMatch = scheme.category.toLowerCase() == filters['category'].toString().toLowerCase();
+        categoryMatch =
+            scheme.category.toLowerCase() ==
+            filters['category'].toString().toLowerCase();
       }
 
       bool genderMatch = true;
@@ -97,7 +100,8 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
         final isFemale = filters['gender'] == 'Female';
         if (isFemale) {
           // Show women-specific schemes and all-gender schemes
-          genderMatch = scheme.targetBeneficiary.toLowerCase().contains('women') ||
+          genderMatch =
+              scheme.targetBeneficiary.toLowerCase().contains('women') ||
               scheme.searchKeywords.toLowerCase().contains('women') ||
               !scheme.targetBeneficiary.toLowerCase().contains('male');
         }
@@ -105,42 +109,72 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
 
       bool ministryMatch = true;
       if (filters['ministry'] != null && filters['ministry'] != 'All') {
-        final minVal = filters['ministry'].toString().toLowerCase().replaceAll('ministry of ', '');
+        final minVal = filters['ministry'].toString().toLowerCase().replaceAll(
+          'ministry of ',
+          '',
+        );
         ministryMatch = scheme.sponsoringBody.toLowerCase().contains(minVal);
       }
 
       bool schemeTypeMatch = true;
       if (filters['schemeType'] != null && filters['schemeType'] != 'All') {
         if (filters['schemeType'] == 'Central Government') {
-          schemeTypeMatch = !scheme.sponsoringBody.toLowerCase().contains('tamil nadu') && !scheme.sponsoringBody.toLowerCase().contains('state');
+          schemeTypeMatch =
+              !scheme.sponsoringBody.toLowerCase().contains('tamil nadu') &&
+              !scheme.sponsoringBody.toLowerCase().contains('state');
         } else if (filters['schemeType'] == 'State Government') {
-          schemeTypeMatch = scheme.sponsoringBody.toLowerCase().contains('tamil nadu') || scheme.sponsoringBody.toLowerCase().contains('state');
+          schemeTypeMatch =
+              scheme.sponsoringBody.toLowerCase().contains('tamil nadu') ||
+              scheme.sponsoringBody.toLowerCase().contains('state');
         }
       }
 
       bool studentMatch = true;
       if (filters['occupation'] == 'Student') {
-        studentMatch = scheme.overview.toLowerCase().contains('student') || scheme.category.toLowerCase().contains('education') || scheme.name.toLowerCase().contains('student');
+        studentMatch =
+            scheme.overview.toLowerCase().contains('student') ||
+            scheme.category.toLowerCase().contains('education') ||
+            scheme.name.toLowerCase().contains('student');
       }
 
       bool farmerMatch = true;
       if (filters['occupation'] == 'Farmer') {
-        farmerMatch = scheme.overview.toLowerCase().contains('farmer') || scheme.category.toLowerCase().contains('agriculture') || scheme.name.toLowerCase().contains('farmer') || scheme.category.toLowerCase().contains('artisan');
+        farmerMatch =
+            scheme.overview.toLowerCase().contains('farmer') ||
+            scheme.category.toLowerCase().contains('agriculture') ||
+            scheme.name.toLowerCase().contains('farmer') ||
+            scheme.category.toLowerCase().contains('artisan');
       }
 
       bool firstGenMatch = true;
       if (filters['firstGen'] == true) {
-        firstGenMatch = scheme.overview.toLowerCase().contains('first') || scheme.overview.toLowerCase().contains('graduate') || scheme.eligibilityCriteria.any((e) => e.toLowerCase().contains('graduate')) || scheme.name.toLowerCase().contains('graduate');
+        firstGenMatch =
+            scheme.overview.toLowerCase().contains('first') ||
+            scheme.overview.toLowerCase().contains('graduate') ||
+            scheme.eligibilityCriteria.any(
+              (e) => e.toLowerCase().contains('graduate'),
+            ) ||
+            scheme.name.toLowerCase().contains('graduate');
       }
 
-      return queryMatch && stateMatch && categoryMatch && genderMatch && ministryMatch && schemeTypeMatch && studentMatch && farmerMatch && firstGenMatch;
+      return queryMatch &&
+          stateMatch &&
+          categoryMatch &&
+          genderMatch &&
+          ministryMatch &&
+          schemeTypeMatch &&
+          studentMatch &&
+          farmerMatch &&
+          firstGenMatch;
     }).toList();
 
     // Sorting logic
     if (_sortBy == 'Name') {
       results.sort((a, b) => a.key.name.compareTo(b.key.name));
     } else if (_sortBy == 'Sponsoring Body') {
-      results.sort((a, b) => a.key.sponsoringBody.compareTo(b.key.sponsoringBody));
+      results.sort(
+        (a, b) => a.key.sponsoringBody.compareTo(b.key.sponsoringBody),
+      );
     } else {
       // Default: Match Score descending / Relevance
       results.sort((a, b) => b.value.score.compareTo(a.value.score));
@@ -180,7 +214,10 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
                         controller: _searchController,
                         focusNode: _searchFocusNode,
                         textAlignVertical: TextAlignVertical.center,
-                        style: const TextStyle(color: AppConstants.primaryText, fontSize: 14),
+                        style: const TextStyle(
+                          color: AppConstants.primaryText,
+                          fontSize: 14,
+                        ),
                         textInputAction: TextInputAction.search,
                         onSubmitted: (val) => setState(() {}),
                         decoration: InputDecoration(
@@ -189,19 +226,34 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
                             color: const Color(0xFF94A3B8),
                             fontSize: 13,
                           ),
-                          prefixIcon: const Icon(Icons.search, color: Color(0xFF64748B), size: 20),
+                          prefixIcon: const Icon(
+                            Icons.search,
+                            color: Color(0xFF64748B),
+                            size: 20,
+                          ),
                           suffixIcon: _searchController.text.isNotEmpty
                               ? GestureDetector(
                                   onTap: () {
                                     _searchController.clear();
                                     setState(() {});
                                   },
-                                  child: const Icon(Icons.clear, color: Color(0xFF64748B), size: 18),
+                                  child: const Icon(
+                                    Icons.clear,
+                                    color: Color(0xFF64748B),
+                                    size: 18,
+                                  ),
                                 )
-                              : const Icon(Icons.mic_none, color: Color(0xFF64748B), size: 18),
+                              : const Icon(
+                                  Icons.mic_none,
+                                  color: Color(0xFF64748B),
+                                  size: 18,
+                                ),
                           filled: true,
                           fillColor: Colors.white,
-                          contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 0,
+                            horizontal: 12,
+                          ),
                           border: InputBorder.none,
                           enabledBorder: InputBorder.none,
                           focusedBorder: InputBorder.none,
@@ -304,7 +356,10 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
                       ),
                       const SizedBox(width: 6),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.white,
                           border: Border.all(color: const Color(0xFFE2E8F0)),
@@ -320,8 +375,14 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
                             fontWeight: FontWeight.bold,
                           ),
                           underline: const SizedBox.shrink(),
-                          icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFF64748B), size: 16),
-                          items: ['Relevance', 'Name', 'Sponsoring Body'].map((String val) {
+                          icon: const Icon(
+                            Icons.keyboard_arrow_down,
+                            color: Color(0xFF64748B),
+                            size: 16,
+                          ),
+                          items: ['Relevance', 'Name', 'Sponsoring Body'].map((
+                            String val,
+                          ) {
                             return DropdownMenuItem<String>(
                               value: val,
                               child: Text(val),
@@ -355,16 +416,27 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Icon(Icons.search_off, size: 60, color: Color(0xFF94A3B8)),
+                            const Icon(
+                              Icons.search_off,
+                              size: 60,
+                              color: Color(0xFF94A3B8),
+                            ),
                             const SizedBox(height: 16),
                             const Text(
                               'No matching schemes found',
-                              style: TextStyle(color: AppConstants.primaryText, fontSize: 16, fontWeight: FontWeight.bold),
+                              style: TextStyle(
+                                color: AppConstants.primaryText,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                             const SizedBox(height: 8),
                             const Text(
                               'Try adjusting your search terms or filter settings.',
-                              style: TextStyle(color: AppConstants.secondaryText, fontSize: 12),
+                              style: TextStyle(
+                                color: AppConstants.secondaryText,
+                                fontSize: 12,
+                              ),
                             ),
                           ],
                         ),
@@ -372,7 +444,9 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
                     )
                   : ListView.builder(
                       physics: const BouncingScrollPhysics(),
-                      itemCount: results.length + 1, // Add 1 for the bottom loading banner!
+                      itemCount:
+                          results.length +
+                          1, // Add 1 for the bottom loading banner!
                       itemBuilder: (context, index) {
                         if (index == results.length) {
                           // Display Mockup Loading Footer Banner
@@ -392,7 +466,8 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
                                   ),
                                   const SizedBox(width: 12),
                                   Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         'Loading more results...',
@@ -421,13 +496,17 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
                         return SchemeCard(
                           scheme: entry.key,
                           result: entry.value,
-                          isBookmarked: provider.bookmarkedIds.contains(entry.key.id),
-                          onBookmarkToggle: () => provider.toggleBookmark(entry.key.id),
+                          isBookmarked: provider.bookmarkedIds.contains(
+                            entry.key.id,
+                          ),
+                          onBookmarkToggle: () =>
+                              provider.toggleBookmark(entry.key.id),
                           onTap: () {
                             provider.addToRecentlyViewed(entry.key.id);
                             Navigator.of(context).push(
                               MaterialPageRoute(
-                                builder: (_) => SchemeDetailsScreen(scheme: entry.key),
+                                builder: (_) =>
+                                    SchemeDetailsScreen(scheme: entry.key),
                               ),
                             );
                           },
@@ -455,7 +534,9 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
         if (key == 'schemeStatus') label = 'Status: $val';
         if (key == 'onlineOffline') label = 'Type: $val';
         if (key == 'schemeType') {
-          label = val == 'Central Government' ? 'Central Scheme' : 'State Scheme';
+          label = val == 'Central Government'
+              ? 'Central Scheme'
+              : 'State Scheme';
         }
         activeChips.add(MapEntry(key, label));
       }
@@ -470,35 +551,41 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 16),
         children: [
-          ...activeChips.map((chip) => Container(
-                margin: const EdgeInsets.only(right: 8),
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  border: Border.all(color: const Color(0xFFE2E8F0)),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      chip.value,
-                      style: GoogleFonts.inter(
-                        fontSize: 10.5,
-                        color: const Color(0xFF475569),
-                        fontWeight: FontWeight.w500,
-                      ),
+          ...activeChips.map(
+            (chip) => Container(
+              margin: const EdgeInsets.only(right: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                border: Border.all(color: const Color(0xFFE2E8F0)),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    chip.value,
+                    style: GoogleFonts.inter(
+                      fontSize: 10.5,
+                      color: const Color(0xFF475569),
+                      fontWeight: FontWeight.w500,
                     ),
-                    const SizedBox(width: 4),
-                    GestureDetector(
-                      onTap: () {
-                        provider.updateFilter(chip.key, 'All');
-                      },
-                      child: const Icon(Icons.close, size: 12, color: Color(0xFF94A3B8)),
+                  ),
+                  const SizedBox(width: 4),
+                  GestureDetector(
+                    onTap: () {
+                      provider.updateFilter(chip.key, 'All');
+                    },
+                    child: const Icon(
+                      Icons.close,
+                      size: 12,
+                      color: Color(0xFF94A3B8),
                     ),
-                  ],
-                ),
-              )),
+                  ),
+                ],
+              ),
+            ),
+          ),
           GestureDetector(
             onTap: () => provider.clearFilters(),
             child: Container(

@@ -24,6 +24,7 @@ class AppProvider with ChangeNotifier, WidgetsBindingObserver {
   }
 
   final SchemeCatalogSyncService _catalogSyncService;
+  StreamSubscription<List<Map<String, dynamic>>>? _profileSubscription;
   bool _isLoggedIn = false;
   bool _isLoggingOut = false;
   String _mobileNumber = '';
@@ -81,12 +82,11 @@ class AppProvider with ChangeNotifier, WidgetsBindingObserver {
     },
   ];
 
-  // Mock Notifications
-  final List<Map<String, dynamic>> notifications = [
+  // Notifications state
+  List<Map<String, dynamic>> _notificationsList = [
     {
       'id': 'latest_fisheries_update',
-      'title':
-          'Fisheries and Aquaculture Infra Development Fund Scheme Launched',
+      'title': 'Fisheries and Aquaculture Infra Development Fund Scheme Launched',
       'body':
           'Government has launched the Fisheries and Aquaculture Infrastructure Development Fund to provide concessionary finance.',
       'time': '2d ago',
@@ -167,6 +167,261 @@ class AppProvider with ChangeNotifier, WidgetsBindingObserver {
     },
   ];
 
+  List<Map<String, dynamic>> get notifications => _notificationsList;
+  StreamSubscription<List<Map<String, dynamic>>>? _notificationsSubscription;
+
+  List<Map<String, dynamic>> _promoAlerts = [];
+  List<Map<String, dynamic>> _draftSessions = [];
+
+  List<Map<String, dynamic>> get carouselItems {
+    final filteredPromos = _promoAlerts.where((promo) {
+      if (promo['target_gender'] != null &&
+          promo['target_gender'].toString().isNotEmpty &&
+          _profile.gender.isNotEmpty) {
+        if (promo['target_gender'].toString().toLowerCase() !=
+            _profile.gender.toLowerCase()) {
+          return false;
+        }
+      }
+      if (promo['target_state'] != null &&
+          promo['target_state'].toString().isNotEmpty &&
+          _profile.state.isNotEmpty) {
+        if (promo['target_state'].toString().toLowerCase() !=
+            _profile.state.toLowerCase()) {
+          return false;
+        }
+      }
+      if (promo['target_community'] != null &&
+          promo['target_community'].toString().isNotEmpty &&
+          _profile.community.isNotEmpty) {
+        if (promo['target_community'].toString().toLowerCase() !=
+            _profile.community.toLowerCase()) {
+          return false;
+        }
+      }
+      return true;
+    }).toList();
+
+    final basePromos = filteredPromos.isNotEmpty ? filteredPromos : _defaultPromoAlerts;
+    return [...basePromos, ..._draftSessions];
+  }
+
+  static final List<Map<String, dynamic>> _defaultPromoAlerts = [
+    {
+      'title': 'PMEGP (Closing in 5 Days)',
+      'badge_text': 'Alert',
+      'badge_text_color': '#EA580C',
+      'badge_bg_color': '#FFF7ED',
+      'bg_gradient_start': '#FFF7ED',
+      'bg_gradient_end': '#FFFFEDD5',
+      'btn_text': 'View Details',
+      'btn_color': '#EA580C',
+      'target_route': 'notifications',
+      'graphic_type': 'calendar',
+    },
+    {
+      'title': 'TN Export Promotion Scheme',
+      'badge_text': 'New Scheme',
+      'badge_text_color': '#16A34A',
+      'badge_bg_color': '#DCFCE7',
+      'bg_gradient_start': '#F0FDF4',
+      'bg_gradient_end': '#DCFCE7',
+      'btn_text': 'Explore',
+      'btn_color': '#16A34A',
+      'target_route': 'discover_results',
+      'graphic_type': 'ship',
+    }
+  ];
+
+  void _subscribeToProfile(String userId) {
+    _profileSubscription?.cancel();
+    _profileSubscription = Supabase.instance.client
+        .from('profiles')
+        .stream(primaryKey: ['id'])
+        .eq('id', userId)
+        .listen((data) async {
+          if (data.isNotEmpty) {
+            final dbProfile = UserProfile.fromJson(data.first);
+            
+            final remoteUpdated = dbProfile.updatedAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+            final localUpdated = _profile.updatedAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+
+            if (remoteUpdated.isAfter(localUpdated) || 
+                dbProfile.name != _profile.name || 
+                dbProfile.language != _profile.language || 
+                dbProfile.navigationMode != _profile.navigationMode || 
+                dbProfile.state != _profile.state || 
+                dbProfile.district != _profile.district || 
+                dbProfile.pinCode != _profile.pinCode || 
+                dbProfile.gender != _profile.gender || 
+                dbProfile.employmentStatus != _profile.employmentStatus || 
+                dbProfile.profileCompleted != _profile.profileCompleted) {
+              
+              _profile = dbProfile;
+              _selectedLanguage = dbProfile.language;
+              _navigationMode = dbProfile.navigationMode;
+              _filters['state'] = _profile.state;
+              _filters['community'] = _profile.community;
+              _filters['gender'] = _profile.gender;
+              
+              _recommendedSchemes = RecommendationEngine.getRecommendations(_profile, _allSchemes);
+              fetchPromoAlerts();
+              fetchDraftSessions();
+              notifyListeners();
+
+              await SessionCacheService.instance.saveProfile(_profile);
+              await SessionCacheService.instance.saveLanguage(_selectedLanguage);
+              await SessionCacheService.instance.saveNavigationMode(_navigationMode);
+            }
+          }
+        }, onError: (err) {
+          debugPrint('[AppProvider] Real-time profile subscription error: $err');
+        });
+  }
+
+  void _unsubscribeFromProfile() {
+    _profileSubscription?.cancel();
+    _profileSubscription = null;
+  }
+
+  void _subscribeToNotifications(String userId) {
+    _notificationsSubscription?.cancel();
+    _notificationsSubscription = Supabase.instance.client
+        .from('notifications')
+        .stream(primaryKey: ['id'])
+        .eq('user_id', userId)
+        .listen((data) async {
+          if (data.isEmpty) {
+            await _seedDefaultNotifications(userId);
+            return;
+          }
+
+          final sortedData = List<Map<String, dynamic>>.from(data);
+          sortedData.sort((a, b) {
+            final aTime = DateTime.tryParse(a['created_at'] ?? '') ?? DateTime.fromMillisecondsSinceEpoch(0);
+            final bTime = DateTime.tryParse(b['created_at'] ?? '') ?? DateTime.fromMillisecondsSinceEpoch(0);
+            return bTime.compareTo(aTime);
+          });
+
+          _notificationsList = sortedData.map((n) {
+            final createdAt = DateTime.tryParse(n['created_at'] ?? '') ?? DateTime.now();
+            final difference = DateTime.now().difference(createdAt);
+            String timeStr = 'Just now';
+            if (difference.inDays > 0) {
+              timeStr = '${difference.inDays}d ago';
+            } else if (difference.inHours > 0) {
+              timeStr = '${difference.inHours}h ago';
+            } else if (difference.inMinutes > 0) {
+              timeStr = '${difference.inMinutes}m ago';
+            }
+
+            final type = n['notification_type'] ?? 'updates';
+            
+            final Map<String, dynamic> mapped = {
+              'id': n['id'].toString(),
+              'title': n['title'] ?? '',
+              'body': n['message'] ?? '',
+              'time': timeStr,
+              'read': n['is_read'] ?? false,
+              'category': type,
+              'created_at': n['created_at'],
+            };
+
+            if (type == 'new_schemes') {
+              mapped['tag'] = n['title'].toString().contains('Vidyalaxmi') ? 'Education' : 'Skill Development';
+              mapped['isNew'] = true;
+            } else if (type == 'reminders') {
+              mapped['deadline'] = n['title'].toString().contains('Matric') ? '31 May 2026' : '15 Jun 2026';
+              mapped['daysLeft'] = n['title'].toString().contains('Matric') ? '5 days left' : '20 days left';
+            } else if (type == 'updates') {
+              mapped['iconType'] = n['title'].toString().contains('Ayushman') ? 'emblem' : 'bank';
+            } else if (type == 'profile') {
+              mapped['progress'] = 70;
+            }
+
+            return mapped;
+          }).toList();
+
+          notifyListeners();
+        }, onError: (err) {
+          debugPrint('[AppProvider] Real-time notifications subscription error: $err');
+        });
+  }
+
+  void _unsubscribeFromNotifications() {
+    _notificationsSubscription?.cancel();
+    _notificationsSubscription = null;
+  }
+
+  Future<void> _seedDefaultNotifications(String userId) async {
+    try {
+      final List<Map<String, dynamic>> defaultMocks = [
+        {
+          'user_id': userId,
+          'title': 'Fisheries and Aquaculture Infra Development Fund Scheme Launched',
+          'message': 'Government has launched the Fisheries and Aquaculture Infrastructure Development Fund to provide concessionary finance.',
+          'notification_type': 'updates',
+          'is_read': false,
+        },
+        {
+          'user_id': userId,
+          'title': 'PM Vidyalaxmi Education Loan Scheme',
+          'message': 'A new scheme for students to provide collateral-free education loans for higher studies.',
+          'notification_type': 'new_schemes',
+          'is_read': false,
+        },
+        {
+          'user_id': userId,
+          'title': 'PM Vishwakarma Yojana',
+          'message': 'Financial support for traditional artisans and craftspeople to upgrade their skills and tools.',
+          'notification_type': 'new_schemes',
+          'is_read': false,
+        },
+        {
+          'user_id': userId,
+          'title': 'Post Matric Scholarship Scheme',
+          'message': 'Last date to apply is approaching',
+          'notification_type': 'reminders',
+          'is_read': false,
+        },
+        {
+          'user_id': userId,
+          'title': 'PM Internship Scheme',
+          'message': 'Application window will close soon',
+          'notification_type': 'reminders',
+          'is_read': false,
+        },
+        {
+          'user_id': userId,
+          'title': 'New Update on Ayushman Bharat Yojana',
+          'message': 'Changes in empanelment process for hospitals. Check full details.',
+          'notification_type': 'updates',
+          'is_read': false,
+        },
+        {
+          'user_id': userId,
+          'title': 'Income Limit Revised for Several Schemes',
+          'message': 'Revised income criteria effective from 1st April 2024 for multiple schemes.',
+          'notification_type': 'updates',
+          'is_read': false,
+        },
+        {
+          'user_id': userId,
+          'title': 'Complete Your Profile',
+          'message': 'Add your income details to find schemes you are eligible for.',
+          'notification_type': 'profile',
+          'is_read': false,
+        },
+      ];
+
+      await Supabase.instance.client
+          .from('notifications')
+          .insert(defaultMocks);
+    } catch (e) {
+      debugPrint('[AppProvider] Error seeding notifications: $e');
+    }
+  }
+
   void _setupAuthListener() {
     Supabase.instance.client.auth.onAuthStateChange.listen((data) async {
       final Session? session = data.session;
@@ -199,6 +454,10 @@ class AppProvider with ChangeNotifier, WidgetsBindingObserver {
           );
         }
 
+        _subscribeToProfile(user.id);
+        _subscribeToNotifications(user.id);
+        fetchPromoAlerts();
+        fetchDraftSessions();
         await _saveProfile();
         notifyListeners();
       } else if (event == AuthChangeEvent.signedOut) {
@@ -208,6 +467,11 @@ class AppProvider with ChangeNotifier, WidgetsBindingObserver {
         _bookmarkedIds.clear();
         _recentlyViewedIds.clear();
         _currentTabIndex = 0;
+        _promoAlerts = [];
+        _draftSessions = [];
+        _unsubscribeFromProfile();
+        _unsubscribeFromNotifications();
+        _notificationsList = [];
         notifyListeners();
       }
     });
@@ -339,6 +603,10 @@ class AppProvider with ChangeNotifier, WidgetsBindingObserver {
         _profile = cachedProfile;
         _navigationMode = _profile.navigationMode;
       }
+      final cachedNavMode = await SessionCacheService.instance.getNavigationMode();
+      if (cachedNavMode != null && cachedNavMode.isNotEmpty) {
+        _navigationMode = cachedNavMode;
+      }
 
       _bookmarkedIds =
           await SessionCacheService.instance.getBookmarks() ??
@@ -384,6 +652,10 @@ class AppProvider with ChangeNotifier, WidgetsBindingObserver {
         );
         _isLoggedIn = true;
         _mobileNumber = session.user.phone ?? '';
+        _subscribeToProfile(session.user.id);
+        _subscribeToNotifications(session.user.id);
+        fetchPromoAlerts();
+        fetchDraftSessions();
       } else {
         debugPrint(
           '[AppProvider] No active Supabase session found during _loadState.',
@@ -400,12 +672,6 @@ class AppProvider with ChangeNotifier, WidgetsBindingObserver {
     }
   }
 
-  @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    super.dispose();
-  }
-
   // Save state helpers
   Future<void> _saveProfile() async {
     await SessionCacheService.instance.saveProfile(_profile);
@@ -420,7 +686,7 @@ class AppProvider with ChangeNotifier, WidgetsBindingObserver {
 
   void changeNavigationMode(String mode) async {
     _navigationMode = mode;
-    _profile = _profile.copyWith(navigationMode: mode);
+    _profile = _profile.copyWith(navigationMode: mode, updatedAt: DateTime.now());
     notifyListeners();
     await SessionCacheService.instance.saveNavigationMode(mode);
     await SessionCacheService.instance.saveProfile(_profile);
@@ -481,9 +747,9 @@ class AppProvider with ChangeNotifier, WidgetsBindingObserver {
 
           notifyListeners();
           debugPrint(
-            '[AppProvider] loginWithGoogle returning user: ${user.id}',
+            '[AppProvider] loginWithGoogle returning user: ${user.id}, isComplete: ${dbProfile.profileCompleted}',
           );
-          return true; // Profile exists and complete
+          return dbProfile.profileCompleted;
         } else {
           _profile = UserProfile(
             googleUserId: user.id,
@@ -516,6 +782,7 @@ class AppProvider with ChangeNotifier, WidgetsBindingObserver {
     final session = Supabase.instance.client.auth.currentSession;
     if (session == null) {
       _isLoggedIn = false;
+      _unsubscribeFromProfile();
       notifyListeners();
       return false;
     }
@@ -523,6 +790,10 @@ class AppProvider with ChangeNotifier, WidgetsBindingObserver {
     final user = session.user;
     _isLoggedIn = true;
     _mobileNumber = user.phone ?? '';
+
+    _subscribeToProfile(user.id);
+    fetchPromoAlerts();
+    fetchDraftSessions();
 
     final dbProfile = await SchemeRepository.instance.getProfile(user.id);
     if (dbProfile != null) {
@@ -561,21 +832,17 @@ class AppProvider with ChangeNotifier, WidgetsBindingObserver {
     _isLoggingOut = true;
     notifyListeners();
 
-    // 1. Navigate instantly to SplashScreen to perform the fresh welcome animation sequence
-    Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (_) => const SplashScreen()),
-      (route) => false,
-    );
-
-    // 2. Perform cleanup in the background
+    // 1. Perform cleanup and await asynchronous operations
     _isLoggedIn = false;
     _mobileNumber = '';
     _selectedLanguage = 'en';
+    _navigationMode = 'regular';
     _profile = UserProfile();
     _bookmarkedIds.clear();
     _recentlyViewedIds.clear();
     _currentTabIndex = 0;
     _tabHistory.clear();
+    _unsubscribeFromProfile();
 
     await SessionCacheService.instance.clearSession();
 
@@ -587,6 +854,13 @@ class AppProvider with ChangeNotifier, WidgetsBindingObserver {
 
     _isLoggingOut = false;
     notifyListeners();
+
+    // 2. Navigate after cleanup is fully complete
+    if (!context.mounted) return;
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const SplashScreen()),
+      (route) => false,
+    );
   }
 
   Future<void> deleteAccount(BuildContext context) async {
@@ -594,6 +868,7 @@ class AppProvider with ChangeNotifier, WidgetsBindingObserver {
     _isLoggingOut = true;
     notifyListeners();
 
+    // 1. Delete profile from Supabase first while session is active
     if (_isLoggedIn) {
       final user = Supabase.instance.client.auth.currentUser;
       if (user != null) {
@@ -612,20 +887,17 @@ class AppProvider with ChangeNotifier, WidgetsBindingObserver {
       }
     }
 
-    if (!context.mounted) return;
-    Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (_) => const SplashScreen()),
-      (route) => false,
-    );
-
+    // 2. Perform local state cleanup and await async operations
     _isLoggedIn = false;
     _mobileNumber = '';
     _selectedLanguage = 'en';
+    _navigationMode = 'regular';
     _profile = UserProfile();
     _bookmarkedIds.clear();
     _recentlyViewedIds.clear();
     _currentTabIndex = 0;
     _tabHistory.clear();
+    _unsubscribeFromProfile();
 
     await SessionCacheService.instance.clearSession();
 
@@ -637,6 +909,13 @@ class AppProvider with ChangeNotifier, WidgetsBindingObserver {
 
     _isLoggingOut = false;
     notifyListeners();
+
+    // 3. Navigate after all cleanup is fully complete
+    if (!context.mounted) return;
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const SplashScreen()),
+      (route) => false,
+    );
   }
 
   void updateTabIndex(int index, {bool addToHistory = true}) async {
@@ -809,44 +1088,70 @@ class AppProvider with ChangeNotifier, WidgetsBindingObserver {
       firstGenGraduate: _wizardAnswers['firstGenGraduate'] ?? false,
       annualIncome: (_wizardAnswers['annualIncome'] ?? 0.0) as double,
       mobile: _mobileNumber,
+      updatedAt: DateTime.now(),
     );
     notifyListeners();
     _saveProfile();
   }
 
   // Notification action
-  void markNotificationRead(String id) {
-    final idx = notifications.indexWhere((n) => n['id'] == id);
-    if (idx != -1) {
-      notifications[idx]['read'] = true;
-      notifyListeners();
+  Future<void> markNotificationRead(String id) async {
+    try {
+      await Supabase.instance.client
+          .from('notifications')
+          .update({'is_read': true})
+          .eq('id', id);
+    } catch (e) {
+      debugPrint('[AppProvider] Error marking notification read: $e');
     }
   }
 
-  void markAllNotificationsRead() {
-    for (var n in notifications) {
-      n['read'] = true;
+  Future<void> markAllNotificationsRead() async {
+    final userId = Supabase.instance.client.auth.currentUser?.id;
+    if (userId == null) return;
+    try {
+      await Supabase.instance.client
+          .from('notifications')
+          .update({'is_read': true})
+          .eq('user_id', userId);
+    } catch (e) {
+      debugPrint('[AppProvider] Error marking all notifications read: $e');
     }
-    notifyListeners();
   }
 
-  void deleteAllNotifications() {
-    notifications.clear();
-    notifyListeners();
-  }
-
-  void deleteNotifications(List<String> ids) {
-    notifications.removeWhere((n) => ids.contains(n['id']));
-    notifyListeners();
-  }
-
-  void markNotificationsRead(List<String> ids) {
-    for (var n in notifications) {
-      if (ids.contains(n['id'])) {
-        n['read'] = true;
-      }
+  Future<void> deleteAllNotifications() async {
+    final userId = Supabase.instance.client.auth.currentUser?.id;
+    if (userId == null) return;
+    try {
+      await Supabase.instance.client
+          .from('notifications')
+          .delete()
+          .eq('user_id', userId);
+    } catch (e) {
+      debugPrint('[AppProvider] Error deleting all notifications: $e');
     }
-    notifyListeners();
+  }
+
+  Future<void> deleteNotifications(List<String> ids) async {
+    try {
+      await Supabase.instance.client
+          .from('notifications')
+          .delete()
+          .inFilter('id', ids);
+    } catch (e) {
+      debugPrint('[AppProvider] Error deleting notifications: $e');
+    }
+  }
+
+  Future<void> markNotificationsRead(List<String> ids) async {
+    try {
+      await Supabase.instance.client
+          .from('notifications')
+          .update({'is_read': true})
+          .inFilter('id', ids);
+    } catch (e) {
+      debugPrint('[AppProvider] Error marking notifications read: $e');
+    }
   }
 
   // Completion calculation
@@ -919,11 +1224,11 @@ class AppProvider with ChangeNotifier, WidgetsBindingObserver {
   }
 
   Future<void> updateProfile(UserProfile updated) async {
-    _profile = updated;
+    _profile = updated.copyWith(updatedAt: DateTime.now());
     _filters['state'] = _profile.state;
     _filters['community'] = _profile.community;
     _filters['gender'] = _profile.gender;
-
+    
     // Recalculate recommendations based on updated profile
     _recommendedSchemes = RecommendationEngine.getRecommendations(
       _profile,
@@ -980,7 +1285,7 @@ class AppProvider with ChangeNotifier, WidgetsBindingObserver {
   }
 
   Future<void> updateProfilePhoto(String path) async {
-    _profile = _profile.copyWith(profilePhoto: path);
+    _profile = _profile.copyWith(profilePhoto: path, updatedAt: DateTime.now());
     notifyListeners();
     await _saveProfile();
   }
@@ -1101,5 +1406,64 @@ class AppProvider with ChangeNotifier, WidgetsBindingObserver {
     _downloadedDocs.removeWhere((doc) => doc['id'] == id);
     _saveDownloadedDocs();
     notifyListeners();
+  }
+
+  Future<void> fetchPromoAlerts() async {
+    try {
+      final res = await Supabase.instance.client
+          .from('promo_alerts')
+          .select();
+      
+      _promoAlerts = List<Map<String, dynamic>>.from(res);
+      notifyListeners();
+    } catch (e) {
+      debugPrint('[AppProvider] Error fetching promo alerts: $e');
+    }
+  }
+
+  Future<void> fetchDraftSessions() async {
+    try {
+      final userId = Supabase.instance.client.auth.currentUser?.id;
+      if (userId == null) {
+        _draftSessions = [];
+        notifyListeners();
+        return;
+      }
+      
+      final res = await Supabase.instance.client
+          .from('questionnaire_sessions')
+          .select('id, completed_percentage, status, startup_profiles!inner(user_id, profile_name)')
+          .eq('status', 'IN_PROGRESS')
+          .eq('startup_profiles.user_id', userId);
+
+      _draftSessions = List<Map<String, dynamic>>.from(res).map((item) {
+        final startup = item['startup_profiles'] as Map<String, dynamic>;
+        final pct = (item['completed_percentage'] as num?)?.toDouble() ?? 0.0;
+        return {
+          'id': item['id'],
+          'title': '${startup['profile_name']} Setup',
+          'badge_text': 'Draft',
+          'badge_text_color': '#2563EB',
+          'badge_bg_color': '#EFF6FF',
+          'bg_gradient_start': '#EFF6FF',
+          'bg_gradient_end': '#DBEAFE',
+          'btn_text': 'Continue',
+          'btn_color': '#2563EB',
+          'target_route': 'draft_session',
+          'graphic_type': 'progress',
+          'progress': pct,
+        };
+      }).toList();
+      notifyListeners();
+    } catch (e) {
+      debugPrint('[AppProvider] Error fetching draft sessions: $e');
+    }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _unsubscribeFromProfile();
+    super.dispose();
   }
 }

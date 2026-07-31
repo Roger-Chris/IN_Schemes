@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../providers/app_state_provider.dart';
-import '../utils/constants.dart';
-import 'profile_setup_screen.dart';
+import 'package:frontend/providers/app_state_provider.dart';
+import 'package:frontend/utils/constants.dart';
+import 'regular_mode/profile_setup_screen.dart';
 
 class NotificationsScreen extends StatefulWidget {
   final String? initialFilter;
@@ -26,8 +26,16 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
   final List<Map<String, dynamic>> _categories = [
     {'key': 'All', 'label': 'All', 'icon': Icons.notifications_none},
-    {'key': 'new_schemes', 'label': 'New Schemes', 'icon': Icons.shopping_bag_outlined},
-    {'key': 'reminders', 'label': 'Reminders', 'icon': Icons.calendar_today_outlined},
+    {
+      'key': 'new_schemes',
+      'label': 'New Schemes',
+      'icon': Icons.shopping_bag_outlined,
+    },
+    {
+      'key': 'reminders',
+      'label': 'Reminders',
+      'icon': Icons.calendar_today_outlined,
+    },
     {'key': 'updates', 'label': 'Updates', 'icon': Icons.campaign_outlined},
     {'key': 'profile', 'label': 'Profile', 'icon': Icons.person_outline},
   ];
@@ -81,7 +89,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 color: isSelected ? activeBgColor : inactiveBgColor,
                 borderRadius: BorderRadius.circular(24),
                 border: Border.all(
-                  color: isSelected ? const Color(0xFFDBEAFE) : const Color(0xFFE2E8F0),
+                  color: isSelected
+                      ? const Color(0xFFDBEAFE)
+                      : const Color(0xFFE2E8F0),
                   width: 1,
                 ),
               ),
@@ -97,9 +107,13 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   Text(
                     cat['label'] as String,
                     style: GoogleFonts.inter(
-                      color: isSelected ? activeTextColor : const Color(0xFF1E293B),
+                      color: isSelected
+                          ? activeTextColor
+                          : const Color(0xFF1E293B),
                       fontSize: 12,
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                      fontWeight: isSelected
+                          ? FontWeight.bold
+                          : FontWeight.w500,
                     ),
                   ),
                 ],
@@ -164,7 +178,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               TextButton(
                 onPressed: onViewAll,
                 style: TextButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   minimumSize: Size.zero,
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
@@ -180,7 +197,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                       ),
                     ),
                     const SizedBox(width: 2),
-                    const Icon(Icons.chevron_right, size: 14, color: Color(0xFF2563EB)),
+                    const Icon(
+                      Icons.chevron_right,
+                      size: 14,
+                      color: Color(0xFF2563EB),
+                    ),
                   ],
                 ),
               ),
@@ -193,14 +214,24 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     );
   }
 
-  Widget _buildNewSchemeCard(BuildContext context, Map<String, dynamic> item, AppProvider provider) {
+  Widget _buildNewSchemeCard(
+    BuildContext context,
+    Map<String, dynamic> item,
+    AppProvider provider,
+  ) {
     final id = item['id'] as String;
     final isSelected = _selectedIds.contains(id);
     final isRead = item['read'] as bool;
     final isEducation = item['tag'] == 'Education';
-    final Color iconBg = isEducation ? const Color(0xFFE8F5E9) : const Color(0xFFFFF3E0);
-    final Color iconCol = isEducation ? const Color(0xFF16A34A) : const Color(0xFFEA580C);
-    final IconData icon = isEducation ? Icons.school : Icons.store_mall_directory_outlined;
+    final Color iconBg = isEducation
+        ? const Color(0xFFE8F5E9)
+        : const Color(0xFFFFF3E0);
+    final Color iconCol = isEducation
+        ? const Color(0xFF16A34A)
+        : const Color(0xFFEA580C);
+    final IconData icon = isEducation
+        ? Icons.school
+        : Icons.store_mall_directory_outlined;
 
     return Card(
       elevation: 0,
@@ -235,7 +266,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   margin: const EdgeInsets.only(right: 12, top: 12),
                   child: Icon(
                     isSelected ? Icons.check_circle : Icons.radio_button_off,
-                    color: isSelected ? const Color(0xFF2563EB) : const Color(0xFFCBD5E1),
+                    color: isSelected
+                        ? const Color(0xFF2563EB)
+                        : const Color(0xFFCBD5E1),
                     size: 24,
                   ),
                 ),
@@ -269,7 +302,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                         ),
                         const SizedBox(width: 6),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
                           decoration: BoxDecoration(
                             color: const Color(0xFFDCFCE7),
                             borderRadius: BorderRadius.circular(4),
@@ -329,14 +365,24 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     );
   }
 
-  Widget _buildDeadlineCard(BuildContext context, Map<String, dynamic> item, AppProvider provider) {
+  Widget _buildDeadlineCard(
+    BuildContext context,
+    Map<String, dynamic> item,
+    AppProvider provider,
+  ) {
     final id = item['id'] as String;
     final isSelected = _selectedIds.contains(id);
     final isRead = item['read'] as bool;
     final isPostMatric = item['title'] == 'Post Matric Scholarship Scheme';
-    final IconData icon = isPostMatric ? Icons.calendar_today_outlined : Icons.access_time;
-    final Color iconBg = isPostMatric ? const Color(0xFFFFEBEE) : const Color(0xFFF3E5F5);
-    final Color iconCol = isPostMatric ? const Color(0xFFD32F2F) : const Color(0xFF7B1FA2);
+    final IconData icon = isPostMatric
+        ? Icons.calendar_today_outlined
+        : Icons.access_time;
+    final Color iconBg = isPostMatric
+        ? const Color(0xFFFFEBEE)
+        : const Color(0xFFF3E5F5);
+    final Color iconCol = isPostMatric
+        ? const Color(0xFFD32F2F)
+        : const Color(0xFF7B1FA2);
 
     return Card(
       elevation: 0,
@@ -371,7 +417,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   margin: const EdgeInsets.only(right: 12, top: 12),
                   child: Icon(
                     isSelected ? Icons.check_circle : Icons.radio_button_off,
-                    color: isSelected ? const Color(0xFF2563EB) : const Color(0xFFCBD5E1),
+                    color: isSelected
+                        ? const Color(0xFF2563EB)
+                        : const Color(0xFFCBD5E1),
                     size: 24,
                   ),
                 ),
@@ -412,7 +460,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                       runSpacing: 4,
                       crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
-                        const Icon(Icons.calendar_today, size: 12, color: Color(0xFFE11D48)),
+                        const Icon(
+                          Icons.calendar_today,
+                          size: 12,
+                          color: Color(0xFFE11D48),
+                        ),
                         const SizedBox(width: 2),
                         Text(
                           item['deadline'] ?? '',
@@ -424,7 +476,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                         ),
                         const Text(
                           '•',
-                          style: TextStyle(color: Color(0xFFCBD5E1), fontSize: 10),
+                          style: TextStyle(
+                            color: Color(0xFFCBD5E1),
+                            fontSize: 10,
+                          ),
                         ),
                         Text(
                           item['daysLeft'] ?? '',
@@ -469,11 +524,17 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     );
   }
 
-  Widget _buildGovtUpdateCard(BuildContext context, Map<String, dynamic> item, AppProvider provider) {
+  Widget _buildGovtUpdateCard(
+    BuildContext context,
+    Map<String, dynamic> item,
+    AppProvider provider,
+  ) {
     final id = item['id'] as String;
     final isSelected = _selectedIds.contains(id);
     final isRead = item['read'] as bool;
-    final IconData icon = item['iconType'] == 'emblem' ? Icons.gavel_outlined : Icons.account_balance_outlined;
+    final IconData icon = item['iconType'] == 'emblem'
+        ? Icons.gavel_outlined
+        : Icons.account_balance_outlined;
 
     return Card(
       elevation: 0,
@@ -508,7 +569,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   margin: const EdgeInsets.only(right: 12),
                   child: Icon(
                     isSelected ? Icons.check_circle : Icons.radio_button_off,
-                    color: isSelected ? const Color(0xFF2563EB) : const Color(0xFFCBD5E1),
+                    color: isSelected
+                        ? const Color(0xFF2563EB)
+                        : const Color(0xFFCBD5E1),
                     size: 24,
                   ),
                 ),
@@ -575,7 +638,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                     ],
                   ),
                   const SizedBox(width: 6),
-                  const Icon(Icons.chevron_right, color: Color(0xFF94A3B8), size: 18),
+                  const Icon(
+                    Icons.chevron_right,
+                    color: Color(0xFF94A3B8),
+                    size: 18,
+                  ),
                 ],
               ),
             ],
@@ -585,7 +652,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     );
   }
 
-  Widget _buildProfileReminderCard(BuildContext context, Map<String, dynamic> item, AppProvider provider) {
+  Widget _buildProfileReminderCard(
+    BuildContext context,
+    Map<String, dynamic> item,
+    AppProvider provider,
+  ) {
     final id = item['id'] as String;
     final isSelected = _selectedIds.contains(id);
     final isRead = item['read'] as bool;
@@ -627,7 +698,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   margin: const EdgeInsets.only(right: 12, top: 12),
                   child: Icon(
                     isSelected ? Icons.check_circle : Icons.radio_button_off,
-                    color: isSelected ? const Color(0xFF2563EB) : const Color(0xFFCBD5E1),
+                    color: isSelected
+                        ? const Color(0xFF2563EB)
+                        : const Color(0xFFCBD5E1),
                     size: 24,
                   ),
                 ),
@@ -639,7 +712,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   shape: BoxShape.circle,
                 ),
                 alignment: Alignment.center,
-                child: const Icon(Icons.edit_note_outlined, color: Color(0xFF7B1FA2), size: 28),
+                child: const Icon(
+                  Icons.edit_note_outlined,
+                  color: Color(0xFF7B1FA2),
+                  size: 28,
+                ),
               ),
               const SizedBox(width: 14),
               Expanded(
@@ -680,7 +757,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                             child: LinearProgressIndicator(
                               value: completion / 100.0,
                               backgroundColor: const Color(0xFFF3E8FF),
-                              valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF7C3AED)),
+                              valueColor: const AlwaysStoppedAnimation<Color>(
+                                Color(0xFF7C3AED),
+                              ),
                               minHeight: 5,
                             ),
                           ),
@@ -726,7 +805,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                     ],
                   ),
                   const SizedBox(width: 6),
-                  const Icon(Icons.chevron_right, color: Color(0xFF94A3B8), size: 18),
+                  const Icon(
+                    Icons.chevron_right,
+                    color: Color(0xFF94A3B8),
+                    size: 18,
+                  ),
                 ],
               ),
             ],
@@ -742,10 +825,14 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     final list = provider.notifications;
 
     // Filtered lists for each section
-    final newSchemes = list.where((n) => n['category'] == 'new_schemes').toList();
+    final newSchemes = list
+        .where((n) => n['category'] == 'new_schemes')
+        .toList();
     final reminders = list.where((n) => n['category'] == 'reminders').toList();
     final updates = list.where((n) => n['category'] == 'updates').toList();
-    final profileAlerts = list.where((n) => n['category'] == 'profile').toList();
+    final profileAlerts = list
+        .where((n) => n['category'] == 'profile')
+        .toList();
 
     return Scaffold(
       backgroundColor: AppConstants.backgroundColor,
@@ -762,7 +849,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               )
             : null,
         title: Text(
-          _isSelectionMode ? '${_selectedIds.length} Selected' : 'Notifications',
+          _isSelectionMode
+              ? '${_selectedIds.length} Selected'
+              : 'Notifications',
           style: GoogleFonts.poppins(
             color: AppConstants.primaryText,
             fontWeight: FontWeight.bold,
@@ -776,14 +865,22 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         actions: _isSelectionMode
             ? [
                 IconButton(
-                  icon: const Icon(Icons.done_all, color: Color(0xFF2563EB), size: 22),
+                  icon: const Icon(
+                    Icons.done_all,
+                    color: Color(0xFF2563EB),
+                    size: 22,
+                  ),
                   tooltip: 'Mark selected as read',
                   onPressed: _selectedIds.isEmpty
                       ? null
                       : () {
                           provider.markNotificationsRead(_selectedIds.toList());
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Selected notifications marked as read')),
+                            const SnackBar(
+                              content: Text(
+                                'Selected notifications marked as read',
+                              ),
+                            ),
                           );
                           setState(() {
                             _isSelectionMode = false;
@@ -792,14 +889,20 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                         },
                 ),
                 IconButton(
-                  icon: const Icon(Icons.delete_outline, color: Color(0xFFEF4444), size: 22),
+                  icon: const Icon(
+                    Icons.delete_outline,
+                    color: Color(0xFFEF4444),
+                    size: 22,
+                  ),
                   tooltip: 'Delete selected',
                   onPressed: _selectedIds.isEmpty
                       ? null
                       : () {
                           provider.deleteNotifications(_selectedIds.toList());
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Selected notifications deleted')),
+                            const SnackBar(
+                              content: Text('Selected notifications deleted'),
+                            ),
                           );
                           setState(() {
                             _isSelectionMode = false;
@@ -811,25 +914,40 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               ]
             : [
                 IconButton(
-                  icon: const Icon(Icons.filter_alt_outlined, color: AppConstants.primaryText, size: 22),
+                  icon: const Icon(
+                    Icons.filter_alt_outlined,
+                    color: AppConstants.primaryText,
+                    size: 22,
+                  ),
                   onPressed: () {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Filter options opened'), duration: Duration(milliseconds: 500)),
+                      const SnackBar(
+                        content: Text('Filter options opened'),
+                        duration: Duration(milliseconds: 500),
+                      ),
                     );
                   },
                 ),
                 PopupMenuButton<String>(
-                  icon: const Icon(Icons.more_vert, color: AppConstants.primaryText, size: 22),
+                  icon: const Icon(
+                    Icons.more_vert,
+                    color: AppConstants.primaryText,
+                    size: 22,
+                  ),
                   onSelected: (value) {
                     if (value == 'mark_all_read') {
                       provider.markAllNotificationsRead();
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('All notifications marked as read')),
+                        const SnackBar(
+                          content: Text('All notifications marked as read'),
+                        ),
                       );
                     } else if (value == 'delete_all') {
                       provider.deleteAllNotifications();
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('All notifications deleted')),
+                        const SnackBar(
+                          content: Text('All notifications deleted'),
+                        ),
                       );
                     } else if (value == 'select') {
                       setState(() {
@@ -843,9 +961,16 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                       value: 'mark_all_read',
                       child: Row(
                         children: [
-                          const Icon(Icons.done_all, color: Color(0xFF64748B), size: 20),
+                          const Icon(
+                            Icons.done_all,
+                            color: Color(0xFF64748B),
+                            size: 20,
+                          ),
                           const SizedBox(width: 8),
-                          Text('Mark all as read', style: GoogleFonts.inter(fontSize: 13.5)),
+                          Text(
+                            'Mark all as read',
+                            style: GoogleFonts.inter(fontSize: 13.5),
+                          ),
                         ],
                       ),
                     ),
@@ -853,9 +978,19 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                       value: 'delete_all',
                       child: Row(
                         children: [
-                          const Icon(Icons.delete_sweep_outlined, color: Color(0xFFEF4444), size: 20),
+                          const Icon(
+                            Icons.delete_sweep_outlined,
+                            color: Color(0xFFEF4444),
+                            size: 20,
+                          ),
                           const SizedBox(width: 8),
-                          Text('Delete all', style: GoogleFonts.inter(fontSize: 13.5, color: const Color(0xFFEF4444))),
+                          Text(
+                            'Delete all',
+                            style: GoogleFonts.inter(
+                              fontSize: 13.5,
+                              color: const Color(0xFFEF4444),
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -863,9 +998,16 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                       value: 'select',
                       child: Row(
                         children: [
-                          const Icon(Icons.checklist_rtl_rounded, color: Color(0xFF64748B), size: 20),
+                          const Icon(
+                            Icons.checklist_rtl_rounded,
+                            color: Color(0xFF64748B),
+                            size: 20,
+                          ),
                           const SizedBox(width: 8),
-                          Text('Select', style: GoogleFonts.inter(fontSize: 13.5)),
+                          Text(
+                            'Select',
+                            style: GoogleFonts.inter(fontSize: 13.5),
+                          ),
                         ],
                       ),
                     ),
@@ -885,14 +1027,21 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               child: Column(
                 children: [
                   // 1. New Scheme Alerts Section
-                  if ((_activeFilter == 'All' || _activeFilter == 'new_schemes') && newSchemes.isNotEmpty)
+                  if ((_activeFilter == 'All' ||
+                          _activeFilter == 'new_schemes') &&
+                      newSchemes.isNotEmpty)
                     _buildSection(
                       title: 'New Scheme Alerts',
                       subtitle: 'Stay informed about newly launched schemes',
                       headerIcon: Icons.notifications_active_outlined,
                       headerIconBg: const Color(0xFFE8F5E9),
                       headerIconColor: const Color(0xFF16A34A),
-                      cards: newSchemes.map((item) => _buildNewSchemeCard(context, item, provider)).toList(),
+                      cards: newSchemes
+                          .map(
+                            (item) =>
+                                _buildNewSchemeCard(context, item, provider),
+                          )
+                          .toList(),
                       onViewAll: () {
                         setState(() {
                           _activeFilter = 'new_schemes';
@@ -901,14 +1050,21 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                     ),
 
                   // 2. Deadline Reminders Section
-                  if ((_activeFilter == 'All' || _activeFilter == 'reminders') && reminders.isNotEmpty)
+                  if ((_activeFilter == 'All' ||
+                          _activeFilter == 'reminders') &&
+                      reminders.isNotEmpty)
                     _buildSection(
                       title: 'Deadline Reminders',
                       subtitle: "Don't miss important application deadlines",
                       headerIcon: Icons.calendar_today_outlined,
                       headerIconBg: const Color(0xFFFFEBEE),
                       headerIconColor: const Color(0xFFD32F2F),
-                      cards: reminders.map((item) => _buildDeadlineCard(context, item, provider)).toList(),
+                      cards: reminders
+                          .map(
+                            (item) =>
+                                _buildDeadlineCard(context, item, provider),
+                          )
+                          .toList(),
                       onViewAll: () {
                         setState(() {
                           _activeFilter = 'reminders';
@@ -917,14 +1073,20 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                     ),
 
                   // 3. Government Updates Section
-                  if ((_activeFilter == 'All' || _activeFilter == 'updates') && updates.isNotEmpty)
+                  if ((_activeFilter == 'All' || _activeFilter == 'updates') &&
+                      updates.isNotEmpty)
                     _buildSection(
                       title: 'Government Updates',
                       subtitle: 'Important announcements and updates',
                       headerIcon: Icons.campaign_outlined,
                       headerIconBg: const Color(0xFFEFF6FF),
                       headerIconColor: const Color(0xFF0D47A1),
-                      cards: updates.map((item) => _buildGovtUpdateCard(context, item, provider)).toList(),
+                      cards: updates
+                          .map(
+                            (item) =>
+                                _buildGovtUpdateCard(context, item, provider),
+                          )
+                          .toList(),
                       onViewAll: () {
                         setState(() {
                           _activeFilter = 'updates';
@@ -933,14 +1095,24 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                     ),
 
                   // 4. Profile Completion Reminders Section
-                  if ((_activeFilter == 'All' || _activeFilter == 'profile') && profileAlerts.isNotEmpty)
+                  if ((_activeFilter == 'All' || _activeFilter == 'profile') &&
+                      profileAlerts.isNotEmpty)
                     _buildSection(
                       title: 'Profile Completion Reminders',
-                      subtitle: 'Complete your profile to get better recommendations',
+                      subtitle:
+                          'Complete your profile to get better recommendations',
                       headerIcon: Icons.person_outline,
                       headerIconBg: const Color(0xFFF3E5F5),
                       headerIconColor: const Color(0xFF7B1FA2),
-                      cards: profileAlerts.map((item) => _buildProfileReminderCard(context, item, provider)).toList(),
+                      cards: profileAlerts
+                          .map(
+                            (item) => _buildProfileReminderCard(
+                              context,
+                              item,
+                              provider,
+                            ),
+                          )
+                          .toList(),
                       onViewAll: () {
                         setState(() {
                           _activeFilter = 'profile';
@@ -960,11 +1132,18 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Icon(Icons.notifications_off_outlined, size: 60, color: Color(0xFF94A3B8)),
+                            const Icon(
+                              Icons.notifications_off_outlined,
+                              size: 60,
+                              color: Color(0xFF94A3B8),
+                            ),
                             const SizedBox(height: 16),
                             Text(
                               'No matching alerts',
-                              style: GoogleFonts.inter(color: const Color(0xFF64748B), fontSize: 15),
+                              style: GoogleFonts.inter(
+                                color: const Color(0xFF64748B),
+                                fontSize: 15,
+                              ),
                             ),
                           ],
                         ),

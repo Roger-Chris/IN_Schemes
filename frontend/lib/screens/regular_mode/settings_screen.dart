@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../providers/app_state_provider.dart';
-import '../services/scheme_catalog_sync_service.dart';
-import '../utils/constants.dart';
+import '../../providers/app_state_provider.dart';
+import '../../services/scheme_catalog_sync_service.dart';
+import '../../utils/constants.dart';
 import 'language_selection_screen.dart';
 import 'profile_setup_screen.dart';
 import 'help_support_screen.dart';
+import '../../widgets/custom_confirm_dialog.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -17,183 +18,184 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   bool _pushNotifications = true;
-  bool _darkMode = false;
 
   void _handleDeleteAccount(BuildContext context, AppProvider provider) {
+    CustomConfirmDialog.show(
+      context,
+      icon: Icons.delete_forever_rounded,
+      iconColor: AppConstants.errorColor,
+      iconBgColor: const Color(0xFFFEE2E2),
+      title: 'Delete Account',
+      message: 'This action is irreversible. All your saved profiles, bookmarks, and questionnaire answers will be permanently deleted.',
+      confirmLabel: 'Delete',
+      confirmColor: AppConstants.errorColor,
+      onConfirm: () => provider.deleteAccount(context),
+      isDestructive: true,
+    );
+  }
+
+  void _showNavigationModePopup(
+    BuildContext context,
+    AppProvider provider,
+  ) {
     showDialog(
       context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
+      builder: (context) {
+        return Dialog(
+          insetPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
           backgroundColor: Colors.white,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(24),
             side: const BorderSide(color: Color(0xFFE2E8F0)),
           ),
-          title: Text(
-            'Delete Account',
-            style: GoogleFonts.inter(
-              color: AppConstants.errorColor,
-              fontWeight: FontWeight.bold,
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFEFF6FF),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.explore_outlined,
+                        color: Color(0xFF2563EB),
+                        size: 20,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'Navigation Mode',
+                        style: GoogleFonts.poppins(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF0F172A),
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close_rounded, color: Color(0xFF94A3B8)),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Choose your preferred layout mode for navigating schemes and services.',
+                  style: GoogleFonts.inter(
+                    fontSize: 11.5,
+                    color: const Color(0xFF64748B),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                _buildModeOption(
+                  context: context,
+                  provider: provider,
+                  mode: 'regular',
+                  title: 'Regular Navigation',
+                  subtitle: 'Traditional clean list and tab view layout',
+                  icon: Icons.layers_outlined,
+                ),
+                const SizedBox(height: 12),
+                _buildModeOption(
+                  context: context,
+                  provider: provider,
+                  mode: 'companion',
+                  title: 'AI Companion (Saarthi)',
+                  subtitle: 'Voice-first AI guided conversational view',
+                  icon: Icons.chat_bubble_outline_rounded,
+                ),
+              ],
             ),
           ),
-          content: Text(
-            'This action is irreversible. All your saved profiles, bookmarks, and questionnaire answers will be permanently deleted.',
-            style: GoogleFonts.inter(color: AppConstants.secondaryText),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: Text(
-                'Cancel',
-                style: GoogleFonts.inter(color: AppConstants.secondaryText),
-              ),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppConstants.errorColor,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                elevation: 0,
-              ),
-              onPressed: provider.isLoggingOut
-                  ? null
-                  : () {
-                      Navigator.pop(dialogContext);
-                      provider.deleteAccount(context);
-                    },
-              child: Text(
-                'Delete Permanently',
-                style: GoogleFonts.inter(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ],
         );
       },
     );
   }
 
-  void _showNavigationModeBottomSheet(
-    BuildContext context,
-    AppProvider provider,
-  ) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(24),
-          topRight: Radius.circular(24),
-        ),
-      ),
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setModalState) {
-            return Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: const BoxDecoration(
-                          color: Color(0xFFFFF7ED),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.explore_outlined,
-                          color: Color(0xFFEA580C),
-                          size: 20,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          'Choose Navigation Mode',
-                          style: GoogleFonts.inter(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: const Color(0xFF0F172A),
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.close, color: Color(0xFF94A3B8)),
-                        onPressed: () => Navigator.pop(context),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  ListTile(
-                    title: Text(
-                      'Regular Navigation',
-                      style: GoogleFonts.inter(fontWeight: FontWeight.bold),
-                    ),
-                    subtitle: Text(
-                      'Traditional mobile experience',
-                      style: GoogleFonts.inter(fontSize: 12),
-                    ),
-                    trailing: provider.navigationMode == 'regular'
-                        ? const Icon(
-                            Icons.check_circle_rounded,
-                            color: Color(0xFFEA580C),
-                            size: 24,
-                          )
-                        : const Icon(
-                            Icons.circle_outlined,
-                            color: Color(0xFFCBD5E1),
-                            size: 24,
-                          ),
-                    onTap: () {
-                      provider.changeNavigationMode('regular');
-                      setModalState(() {});
-                      Navigator.pop(context);
-                      setState(() {});
-                    },
-                  ),
-                  const Divider(),
-                  ListTile(
-                    title: Text(
-                      'Companion Navigation',
-                      style: GoogleFonts.inter(fontWeight: FontWeight.bold),
-                    ),
-                    subtitle: Text(
-                      'Voice-first guided experience',
-                      style: GoogleFonts.inter(fontSize: 12),
-                    ),
-                    trailing: provider.navigationMode == 'companion'
-                        ? const Icon(
-                            Icons.check_circle_rounded,
-                            color: Color(0xFFEA580C),
-                            size: 24,
-                          )
-                        : const Icon(
-                            Icons.circle_outlined,
-                            color: Color(0xFFCBD5E1),
-                            size: 24,
-                          ),
-                    onTap: () {
-                      provider.changeNavigationMode('companion');
-                      setModalState(() {});
-                      Navigator.pop(context);
-                      setState(() {});
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                ],
-              ),
-            );
-          },
+  Widget _buildModeOption({
+    required BuildContext context,
+    required AppProvider provider,
+    required String mode,
+    required String title,
+    required String subtitle,
+    required IconData icon,
+  }) {
+    final isSelected = provider.navigationMode == mode;
+    return InkWell(
+      onTap: () {
+        Navigator.pop(context);
+        provider.changeNavigationMode(mode);
+        provider.updateTabIndex(0);
+        Navigator.of(context).popUntil((route) => route.isFirst);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              mode == 'companion' 
+                  ? 'Switched to AI Companion (Saarthi) Navigation' 
+                  : 'Switched to Regular Navigation',
+            ),
+            backgroundColor: const Color(0xFF2563EB),
+            duration: const Duration(seconds: 2),
+          ),
         );
       },
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFFEFF6FF) : Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isSelected ? const Color(0xFF2563EB) : const Color(0xFFE2E8F0),
+            width: 1.5,
+          ),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              icon,
+              color: isSelected ? const Color(0xFF2563EB) : const Color(0xFF64748B),
+              size: 24,
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: GoogleFonts.inter(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                      color: isSelected ? const Color(0xFF1E3A8A) : const Color(0xFF0F172A),
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: GoogleFonts.inter(
+                      fontSize: 10.5,
+                      color: const Color(0xFF64748B),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              isSelected ? Icons.check_circle_rounded : Icons.circle_outlined,
+              color: isSelected ? const Color(0xFF2563EB) : const Color(0xFFCBD5E1),
+              size: 22,
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -264,22 +266,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 value: provider.navigationMode == 'companion'
                     ? 'Companion'
                     : 'Regular',
-                onTap: () => _showNavigationModeBottomSheet(context, provider),
-              ),
-              _buildSettingRow(
-                icon: Icons.nightlight_outlined,
-                title: "Dark Mode",
-                widget: SizedBox(
-                  height: 24,
-                  child: Switch(
-                    value: _darkMode,
-                    onChanged: (val) => setState(() => _darkMode = val),
-                    activeThumbColor: Colors.white,
-                    activeTrackColor: const Color(0xFF2563EB),
-                    inactiveThumbColor: Colors.white,
-                    inactiveTrackColor: const Color(0xFFE2E8F0),
-                  ),
-                ),
+                onTap: () => _showNavigationModePopup(context, provider),
+                isLast: true,
               ),
             ]),
 
@@ -457,7 +445,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 onTap: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (_) => const HelpSupportScreen(),
+                      builder: (_) => const HelpSupportScreen(initialMode: 'faq'),
                     ),
                   );
                 },
@@ -468,7 +456,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 onTap: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (_) => const HelpSupportScreen(),
+                      builder: (_) => const HelpSupportScreen(initialMode: 'contact'),
                     ),
                   );
                 },
@@ -496,7 +484,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
               ),
               onPressed: () {
-                provider.logout(context);
+                CustomConfirmDialog.show(
+                  context,
+                  icon: Icons.logout_rounded,
+                  iconColor: const Color(0xFFEF4444),
+                  iconBgColor: const Color(0xFFFEE2E2),
+                  title: 'Confirm Logout',
+                  message: 'Are you sure you want to log out from MSS?',
+                  confirmLabel: 'Logout',
+                  confirmColor: const Color(0xFFEF4444),
+                  onConfirm: () => provider.logout(context),
+                );
               },
             ),
             const SizedBox(height: 16),

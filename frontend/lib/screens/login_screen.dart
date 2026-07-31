@@ -5,7 +5,6 @@ import '../providers/app_state_provider.dart';
 import '../utils/constants.dart';
 import 'otp_screen.dart';
 import 'navigation_mode_screen.dart';
-import '../main.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -378,21 +377,13 @@ class _LoginScreenState extends State<LoginScreen> {
                         });
                         try {
                           final provider = Provider.of<AppProvider>(context, listen: false);
-                          final isProfileComplete = await provider.loginWithGoogle();
+                          await provider.loginWithGoogle();
                           if (mounted) {
-                            if (isProfileComplete) {
-                              Navigator.of(context).pushReplacement(
-                                MaterialPageRoute(
-                                  builder: (_) => const MainTabsContainer(),
-                                ),
-                              );
-                            } else {
-                              Navigator.of(context).pushReplacement(
-                                MaterialPageRoute(
-                                  builder: (_) => const NavigationModeScreen(),
-                                ),
-                              );
-                            }
+                            Navigator.of(context).pushReplacement(
+                              MaterialPageRoute(
+                                builder: (_) => const NavigationModeScreen(),
+                              ),
+                            );
                           }
                         } catch (e) {
                           if (mounted) {

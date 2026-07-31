@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import 'companion/saarthi_welcome_screen.dart';
-import 'language_selection_screen.dart';
-import 'basic_profile_screen.dart';
+import 'companion_mode/saarthi_welcome_screen.dart';
+import 'regular_mode/language_selection_screen.dart';
+import 'regular_mode/basic_profile_screen.dart';
 import '../providers/app_state_provider.dart';
+import '../main.dart';
 
 enum NavigationMode { regular, companion }
 
@@ -155,8 +156,8 @@ class _NavigationModeScreenState extends State<NavigationModeScreen> {
                                 title: 'AI Companion',
                                 subtitle: 'Let your AI guide you step by step.',
                                 icon: Icons.support_agent_rounded,
-                                iconColor: const Color(0xFFEA580C),
-                                iconBgColor: const Color(0xFFFFF7ED),
+                                iconColor: const Color(0xFF2563EB),
+                                iconBgColor: const Color(0xFFEFF6FF),
                                 chips: const [
                                   ChipInfo(Icons.mic, 'Voice-first experience'),
                                   ChipInfo(Icons.person, 'Personalized guidance'),
@@ -199,7 +200,13 @@ class _NavigationModeScreenState extends State<NavigationModeScreen> {
                           widget.onContinue!(_selectedMode);
                         } else {
                           // Default UI transition flow
-                          if (_selectedMode == NavigationMode.companion) {
+                          if (provider.profile.profileCompleted) {
+                            Navigator.of(context).pushReplacement(
+                              MaterialPageRoute(
+                                builder: (_) => const MainTabsContainer(),
+                              ),
+                            );
+                          } else if (_selectedMode == NavigationMode.companion) {
                             Navigator.of(context).push(
                               MaterialPageRoute(
                                 builder: (_) => const SaarthiWelcomeScreen(),
@@ -252,8 +259,8 @@ class NavigationOptionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final activeColor = mode == NavigationMode.regular ? const Color(0xFF2563EB) : const Color(0xFFF97316);
-    final activeBg = mode == NavigationMode.regular ? const Color(0xFFF0F5FF) : const Color(0xFFFFF7ED);
+    final activeColor = const Color(0xFF2563EB);
+    final activeBg = const Color(0xFFF0F5FF);
 
     return GestureDetector(
       onTap: onTap,

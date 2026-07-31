@@ -4,66 +4,29 @@ import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
-import '../providers/app_state_provider.dart';
-import '../utils/constants.dart';
-import 'profile_setup_screen.dart';
-import 'language_selection_screen.dart';
-import 'settings_screen.dart';
-import 'help_support_screen.dart';
+import '../../providers/app_state_provider.dart';
+import '../../utils/constants.dart';
+import 'regular_mode/profile_setup_screen.dart';
+import 'regular_mode/language_selection_screen.dart';
+import 'regular_mode/settings_screen.dart';
+import 'regular_mode/help_support_screen.dart';
 import 'notifications_screen.dart';
+import '../widgets/custom_confirm_dialog.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
   void _handleLogout(BuildContext context, AppProvider provider) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          backgroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-            side: const BorderSide(color: Color(0xFFE2E8F0)),
-          ),
-          title: Text(
-            'Confirm Logout',
-            style: GoogleFonts.poppins(
-              color: const Color(0xFF0F172A),
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          content: Text(
-            'Are you sure you want to log out from MSS?',
-            style: GoogleFonts.inter(color: const Color(0xFF64748B)),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text(
-                'Cancel',
-                style: GoogleFonts.inter(color: const Color(0xFF64748B), fontWeight: FontWeight.w600),
-              ),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFEF4444),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                elevation: 0,
-              ),
-              onPressed: provider.isLoggingOut
-                  ? null
-                  : () {
-                      Navigator.pop(context);
-                      provider.logout(context);
-                    },
-              child: Text(
-                'Logout',
-                style: GoogleFonts.inter(color: Colors.white, fontWeight: FontWeight.bold),
-              ),
-            ),
-          ],
-        );
-      },
+    CustomConfirmDialog.show(
+      context,
+      icon: Icons.logout_rounded,
+      iconColor: const Color(0xFFEF4444),
+      iconBgColor: const Color(0xFFFEE2E2),
+      title: 'Confirm Logout',
+      message: 'Are you sure you want to log out from MSS?',
+      confirmLabel: 'Logout',
+      confirmColor: const Color(0xFFEF4444),
+      onConfirm: () => provider.logout(context),
     );
   }
 
@@ -124,9 +87,7 @@ class ProfileScreen extends StatelessWidget {
           ),
         ],
       ),
-      child: Column(
-        children: tiles,
-      ),
+      child: Column(children: tiles),
     );
   }
 
@@ -145,7 +106,10 @@ class ProfileScreen extends StatelessWidget {
     return Column(
       children: [
         ListTile(
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 2,
+          ),
           leading: Container(
             width: 36,
             height: 36,
@@ -186,7 +150,11 @@ class ProfileScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-              const Icon(Icons.chevron_right, color: Color(0xFF94A3B8), size: 16),
+              const Icon(
+                Icons.chevron_right,
+                color: Color(0xFF94A3B8),
+                size: 16,
+              ),
             ],
           ),
           onTap: onTap,
@@ -202,7 +170,10 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Future<void> _changeProfilePicture(BuildContext context, AppProvider provider) async {
+  Future<void> _changeProfilePicture(
+    BuildContext context,
+    AppProvider provider,
+  ) async {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.white,
@@ -229,24 +200,42 @@ class ProfileScreen extends StatelessWidget {
                 ),
               ),
               ListTile(
-                leading: const Icon(Icons.photo_library_outlined, color: Color(0xFF2563EB)),
-                title: Text('Choose from Gallery', style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+                leading: const Icon(
+                  Icons.photo_library_outlined,
+                  color: Color(0xFF2563EB),
+                ),
+                title: Text(
+                  'Choose from Gallery',
+                  style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+                ),
                 onTap: () async {
                   Navigator.pop(context);
                   final picker = ImagePicker();
-                  final pickedFile = await picker.pickImage(source: ImageSource.gallery, imageQuality: 85);
+                  final pickedFile = await picker.pickImage(
+                    source: ImageSource.gallery,
+                    imageQuality: 85,
+                  );
                   if (pickedFile != null) {
                     await _savePickedImage(pickedFile.path, provider);
                   }
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.camera_alt_outlined, color: Color(0xFF2563EB)),
-                title: Text('Take Photo', style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+                leading: const Icon(
+                  Icons.camera_alt_outlined,
+                  color: Color(0xFF2563EB),
+                ),
+                title: Text(
+                  'Take Photo',
+                  style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+                ),
                 onTap: () async {
                   Navigator.pop(context);
                   final picker = ImagePicker();
-                  final pickedFile = await picker.pickImage(source: ImageSource.camera, imageQuality: 85);
+                  final pickedFile = await picker.pickImage(
+                    source: ImageSource.camera,
+                    imageQuality: 85,
+                  );
                   if (pickedFile != null) {
                     await _savePickedImage(pickedFile.path, provider);
                   }
@@ -254,8 +243,17 @@ class ProfileScreen extends StatelessWidget {
               ),
               if (provider.profile.profilePhoto.isNotEmpty)
                 ListTile(
-                  leading: const Icon(Icons.delete_outline_rounded, color: Color(0xFFEF4444)),
-                  title: Text('Remove Photo', style: GoogleFonts.inter(color: const Color(0xFFEF4444), fontWeight: FontWeight.w600)),
+                  leading: const Icon(
+                    Icons.delete_outline_rounded,
+                    color: Color(0xFFEF4444),
+                  ),
+                  title: Text(
+                    'Remove Photo',
+                    style: GoogleFonts.inter(
+                      color: const Color(0xFFEF4444),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                   onTap: () async {
                     Navigator.pop(context);
                     await provider.updateProfilePhoto('');
@@ -273,9 +271,10 @@ class ProfileScreen extends StatelessWidget {
     try {
       final appDir = await getApplicationDocumentsDirectory();
       final String extension = tempPath.split('.').last;
-      final String newFileName = 'profile_${DateTime.now().millisecondsSinceEpoch}.$extension';
+      final String newFileName =
+          'profile_${DateTime.now().millisecondsSinceEpoch}.$extension';
       final String newPath = '${appDir.path}/$newFileName';
-      
+
       final File tempFile = File(tempPath);
       await tempFile.copy(newPath);
       await provider.updateProfilePhoto(newPath);
@@ -311,7 +310,9 @@ class ProfileScreen extends StatelessWidget {
             child: GestureDetector(
               onTap: () {
                 Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+                  MaterialPageRoute(
+                    builder: (_) => const NotificationsScreen(),
+                  ),
                 );
               },
               child: Stack(
@@ -341,7 +342,10 @@ class ProfileScreen extends StatelessWidget {
                           color: Color(0xFFEF4444),
                           shape: BoxShape.circle,
                         ),
-                        constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                        constraints: const BoxConstraints(
+                          minWidth: 16,
+                          minHeight: 16,
+                        ),
                         alignment: Alignment.center,
                         child: Text(
                           '$unreadCount',
@@ -370,7 +374,11 @@ class ProfileScreen extends StatelessWidget {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(16),
                 gradient: const LinearGradient(
-                  colors: [Color(0xFF0D47A1), Color(0xFF1976D2), Color(0xFF1E88E5)],
+                  colors: [
+                    Color(0xFF0D47A1),
+                    Color(0xFF1976D2),
+                    Color(0xFF1E88E5),
+                  ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -392,7 +400,11 @@ class ProfileScreen extends StatelessWidget {
                       bottom: -30,
                       child: Opacity(
                         opacity: 0.1,
-                        child: const Icon(Icons.account_balance, size: 160, color: Colors.white),
+                        child: const Icon(
+                          Icons.account_balance,
+                          size: 160,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
                     Padding(
@@ -404,23 +416,39 @@ class ProfileScreen extends StatelessWidget {
                             alignment: Alignment.bottomRight,
                             children: [
                               GestureDetector(
-                                onTap: () => _changeProfilePicture(context, provider),
+                                onTap: () =>
+                                    _changeProfilePicture(context, provider),
                                 child: Container(
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
-                                    border: Border.all(color: Colors.white, width: 2),
+                                    border: Border.all(
+                                      color: Colors.white,
+                                      width: 2,
+                                    ),
                                   ),
                                   child: CircleAvatar(
                                     radius: 38,
-                                    backgroundImage: provider.profile.profilePhoto.isNotEmpty &&
-                                            File(provider.profile.profilePhoto).existsSync()
-                                        ? FileImage(File(provider.profile.profilePhoto))
-                                        : const AssetImage('assets/images/user_avatar.png') as ImageProvider,
+                                    backgroundImage:
+                                        provider
+                                                .profile
+                                                .profilePhoto
+                                                .isNotEmpty &&
+                                            File(
+                                              provider.profile.profilePhoto,
+                                            ).existsSync()
+                                        ? FileImage(
+                                            File(provider.profile.profilePhoto),
+                                          )
+                                        : const AssetImage(
+                                                'assets/images/user_avatar.png',
+                                              )
+                                              as ImageProvider,
                                   ),
                                 ),
                               ),
                               GestureDetector(
-                                onTap: () => _changeProfilePicture(context, provider),
+                                onTap: () =>
+                                    _changeProfilePicture(context, provider),
                                 child: Container(
                                   width: 24,
                                   height: 24,
@@ -428,7 +456,11 @@ class ProfileScreen extends StatelessWidget {
                                     color: Colors.white,
                                     shape: BoxShape.circle,
                                     boxShadow: [
-                                      BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2)),
+                                      BoxShadow(
+                                        color: Colors.black12,
+                                        blurRadius: 4,
+                                        offset: Offset(0, 2),
+                                      ),
                                     ],
                                   ),
                                   alignment: Alignment.center,
@@ -451,7 +483,9 @@ class ProfileScreen extends StatelessWidget {
                                   children: [
                                     Expanded(
                                       child: Text(
-                                        profile.name.isNotEmpty ? profile.name : 'Not Set',
+                                        profile.name.isNotEmpty
+                                            ? profile.name
+                                            : 'Not Set',
                                         style: GoogleFonts.poppins(
                                           fontSize: 16.5,
                                           fontWeight: FontWeight.bold,
@@ -463,11 +497,16 @@ class ProfileScreen extends StatelessWidget {
                                     ),
                                     const SizedBox(width: 6),
                                     Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 6,
+                                        vertical: 3,
+                                      ),
                                       decoration: BoxDecoration(
                                         color: Colors.white.withAlpha(25),
                                         border: Border.all(
-                                          color: profile.profileCompleted ? const Color(0xFF4ADE80) : const Color(0xFFF59E0B),
+                                          color: profile.profileCompleted
+                                              ? const Color(0xFF4ADE80)
+                                              : const Color(0xFFF59E0B),
                                           width: 0.8,
                                         ),
                                         borderRadius: BorderRadius.circular(20),
@@ -476,16 +515,24 @@ class ProfileScreen extends StatelessWidget {
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
                                           Icon(
-                                            profile.profileCompleted ? Icons.check_circle : Icons.warning_amber_rounded,
-                                            color: profile.profileCompleted ? const Color(0xFF4ADE80) : const Color(0xFFF59E0B),
+                                            profile.profileCompleted
+                                                ? Icons.check_circle
+                                                : Icons.warning_amber_rounded,
+                                            color: profile.profileCompleted
+                                                ? const Color(0xFF4ADE80)
+                                                : const Color(0xFFF59E0B),
                                             size: 10,
                                           ),
                                           const SizedBox(width: 3),
                                           Text(
-                                            profile.profileCompleted ? 'Profile Verified' : 'Incomplete',
+                                            profile.profileCompleted
+                                                ? 'Profile Verified'
+                                                : 'Incomplete',
                                             style: GoogleFonts.inter(
                                               fontSize: 8.5,
-                                              color: profile.profileCompleted ? const Color(0xFF4ADE80) : const Color(0xFFF59E0B),
+                                              color: profile.profileCompleted
+                                                  ? const Color(0xFF4ADE80)
+                                                  : const Color(0xFFF59E0B),
                                               fontWeight: FontWeight.bold,
                                             ),
                                           ),
@@ -497,10 +544,16 @@ class ProfileScreen extends StatelessWidget {
                                 const SizedBox(height: 8),
                                 Row(
                                   children: [
-                                    const Icon(Icons.phone_outlined, color: Colors.white70, size: 12),
+                                    const Icon(
+                                      Icons.phone_outlined,
+                                      color: Colors.white70,
+                                      size: 12,
+                                    ),
                                     const SizedBox(width: 6),
                                     Text(
-                                      profile.mobile.isNotEmpty ? '+91 ${profile.mobile}' : 'Not Set',
+                                      profile.mobile.isNotEmpty
+                                          ? '+91 ${profile.mobile}'
+                                          : 'Not Set',
                                       style: GoogleFonts.inter(
                                         fontSize: 11.5,
                                         color: Colors.white.withAlpha(230),
@@ -512,11 +565,17 @@ class ProfileScreen extends StatelessWidget {
                                 const SizedBox(height: 6),
                                 Row(
                                   children: [
-                                    const Icon(Icons.mail_outline, color: Colors.white70, size: 12),
+                                    const Icon(
+                                      Icons.mail_outline,
+                                      color: Colors.white70,
+                                      size: 12,
+                                    ),
                                     const SizedBox(width: 6),
                                     Expanded(
                                       child: Text(
-                                        profile.email.isNotEmpty ? profile.email : 'Not Set',
+                                        profile.email.isNotEmpty
+                                            ? profile.email
+                                            : 'Not Set',
                                         style: GoogleFonts.inter(
                                           fontSize: 11.5,
                                           color: Colors.white.withAlpha(230),
@@ -568,7 +627,11 @@ class ProfileScreen extends StatelessWidget {
                           shape: BoxShape.circle,
                         ),
                         alignment: Alignment.center,
-                        child: const Icon(Icons.person_outline, color: Color(0xFF2563EB), size: 18),
+                        child: const Icon(
+                          Icons.person_outline,
+                          color: Color(0xFF2563EB),
+                          size: 18,
+                        ),
                       ),
                       const SizedBox(width: 10),
                       Text(
@@ -583,10 +646,16 @@ class ProfileScreen extends StatelessWidget {
                       TextButton.icon(
                         onPressed: () {
                           Navigator.of(context).push(
-                            MaterialPageRoute(builder: (_) => const ProfileSetupScreen()),
+                            MaterialPageRoute(
+                              builder: (_) => const ProfileSetupScreen(),
+                            ),
                           );
                         },
-                        icon: const Icon(Icons.edit_outlined, color: Color(0xFF2563EB), size: 13),
+                        icon: const Icon(
+                          Icons.edit_outlined,
+                          color: Color(0xFF2563EB),
+                          size: 13,
+                        ),
                         label: Text(
                           'Edit Profile',
                           style: GoogleFonts.inter(
@@ -597,12 +666,18 @@ class ProfileScreen extends StatelessWidget {
                         ),
                         style: TextButton.styleFrom(
                           backgroundColor: const Color(0xFFEFF6FF),
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 6,
+                          ),
                           minimumSize: Size.zero,
                           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(20),
-                            side: const BorderSide(color: Color(0xFFBFDBFE), width: 0.8),
+                            side: const BorderSide(
+                              color: Color(0xFFBFDBFE),
+                              width: 0.8,
+                            ),
                           ),
                         ),
                       ),
@@ -612,13 +687,31 @@ class ProfileScreen extends StatelessWidget {
                   // Information Details Grid
                   Row(
                     children: [
-                      _buildInfoCol('Full Name', profile.name.isNotEmpty ? profile.name : 'Not Set', 5),
+                      _buildInfoCol(
+                        'Full Name',
+                        profile.name.isNotEmpty ? profile.name : 'Not Set',
+                        5,
+                      ),
                       _buildDividerCol(),
-                      _buildInfoCol('Age', profile.dob != null ? '${profile.age}' : 'Not Set', 2),
+                      _buildInfoCol(
+                        'Age',
+                        profile.dob != null ? '${profile.age}' : 'Not Set',
+                        2,
+                      ),
                       _buildDividerCol(),
-                      _buildInfoCol('Gender', profile.gender.isNotEmpty ? profile.gender : 'Not Set', 3),
+                      _buildInfoCol(
+                        'Gender',
+                        profile.gender.isNotEmpty ? profile.gender : 'Not Set',
+                        3,
+                      ),
                       _buildDividerCol(),
-                      _buildInfoCol('Location', profile.district.isNotEmpty ? '${profile.district}, ${profile.state}' : 'Not Set', 6),
+                      _buildInfoCol(
+                        'Location',
+                        profile.district.isNotEmpty
+                            ? '${profile.district}, ${profile.state}'
+                            : 'Not Set',
+                        6,
+                      ),
                     ],
                   ),
                 ],
@@ -635,7 +728,9 @@ class ProfileScreen extends StatelessWidget {
                 subtitle: 'View and update your eligibility details',
                 onTap: () {
                   Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => const ProfileSetupScreen()),
+                    MaterialPageRoute(
+                      builder: (_) => const ProfileSetupScreen(),
+                    ),
                   );
                 },
               ),
@@ -655,11 +750,15 @@ class ProfileScreen extends StatelessWidget {
                 iconBgColor: const Color(0xFFF3E8FF),
                 title: 'Language',
                 subtitle: 'Choose your preferred language',
-                trailingText: provider.selectedLanguage == 'hi' ? 'Hindi' : 'English',
+                trailingText: provider.selectedLanguage == 'hi'
+                    ? 'Hindi'
+                    : 'English',
                 showDivider: false,
                 onTap: () {
                   Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => const LanguageSelectionScreen()),
+                    MaterialPageRoute(
+                      builder: (_) => const LanguageSelectionScreen(),
+                    ),
                   );
                 },
               ),
@@ -690,7 +789,9 @@ class ProfileScreen extends StatelessWidget {
                     context: context,
                     builder: (context) => AlertDialog(
                       title: const Text('Privacy Policy'),
-                      content: const Text('Your privacy is important to us. All personal data is encrypted and saved locally on this device.'),
+                      content: const Text(
+                        'Your privacy is important to us. All personal data is encrypted and saved locally on this device.',
+                      ),
                       actions: [
                         TextButton(
                           onPressed: () => Navigator.pop(context),
@@ -709,7 +810,9 @@ class ProfileScreen extends StatelessWidget {
                 subtitle: 'Get help and contact support',
                 onTap: () {
                   Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => const HelpSupportScreen()),
+                    MaterialPageRoute(
+                      builder: (_) => const HelpSupportScreen(),
+                    ),
                   );
                 },
               ),
@@ -725,9 +828,14 @@ class ProfileScreen extends StatelessWidget {
                     context: context,
                     applicationName: 'MSS',
                     applicationVersion: '1.0.0',
-                    applicationIcon: const Icon(Icons.info, color: Color(0xFF0D47A1)),
+                    applicationIcon: const Icon(
+                      Icons.info,
+                      color: Color(0xFF0D47A1),
+                    ),
                     children: [
-                      const Text('Empowering citizens with real-time tracking, eligibility scanning and downloads for all state and central Government schemes in India.'),
+                      const Text(
+                        'Empowering citizens with real-time tracking, eligibility scanning and downloads for all state and central Government schemes in India.',
+                      ),
                     ],
                   );
                 },

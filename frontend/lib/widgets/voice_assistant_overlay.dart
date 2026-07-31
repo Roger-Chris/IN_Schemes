@@ -1396,9 +1396,7 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
             width: 56,
             height: 56,
             child: Image.asset(
-              _isCompanion
-                  ? 'assets/saarthi_expressions/01_happy.png'
-                  : 'assets/images/compoanion bot.png',
+              'assets/saarthi_expressions/Ai companion.png',
               key: const Key('voice-assistant-image'),
               fit: BoxFit.contain,
             ),
@@ -2219,28 +2217,31 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
             .map(
               (match) => Padding(
                 padding: const EdgeInsets.only(top: 6),
-                child: ListTile(
-                  key: Key('voice-result-${match.scheme.id}'),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  tileColor: Colors.white.withValues(alpha: 0.055),
-                  title: Text(
-                    match.scheme.name,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
+                child: Material(
+                  color: Colors.transparent,
+                  child: ListTile(
+                    key: Key('voice-result-${match.scheme.id}'),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                  ),
-                  subtitle: Text(
-                    match.reasons.join(' • '),
-                    style: const TextStyle(
-                      color: Color(0xFF94A3B8),
-                      fontSize: 9.5,
+                    tileColor: Colors.white.withValues(alpha: 0.055),
+                    title: Text(
+                      match.scheme.name,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
+                    subtitle: Text(
+                      match.reasons.join(' • '),
+                      style: const TextStyle(
+                        color: Color(0xFF94A3B8),
+                        fontSize: 9.5,
+                      ),
+                    ),
+                    onTap: () => widget.onSchemeSelected?.call(match.scheme),
                   ),
-                  onTap: () => widget.onSchemeSelected?.call(match.scheme),
                 ),
               ),
             ),

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'language_selection_screen.dart';
+import 'regular_mode/language_selection_screen.dart';
 import 'login_screen.dart';
 import '../providers/app_state_provider.dart';
 import '../services/session_cache_service.dart';

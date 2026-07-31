@@ -3,6 +3,8 @@ package com.inschemes.app
 import android.app.Activity
 import android.media.AudioAttributes
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import android.speech.tts.Voice
@@ -26,14 +28,23 @@ class SpeechOutputBridge(
     private var initializationFinished = false
     private var disposed = false
     private val pendingCapabilities = mutableListOf<MethodChannel.Result>()
+    private val mainHandler = Handler(Looper.getMainLooper())
+    private val initializationTimeout = Runnable {
+        if (disposed || initializationFinished) return@Runnable
+        initializationFinished = true
+        initialized = false
+        flushPendingCapabilities(null)
+    }
 
     init {
         channel.setMethodCallHandler(this)
         textToSpeech = TextToSpeech(activity.applicationContext, this)
+        mainHandler.postDelayed(initializationTimeout, 5_000)
     }
 
     override fun onInit(status: Int) {
         if (disposed) return
+        mainHandler.removeCallbacks(initializationTimeout)
         initializationFinished = true
         initialized = status == TextToSpeech.SUCCESS
         val engine = textToSpeech
@@ -63,9 +74,7 @@ class SpeechOutputBridge(
                 }
             },
         )
-        val capabilities = capabilityMap(engine)
-        pendingCapabilities.forEach { it.success(capabilities) }
-        pendingCapabilities.clear()
+        flushPendingCapabilities(engine)
     }
 
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
@@ -115,6 +124,12 @@ class SpeechOutputBridge(
             "englishVoice" to bestVoice(engine, englishLocale)?.name,
             "tamilVoice" to bestVoice(engine, tamilLocale)?.name,
         )
+    }
+
+    private fun flushPendingCapabilities(engine: TextToSpeech?) {
+        val capabilities = capabilityMap(engine)
+        pendingCapabilities.forEach { it.success(capabilities) }
+        pendingCapabilities.clear()
     }
 
     private fun speak(call: MethodCall, result: MethodChannel.Result) {
@@ -222,11 +237,10 @@ class SpeechOutputBridge(
     fun dispose() {
         if (disposed) return
         disposed = true
+        mainHandler.removeCallbacks(initializationTimeout)
         initialized = false
         initializationFinished = true
-        val unavailable = capabilityMap(null)
-        pendingCapabilities.forEach { it.success(unavailable) }
-        pendingCapabilities.clear()
+        flushPendingCapabilities(null)
         channel.setMethodCallHandler(null)
         textToSpeech?.stop()
         textToSpeech?.shutdown()

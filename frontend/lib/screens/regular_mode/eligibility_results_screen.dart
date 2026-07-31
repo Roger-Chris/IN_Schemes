@@ -1,23 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../widgets/gradient_scaffold.dart';
-import '../widgets/scheme_card.dart';
-import '../providers/app_state_provider.dart';
+import '../../widgets/gradient_scaffold.dart';
+import '../../widgets/scheme_card.dart';
+import '../../providers/app_state_provider.dart';
 import 'scheme_details_screen.dart';
 
 class EligibilityResultsScreen extends StatelessWidget {
   const EligibilityResultsScreen({super.key});
 
-
-
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<AppProvider>(context);
     final allMatches = provider.recommendedSchemes;
-    
+
     // Eligible schemes are those with a match score > 0%
-    final eligibleMatches = allMatches.where((entry) => entry.value.score > 0).toList();
+    final eligibleMatches = allMatches
+        .where((entry) => entry.value.score > 0)
+        .toList();
 
     return GradientScaffold(
       appBar: AppBar(
@@ -50,7 +50,11 @@ class EligibilityResultsScreen extends StatelessWidget {
               ),
               child: IconButton(
                 padding: EdgeInsets.zero,
-                icon: const Icon(Icons.share_outlined, size: 20, color: Color(0xFF0D47A1)),
+                icon: const Icon(
+                  Icons.share_outlined,
+                  size: 20,
+                  color: Color(0xFF0D47A1),
+                ),
                 onPressed: () {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
@@ -75,7 +79,10 @@ class EligibilityResultsScreen extends StatelessWidget {
                   // Custom Vector Success Illustration Stack
                   // Image-based Success Illustration from assets
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16.0,
+                      vertical: 12.0,
+                    ),
                     child: Image.asset(
                       'assets/images/eligibility_banner.png',
                       height: 180,
@@ -83,7 +90,7 @@ class EligibilityResultsScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 10),
-                  
+
                   // Great News Header
                   Text(
                     'Great News! 🎉',
@@ -107,9 +114,7 @@ class EligibilityResultsScreen extends StatelessWidget {
                         const TextSpan(text: 'You are eligible for\n'),
                         TextSpan(
                           text: '${eligibleMatches.length} Government Schemes',
-                          style: const TextStyle(
-                            color: Color(0xFF137C47),
-                          ),
+                          style: const TextStyle(color: Color(0xFF137C47)),
                         ),
                       ],
                     ),
@@ -123,7 +128,7 @@ class EligibilityResultsScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 28),
-                  
+
                   // Recommended Schemes Section Header
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -170,7 +175,7 @@ class EligibilityResultsScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 10),
-                  
+
                   // Recommended cards list
                   if (eligibleMatches.isEmpty)
                     Container(
@@ -183,28 +188,36 @@ class EligibilityResultsScreen extends StatelessWidget {
                       ),
                       child: Text(
                         'No matching schemes found. Adjust your profile details to expand matching rules.',
-                        style: GoogleFonts.inter(color: const Color(0xFF64748B)),
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFF64748B),
+                        ),
                         textAlign: TextAlign.center,
                       ),
                     )
                   else
-                    ...eligibleMatches.map((entry) => SchemeCard(
-                          scheme: entry.key,
-                          result: entry.value,
-                          isBookmarked: provider.bookmarkedIds.contains(entry.key.id),
-                          onBookmarkToggle: () => provider.toggleBookmark(entry.key.id),
-                          onTap: () {
-                            provider.addToRecentlyViewed(entry.key.id);
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (_) => SchemeDetailsScreen(scheme: entry.key),
-                              ),
-                            );
-                          },
-                        )),
-                  
+                    ...eligibleMatches.map(
+                      (entry) => SchemeCard(
+                        scheme: entry.key,
+                        result: entry.value,
+                        isBookmarked: provider.bookmarkedIds.contains(
+                          entry.key.id,
+                        ),
+                        onBookmarkToggle: () =>
+                            provider.toggleBookmark(entry.key.id),
+                        onTap: () {
+                          provider.addToRecentlyViewed(entry.key.id);
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  SchemeDetailsScreen(scheme: entry.key),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+
                   const SizedBox(height: 16),
-                  
+
                   // Info Alert Banner
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -213,7 +226,9 @@ class EligibilityResultsScreen extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: const Color(0xFFE6F4EA),
                         borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: const Color(0xFFA3D9C9).withValues(alpha: 0.5)),
+                        border: Border.all(
+                          color: const Color(0xFFA3D9C9).withValues(alpha: 0.5),
+                        ),
                       ),
                       child: Row(
                         children: [
@@ -242,13 +257,18 @@ class EligibilityResultsScreen extends StatelessWidget {
               ),
             ),
           ),
-          
+
           // Bottom Bar Action Panel
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
               color: Colors.white,
-              border: Border(top: BorderSide(color: Colors.grey.withValues(alpha: 0.1), width: 1)),
+              border: Border(
+                top: BorderSide(
+                  color: Colors.grey.withValues(alpha: 0.1),
+                  width: 1,
+                ),
+              ),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -258,7 +278,9 @@ class EligibilityResultsScreen extends StatelessWidget {
                   height: 52,
                   child: ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF137C47), // Solid green theme button
+                      backgroundColor: const Color(
+                        0xFF137C47,
+                      ), // Solid green theme button
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
@@ -268,7 +290,9 @@ class EligibilityResultsScreen extends StatelessWidget {
                     onPressed: () {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          content: Text('Results saved to your eligibility profile!'),
+                          content: Text(
+                            'Results saved to your eligibility profile!',
+                          ),
                           backgroundColor: Color(0xFF137C47),
                         ),
                       );
