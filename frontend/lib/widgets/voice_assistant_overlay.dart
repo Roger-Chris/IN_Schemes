@@ -5,12 +5,14 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../models/scheme_model.dart';
 import '../models/user_profile.dart';
 import '../services/assistant_session_controller.dart';
 import '../services/edge_slm_understanding_engine.dart';
 import '../services/intelligent_scheme_search.dart';
+import '../services/private_ai_knowledge_base.dart';
 import '../services/scheme_understanding_engine.dart';
 import '../services/speech_output_controller.dart';
 import '../services/voice_recognition_controller.dart';
@@ -106,7 +108,10 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
   List<SchemeSearchMatch> _legacyMatches = const [];
   bool _legacySearching = false;
   int _operationGeneration = 0;
-  String? _lastSpokenQuestion;
+  int _recognitionGeneration = 0;
+  String? _lastSpokenTurn;
+  String? _lastFinalTranscript;
+  int _lastFinalRecognitionGeneration = -1;
   DateTime _lastSoundLevelUpdate = DateTime.fromMillisecondsSinceEpoch(0);
   final TextEditingController _typedController = TextEditingController();
 
@@ -415,17 +420,28 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
         _transcript = state.latestTranscript;
       }
     });
+    if (_cloudActive) return;
+    final reply = state.reply;
     final question = state.question;
-    if (!_cloudActive &&
-        state.phase == AssistantSessionPhase.asking &&
-        question != null) {
-      final text = question.text(tamilLanguage: state.isTamil);
-      if (_lastSpokenQuestion != text) {
-        _lastSpokenQuestion = text;
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted) unawaited(_speakQuestionAndListen());
-        });
-      }
+    final turnKey = [
+      state.statement,
+      state.questionsAsked,
+      reply?.topic,
+      question?.factKey.name,
+    ].join('|');
+    if (_lastSpokenTurn == turnKey) return;
+    if (state.phase == AssistantSessionPhase.asking && question != null) {
+      _lastSpokenTurn = turnKey;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) unawaited(_speakQuestionAndListen());
+      });
+    } else if ((state.phase == AssistantSessionPhase.results ||
+            state.phase == AssistantSessionPhase.noConfidentMatch) &&
+        reply != null) {
+      _lastSpokenTurn = turnKey;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) unawaited(_speakReply(reply));
+      });
     }
   }
 
@@ -437,6 +453,9 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
     }
     _startingRecognition = true;
     _operationGeneration++;
+    _recognitionGeneration++;
+    _lastFinalTranscript = null;
+    _lastFinalRecognitionGeneration = -1;
     await _speechOutputController.stop();
     if (!mounted) return;
     _setListeningAnimations(false);
@@ -520,20 +539,31 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
       _sessionController?.updatePartialTranscript(transcript);
       return;
     }
-    if (transcript.isNotEmpty) unawaited(_processFinalTranscript(transcript));
+    if (transcript.isEmpty) return;
+    if (_lastFinalRecognitionGeneration == _recognitionGeneration &&
+        _lastFinalTranscript == transcript) {
+      return;
+    }
+    _lastFinalRecognitionGeneration = _recognitionGeneration;
+    _lastFinalTranscript = transcript;
+    unawaited(_processFinalTranscript(transcript));
   }
 
   Future<void> _processFinalTranscript(String transcript) async {
+    final value = transcript.trim();
+    final normalized = PrivateAiKnowledgeBase.normalizeForUnderstanding(value);
+    if (normalized.isEmpty) return;
     final session = _sessionController;
     if (session != null) {
       if (session.state.question != null) {
-        await session.answer(transcript);
+        await session.answer(value);
       } else {
-        await session.start(transcript, isTamil: _presentInTamil);
+        _lastSpokenTurn = null;
+        await session.start(value, isTamil: _presentInTamil);
       }
       return;
     }
-    await _legacySearch(transcript);
+    await _legacySearch(value);
   }
 
   Future<void> _legacySearch(String query) async {
@@ -681,7 +711,9 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
     if (state == null || question == null || _speaking) return;
     await _recognitionController.cancel();
     if (!mounted) return;
-    final languageTag = state.isTamil ? 'ta-IN' : 'en-IN';
+    final reply = state.reply;
+    final languageTag =
+        reply?.languageTag ?? (state.isTamil ? 'ta-IN' : 'en-IN');
     final supported = _speechCapabilities?.supports(languageTag) ?? false;
     if (!supported) return;
     final generation = ++_operationGeneration;
@@ -689,19 +721,69 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
       _speaking = true;
       _voicePhase = _VoiceAssistantPhase.ready;
     });
+    final questionText = _questionText(state, question);
+    final spokenText = reply == null
+        ? questionText
+        : '${reply.spokenText} $questionText';
     final completed = await _speechOutputController.speak(
-      question.text(tamilLanguage: state.isTamil),
+      spokenText,
       languageTag: languageTag,
     );
     if (!mounted || generation != _operationGeneration) return;
     setState(() => _speaking = false);
     if (completed) {
       // Give Android audio focus a moment to move from TTS back to the mic.
-      await Future<void>.delayed(const Duration(milliseconds: 250));
+      await Future<void>.delayed(const Duration(milliseconds: 450));
       if (mounted && generation == _operationGeneration) {
         await _startListening(preserveTranscript: true);
       }
     }
+  }
+
+  Future<void> _speakReply(GroundedAssistantReply reply) async {
+    if (_cloudActive || _speaking || reply.spokenText.trim().isEmpty) return;
+    await _recognitionController.cancel();
+    if (!mounted) return;
+    final supported = _speechCapabilities?.supports(reply.languageTag) ?? false;
+    if (!supported) return;
+    final generation = ++_operationGeneration;
+    setState(() {
+      _speaking = true;
+      _voicePhase = _VoiceAssistantPhase.ready;
+    });
+    await _speechOutputController.speak(
+      reply.spokenText,
+      languageTag: reply.languageTag,
+    );
+    if (!mounted || generation != _operationGeneration) return;
+    setState(() => _speaking = false);
+  }
+
+  String _questionText(AssistantSessionState state, FollowUpQuestion question) {
+    if (RegExp(r'[\u0B80-\u0BFF]').hasMatch(state.statement)) {
+      return question.tamil;
+    }
+    if (!state.isTamil) return question.english;
+    return switch (question.factKey) {
+      EligibilityFactKey.age => 'Unga vayasu enna?',
+      EligibilityFactKey.state => 'Neenga entha state-la irukkeenga?',
+      EligibilityFactKey.district => 'Neenga entha district-la irukkeenga?',
+      EligibilityFactKey.annualIncome =>
+        'Unga family annual income approximately evlo?',
+      EligibilityFactKey.gender => 'Unga gender category enna?',
+      EligibilityFactKey.community => 'Unga community category enna?',
+      EligibilityFactKey.occupation => 'Ippo unga occupation enna?',
+      EligibilityFactKey.education => 'Unga education level enna?',
+      EligibilityFactKey.disability => 'Disability category apply aaguma?',
+      EligibilityFactKey.maritalStatus => 'Unga marital status enna?',
+      EligibilityFactKey.studentStatus =>
+        'Neenga ippo student-ah irukkeengala?',
+      EligibilityFactKey.businessStage =>
+        'Idhu idea stage-ah, new business-ah, illa existing business-ah?',
+      EligibilityFactKey.businessSector => 'Business sector enna?',
+      EligibilityFactKey.fundingNeed => 'Approximately evlo funding thevai?',
+      EligibilityFactKey.landholding => 'Unga landholding evlo?',
+    };
   }
 
   Future<void> _answerOption(String option) async {
@@ -1070,6 +1152,10 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
                               fontSize: 11.5,
                             ),
                           ),
+                        ],
+                        if (_session?.reply case final reply?) ...[
+                          const SizedBox(height: 12),
+                          _buildAssistantReply(reply),
                         ],
                         if (_session?.facts.isNotEmpty == true) ...[
                           const SizedBox(height: 12),
@@ -1562,7 +1648,7 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
   }
 
   Widget _buildQuestionCard(FollowUpQuestion question) {
-    final text = question.text(tamilLanguage: _session!.isTamil);
+    final text = _questionText(_session!, question);
     return Container(
       key: const Key('voice-follow-up-question'),
       padding: const EdgeInsets.all(12),
@@ -1698,6 +1784,74 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
         ],
       ],
     );
+  }
+
+  Widget _buildAssistantReply(GroundedAssistantReply reply) {
+    return Container(
+      key: const Key('voice-assistant-reply'),
+      padding: const EdgeInsets.all(13),
+      decoration: BoxDecoration(
+        color: _accent.withValues(alpha: 0.11),
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(color: _accent.withValues(alpha: 0.32)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.auto_awesome, size: 15, color: _accent),
+              const SizedBox(width: 6),
+              Text(
+                _isCompanion ? 'Saarthi' : 'Ask IN AI',
+                style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 7),
+          Text(
+            reply.displayText,
+            style: GoogleFonts.inter(
+              color: const Color(0xFFE2E8F0),
+              fontSize: 11,
+              height: 1.45,
+            ),
+          ),
+          if (reply.sourceUrl.isNotEmpty) ...[
+            const SizedBox(height: 7),
+            TextButton.icon(
+              key: const Key('voice-assistant-source'),
+              onPressed: () => _openReplySource(reply.sourceUrl),
+              style: TextButton.styleFrom(
+                padding: EdgeInsets.zero,
+                minimumSize: const Size(0, 30),
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+              icon: const Icon(Icons.open_in_new, size: 14),
+              label: Text(
+                reply.sourceLabel.isEmpty
+                    ? 'Open official source'
+                    : reply.sourceLabel,
+                style: const TextStyle(fontSize: 10.5),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Future<void> _openReplySource(String value) async {
+    final uri = Uri.tryParse(value);
+    if (uri == null || !uri.hasScheme) return;
+    final opened = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    if (!opened && mounted) {
+      setState(() => _message = 'Could not open the official source.');
+    }
   }
 
   Widget _buildRecommendationCard(SchemeRecommendation recommendation) {

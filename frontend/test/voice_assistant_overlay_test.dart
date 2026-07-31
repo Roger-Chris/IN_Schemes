@@ -396,12 +396,12 @@ void main() {
     );
     await tester.pump();
     await tester.pump();
-    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 550));
 
     expect(find.byKey(const Key('voice-follow-up-question')), findsOneWidget);
+    expect(find.byKey(const Key('voice-assistant-reply')), findsOneWidget);
     expect(speech.spokenTexts, isNotEmpty);
     expect(speech.spokenTexts.single, contains('annual income'));
-    expect(find.text(speech.spokenTexts.single), findsOneWidget);
     expect(recognition.listenCount, 2);
 
     recognition.emitResult('2 lakh rupees annual income', isFinal: true);
@@ -469,6 +469,7 @@ void main() {
     await tester.pump();
 
     expect(find.byKey(const Key('voice-review-profile')), findsOneWidget);
+    await tester.ensureVisible(find.byKey(const Key('voice-review-profile')));
     await tester.tap(find.byKey(const Key('voice-review-profile')));
     await tester.pump();
     expect(find.byKey(const Key('voice-profile-review')), findsOneWidget);

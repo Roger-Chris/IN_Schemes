@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 
 import '../models/scheme_model.dart';
 import '../models/user_profile.dart';
+import 'private_ai_knowledge_base.dart';
 import 'scheme_understanding_engine.dart';
 
 enum AssistantSessionPhase {
@@ -27,6 +28,7 @@ class AssistantSessionState {
     this.includeUncertain = false,
     this.questionsAsked = 0,
     this.elapsed = Duration.zero,
+    this.reply,
     this.question,
     this.message,
   });
@@ -41,6 +43,7 @@ class AssistantSessionState {
   final bool includeUncertain;
   final int questionsAsked;
   final Duration elapsed;
+  final GroundedAssistantReply? reply;
   final FollowUpQuestion? question;
   final String? message;
 
@@ -55,6 +58,8 @@ class AssistantSessionState {
     bool? includeUncertain,
     int? questionsAsked,
     Duration? elapsed,
+    GroundedAssistantReply? reply,
+    bool clearReply = false,
     FollowUpQuestion? question,
     bool clearQuestion = false,
     String? message,
@@ -72,6 +77,7 @@ class AssistantSessionState {
       includeUncertain: includeUncertain ?? this.includeUncertain,
       questionsAsked: questionsAsked ?? this.questionsAsked,
       elapsed: elapsed ?? this.elapsed,
+      reply: clearReply ? null : reply ?? this.reply,
       question: clearQuestion ? null : question ?? this.question,
       message: clearMessage ? null : message ?? this.message,
     );
@@ -196,6 +202,7 @@ class AssistantSessionController extends ChangeNotifier {
     _state = _state.copyWith(
       phase: AssistantSessionPhase.error,
       message: message,
+      clearReply: true,
       clearQuestion: true,
     );
     notifyListeners();
@@ -205,6 +212,7 @@ class AssistantSessionController extends ChangeNotifier {
     _generation++;
     _state = _state.copyWith(
       phase: AssistantSessionPhase.cancelled,
+      clearReply: true,
       clearQuestion: true,
     );
     notifyListeners();
@@ -242,6 +250,8 @@ class AssistantSessionController extends ChangeNotifier {
         excludedUncertainCount: result.excludedUncertainCount,
         elapsed: result.elapsed,
         question: result.followUpQuestion,
+        reply: result.reply,
+        clearReply: result.reply == null,
         clearQuestion: result.followUpQuestion == null,
         clearMessage: true,
       );

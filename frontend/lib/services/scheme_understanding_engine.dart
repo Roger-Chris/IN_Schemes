@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import '../models/scheme_model.dart';
 import 'intelligent_scheme_search.dart';
+import 'private_ai_knowledge_base.dart';
 
 enum EligibilityFactKey {
   age,
@@ -135,6 +136,7 @@ class SchemeUnderstandingResult {
     required this.recommendations,
     required this.excludedUncertainCount,
     required this.elapsed,
+    this.reply,
     this.followUpQuestion,
     this.noConfidentMatch = false,
   });
@@ -145,6 +147,7 @@ class SchemeUnderstandingResult {
   final List<SchemeRecommendation> recommendations;
   final int excludedUncertainCount;
   final Duration elapsed;
+  final GroundedAssistantReply? reply;
   final FollowUpQuestion? followUpQuestion;
   final bool noConfidentMatch;
 }
@@ -226,6 +229,7 @@ class LocalSchemeUnderstandingEngine implements SchemeUnderstandingEngine {
       'home',
       'housing',
       'construction',
+      'awas',
       'veedu',
       'வீடு',
       'குடியிருப்பு',
@@ -236,6 +240,7 @@ class LocalSchemeUnderstandingEngine implements SchemeUnderstandingEngine {
       'hospital',
       'treatment',
       'insurance',
+      'ayushman',
       'maruthuvam',
       'sigichai',
       'மருத்துவம்',
@@ -418,6 +423,7 @@ class LocalSchemeUnderstandingEngine implements SchemeUnderstandingEngine {
     SchemeUnderstandingRequest request,
   ) async {
     final stopwatch = Stopwatch()..start();
+    final knowledgeMatch = PrivateAiKnowledgeBase.lookup(request.statement);
     final intent = IntelligentSchemeSearch.interpret(request.statement);
     final concepts = <String>{...intent.concepts};
     final normalizedStatement = _normalize(request.statement);
@@ -456,17 +462,63 @@ class LocalSchemeUnderstandingEngine implements SchemeUnderstandingEngine {
       ...concepts.expand((concept) => _needAliases[concept] ?? [concept]),
     ].join(' ');
     final requiredConcepts = _requiredConcepts(concepts);
-    final semanticMatches =
-        IntelligentSchemeSearch.rank(
-          expandedQuery,
-          searchable,
-          limit: 40,
-        ).where(
-          (match) => _matchesRequiredConcepts(match.scheme, requiredConcepts),
-        );
+    final matchesByCode = <String, SchemeSearchMatch>{};
+    // Curated answers own their recommendation set. Mixing a factual answer
+    // with broad semantic hits caused generic MSME schemes to appear beside
+    // unrelated answers such as tax definitions and investor guidance.
+    if (knowledgeMatch == null) {
+      for (final match
+          in IntelligentSchemeSearch.rank(
+            expandedQuery,
+            searchable,
+            limit: 40,
+          ).where(
+            (match) => _matchesRequiredConcepts(match.scheme, requiredConcepts),
+          )) {
+        matchesByCode[match.scheme.schemeCode.toUpperCase()] = match;
+      }
+    }
+    if (knowledgeMatch != null) {
+      final schemesByCode = {
+        for (final scheme in searchable)
+          scheme.schemeCode.toUpperCase(): scheme,
+      };
+      for (
+        var index = 0;
+        index < knowledgeMatch.relatedSchemeCodes.length;
+        index++
+      ) {
+        final code = knowledgeMatch.relatedSchemeCodes[index].toUpperCase();
+        final scheme = schemesByCode[code];
+        if (scheme == null) continue;
+        final preferredScore = 0.98 - index * 0.025;
+        final existing = matchesByCode[code];
+        if (existing == null || existing.score < preferredScore) {
+          matchesByCode[code] = SchemeSearchMatch(
+            scheme: scheme,
+            score: preferredScore,
+            reasons: const ['Directly relevant to your question'],
+          );
+        }
+      }
+    }
+    if (knowledgeMatch != null &&
+        knowledgeMatch.relatedSchemeCodes.isNotEmpty &&
+        matchesByCode.isEmpty) {
+      for (final match
+          in IntelligentSchemeSearch.rank(
+            expandedQuery,
+            searchable,
+            limit: 40,
+          ).where(
+            (match) => _matchesRequiredConcepts(match.scheme, requiredConcepts),
+          )) {
+        matchesByCode[match.scheme.schemeCode.toUpperCase()] = match;
+      }
+    }
 
     final ranked =
-        semanticMatches
+        matchesByCode.values
             .map(
               (match) =>
                   _evaluate(match, facts, isTrusted: _isTrusted(match.scheme)),
@@ -489,6 +541,15 @@ class LocalSchemeUnderstandingEngine implements SchemeUnderstandingEngine {
       followUp = _chooseQuestion(usable, facts);
     }
 
+    final reply =
+        knowledgeMatch?.reply() ??
+        _recommendationReply(
+          statement: request.statement,
+          isTamil: intent.isTamil,
+          recommendations: usable,
+          followUp: followUp,
+        );
+
     stopwatch.stop();
     return SchemeUnderstandingResult(
       isTamil: intent.isTamil,
@@ -497,8 +558,65 @@ class LocalSchemeUnderstandingEngine implements SchemeUnderstandingEngine {
       recommendations: List.unmodifiable(usable),
       excludedUncertainCount: request.includeUncertain ? 0 : uncertain.length,
       elapsed: stopwatch.elapsed,
+      reply: reply,
       followUpQuestion: followUp,
-      noConfidentMatch: usable.isEmpty,
+      noConfidentMatch: usable.isEmpty && knowledgeMatch == null,
+    );
+  }
+
+  static GroundedAssistantReply _recommendationReply({
+    required String statement,
+    required bool isTamil,
+    required List<SchemeRecommendation> recommendations,
+    required FollowUpQuestion? followUp,
+  }) {
+    final tamilScript = RegExp(r'[\u0B80-\u0BFF]').hasMatch(statement);
+    final language = tamilScript
+        ? PrivateAiLanguage.tamil
+        : isTamil
+        ? PrivateAiLanguage.tanglish
+        : PrivateAiLanguage.english;
+    if (recommendations.isEmpty) {
+      final text = switch (language) {
+        PrivateAiLanguage.english =>
+          'I could not find a verified catalog match for that yet. Tell me the type of help, your work or study situation, location, and approximate funding need; I will try again without guessing.',
+        PrivateAiLanguage.tamil =>
+          'இதற்கு நம்பகமாக சரிபார்க்கப்பட்ட திட்டம் இன்னும் கிடைக்கவில்லை. தேவையான உதவி வகை, வேலை அல்லது படிப்பு நிலை, இருப்பிடம் மற்றும் சுமார் நிதித் தேவையைச் சொல்லுங்கள்; ஊகிக்காமல் மீண்டும் தேடுகிறேன்.',
+        PrivateAiLanguage.tanglish =>
+          'Idhukku verified catalog match innum kedaikkala. Entha help, unga work/study situation, location, approximate funding need sollunga; guess pannama marubadiyum search panren.',
+      };
+      return GroundedAssistantReply(
+        topic: 'no_verified_match',
+        displayText: text,
+        spokenText: text,
+        languageTag: language == PrivateAiLanguage.tamil ? 'ta-IN' : 'en-IN',
+        sourceLabel: 'Verified scheme catalog',
+        sourceUrl: '',
+      );
+    }
+
+    final top = recommendations.first;
+    final count = math.min(3, recommendations.length);
+    final needsMore = followUp != null || top.unknownRequirements.isNotEmpty;
+    final text = switch (language) {
+      PrivateAiLanguage.english =>
+        'I found $count verified ${count == 1 ? 'possibility' : 'possibilities'}. The closest match is ${top.scheme.name}. ${needsMore ? 'I still need one eligibility detail before treating it as a strong match.' : 'The published details align with what you told me, but confirm final eligibility on the official source.'}',
+      PrivateAiLanguage.tamil =>
+        'சரிபார்க்கப்பட்ட $count வாய்ப்புகள் கிடைத்துள்ளன. மிக நெருக்கமான பொருத்தம் ${top.scheme.name}. ${needsMore ? 'வலுவான பொருத்தமாகக் கூற இன்னும் ஒரு தகுதி விவரம் தேவை.' : 'நீங்கள் கூறிய தகவலுடன் வெளியிடப்பட்ட விவரங்கள் பொருந்துகின்றன; இறுதி தகுதியை அதிகாரப்பூர்வ தளத்தில் உறுதி செய்யுங்கள்.'}',
+      PrivateAiLanguage.tanglish =>
+        'Verified-ah $count options kedaichirukku. Closest match ${top.scheme.name}. ${needsMore ? 'Strong match-nu solla innum oru eligibility detail venum.' : 'Neenga sonna details-oda align aaguthu; final eligibility official source-la confirm pannunga.'}',
+    };
+    return GroundedAssistantReply(
+      topic: 'scheme_recommendation',
+      displayText: text,
+      spokenText: text,
+      languageTag: language == PrivateAiLanguage.tamil ? 'ta-IN' : 'en-IN',
+      sourceLabel: 'Official scheme source',
+      sourceUrl: top.scheme.sourceUrl,
+      relatedSchemeCodes: recommendations
+          .take(3)
+          .map((item) => item.scheme.schemeCode)
+          .toList(growable: false),
     );
   }
 

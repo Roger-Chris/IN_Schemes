@@ -34,6 +34,7 @@ void main() {
     await controller.sendText('I need a scholarship');
 
     expect(controller.state.inputTranscript, 'I need a scholarship');
+    expect(controller.state.outputTranscript, isNotEmpty);
     expect(session.state.statement, 'I need a scholarship');
     expect(controller.state.usingCloud, isFalse);
     await controller.dispose();
