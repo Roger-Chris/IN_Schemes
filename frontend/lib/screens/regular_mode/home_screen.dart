@@ -513,7 +513,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     Text(
                       "Complete Your Profile",
                       style: GoogleFonts.poppins(
-                        fontSize: 16.5,
+                        fontSize: 14.0,
                         fontWeight: FontWeight.bold,
                         color: const Color(0xFF0F172A),
                       ),
