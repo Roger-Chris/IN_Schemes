@@ -158,6 +158,69 @@ class AppProvider with ChangeNotifier {
   List<Map<String, dynamic>> get notifications => _notificationsList;
   StreamSubscription<List<Map<String, dynamic>>>? _notificationsSubscription;
 
+  List<Map<String, dynamic>> _promoAlerts = [];
+  List<Map<String, dynamic>> _draftSessions = [];
+
+  List<Map<String, dynamic>> get carouselItems {
+    final filteredPromos = _promoAlerts.where((promo) {
+      if (promo['target_gender'] != null &&
+          promo['target_gender'].toString().isNotEmpty &&
+          _profile.gender.isNotEmpty) {
+        if (promo['target_gender'].toString().toLowerCase() !=
+            _profile.gender.toLowerCase()) {
+          return false;
+        }
+      }
+      if (promo['target_state'] != null &&
+          promo['target_state'].toString().isNotEmpty &&
+          _profile.state.isNotEmpty) {
+        if (promo['target_state'].toString().toLowerCase() !=
+            _profile.state.toLowerCase()) {
+          return false;
+        }
+      }
+      if (promo['target_community'] != null &&
+          promo['target_community'].toString().isNotEmpty &&
+          _profile.community.isNotEmpty) {
+        if (promo['target_community'].toString().toLowerCase() !=
+            _profile.community.toLowerCase()) {
+          return false;
+        }
+      }
+      return true;
+    }).toList();
+
+    final basePromos = filteredPromos.isNotEmpty ? filteredPromos : _defaultPromoAlerts;
+    return [...basePromos, ..._draftSessions];
+  }
+
+  static final List<Map<String, dynamic>> _defaultPromoAlerts = [
+    {
+      'title': 'PMEGP (Closing in 5 Days)',
+      'badge_text': 'Alert',
+      'badge_text_color': '#EA580C',
+      'badge_bg_color': '#FFF7ED',
+      'bg_gradient_start': '#FFF7ED',
+      'bg_gradient_end': '#FFFFEDD5',
+      'btn_text': 'View Details',
+      'btn_color': '#EA580C',
+      'target_route': 'notifications',
+      'graphic_type': 'calendar',
+    },
+    {
+      'title': 'TN Export Promotion Scheme',
+      'badge_text': 'New Scheme',
+      'badge_text_color': '#16A34A',
+      'badge_bg_color': '#DCFCE7',
+      'bg_gradient_start': '#F0FDF4',
+      'bg_gradient_end': '#DCFCE7',
+      'btn_text': 'Explore',
+      'btn_color': '#16A34A',
+      'target_route': 'discover_results',
+      'graphic_type': 'ship',
+    }
+  ];
+
   AppProvider() {
     _loadState();
     _setupAuthListener();
@@ -195,6 +258,8 @@ class AppProvider with ChangeNotifier {
               _filters['gender'] = _profile.gender;
               
               _recommendedSchemes = RecommendationEngine.getRecommendations(_profile, _allSchemes);
+              fetchPromoAlerts();
+              fetchDraftSessions();
               notifyListeners();
 
               await SessionCacheService.instance.saveProfile(_profile);
@@ -384,6 +449,8 @@ class AppProvider with ChangeNotifier {
 
         _subscribeToProfile(user.id);
         _subscribeToNotifications(user.id);
+        fetchPromoAlerts();
+        fetchDraftSessions();
         await _saveProfile();
         notifyListeners();
       } else if (event == AuthChangeEvent.signedOut) {
@@ -393,6 +460,8 @@ class AppProvider with ChangeNotifier {
         _bookmarkedIds.clear();
         _recentlyViewedIds.clear();
         _currentTabIndex = 0;
+        _promoAlerts = [];
+        _draftSessions = [];
         _unsubscribeFromProfile();
         _unsubscribeFromNotifications();
         _notificationsList = [];
@@ -536,6 +605,8 @@ class AppProvider with ChangeNotifier {
         _mobileNumber = session.user.phone ?? '';
         _subscribeToProfile(session.user.id);
         _subscribeToNotifications(session.user.id);
+        fetchPromoAlerts();
+        fetchDraftSessions();
       } else {
         debugPrint(
           '[AppProvider] No active Supabase session found during _loadState.',
@@ -671,6 +742,8 @@ class AppProvider with ChangeNotifier {
     _mobileNumber = user.phone ?? '';
 
     _subscribeToProfile(user.id);
+    fetchPromoAlerts();
+    fetchDraftSessions();
 
     final dbProfile = await SchemeRepository.instance.getProfile(user.id);
     if (dbProfile != null) {
@@ -1283,6 +1356,58 @@ class AppProvider with ChangeNotifier {
     _downloadedDocs.removeWhere((doc) => doc['id'] == id);
     _saveDownloadedDocs();
     notifyListeners();
+  }
+
+  Future<void> fetchPromoAlerts() async {
+    try {
+      final res = await Supabase.instance.client
+          .from('promo_alerts')
+          .select();
+      
+      _promoAlerts = List<Map<String, dynamic>>.from(res);
+      notifyListeners();
+    } catch (e) {
+      debugPrint('[AppProvider] Error fetching promo alerts: $e');
+    }
+  }
+
+  Future<void> fetchDraftSessions() async {
+    try {
+      final userId = Supabase.instance.client.auth.currentUser?.id;
+      if (userId == null) {
+        _draftSessions = [];
+        notifyListeners();
+        return;
+      }
+      
+      final res = await Supabase.instance.client
+          .from('questionnaire_sessions')
+          .select('id, completed_percentage, status, startup_profiles!inner(user_id, profile_name)')
+          .eq('status', 'IN_PROGRESS')
+          .eq('startup_profiles.user_id', userId);
+
+      _draftSessions = List<Map<String, dynamic>>.from(res).map((item) {
+        final startup = item['startup_profiles'] as Map<String, dynamic>;
+        final pct = (item['completed_percentage'] as num?)?.toDouble() ?? 0.0;
+        return {
+          'id': item['id'],
+          'title': '${startup['profile_name']} Setup',
+          'badge_text': 'Draft',
+          'badge_text_color': '#2563EB',
+          'badge_bg_color': '#EFF6FF',
+          'bg_gradient_start': '#EFF6FF',
+          'bg_gradient_end': '#DBEAFE',
+          'btn_text': 'Continue',
+          'btn_color': '#2563EB',
+          'target_route': 'draft_session',
+          'graphic_type': 'progress',
+          'progress': pct,
+        };
+      }).toList();
+      notifyListeners();
+    } catch (e) {
+      debugPrint('[AppProvider] Error fetching draft sessions: $e');
+    }
   }
 
   @override

@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../providers/app_state_provider.dart';
-import '../../utils/constants.dart';
+
 import '../../widgets/filter_panel.dart';
-import '../companion_mode/saarthi_welcome_screen.dart';
+
 import '../../widgets/smart_assessment_bottom_sheet.dart';
 import 'discover_results_screen.dart';
 
@@ -489,34 +489,6 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                           size: 24,
                         ),
                       ),
-                      const SizedBox(width: 4),
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => const SaarthiWelcomeScreen(),
-                            ),
-                          );
-                        },
-                        child: CircleAvatar(
-                          radius: 20,
-                          backgroundColor: const Color(0xFFE2E8F0),
-                          child: ClipOval(
-                            child: Image.asset(
-                              'assets/saarthi_expressions/Ai companion.png',
-                              width: 36,
-                              height: 36,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                return const Icon(
-                                  Icons.android,
-                                  color: AppConstants.primaryColor,
-                                );
-                              },
-                            ),
-                          ),
-                        ),
-                      ),
                     ],
                   ),
                 ],
@@ -640,8 +612,6 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                     _buildStateHorizontalList(provider),
                     const SizedBox(height: 16),
 
-                    // AI Companion Help Banner
-                    _buildAICompanionBanner(context),
                     const SizedBox(height: 24),
                   ],
                 ),
@@ -1076,91 +1046,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     );
   }
 
-  Widget _buildAICompanionBanner(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: const Color(0xFFEFF6FF),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: const Color(0xFFDBEAFE)),
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Not sure what to explore?",
-                    style: GoogleFonts.poppins(
-                      fontSize: 14.5,
-                      fontWeight: FontWeight.bold,
-                      color: const Color(0xFF1E3A8A),
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    "Ask our AI Companion to find the right schemes for you.",
-                    style: GoogleFonts.inter(
-                      fontSize: 11.5,
-                      color: const Color(0xFF475569),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => const SaarthiWelcomeScreen(),
-                        ),
-                      );
-                    },
-                    icon: const Icon(
-                      Icons.chat_bubble_outline,
-                      size: 14,
-                      color: Color(0xFF1E3A8A),
-                    ),
-                    label: Text(
-                      'Ask AI',
-                      style: GoogleFonts.poppins(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xFF1E3A8A),
-                      ),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
-                      ),
-                      minimumSize: Size.zero,
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 8),
-            // Avatar
-            Image.asset(
-              'assets/saarthi_expressions/Ai companion.png',
-              width: 60,
-              height: 60,
-              errorBuilder: (context, error, stackTrace) =>
-                  const Icon(Icons.android, size: 50, color: Color(0xFF2563EB)),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+
 
   void _showAllCategoriesBottomSheet(
     BuildContext context,

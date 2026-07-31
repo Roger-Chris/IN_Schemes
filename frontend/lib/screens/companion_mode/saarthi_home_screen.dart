@@ -33,7 +33,9 @@ class _SaarthiHomeScreenState extends State<SaarthiHomeScreen> {
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<AppProvider>(context);
-    final userName = provider.profile.name.isNotEmpty ? provider.profile.name.split(' ')[0] : 'Praveen';
+    final userName = provider.profile.name.isNotEmpty
+        ? provider.profile.name.split(' ')[0]
+        : 'Praveen';
 
     const Color kBrandBlue = Color(0xFF2563EB);
     const Color kDarkSlate = Color(0xFF0F172A);
@@ -48,7 +50,10 @@ class _SaarthiHomeScreenState extends State<SaarthiHomeScreen> {
             Expanded(
               child: SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20.0,
+                  vertical: 16.0,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
@@ -58,7 +63,10 @@ class _SaarthiHomeScreenState extends State<SaarthiHomeScreen> {
                       children: [
                         // Language Pill selector
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(20),
@@ -66,7 +74,11 @@ class _SaarthiHomeScreenState extends State<SaarthiHomeScreen> {
                           ),
                           child: Row(
                             children: [
-                              const Icon(Icons.language, color: kBrandBlue, size: 16),
+                              const Icon(
+                                Icons.language,
+                                color: kBrandBlue,
+                                size: 16,
+                              ),
                               const SizedBox(width: 6),
                               Text(
                                 'English',
@@ -76,7 +88,11 @@ class _SaarthiHomeScreenState extends State<SaarthiHomeScreen> {
                                   color: kDarkSlate,
                                 ),
                               ),
-                              const Icon(Icons.arrow_drop_down, color: kSlate500, size: 16),
+                              const Icon(
+                                Icons.arrow_drop_down,
+                                color: kSlate500,
+                                size: 16,
+                              ),
                             ],
                           ),
                         ),
@@ -86,11 +102,16 @@ class _SaarthiHomeScreenState extends State<SaarthiHomeScreen> {
                             Stack(
                               children: [
                                 IconButton(
-                                  icon: const Icon(Icons.notifications_none_rounded, color: kDarkSlate, size: 24),
+                                  icon: const Icon(
+                                    Icons.notifications_none_rounded,
+                                    color: kDarkSlate,
+                                    size: 24,
+                                  ),
                                   onPressed: () {
                                     Navigator.of(context).push(
                                       MaterialPageRoute(
-                                        builder: (_) => const NotificationsScreen(),
+                                        builder: (_) =>
+                                            const NotificationsScreen(),
                                       ),
                                     );
                                   },
@@ -127,7 +148,13 @@ class _SaarthiHomeScreenState extends State<SaarthiHomeScreen> {
                                     width: 36,
                                     height: 36,
                                     fit: BoxFit.cover,
-                                    errorBuilder: (context, error, stackTrace) => const Icon(Icons.person, color: kBrandBlue, size: 18),
+                                    errorBuilder:
+                                        (context, error, stackTrace) =>
+                                            const Icon(
+                                              Icons.person,
+                                              color: kBrandBlue,
+                                              size: 18,
+                                            ),
                                   ),
                                 ),
                               ),
@@ -150,7 +177,10 @@ class _SaarthiHomeScreenState extends State<SaarthiHomeScreen> {
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               color: const Color(0xFFEFF6FF),
-                              border: Border.all(color: const Color(0xFFDBEAFE), width: 4),
+                              border: Border.all(
+                                color: const Color(0xFFDBEAFE),
+                                width: 4,
+                              ),
                             ),
                             child: ClipOval(
                               child: Image.asset(
@@ -163,23 +193,31 @@ class _SaarthiHomeScreenState extends State<SaarthiHomeScreen> {
                           const Positioned(
                             left: 0,
                             top: 55,
-                            child: Icon(Icons.star, color: Color(0xFF93C5FD), size: 14),
+                            child: Icon(
+                              Icons.star,
+                              color: Color(0xFF93C5FD),
+                              size: 14,
+                            ),
                           ),
                           const Positioned(
                             right: 0,
                             top: 45,
-                            child: Icon(Icons.star, color: Color(0xFF93C5FD), size: 16),
+                            child: Icon(
+                              Icons.star,
+                              color: Color(0xFF93C5FD),
+                              size: 16,
+                            ),
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 6),
                     Center(
                       child: RichText(
                         textAlign: TextAlign.center,
                         text: TextSpan(
                           style: GoogleFonts.poppins(
-                            fontSize: 22,
+                            fontSize: 18,
                             fontWeight: FontWeight.bold,
                             color: kDarkSlate,
                           ),
@@ -193,7 +231,7 @@ class _SaarthiHomeScreenState extends State<SaarthiHomeScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 2),
                     Center(
                       child: RichText(
                         textAlign: TextAlign.center,
@@ -207,9 +245,14 @@ class _SaarthiHomeScreenState extends State<SaarthiHomeScreen> {
                             TextSpan(text: "I'm "),
                             TextSpan(
                               text: 'Saarthi',
-                              style: TextStyle(color: kBrandBlue, fontWeight: FontWeight.bold),
+                              style: TextStyle(
+                                color: kBrandBlue,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
-                            TextSpan(text: ', your AI companion for\nMSME success.'),
+                            TextSpan(
+                              text: ', your AI companion for\nMSME success.',
+                            ),
                           ],
                         ),
                       ),
@@ -239,35 +282,54 @@ class _SaarthiHomeScreenState extends State<SaarthiHomeScreen> {
                                 icon: Icons.rocket_launch_rounded,
                                 iconColor: const Color(0xFF2563EB),
                                 bgColor: const Color(0xFFEFF6FF),
-                                onTap: () => openCompanionVoiceAgent(context, initialText: 'How do I start a business?'),
+                                onTap: () => openCompanionVoiceAgent(
+                                  context,
+                                  initialText: 'How do I start a business?',
+                                ),
                               ),
                               _buildQuickActionCard(
                                 title: 'Find Funding',
                                 icon: Icons.currency_rupee_rounded,
                                 iconColor: const Color(0xFF16A34A),
                                 bgColor: const Color(0xFFDCFCE7),
-                                onTap: () => openCompanionVoiceAgent(context, initialText: 'How can I get business funding?'),
+                                onTap: () => openCompanionVoiceAgent(
+                                  context,
+                                  initialText:
+                                      'How can I get business funding?',
+                                ),
                               ),
                               _buildQuickActionCard(
                                 title: 'Register UDYAM',
                                 icon: Icons.business_rounded,
                                 iconColor: const Color(0xFF9333EA),
                                 bgColor: const Color(0xFFF3E8FF),
-                                onTap: () => openCompanionVoiceAgent(context, initialText: 'Show me steps for UDYAM registration'),
+                                onTap: () => openCompanionVoiceAgent(
+                                  context,
+                                  initialText:
+                                      'Show me steps for UDYAM registration',
+                                ),
                               ),
                               _buildQuickActionCard(
                                 title: 'Grow Business',
                                 icon: Icons.trending_up_rounded,
                                 iconColor: const Color(0xFFEA580C),
                                 bgColor: const Color(0xFFFFF7ED),
-                                onTap: () => openCompanionVoiceAgent(context, initialText: 'Tips to grow my small business?'),
+                                onTap: () => openCompanionVoiceAgent(
+                                  context,
+                                  initialText:
+                                      'Tips to grow my small business?',
+                                ),
                               ),
                               _buildQuickActionCard(
                                 title: 'Export Support',
                                 icon: Icons.public_rounded,
                                 iconColor: const Color(0xFF0D9488),
                                 bgColor: const Color(0xFFF0FDFA),
-                                onTap: () => openCompanionVoiceAgent(context, initialText: 'Explain export assistance schemes'),
+                                onTap: () => openCompanionVoiceAgent(
+                                  context,
+                                  initialText:
+                                      'Explain export assistance schemes',
+                                ),
                               ),
                             ],
                           ),
@@ -312,11 +374,17 @@ class _SaarthiHomeScreenState extends State<SaarthiHomeScreen> {
                             shrinkWrap: true,
                             physics: const NeverScrollableScrollPhysics(),
                             itemCount: _recentChats.length,
-                            separatorBuilder: (context, index) => const Divider(height: 1, color: Color(0xFFE2E8F0)),
+                            separatorBuilder: (context, index) => const Divider(
+                              height: 1,
+                              color: Color(0xFFE2E8F0),
+                            ),
                             itemBuilder: (context, index) {
                               final chat = _recentChats[index];
                               return ListTile(
-                                onTap: () => openCompanionVoiceAgent(context, initialText: chat['title']),
+                                onTap: () => openCompanionVoiceAgent(
+                                  context,
+                                  initialText: chat['title'],
+                                ),
                                 leading: Container(
                                   width: 32,
                                   height: 32,
@@ -324,7 +392,11 @@ class _SaarthiHomeScreenState extends State<SaarthiHomeScreen> {
                                     color: Color(0xFFEFF6FF),
                                     shape: BoxShape.circle,
                                   ),
-                                  child: const Icon(Icons.chat_bubble_outline_rounded, color: kBrandBlue, size: 16),
+                                  child: const Icon(
+                                    Icons.chat_bubble_outline_rounded,
+                                    color: kBrandBlue,
+                                    size: 16,
+                                  ),
                                 ),
                                 title: Text(
                                   chat['title']!,
@@ -341,7 +413,11 @@ class _SaarthiHomeScreenState extends State<SaarthiHomeScreen> {
                                     color: kSlate500,
                                   ),
                                 ),
-                                trailing: const Icon(Icons.chevron_right, size: 18, color: kSlate500),
+                                trailing: const Icon(
+                                  Icons.chevron_right,
+                                  size: 18,
+                                  color: kSlate500,
+                                ),
                               );
                             },
                           ),
@@ -377,7 +453,10 @@ class _SaarthiHomeScreenState extends State<SaarthiHomeScreen> {
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: const Color(0xFFEFF6FF), width: 1.5),
+                        border: Border.all(
+                          color: const Color(0xFFEFF6FF),
+                          width: 1.5,
+                        ),
                         boxShadow: [
                           BoxShadow(
                             color: kBrandBlue.withValues(alpha: 0.04),
@@ -407,11 +486,16 @@ class _SaarthiHomeScreenState extends State<SaarthiHomeScreen> {
                           const SizedBox(height: 12),
                           // Text Box Type Container
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 10,
+                            ),
                             decoration: BoxDecoration(
                               color: const Color(0xFFF8FAFC),
                               borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: const Color(0xFFE2E8F0)),
+                              border: Border.all(
+                                color: const Color(0xFFE2E8F0),
+                              ),
                             ),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -423,7 +507,11 @@ class _SaarthiHomeScreenState extends State<SaarthiHomeScreen> {
                                     color: kSlate500,
                                   ),
                                 ),
-                                const Icon(Icons.keyboard, color: kBrandBlue, size: 18),
+                                const Icon(
+                                  Icons.keyboard,
+                                  color: kBrandBlue,
+                                  size: 18,
+                                ),
                               ],
                             ),
                           ),
@@ -444,9 +532,13 @@ class _SaarthiHomeScreenState extends State<SaarthiHomeScreen> {
                           // Left Waveform
                           Row(
                             children: List.generate(8, (index) {
-                              final h = (index % 3 == 0) ? 14.0 : ((index % 2 == 0) ? 8.0 : 4.0);
+                              final h = (index % 3 == 0)
+                                  ? 14.0
+                                  : ((index % 2 == 0) ? 8.0 : 4.0);
                               return Container(
-                                margin: const EdgeInsets.symmetric(horizontal: 1.5),
+                                margin: const EdgeInsets.symmetric(
+                                  horizontal: 1.5,
+                                ),
                                 width: 2,
                                 height: h,
                                 decoration: BoxDecoration(
@@ -472,15 +564,23 @@ class _SaarthiHomeScreenState extends State<SaarthiHomeScreen> {
                                 ),
                               ],
                             ),
-                            child: const Icon(Icons.mic, color: Colors.white, size: 28),
+                            child: const Icon(
+                              Icons.mic,
+                              color: Colors.white,
+                              size: 28,
+                            ),
                           ),
                           const SizedBox(width: 16),
                           // Right Waveform
                           Row(
                             children: List.generate(8, (index) {
-                              final h = (index % 3 == 0) ? 14.0 : ((index % 2 == 0) ? 8.0 : 4.0);
+                              final h = (index % 3 == 0)
+                                  ? 14.0
+                                  : ((index % 2 == 0) ? 8.0 : 4.0);
                               return Container(
-                                margin: const EdgeInsets.symmetric(horizontal: 1.5),
+                                margin: const EdgeInsets.symmetric(
+                                  horizontal: 1.5,
+                                ),
                                 width: 2,
                                 height: h,
                                 decoration: BoxDecoration(

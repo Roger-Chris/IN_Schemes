@@ -7,7 +7,7 @@ import '../../engine/recommendation_engine.dart';
 import '../../widgets/scheme_card.dart';
 import '../../widgets/filter_panel.dart';
 import 'scheme_details_screen.dart';
-import '../companion_mode/saarthi_welcome_screen.dart';
+import 'profile_setup_screen.dart';
 
 class DiscoverResultsScreen extends StatefulWidget {
   final String title;
@@ -201,28 +201,7 @@ class _DiscoverResultsScreenState extends State<DiscoverResultsScreen> {
             ),
           ],
         ),
-        actions: [
-          Container(
-            margin: const EdgeInsets.only(right: 16),
-            child: CircleAvatar(
-              radius: 18,
-              backgroundColor: const Color(0xFFEFF6FF),
-              child: Image.asset(
-                'assets/saarthi_expressions/Ai companion.png',
-                width: 26,
-                height: 26,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return const Icon(
-                    Icons.android,
-                    color: Color(0xFF2563EB),
-                    size: 20,
-                  );
-                },
-              ),
-            ),
-          ),
-        ],
+
       ),
       body: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
@@ -464,7 +443,7 @@ class _DiscoverResultsScreenState extends State<DiscoverResultsScreen> {
                         Navigator.of(context).push(
                           MaterialPageRoute(
                             builder: (_) =>
-                                const SaarthiWelcomeScreen(), // Redirects to Saarthi setup/profile
+                                const ProfileSetupScreen(),
                           ),
                         );
                       },
@@ -494,98 +473,6 @@ class _DiscoverResultsScreenState extends State<DiscoverResultsScreen> {
               ),
             ),
 
-            const SizedBox(height: 12),
-
-            // 7. Companion Help Banner
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 16),
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF2563EB).withValues(alpha: 0.2),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    radius: 20,
-                    backgroundColor: Colors.white.withValues(alpha: 0.2),
-                    child: Image.asset(
-                      'assets/saarthi_expressions/Ai companion.png',
-                      width: 32,
-                      height: 32,
-                      errorBuilder: (context, error, stackTrace) =>
-                          const Icon(Icons.android, color: Colors.white),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "Need help choosing the right scheme?",
-                          style: GoogleFonts.poppins(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          "Ask our AI Companion for personalized guidance.",
-                          style: GoogleFonts.inter(
-                            fontSize: 10,
-                            color: Colors.white.withValues(alpha: 0.9),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Flexible(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => const SaarthiWelcomeScreen(),
-                          ),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: const Color(0xFF2563EB),
-                        elevation: 0,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 8,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                      ),
-                      child: Text(
-                        "Ask AI",
-                        style: GoogleFonts.inter(
-                          fontSize: 10.5,
-                          fontWeight: FontWeight.bold,
-                          color: const Color(0xFF2563EB),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
           ],
         ),
       ),
