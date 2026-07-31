@@ -508,7 +508,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      "Help personalize scheme recommendations that match your business needs.",
+                      "Unlock personalized scheme recommendations.",
                       style: GoogleFonts.inter(
                         fontSize: 10.5,
                         color: const Color(0xFF64748B),
