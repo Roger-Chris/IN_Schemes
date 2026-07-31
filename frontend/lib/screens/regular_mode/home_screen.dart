@@ -472,26 +472,13 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                   ),
-                  Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        "$completion%",
-                        style: GoogleFonts.poppins(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: const Color(0xFF0F172A),
-                        ),
-                      ),
-                      Text(
-                        "Completed",
-                        style: GoogleFonts.inter(
-                          fontSize: 7.5,
-                          color: const Color(0xFF64748B),
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
+                  Text(
+                    "$completion%",
+                    style: GoogleFonts.poppins(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF0F172A),
+                    ),
                   ),
                 ],
               ),
@@ -520,26 +507,12 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                     const SizedBox(height: 4),
-                    RichText(
-                      text: TextSpan(
-                        style: GoogleFonts.inter(
-                          fontSize: 12,
-                          color: const Color(0xFF64748B),
-                          height: 1.4,
-                        ),
-                        children: [
-                          const TextSpan(text: "Help "),
-                          TextSpan(
-                            text: "Saarthi",
-                            style: GoogleFonts.inter(
-                              color: const Color(0xFF2563EB),
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const TextSpan(
-                            text: " personalize scheme recommendations that match your business needs.",
-                          ),
-                        ],
+                    Text(
+                      "Help personalize scheme recommendations that match your business needs.",
+                      style: GoogleFonts.inter(
+                        fontSize: 10.5,
+                        color: const Color(0xFF64748B),
+                        height: 1.4,
                       ),
                     ),
                   ],
