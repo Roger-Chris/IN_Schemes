@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -21,9 +22,10 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final ScrollController _carouselScrollController = ScrollController();
+  final PageController _carouselPageController = PageController(viewportFraction: 0.88);
   final ScrollController _recommendedScrollController = ScrollController();
   int _activeCarouselIndex = 0;
+  Timer? _carouselTimer;
 
   @override
   void initState() {
@@ -39,21 +41,32 @@ class _HomeScreenState extends State<HomeScreen> {
       }
       provider.fetchLatestProfile();
     });
-    _carouselScrollController.addListener(() {
-      if (_carouselScrollController.hasClients) {
-        final index = (_carouselScrollController.offset / 300).round();
-        if (index != _activeCarouselIndex) {
-          setState(() {
-            _activeCarouselIndex = index.clamp(0, 2);
-          });
-        }
+  }
+
+  void _startCarouselTimer(int itemCount) {
+    _carouselTimer?.cancel();
+    if (itemCount <= 1) return;
+    _carouselTimer = Timer.periodic(const Duration(seconds: 4), (timer) {
+      if (_carouselPageController.hasClients) {
+        final nextPage = (_activeCarouselIndex + 1) % itemCount;
+        _carouselPageController.animateToPage(
+          nextPage,
+          duration: const Duration(milliseconds: 400),
+          curve: Curves.easeInOut,
+        );
       }
     });
   }
 
+  void _initCarouselTimer(int itemCount) {
+    if (_carouselTimer != null) return;
+    _startCarouselTimer(itemCount);
+  }
+
   @override
   void dispose() {
-    _carouselScrollController.dispose();
+    _carouselTimer?.cancel();
+    _carouselPageController.dispose();
     _recommendedScrollController.dispose();
     super.dispose();
   }
@@ -712,68 +725,164 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Promo Slider Carousel (Simplified & Compact)
+  // Promo Slider Carousel (Snapping PageView with dynamic Supabase integration)
   Widget _buildCarouselSection(BuildContext context) {
+    final provider = Provider.of<AppProvider>(context);
+    final items = provider.carouselItems;
+
+    // Initialize timer on build once items are fetched
+    if (items.isNotEmpty) {
+      _initCarouselTimer(items.length);
+    }
+
     return Column(
       children: [
         SizedBox(
           height: 124,
-          child: ListView(
-            controller: _carouselScrollController,
-            scrollDirection: Axis.horizontal,
+          child: PageView.builder(
+            controller: _carouselPageController,
+            onPageChanged: (index) {
+              setState(() {
+                _activeCarouselIndex = index;
+              });
+              // Restart timer to avoid sliding immediately after manual swipe
+              _startCarouselTimer(items.length);
+            },
             physics: const BouncingScrollPhysics(),
-            children: [
-              _buildCarouselCard(
-                width: 290,
-                bgGradient: const LinearGradient(
-                  colors: [Color(0xFFFFF7ED), Color(0xFFFFEDD5)],
+            itemCount: items.length,
+            itemBuilder: (context, index) {
+              final item = items[index];
+              final gradientColors = [
+                _parseHexColor(item['bg_gradient_start'] ?? '#FFF7ED'),
+                _parseHexColor(item['bg_gradient_end'] ?? '#FFFFEDD5'),
+              ];
+
+              Widget rightGraphic = const SizedBox();
+              if (item['graphic_type'] == 'calendar') {
+                rightGraphic = _buildCalendarGraphic();
+              } else if (item['graphic_type'] == 'ship') {
+                rightGraphic = _buildShipGraphic();
+              } else if (item['graphic_type'] == 'progress') {
+                final double progress = (item['progress'] as num?)?.toDouble() ?? 0.0;
+                rightGraphic = _buildProgressGraphic(progress);
+              }
+
+              return Center(
+                child: SizedBox(
+                  width: MediaQuery.of(context).size.width * 0.88,
+                  child: _buildCarouselCard(
+                    bgGradient: LinearGradient(colors: gradientColors),
+                    borderColor: _parseHexColor(item['badge_bg_color'] ?? '#E2E8F0'),
+                    badgeText: item['badge_text'] ?? '',
+                    badgeTextColor: _parseHexColor(item['badge_text_color'] ?? '#0F172A'),
+                    badgeBgColor: _parseHexColor(item['badge_bg_color'] ?? '#F1F5F9'),
+                    title: item['title'] ?? '',
+                    titleColor: const Color(0xFF1E293B),
+                    btnText: item['btn_text'] ?? 'View Details',
+                    btnColor: _parseHexColor(item['btn_color'] ?? '#2563EB'),
+                    onBtnTap: () {
+                      _handleCarouselTap(context, item);
+                    },
+                    rightGraphic: rightGraphic,
+                  ),
                 ),
-                borderColor: const Color(0xFFFFD8A8),
-                badgeText: "Alert",
-                badgeTextColor: const Color(0xFFEA580C),
-                badgeBgColor: const Color(0xFFFFEAD5),
-                title: "PMEGP (Closing in 5 Days)",
-                titleColor: const Color(0xFF1E293B),
-                btnText: "View Details",
-                btnColor: const Color(0xFFEA580C),
-                onBtnTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => const NotificationsScreen(),
-                    ),
-                  );
-                },
-                rightGraphic: _buildCalendarGraphic(),
-              ),
-              _buildCarouselCard(
-                width: 290,
-                bgGradient: const LinearGradient(
-                  colors: [Color(0xFFF0FDF4), Color(0xFFDCFCE7)],
-                ),
-                borderColor: const Color(0xFFB9F6CA),
-                badgeText: "New Scheme",
-                badgeTextColor: const Color(0xFF16A34A),
-                badgeBgColor: const Color(0xFFDCFCE7),
-                title: "TN Export Promotion Scheme",
-                titleColor: const Color(0xFF1E293B),
-                btnText: "Explore",
-                btnColor: const Color(0xFF16A34A),
-                onBtnTap: () {
-                  // Explore action
-                },
-                rightGraphic: _buildShipGraphic(),
-              ),
-            ],
+              );
+            },
           ),
         ),
         const SizedBox(height: 8),
-        _buildDotIndicator(2, _activeCarouselIndex, const Color(0xFF2563EB)),
+        _buildDotIndicator(items.length, _activeCarouselIndex, const Color(0xFF2563EB)),
       ],
     );
   }
 
+  Color _parseHexColor(String hexString) {
+    final buffer = StringBuffer();
+    if (hexString.length == 6 || hexString.length == 7) {
+      buffer.write('ff');
+    }
+    buffer.write(hexString.replaceFirst('#', ''));
+    return Color(int.parse(buffer.toString(), radix: 16));
+  }
+
+  void _handleCarouselTap(BuildContext context, Map<String, dynamic> item) {
+    final route = item['target_route'] as String?;
+    if (route == 'notifications') {
+      Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+      );
+    } else if (route == 'discover_results') {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => const DiscoverResultsScreen(
+            title: 'Business & MSME',
+            type: 'category',
+          ),
+        ),
+      );
+    } else if (route == 'draft_session') {
+      SmartAssessmentBottomSheet.show(
+        context,
+        'Business & MSME',
+        'category',
+        () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => const DiscoverResultsScreen(
+                title: 'Business & MSME',
+                type: 'category',
+              ),
+            ),
+          );
+        },
+      );
+    }
+  }
+
+  Widget _buildProgressGraphic(double progress) {
+    return SizedBox(
+      width: 56,
+      height: 56,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Container(
+            width: 46,
+            height: 46,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+              border: Border.all(color: const Color(0xFFDBEAFE), width: 1.2),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.04),
+                  blurRadius: 3,
+                  offset: const Offset(0, 1.5),
+                ),
+              ],
+            ),
+            padding: const EdgeInsets.all(4),
+            child: CircularProgressIndicator(
+              value: progress,
+              strokeWidth: 3,
+              backgroundColor: const Color(0xFFEFF6FF),
+              valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF2563EB)),
+            ),
+          ),
+          Text(
+            '${(progress * 100).toInt()}%',
+            style: GoogleFonts.inter(
+              fontSize: 9.5,
+              fontWeight: FontWeight.bold,
+              color: const Color(0xFF1E3A8A),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildCarouselCard({
-    required double width,
     required Gradient bgGradient,
     required Color borderColor,
     required String badgeText,
@@ -787,8 +896,7 @@ class _HomeScreenState extends State<HomeScreen> {
     required Widget rightGraphic,
   }) {
     return Container(
-      width: width,
-      margin: const EdgeInsets.only(right: 12, top: 4, bottom: 4),
+      margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
         gradient: bgGradient,
