@@ -1026,43 +1026,28 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               _buildJourneyActionCard(
                 context: context,
-                title: 'Export Support',
-                icon: Icons.public_rounded,
-                iconColor: const Color(0xFF0D9488),
-                bgColor: const Color(0xFFF0FDFA),
-                categoryName: 'Business & MSME',
+                title: 'Find a\nJob',
+                icon: Icons.business_center_rounded,
+                categoryName: 'Employment',
+                provider: provider,
               ),
               _buildJourneyActionCard(
                 context: context,
-                title: 'Grow Business',
-                icon: Icons.trending_up_rounded,
-                iconColor: const Color(0xFF16A34A),
-                bgColor: const Color(0xFFF0FDF4),
-                categoryName: 'Business & MSME',
+                title: 'Housing\nSupport',
+                icon: Icons.home_rounded,
+                categoryName: 'Housing',
+                provider: provider,
               ),
               _buildJourneyActionCard(
                 context: context,
-                title: 'Register UDYAM',
-                icon: Icons.app_registration_rounded,
-                iconColor: const Color(0xFFEA580C),
-                bgColor: const Color(0xFFFFF7ED),
-                categoryName: 'Business & MSME',
+                title: 'Healthcare\nSupport',
+                icon: Icons.health_and_safety_rounded,
+                categoryName: 'Health',
+                provider: provider,
               ),
-              _buildJourneyActionCard(
+              _buildViewAllGoalCard(
                 context: context,
-                title: 'Find Funding',
-                icon: Icons.currency_rupee_rounded,
-                iconColor: const Color(0xFF7C3AED),
-                bgColor: const Color(0xFFF5F3FF),
-                categoryName: 'Business & MSME',
-              ),
-              _buildJourneyActionCard(
-                context: context,
-                title: 'Start a Business',
-                icon: Icons.rocket_launch_rounded,
-                iconColor: const Color(0xFF2563EB),
-                bgColor: const Color(0xFFEFF6FF),
-                categoryName: 'Business & MSME',
+                provider: provider,
               ),
             ],
           ),
@@ -1075,9 +1060,8 @@ class _HomeScreenState extends State<HomeScreen> {
     required BuildContext context,
     required String title,
     required IconData icon,
-    required Color iconColor,
-    required Color bgColor,
     required String categoryName,
+    required AppProvider provider,
   }) {
     return GestureDetector(
       onTap: () {
@@ -1098,38 +1082,97 @@ class _HomeScreenState extends State<HomeScreen> {
         );
       },
       child: Container(
+        width: 88,
+        height: 104,
         margin: const EdgeInsets.only(right: 10),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFFE2E8F0)),
+          border: Border.all(color: const Color(0xFFE2E8F0), width: 1.2),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.015),
+              color: Colors.black.withValues(alpha: 0.02),
               blurRadius: 6,
               offset: const Offset(0, 2),
             ),
           ],
         ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: bgColor,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(icon, color: iconColor, size: 18),
+            Icon(
+              icon,
+              color: const Color(0xFF2563EB),
+              size: 26,
             ),
-            const SizedBox(width: 10),
+            const SizedBox(height: 10),
             Text(
               title,
+              textAlign: TextAlign.center,
               style: GoogleFonts.inter(
-                fontSize: 12,
+                fontSize: 11,
                 fontWeight: FontWeight.bold,
                 color: const Color(0xFF0F172A),
+                height: 1.3,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildViewAllGoalCard({
+    required BuildContext context,
+    required AppProvider provider,
+  }) {
+    return GestureDetector(
+      onTap: () {
+        provider.updateTabIndex(2); // Go to Categories tab
+      },
+      child: Container(
+        width: 88,
+        height: 104,
+        margin: const EdgeInsets.only(right: 10),
+        decoration: BoxDecoration(
+          color: const Color(0xFFEFF6FF),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFBFDBFE), width: 1.2),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF2563EB).withValues(alpha: 0.02),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Container(
+              width: 30,
+              height: 30,
+              decoration: const BoxDecoration(
+                color: Color(0xFF2563EB),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.arrow_forward_rounded,
+                color: Colors.white,
+                size: 16,
+              ),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              "View All\nGoals",
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+                color: const Color(0xFF2563EB),
+                height: 1.3,
               ),
             ),
           ],
