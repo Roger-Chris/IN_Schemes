@@ -91,7 +91,7 @@ class _SaarthiWelcomeScreenState extends State<SaarthiWelcomeScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          '${voice == 'marin' ? 'Marin' : 'Cedar'} is selected. Device speech stays private.',
+          '${voice == 'natural' ? 'Natural' : 'Clear'} voice is selected. Device speech stays private.',
         ),
         duration: const Duration(seconds: 2),
       ),
@@ -364,39 +364,39 @@ class _SaarthiWelcomeScreenState extends State<SaarthiWelcomeScreen> {
                       child: _buildPersonalizationCard(
                         icon: Icons.volume_up,
                         title: 'Voice',
-                        subtitle: 'Choose how Saarthi speaks to you',
+                        subtitle: 'Natural English and Tamil speech',
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
-                            // Marin voice selection
+                            // Natural voice selection.
                             Expanded(
                               child: SaarthiFocusRegion(
                                 id: 'voice_marin',
                                 child: GestureDetector(
-                                  onTap: () => _selectVoice('marin'),
+                                  onTap: () => _selectVoice('natural'),
                                   child: _buildVoiceAvatar(
-                                    label: 'Marin',
+                                    label: 'Natural',
                                     imageAsset: 'assets/images/support_agent.png',
-                                    isSelected: _selectedVoice == 'marin',
-                                    onPreview: () => _previewVoice('marin'),
-                                    isPreviewing: _previewingVoice == 'marin',
+                                    isSelected: _selectedVoice == 'natural',
+                                    onPreview: () => _previewVoice('natural'),
+                                    isPreviewing: _previewingVoice == 'natural',
                                   ),
                                 ),
                               ),
                             ),
                             const SizedBox(width: 8),
-                            // Cedar voice selection
+                            // Clear voice selection.
                             Expanded(
                               child: SaarthiFocusRegion(
                                 id: 'voice_cedar',
                                 child: GestureDetector(
-                                  onTap: () => _selectVoice('cedar'),
+                                  onTap: () => _selectVoice('clear'),
                                   child: _buildVoiceAvatar(
-                                    label: 'Cedar',
+                                    label: 'Clear',
                                     imageAsset: 'assets/images/user_avatar.png',
-                                    isSelected: _selectedVoice == 'cedar',
-                                    onPreview: () => _previewVoice('cedar'),
-                                    isPreviewing: _previewingVoice == 'cedar',
+                                    isSelected: _selectedVoice == 'clear',
+                                    onPreview: () => _previewVoice('clear'),
+                                    isPreviewing: _previewingVoice == 'clear',
                                   ),
                                 ),
                               ),
@@ -557,8 +557,8 @@ class _SaarthiWelcomeScreenState extends State<SaarthiWelcomeScreen> {
                         runSpacing: 6,
                         children: [
                           _buildDebugButton('[Test Language]', 'language_card'),
-                          _buildDebugButton('[Test Voice Marin]', 'voice_marin'),
-                          _buildDebugButton('[Test Voice Cedar]', 'voice_cedar'),
+                          _buildDebugButton('[Test Natural Voice]', 'voice_marin'),
+                          _buildDebugButton('[Test Clear Voice]', 'voice_cedar'),
                           _buildDebugButton('[Test Start Button]', 'start_button'),
                           _buildDebugButton('[Test Business Type]', 'business_type'),
                           _buildDebugButton('[Test Upload Document]', 'upload_document'),
