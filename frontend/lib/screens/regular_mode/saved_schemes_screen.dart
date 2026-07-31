@@ -87,7 +87,7 @@ class _SavedSchemesScreenState extends State<SavedSchemesScreen> {
                   child: Text(
                     "All Saved ($savedCount)",
                     style: GoogleFonts.inter(
-                      fontSize: 13.5,
+                      fontSize: 11.5,
                       fontWeight: FontWeight.bold,
                       color: _activeTab == 0 ? const Color(0xFF2563EB) : const Color(0xFF64748B),
                     ),
@@ -118,7 +118,7 @@ class _SavedSchemesScreenState extends State<SavedSchemesScreen> {
                   child: Text(
                     "Recently Added",
                     style: GoogleFonts.inter(
-                      fontSize: 13.5,
+                      fontSize: 11.5,
                       fontWeight: FontWeight.bold,
                       color: _activeTab == 1 ? const Color(0xFF2563EB) : const Color(0xFF64748B),
                     ),
@@ -206,7 +206,7 @@ class _SavedSchemesScreenState extends State<SavedSchemesScreen> {
                       Text(
                         scheme.name,
                         style: GoogleFonts.inter(
-                          fontSize: 15.5,
+                          fontSize: 13.5,
                           fontWeight: FontWeight.bold,
                           color: const Color(0xFF0F172A),
                         ),
@@ -217,7 +217,7 @@ class _SavedSchemesScreenState extends State<SavedSchemesScreen> {
                       Text(
                         scheme.category,
                         style: GoogleFonts.inter(
-                          fontSize: 12,
+                          fontSize: 10.5,
                           color: const Color(0xFF2563EB),
                           fontWeight: FontWeight.w600,
                         ),
@@ -241,7 +241,7 @@ class _SavedSchemesScreenState extends State<SavedSchemesScreen> {
                       child: Text(
                         relevanceText,
                         style: GoogleFonts.inter(
-                          fontSize: 10,
+                          fontSize: 8.5,
                           fontWeight: FontWeight.bold,
                           color: badgeColor,
                         ),
@@ -289,7 +289,7 @@ class _SavedSchemesScreenState extends State<SavedSchemesScreen> {
             Text(
               scheme.overview,
               style: GoogleFonts.inter(
-                fontSize: 12.5,
+                fontSize: 11.0,
                 color: const Color(0xFF475569),
                 height: 1.4,
               ),
@@ -300,48 +300,50 @@ class _SavedSchemesScreenState extends State<SavedSchemesScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.bookmark_added_outlined,
-                      size: 13,
-                      color: Color(0xFF64748B),
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      "Saved on 24 May 2025",
-                      style: GoogleFonts.inter(
-                        fontSize: 11,
-                        color: const Color(0xFF64748B),
-                        fontWeight: FontWeight.w500,
+                Expanded(
+                  child: Wrap(
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    spacing: 6,
+                    runSpacing: 4,
+                    children: [
+                      const Icon(
+                        Icons.bookmark_added_outlined,
+                        size: 12,
+                        color: Color(0xFF64748B),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    Container(
-                      width: 3,
-                      height: 3,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFF94A3B8),
-                        shape: BoxShape.circle,
+                      Text(
+                        "Saved on 24 May 2025",
+                        style: GoogleFonts.inter(
+                          fontSize: 9.5,
+                          color: const Color(0xFF64748B),
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    const Icon(
-                      Icons.local_offer_outlined,
-                      size: 13,
-                      color: Color(0xFF64748B),
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      "Financing",
-                      style: GoogleFonts.inter(
-                        fontSize: 11,
-                        color: const Color(0xFF64748B),
-                        fontWeight: FontWeight.w500,
+                      Container(
+                        width: 3,
+                        height: 3,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFF94A3B8),
+                          shape: BoxShape.circle,
+                        ),
                       ),
-                    ),
-                  ],
+                      const Icon(
+                        Icons.local_offer_outlined,
+                        size: 12,
+                        color: Color(0xFF64748B),
+                      ),
+                      Text(
+                        "Financing",
+                        style: GoogleFonts.inter(
+                          fontSize: 9.5,
+                          color: const Color(0xFF64748B),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
+                const SizedBox(width: 8),
                 OutlinedButton(
                   onPressed: () {
                     Navigator.of(context).push(
@@ -356,7 +358,7 @@ class _SavedSchemesScreenState extends State<SavedSchemesScreen> {
                       borderRadius: BorderRadius.circular(10),
                     ),
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
+                      horizontal: 12,
                       vertical: 6,
                     ),
                   ),
@@ -366,7 +368,7 @@ class _SavedSchemesScreenState extends State<SavedSchemesScreen> {
                       Text(
                         "View Details",
                         style: GoogleFonts.inter(
-                          fontSize: 11.5,
+                          fontSize: 10.0,
                           color: const Color(0xFF2563EB),
                           fontWeight: FontWeight.bold,
                         ),
@@ -374,7 +376,7 @@ class _SavedSchemesScreenState extends State<SavedSchemesScreen> {
                       const SizedBox(width: 4),
                       const Icon(
                         Icons.arrow_forward_rounded,
-                        size: 12,
+                        size: 11,
                         color: Color(0xFF2563EB),
                       ),
                     ],
@@ -418,7 +420,7 @@ class _SavedSchemesScreenState extends State<SavedSchemesScreen> {
                 Text(
                   "Keep your list updated!",
                   style: GoogleFonts.inter(
-                    fontSize: 13,
+                    fontSize: 11.5,
                     fontWeight: FontWeight.bold,
                     color: const Color(0xFF1E3A8A),
                   ),
@@ -427,7 +429,7 @@ class _SavedSchemesScreenState extends State<SavedSchemesScreen> {
                 Text(
                   "Remove schemes you're no longer interested in.",
                   style: GoogleFonts.inter(
-                    fontSize: 11.5,
+                    fontSize: 10.0,
                     color: const Color(0xFF1E3A8A),
                   ),
                 ),
@@ -448,17 +450,17 @@ class _SavedSchemesScreenState extends State<SavedSchemesScreen> {
                 borderRadius: BorderRadius.circular(10),
                 side: const BorderSide(color: Color(0xFFBFDBFE)),
               ),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             ),
             icon: Icon(
               _isManageMode ? Icons.check_circle_outline_rounded : Icons.delete_outline_rounded,
               color: _isManageMode ? const Color(0xFF16A34A) : const Color(0xFF2563EB),
-              size: 15,
+              size: 13,
             ),
             label: Text(
               _isManageMode ? "Done" : "Manage List",
               style: GoogleFonts.inter(
-                fontSize: 12,
+                fontSize: 10.5,
                 color: _isManageMode ? const Color(0xFF16A34A) : const Color(0xFF2563EB),
                 fontWeight: FontWeight.bold,
               ),
