@@ -1026,33 +1026,89 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               _buildJourneyActionCard(
                 context: context,
-                title: 'Find a\nJob',
-                icon: Icons.business_center_rounded,
-                categoryName: 'Employment',
-                provider: provider,
+                title: 'Export Support',
+                icon: Icons.public_rounded,
+                categoryName: 'Business & MSME',
               ),
               _buildJourneyActionCard(
                 context: context,
-                title: 'Housing\nSupport',
-                icon: Icons.home_rounded,
-                categoryName: 'Housing',
-                provider: provider,
+                title: 'Grow Business',
+                icon: Icons.trending_up_rounded,
+                categoryName: 'Business & MSME',
               ),
               _buildJourneyActionCard(
                 context: context,
-                title: 'Healthcare\nSupport',
-                icon: Icons.health_and_safety_rounded,
-                categoryName: 'Health',
-                provider: provider,
+                title: 'Register UDYAM',
+                icon: Icons.app_registration_rounded,
+                categoryName: 'Business & MSME',
               ),
-              _buildViewAllGoalCard(
+              _buildJourneyActionCard(
                 context: context,
-                provider: provider,
+                title: 'Find Funding',
+                icon: Icons.currency_rupee_rounded,
+                categoryName: 'Business & MSME',
               ),
+              _buildJourneyActionCard(
+                context: context,
+                title: 'Start a Business',
+                icon: Icons.rocket_launch_rounded,
+                categoryName: 'Business & MSME',
+              ),
+              _buildViewAllGoalCard(context, provider),
             ],
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildViewAllGoalCard(BuildContext context, AppProvider provider) {
+    return GestureDetector(
+      onTap: () => provider.updateTabIndex(2),
+      child: Container(
+        width: 86,
+        height: 104,
+        margin: const EdgeInsets.only(right: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFE2E8F0)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.015),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: const BoxDecoration(
+                color: Color(0xFF2563EB),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.arrow_forward_rounded,
+                color: Colors.white,
+                size: 16,
+              ),
+            ),
+            Text(
+              "View All\nGoals",
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(
+                fontSize: 10.5,
+                fontWeight: FontWeight.bold,
+                color: const Color(0xFF2563EB),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -1061,8 +1117,14 @@ class _HomeScreenState extends State<HomeScreen> {
     required String title,
     required IconData icon,
     required String categoryName,
-    required AppProvider provider,
   }) {
+    String formattedTitle = title;
+    if (title == "Start a Business") {
+      formattedTitle = "Start a\nBusiness";
+    } else {
+      formattedTitle = title.replaceFirst(' ', '\n');
+    }
+
     return GestureDetector(
       onTap: () {
         SmartAssessmentBottomSheet.show(
@@ -1082,97 +1144,37 @@ class _HomeScreenState extends State<HomeScreen> {
         );
       },
       child: Container(
-        width: 88,
+        width: 86,
         height: 104,
-        margin: const EdgeInsets.only(right: 10),
+        margin: const EdgeInsets.only(right: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFFE2E8F0), width: 1.2),
+          border: Border.all(color: const Color(0xFFE2E8F0)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.02),
+              color: Colors.black.withValues(alpha: 0.015),
               blurRadius: 6,
               offset: const Offset(0, 2),
             ),
           ],
         ),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Icon(
               icon,
               color: const Color(0xFF2563EB),
               size: 26,
             ),
-            const SizedBox(height: 10),
             Text(
-              title,
+              formattedTitle,
               textAlign: TextAlign.center,
               style: GoogleFonts.inter(
-                fontSize: 11,
+                fontSize: 10.5,
                 fontWeight: FontWeight.bold,
                 color: const Color(0xFF0F172A),
-                height: 1.3,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildViewAllGoalCard({
-    required BuildContext context,
-    required AppProvider provider,
-  }) {
-    return GestureDetector(
-      onTap: () {
-        provider.updateTabIndex(2); // Go to Categories tab
-      },
-      child: Container(
-        width: 88,
-        height: 104,
-        margin: const EdgeInsets.only(right: 10),
-        decoration: BoxDecoration(
-          color: const Color(0xFFEFF6FF),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFFBFDBFE), width: 1.2),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFF2563EB).withValues(alpha: 0.02),
-              blurRadius: 6,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Container(
-              width: 30,
-              height: 30,
-              decoration: const BoxDecoration(
-                color: Color(0xFF2563EB),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.arrow_forward_rounded,
-                color: Colors.white,
-                size: 16,
-              ),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              "View All\nGoals",
-              textAlign: TextAlign.center,
-              style: GoogleFonts.inter(
-                fontSize: 11,
-                fontWeight: FontWeight.bold,
-                color: const Color(0xFF2563EB),
-                height: 1.3,
               ),
             ),
           ],
