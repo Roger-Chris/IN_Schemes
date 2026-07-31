@@ -425,7 +425,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Profile Completion Card (Real & Compact)
+  // Profile Completion Card (Mockup Style Redesign)
   Widget _buildProfileCompleteCard(BuildContext context, AppProvider provider) {
     final completion = provider.profileCompletionPercentage;
     final isComplete = completion == 100;
@@ -434,147 +434,119 @@ class _HomeScreenState extends State<HomeScreen> {
       color: Colors.transparent,
       child: InkWell(
         onTap: () {
-          Navigator.of(
-            context,
-          ).push(MaterialPageRoute(builder: (_) => const ProfileSetupScreen()));
+          Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const ProfileSetupScreen()),
+          );
         },
         borderRadius: BorderRadius.circular(16),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Color(0xFFEFF6FF), Color(0xFFDBEAFE)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
+            color: Colors.white,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFFBFDBFE)),
+            border: Border.all(color: const Color(0xFFEFF6FF), width: 1.5),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF2563EB).withValues(alpha: 0.02),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
+                color: const Color(0xFF2563EB).withValues(alpha: 0.03),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
               ),
             ],
           ),
           child: Row(
             children: [
-              // Left: Progress ring with checkmark or percent text
+              // Left: Progress ring with percent text inside
               Stack(
                 alignment: Alignment.center,
                 children: [
-                  Container(
-                    width: 58,
-                    height: 58,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.white,
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(
-                            0xFF2563EB,
-                          ).withValues(alpha: 0.08),
-                          blurRadius: 6,
-                          spreadRadius: 1,
-                        ),
-                      ],
-                    ),
-                  ),
                   SizedBox(
-                    width: 50,
-                    height: 50,
+                    width: 74,
+                    height: 74,
                     child: CircularProgressIndicator(
                       value: completion / 100.0,
-                      strokeWidth: 5,
+                      strokeWidth: 6,
                       backgroundColor: const Color(0xFFEFF6FF),
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        isComplete
-                            ? const Color(0xFF10B981)
-                            : const Color(0xFF2563EB),
+                      valueColor: const AlwaysStoppedAnimation<Color>(
+                        Color(0xFF2563EB),
                       ),
                     ),
                   ),
-                  if (isComplete)
-                    Container(
-                      width: 24,
-                      height: 24,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFF10B981),
-                        shape: BoxShape.circle,
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        "$completion%",
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF0F172A),
+                        ),
                       ),
-                      alignment: Alignment.center,
-                      child: const Icon(
-                        Icons.check,
-                        color: Colors.white,
-                        size: 15,
+                      Text(
+                        "Completed",
+                        style: GoogleFonts.inter(
+                          fontSize: 9.5,
+                          color: const Color(0xFF64748B),
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
-                    )
-                  else
-                    Text(
-                      "$completion%",
-                      style: GoogleFonts.poppins(
-                        fontSize: 11.5,
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xFF2563EB),
-                      ),
-                    ),
+                    ],
+                  ),
                 ],
               ),
               const SizedBox(width: 14),
 
-              // Middle: Text
+              // Vertical Divider Line
+              Container(
+                width: 1,
+                height: 60,
+                color: const Color(0xFFE2E8F0),
+              ),
+              const SizedBox(width: 16),
+
+              // Middle: Text Column
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Row(
-                      children: [
-                        Text(
-                          isComplete
-                              ? "Profile Complete!"
-                              : "Complete Your Profile",
-                          style: GoogleFonts.inter(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            color: isComplete
-                                ? const Color(0xFF0D9488)
-                                : const Color(0xFF1E3A8A),
-                          ),
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          isComplete ? "🎉" : "📋",
-                          style: GoogleFonts.inter(fontSize: 12),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 1),
                     Text(
-                      "$completion%",
+                      "Complete Your Profile",
                       style: GoogleFonts.poppins(
-                        fontSize: 18,
+                        fontSize: 16.5,
                         fontWeight: FontWeight.bold,
                         color: const Color(0xFF0F172A),
                       ),
                     ),
-                    const SizedBox(height: 1),
-                    Text(
-                      isComplete
-                          ? "Your profile is complete! You'll get the best scheme recommendations."
-                          : "Add details to unlock personalized scheme recommendations.",
-                      style: GoogleFonts.inter(
-                        fontSize: 10.5,
-                        color: const Color(0xFF475569),
-                        height: 1.3,
+                    const SizedBox(height: 4),
+                    RichText(
+                      text: TextSpan(
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          color: const Color(0xFF64748B),
+                          height: 1.4,
+                        ),
+                        children: [
+                          const TextSpan(text: "Help "),
+                          TextSpan(
+                            text: "Saarthi",
+                            style: GoogleFonts.inter(
+                              color: const Color(0xFF2563EB),
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const TextSpan(
+                            text: " personalize scheme recommendations that match your business needs.",
+                          ),
+                        ],
                       ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: 12),
 
-              // Right: Dynamic Checklist Clipboard
+              // Right: Clipboard Graphic
               _buildClipboardGraphic(isComplete, completion),
             ],
           ),
@@ -584,144 +556,130 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildClipboardGraphic(bool isComplete, int completion) {
-    final line1Checked = completion >= 30;
-    final line2Checked = completion >= 60;
-    final line3Checked = completion == 100;
-
     return SizedBox(
-      width: 44,
-      height: 58,
+      width: 70,
+      height: 70,
       child: Stack(
         clipBehavior: Clip.none,
-        alignment: Alignment.topCenter,
+        alignment: Alignment.center,
         children: [
+          // Background light circular overlay
           Positioned(
-            bottom: 3,
+            left: 2,
+            top: 10,
             child: Container(
-              width: 38,
-              height: 46,
+              width: 58,
+              height: 58,
+              decoration: const BoxDecoration(
+                color: Color(0xFFEFF6FF),
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
+          // Sparkle top-left
+          const Positioned(
+            left: 0,
+            top: 2,
+            child: Icon(
+              Icons.star,
+              color: Color(0xFF93C5FD),
+              size: 10,
+            ),
+          ),
+          // Sparkle top-right
+          const Positioned(
+            right: 0,
+            top: 12,
+            child: Icon(
+              Icons.star,
+              color: Color(0xFF93C5FD),
+              size: 8,
+            ),
+          ),
+          // Clipboard body
+          Positioned(
+            top: 10,
+            child: Container(
+              width: 44,
+              height: 52,
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(6),
-                border: Border.all(
-                  color: isComplete
-                      ? const Color(0xFF93C5FD)
-                      : const Color(0xFFCBD5E1),
-                  width: 1.2,
-                ),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: const Color(0xFFBFDBFE), width: 1.5),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: 0.04),
-                    blurRadius: 3,
-                    offset: const Offset(0, 1),
+                    blurRadius: 4,
+                    offset: const Offset(0, 1.5),
                   ),
                 ],
               ),
-              padding: const EdgeInsets.only(
-                top: 10,
-                left: 4,
-                right: 4,
-                bottom: 4,
-              ),
+              padding: const EdgeInsets.only(top: 12, left: 6, right: 6, bottom: 6),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  _buildClipboardLine(checked: line1Checked),
-                  _buildClipboardLine(checked: line2Checked),
-                  _buildClipboardLine(checked: line3Checked),
+                  // Person icon
+                  const Icon(
+                    Icons.person_rounded,
+                    color: Color(0xFF3B82F6),
+                    size: 14,
+                  ),
+                  // Mock lines
+                  Container(
+                    width: 24,
+                    height: 2.5,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFBFDBFE),
+                      borderRadius: BorderRadius.circular(1),
+                    ),
+                  ),
+                  Container(
+                    width: 18,
+                    height: 2.5,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFBFDBFE),
+                      borderRadius: BorderRadius.circular(1),
+                    ),
+                  ),
                 ],
               ),
             ),
           ),
+          // Symmetrical clip top
           Positioned(
-            top: 2,
+            top: 6,
             child: Container(
               width: 18,
-              height: 9,
+              height: 8,
               decoration: BoxDecoration(
-                color: isComplete
-                    ? const Color(0xFF3B82F6)
-                    : const Color(0xFF64748B),
+                color: const Color(0xFF2563EB),
                 borderRadius: BorderRadius.circular(3),
               ),
             ),
           ),
+          // Blue shield with check badge bottom-right
           Positioned(
-            right: -2,
+            right: 2,
             bottom: 0,
             child: Stack(
               alignment: Alignment.center,
               children: [
-                if (isComplete)
-                  Positioned(
-                    bottom: -3,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Transform.rotate(
-                          angle: 0.3,
-                          child: Container(
-                            width: 4,
-                            height: 9,
-                            color: const Color(0xFF2563EB),
-                          ),
-                        ),
-                        const SizedBox(width: 1),
-                        Transform.rotate(
-                          angle: -0.3,
-                          child: Container(
-                            width: 4,
-                            height: 9,
-                            color: const Color(0xFF2563EB),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                Container(
-                  width: 16,
-                  height: 16,
-                  decoration: BoxDecoration(
-                    color: isComplete
-                        ? const Color(0xFF10B981)
-                        : const Color(0xFF94A3B8),
-                    shape: BoxShape.circle,
-                  ),
-                  alignment: Alignment.center,
-                  child: Icon(
-                    isComplete ? Icons.check : Icons.more_horiz,
-                    color: Colors.white,
-                    size: 10,
-                  ),
+                const Icon(
+                  Icons.shield_rounded,
+                  color: Color(0xFF2563EB),
+                  size: 20,
+                ),
+                const Icon(
+                  Icons.check,
+                  color: Colors.white,
+                  size: 11,
                 ),
               ],
             ),
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildClipboardLine({bool checked = true}) {
-    return Row(
-      children: [
-        Icon(
-          checked ? Icons.check : Icons.circle_outlined,
-          size: 7,
-          color: checked ? const Color(0xFF10B981) : const Color(0xFFCBD5E1),
-        ),
-        const SizedBox(width: 2),
-        Expanded(
-          child: Container(
-            height: 2,
-            decoration: BoxDecoration(
-              color: const Color(0xFFF1F5F9),
-              borderRadius: BorderRadius.circular(1),
-            ),
-          ),
-        ),
-      ],
     );
   }
 
