@@ -460,11 +460,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 alignment: Alignment.center,
                 children: [
                   SizedBox(
-                    width: 74,
-                    height: 74,
+                    width: 54,
+                    height: 54,
                     child: CircularProgressIndicator(
                       value: completion / 100.0,
-                      strokeWidth: 6,
+                      strokeWidth: 4,
+                      strokeCap: StrokeCap.round,
                       backgroundColor: const Color(0xFFEFF6FF),
                       valueColor: const AlwaysStoppedAnimation<Color>(
                         Color(0xFF2563EB),
@@ -477,7 +478,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       Text(
                         "$completion%",
                         style: GoogleFonts.poppins(
-                          fontSize: 16,
+                          fontSize: 12,
                           fontWeight: FontWeight.bold,
                           color: const Color(0xFF0F172A),
                         ),
@@ -485,7 +486,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       Text(
                         "Completed",
                         style: GoogleFonts.inter(
-                          fontSize: 9.5,
+                          fontSize: 7.5,
                           color: const Color(0xFF64748B),
                           fontWeight: FontWeight.w500,
                         ),
@@ -499,7 +500,7 @@ class _HomeScreenState extends State<HomeScreen> {
               // Vertical Divider Line
               Container(
                 width: 1,
-                height: 60,
+                height: 44,
                 color: const Color(0xFFE2E8F0),
               ),
               const SizedBox(width: 16),
