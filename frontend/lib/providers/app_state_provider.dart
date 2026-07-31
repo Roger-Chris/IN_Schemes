@@ -10,10 +10,20 @@ import '../models/scheme_model.dart';
 import '../engine/recommendation_engine.dart';
 import '../services/auth_service.dart';
 import '../services/scheme_repository.dart';
+import '../services/scheme_catalog_sync_service.dart';
 import '../services/session_cache_service.dart';
 import '../screens/splash_screen.dart';
 
-class AppProvider with ChangeNotifier {
+class AppProvider with ChangeNotifier, WidgetsBindingObserver {
+  AppProvider({SchemeCatalogSyncService? catalogSyncService})
+    : _catalogSyncService =
+          catalogSyncService ?? SchemeCatalogSyncService.instance {
+    WidgetsBinding.instance.addObserver(this);
+    _loadState();
+    _setupAuthListener();
+  }
+
+  final SchemeCatalogSyncService _catalogSyncService;
   StreamSubscription<List<Map<String, dynamic>>>? _profileSubscription;
   bool _isLoggedIn = false;
   bool _isLoggingOut = false;
@@ -34,6 +44,8 @@ class AppProvider with ChangeNotifier {
   List<MapEntry<Scheme, RecommendationResult>> _recommendedSchemes = [];
   bool _schemesLoading = false;
   String? _schemesError;
+  CatalogSyncResult? _catalogSyncResult;
+  bool _catalogSyncing = false;
 
   // Active Filters state
   Map<String, dynamic> _filters = {
@@ -220,11 +232,6 @@ class AppProvider with ChangeNotifier {
       'graphic_type': 'ship',
     }
   ];
-
-  AppProvider() {
-    _loadState();
-    _setupAuthListener();
-  }
 
   void _subscribeToProfile(String userId) {
     _profileSubscription?.cancel();
@@ -490,6 +497,14 @@ class AppProvider with ChangeNotifier {
   bool get schemesLoading => _schemesLoading;
   String? get schemesError => _schemesError;
   List<Scheme> get allSchemes => _allSchemes;
+  CatalogSyncResult? get catalogSyncResult => _catalogSyncResult;
+  bool get catalogSyncing => _catalogSyncing;
+  String get catalogStatusLabel {
+    final manifest = _catalogSyncResult?.manifest;
+    if (manifest == null) return 'Bundled · ${_allSchemes.length} schemes';
+    final date = manifest.publishedAt.toLocal();
+    return 'v${manifest.version} · ${date.day}/${date.month}/${date.year}';
+  }
 
   // Recommended schemes (ranked by RecommendationEngine against cached list)
   List<MapEntry<Scheme, RecommendationResult>> get recommendedSchemes =>
@@ -538,6 +553,40 @@ class AppProvider with ChangeNotifier {
     } finally {
       _schemesLoading = false;
       notifyListeners();
+    }
+  }
+
+  Future<CatalogSyncResult> syncSchemeCatalog({bool force = false}) async {
+    if (_catalogSyncing) {
+      return _catalogSyncResult ??
+          const CatalogSyncResult(CatalogSyncOutcome.throttled);
+    }
+    _catalogSyncing = true;
+    notifyListeners();
+    CatalogSyncResult result;
+    try {
+      result = await _catalogSyncService.syncIfNeeded(force: force);
+    } catch (error) {
+      result = CatalogSyncResult(
+        CatalogSyncOutcome.rejected,
+        manifest: _catalogSyncResult?.manifest,
+        message: error.toString(),
+      );
+    }
+    _catalogSyncResult = result;
+    _catalogSyncing = false;
+    if (result.changed) {
+      await loadSchemes(forceRefresh: true);
+    } else {
+      notifyListeners();
+    }
+    return result;
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      unawaited(syncSchemeCatalog());
     }
   }
 
@@ -615,8 +664,9 @@ class AppProvider with ChangeNotifier {
 
       notifyListeners();
 
-      // Kick off scheme load after state is set
-      loadSchemes();
+      // Render local data first, then refresh the published snapshot silently.
+      await loadSchemes();
+      unawaited(syncSchemeCatalog());
     } catch (e) {
       debugPrint('Error loading state: $e');
     }
@@ -1412,6 +1462,7 @@ class AppProvider with ChangeNotifier {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _unsubscribeFromProfile();
     super.dispose();
   }

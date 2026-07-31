@@ -5,12 +5,15 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../models/scheme_model.dart';
 import '../models/user_profile.dart';
 import '../services/assistant_session_controller.dart';
 import '../services/edge_slm_understanding_engine.dart';
 import '../services/intelligent_scheme_search.dart';
+import '../services/official_grounded_search.dart';
+import '../services/private_ai_knowledge_base.dart';
 import '../services/scheme_understanding_engine.dart';
 import '../services/speech_output_controller.dart';
 import '../services/voice_recognition_controller.dart';
@@ -28,6 +31,8 @@ enum VoiceInputLanguage { english, tamil }
 
 enum VoiceEdgeActivity { idle, listening, processing, speaking }
 
+enum _OnlineGroundingPhase { idle, checking, found, unavailable, noSources }
+
 class VoiceAssistantOverlay extends StatefulWidget {
   const VoiceAssistantOverlay({
     super.key,
@@ -43,6 +48,7 @@ class VoiceAssistantOverlay extends StatefulWidget {
     this.understandingEngine,
     this.sessionController,
     this.voiceAgentController,
+    this.groundedSearch,
     this.surface = VoiceAgentSurface.regular,
     this.initialText,
     this.autoStart = true,
@@ -60,6 +66,7 @@ class VoiceAssistantOverlay extends StatefulWidget {
   final SchemeUnderstandingEngine? understandingEngine;
   final AssistantSessionController? sessionController;
   final VoiceAgentController? voiceAgentController;
+  final OfficialGroundedSearch? groundedSearch;
   final VoiceAgentSurface surface;
   final String? initialText;
   final bool autoStart;
@@ -75,6 +82,8 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
   late final bool _ownsRecognitionController;
   late final bool _ownsSpeechOutputController;
   late final bool _ownsSessionController;
+  late final OfficialGroundedSearch _groundedSearch;
+  late final bool _ownsGroundedSearch;
   bool _ownsUnderstandingEngine = false;
   EdgeSlmUnderstandingEngine? _edgeSlmEngine;
   VoiceAgentController? _voiceAgentController;
@@ -106,9 +115,16 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
   List<SchemeSearchMatch> _legacyMatches = const [];
   bool _legacySearching = false;
   int _operationGeneration = 0;
-  String? _lastSpokenQuestion;
+  int _recognitionGeneration = 0;
+  String? _lastSpokenTurn;
+  String? _lastFinalTranscript;
+  int _lastFinalRecognitionGeneration = -1;
   DateTime _lastSoundLevelUpdate = DateTime.fromMillisecondsSinceEpoch(0);
   final TextEditingController _typedController = TextEditingController();
+  _OnlineGroundingPhase _groundingPhase = _OnlineGroundingPhase.idle;
+  List<GroundedSource> _groundedSources = const [];
+  String? _groundingKey;
+  int _groundingGeneration = 0;
 
   bool get _isListening => _voicePhase == _VoiceAssistantPhase.listening;
   bool get _cloudActive =>
@@ -212,6 +228,8 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
       );
     }
     _sessionController?.addListener(_handleSessionChanged);
+    _ownsGroundedSearch = widget.groundedSearch == null;
+    _groundedSearch = widget.groundedSearch ?? HttpOfficialGroundedSearch();
 
     final deviceLanguage = PlatformDispatcher.instance.locale.languageCode;
     _fallbackLanguage = deviceLanguage == 'ta'
@@ -414,19 +432,91 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
       if (state.latestTranscript.isNotEmpty) {
         _transcript = state.latestTranscript;
       }
-    });
-    final question = state.question;
-    if (!_cloudActive &&
-        state.phase == AssistantSessionPhase.asking &&
-        question != null) {
-      final text = question.text(tamilLanguage: state.isTamil);
-      if (_lastSpokenQuestion != text) {
-        _lastSpokenQuestion = text;
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted) unawaited(_speakQuestionAndListen());
-        });
+      if (state.phase == AssistantSessionPhase.understanding) {
+        _groundingGeneration++;
+        _groundingKey = null;
+        _groundingPhase = _OnlineGroundingPhase.idle;
+        _groundedSources = const [];
       }
+    });
+    if ((state.phase == AssistantSessionPhase.results ||
+            state.phase == AssistantSessionPhase.noConfidentMatch) &&
+        state.reply != null) {
+      _startOnlineGrounding(state);
     }
+    if (_cloudActive) return;
+    final reply = state.reply;
+    final question = state.question;
+    final turnKey = [
+      state.statement,
+      state.questionsAsked,
+      reply?.topic,
+      question?.factKey.name,
+    ].join('|');
+    if (_lastSpokenTurn == turnKey) return;
+    if (state.phase == AssistantSessionPhase.asking && question != null) {
+      _lastSpokenTurn = turnKey;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) unawaited(_speakQuestionAndListen());
+      });
+    } else if ((state.phase == AssistantSessionPhase.results ||
+            state.phase == AssistantSessionPhase.noConfidentMatch) &&
+        reply != null) {
+      _lastSpokenTurn = turnKey;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) unawaited(_speakReply(reply));
+      });
+    }
+  }
+
+  void _startOnlineGrounding(AssistantSessionState state) {
+    final reply = state.reply;
+    if (reply == null) return;
+    final urls = <String>[];
+    final labels = <String, String>{};
+    void addSource(String url, String label) {
+      final value = url.trim();
+      if (value.isEmpty || urls.contains(value)) return;
+      urls.add(value);
+      labels[value] = label;
+    }
+
+    addSource(reply.sourceUrl, reply.sourceLabel);
+    for (final recommendation in state.recommendations.take(3)) {
+      addSource(recommendation.scheme.sourceUrl, recommendation.scheme.name);
+    }
+    if (urls.isEmpty) return;
+    final key = '${reply.topic}|${urls.join('|')}';
+    if (_groundingKey == key) return;
+    _groundingKey = key;
+    final generation = ++_groundingGeneration;
+    setState(() {
+      _groundingPhase = _OnlineGroundingPhase.checking;
+      _groundedSources = const [];
+    });
+    unawaited(
+      _groundedSearch
+          .search(
+            GroundedSearchRequest(
+              topic: reply.topic,
+              sourceUrls: urls,
+              sourceLabels: labels,
+            ),
+          )
+          .then((result) {
+            if (!mounted || generation != _groundingGeneration) return;
+            setState(() {
+              _groundedSources = result.sources;
+              _groundingPhase = switch (result.outcome) {
+                GroundedSearchOutcome.found => _OnlineGroundingPhase.found,
+                GroundedSearchOutcome.offline =>
+                  _OnlineGroundingPhase.unavailable,
+                GroundedSearchOutcome.noSources =>
+                  _OnlineGroundingPhase.noSources,
+              };
+            });
+          }),
+    );
   }
 
   Future<void> _startListening({bool preserveTranscript = false}) async {
@@ -437,6 +527,9 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
     }
     _startingRecognition = true;
     _operationGeneration++;
+    _recognitionGeneration++;
+    _lastFinalTranscript = null;
+    _lastFinalRecognitionGeneration = -1;
     await _speechOutputController.stop();
     if (!mounted) return;
     _setListeningAnimations(false);
@@ -520,20 +613,31 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
       _sessionController?.updatePartialTranscript(transcript);
       return;
     }
-    if (transcript.isNotEmpty) unawaited(_processFinalTranscript(transcript));
+    if (transcript.isEmpty) return;
+    if (_lastFinalRecognitionGeneration == _recognitionGeneration &&
+        _lastFinalTranscript == transcript) {
+      return;
+    }
+    _lastFinalRecognitionGeneration = _recognitionGeneration;
+    _lastFinalTranscript = transcript;
+    unawaited(_processFinalTranscript(transcript));
   }
 
   Future<void> _processFinalTranscript(String transcript) async {
+    final value = transcript.trim();
+    final normalized = PrivateAiKnowledgeBase.normalizeForUnderstanding(value);
+    if (normalized.isEmpty) return;
     final session = _sessionController;
     if (session != null) {
       if (session.state.question != null) {
-        await session.answer(transcript);
+        await session.answer(value);
       } else {
-        await session.start(transcript, isTamil: _presentInTamil);
+        _lastSpokenTurn = null;
+        await session.start(value, isTamil: _presentInTamil);
       }
       return;
     }
-    await _legacySearch(transcript);
+    await _legacySearch(value);
   }
 
   Future<void> _legacySearch(String query) async {
@@ -681,7 +785,9 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
     if (state == null || question == null || _speaking) return;
     await _recognitionController.cancel();
     if (!mounted) return;
-    final languageTag = state.isTamil ? 'ta-IN' : 'en-IN';
+    final reply = state.reply;
+    final languageTag =
+        reply?.languageTag ?? (state.isTamil ? 'ta-IN' : 'en-IN');
     final supported = _speechCapabilities?.supports(languageTag) ?? false;
     if (!supported) return;
     final generation = ++_operationGeneration;
@@ -689,19 +795,69 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
       _speaking = true;
       _voicePhase = _VoiceAssistantPhase.ready;
     });
+    final questionText = _questionText(state, question);
+    final spokenText = reply == null
+        ? questionText
+        : '${reply.spokenText} $questionText';
     final completed = await _speechOutputController.speak(
-      question.text(tamilLanguage: state.isTamil),
+      spokenText,
       languageTag: languageTag,
     );
     if (!mounted || generation != _operationGeneration) return;
     setState(() => _speaking = false);
     if (completed) {
       // Give Android audio focus a moment to move from TTS back to the mic.
-      await Future<void>.delayed(const Duration(milliseconds: 250));
+      await Future<void>.delayed(const Duration(milliseconds: 450));
       if (mounted && generation == _operationGeneration) {
         await _startListening(preserveTranscript: true);
       }
     }
+  }
+
+  Future<void> _speakReply(GroundedAssistantReply reply) async {
+    if (_cloudActive || _speaking || reply.spokenText.trim().isEmpty) return;
+    await _recognitionController.cancel();
+    if (!mounted) return;
+    final supported = _speechCapabilities?.supports(reply.languageTag) ?? false;
+    if (!supported) return;
+    final generation = ++_operationGeneration;
+    setState(() {
+      _speaking = true;
+      _voicePhase = _VoiceAssistantPhase.ready;
+    });
+    await _speechOutputController.speak(
+      reply.spokenText,
+      languageTag: reply.languageTag,
+    );
+    if (!mounted || generation != _operationGeneration) return;
+    setState(() => _speaking = false);
+  }
+
+  String _questionText(AssistantSessionState state, FollowUpQuestion question) {
+    if (RegExp(r'[\u0B80-\u0BFF]').hasMatch(state.statement)) {
+      return question.tamil;
+    }
+    if (!state.isTamil) return question.english;
+    return switch (question.factKey) {
+      EligibilityFactKey.age => 'Unga vayasu enna?',
+      EligibilityFactKey.state => 'Neenga entha state-la irukkeenga?',
+      EligibilityFactKey.district => 'Neenga entha district-la irukkeenga?',
+      EligibilityFactKey.annualIncome =>
+        'Unga family annual income approximately evlo?',
+      EligibilityFactKey.gender => 'Unga gender category enna?',
+      EligibilityFactKey.community => 'Unga community category enna?',
+      EligibilityFactKey.occupation => 'Ippo unga occupation enna?',
+      EligibilityFactKey.education => 'Unga education level enna?',
+      EligibilityFactKey.disability => 'Disability category apply aaguma?',
+      EligibilityFactKey.maritalStatus => 'Unga marital status enna?',
+      EligibilityFactKey.studentStatus =>
+        'Neenga ippo student-ah irukkeengala?',
+      EligibilityFactKey.businessStage =>
+        'Idhu idea stage-ah, new business-ah, illa existing business-ah?',
+      EligibilityFactKey.businessSector => 'Business sector enna?',
+      EligibilityFactKey.fundingNeed => 'Approximately evlo funding thevai?',
+      EligibilityFactKey.landholding => 'Unga landholding evlo?',
+    };
   }
 
   Future<void> _answerOption(String option) async {
@@ -908,6 +1064,8 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
     }
     _sessionController?.removeListener(_handleSessionChanged);
     if (_ownsSessionController) _sessionController?.dispose();
+    _groundingGeneration++;
+    if (_ownsGroundedSearch) _groundedSearch.close();
     _edgeSlmEngine?.removeListener(_handleEdgeSlmChanged);
     if (_ownsUnderstandingEngine) {
       unawaited(_edgeSlmEngine?.close());
@@ -1070,6 +1228,14 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
                               fontSize: 11.5,
                             ),
                           ),
+                        ],
+                        if (_session?.reply case final reply?) ...[
+                          const SizedBox(height: 12),
+                          _buildAssistantReply(reply),
+                        ],
+                        if (_groundingPhase != _OnlineGroundingPhase.idle) ...[
+                          const SizedBox(height: 9),
+                          _buildOnlineGrounding(),
                         ],
                         if (_session?.facts.isNotEmpty == true) ...[
                           const SizedBox(height: 12),
@@ -1560,7 +1726,7 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
   }
 
   Widget _buildQuestionCard(FollowUpQuestion question) {
-    final text = question.text(tamilLanguage: _session!.isTamil);
+    final text = _questionText(_session!, question);
     return Container(
       key: const Key('voice-follow-up-question'),
       padding: const EdgeInsets.all(12),
@@ -1696,6 +1862,218 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
         ],
       ],
     );
+  }
+
+  Widget _buildAssistantReply(GroundedAssistantReply reply) {
+    return Container(
+      key: const Key('voice-assistant-reply'),
+      padding: const EdgeInsets.all(13),
+      decoration: BoxDecoration(
+        color: _accent.withValues(alpha: 0.11),
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(color: _accent.withValues(alpha: 0.32)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.auto_awesome, size: 15, color: _accent),
+              const SizedBox(width: 6),
+              Text(
+                _isCompanion ? 'Saarthi' : 'Ask IN AI',
+                style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 7),
+          Text(
+            reply.displayText,
+            style: GoogleFonts.inter(
+              color: const Color(0xFFE2E8F0),
+              fontSize: 11,
+              height: 1.45,
+            ),
+          ),
+          if (reply.sourceUrl.isNotEmpty) ...[
+            const SizedBox(height: 7),
+            TextButton.icon(
+              key: const Key('voice-assistant-source'),
+              onPressed: () => _openReplySource(reply.sourceUrl),
+              style: TextButton.styleFrom(
+                padding: EdgeInsets.zero,
+                minimumSize: const Size(0, 30),
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+              icon: const Icon(Icons.open_in_new, size: 14),
+              label: Text(
+                reply.sourceLabel.isEmpty
+                    ? 'Open official source'
+                    : reply.sourceLabel,
+                style: const TextStyle(fontSize: 10.5),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOnlineGrounding() {
+    final isChecking = _groundingPhase == _OnlineGroundingPhase.checking;
+    final isFound = _groundingPhase == _OnlineGroundingPhase.found;
+    final icon = isChecking
+        ? Icons.travel_explore
+        : isFound
+        ? Icons.verified_outlined
+        : Icons.cloud_off_outlined;
+    final title = switch (_groundingPhase) {
+      _OnlineGroundingPhase.checking => 'Checking official sources…',
+      _OnlineGroundingPhase.found =>
+        'Grounded online · ${_groundedSources.length} official ${_groundedSources.length == 1 ? 'source' : 'sources'}',
+      _OnlineGroundingPhase.unavailable =>
+        'Offline · using private on-device knowledge',
+      _OnlineGroundingPhase.noSources =>
+        'Official page unavailable · using the verified local catalog',
+      _OnlineGroundingPhase.idle => '',
+    };
+    return Container(
+      key: const Key('voice-online-grounding'),
+      padding: const EdgeInsets.all(11),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0F1D2E),
+        borderRadius: BorderRadius.circular(13),
+        border: Border.all(
+          color: (isFound ? const Color(0xFF22C55E) : _accent).withValues(
+            alpha: 0.30,
+          ),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                icon,
+                size: 15,
+                color: isFound ? const Color(0xFF4ADE80) : _accent,
+              ),
+              const SizedBox(width: 7),
+              Expanded(
+                child: Text(
+                  title,
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFFE2E8F0),
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              if (isChecking)
+                SizedBox(
+                  width: 13,
+                  height: 13,
+                  child: CircularProgressIndicator(
+                    key: const Key('voice-online-grounding-progress'),
+                    strokeWidth: 1.5,
+                    color: _accent,
+                  ),
+                ),
+            ],
+          ),
+          if (isFound) ...[
+            const SizedBox(height: 5),
+            ..._groundedSources.map(
+              (source) => Padding(
+                padding: const EdgeInsets.only(top: 5),
+                child: InkWell(
+                  key: Key('voice-grounded-source-${source.url}'),
+                  onTap: () => _openReplySource(source.url.toString()),
+                  borderRadius: BorderRadius.circular(9),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 7,
+                      vertical: 6,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                source.title,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: GoogleFonts.inter(
+                                  color: const Color(0xFF93C5FD),
+                                  fontSize: 10.5,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                            const Icon(
+                              Icons.open_in_new,
+                              size: 12,
+                              color: Color(0xFF94A3B8),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          source.snippet,
+                          maxLines: 3,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.inter(
+                            color: const Color(0xFFCBD5E1),
+                            fontSize: 9.5,
+                            height: 1.35,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          source.host,
+                          style: GoogleFonts.inter(
+                            color: const Color(0xFF4ADE80),
+                            fontSize: 8.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+          if (isChecking || isFound) ...[
+            const SizedBox(height: 5),
+            Text(
+              'Only the topic and official links are checked. Your statement and profile stay on this device.',
+              key: const Key('voice-grounding-privacy-note'),
+              style: GoogleFonts.inter(
+                color: const Color(0xFF94A3B8),
+                fontSize: 8.5,
+                height: 1.3,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Future<void> _openReplySource(String value) async {
+    final uri = Uri.tryParse(value);
+    if (uri == null || !uri.hasScheme) return;
+    final opened = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    if (!opened && mounted) {
+      setState(() => _message = 'Could not open the official source.');
+    }
   }
 
   Widget _buildRecommendationCard(SchemeRecommendation recommendation) {

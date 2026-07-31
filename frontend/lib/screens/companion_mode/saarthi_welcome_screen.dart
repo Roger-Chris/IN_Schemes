@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../providers/app_state_provider.dart';
+import '../../services/voice_agent_preferences.dart';
+import '../../services/voice_agent_preview_service.dart';
 import 'saarthi_profile_setup_screen.dart';
 
 class SaarthiWelcomeScreen extends StatefulWidget {
@@ -13,12 +15,37 @@ class SaarthiWelcomeScreen extends StatefulWidget {
 
 class _SaarthiWelcomeScreenState extends State<SaarthiWelcomeScreen> {
   String _selectedLang = 'en';
+  String _selectedVoice = VoiceAgentPreferences.defaultVoice;
+  bool _previewingVoice = false;
 
   @override
   void initState() {
     super.initState();
     final provider = Provider.of<AppProvider>(context, listen: false);
     _selectedLang = provider.selectedLanguage;
+    VoiceAgentPreferences.loadVoice().then((voice) {
+      if (mounted) setState(() => _selectedVoice = voice);
+    });
+  }
+
+  Future<void> _selectVoice(String voice) async {
+    setState(() => _selectedVoice = voice);
+    await VoiceAgentPreferences.saveVoice(voice);
+  }
+
+  Future<void> _previewVoice() async {
+    if (_previewingVoice) return;
+    setState(() => _previewingVoice = true);
+    try {
+      await VoiceAgentPreviewService.preview(_selectedVoice);
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error.toString().replaceFirst('Bad state: ', ''))),
+      );
+    } finally {
+      if (mounted) setState(() => _previewingVoice = false);
+    }
   }
 
   static const Color kBrandBlue = Color(0xFF2563EB);
@@ -307,6 +334,51 @@ class _SaarthiWelcomeScreenState extends State<SaarthiWelcomeScreen> {
                           circleChar: 'அ',
                           circleBg: const Color(0xFFFFF7ED),
                           circleTextColor: const Color(0xFFEA580C),
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.record_voice_over_outlined,
+                              color: kBrandBlue,
+                              size: 18,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Voice',
+                              style: GoogleFonts.inter(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: kDarkSlate,
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            ChoiceChip(
+                              label: const Text('Natural'),
+                              selected: _selectedVoice == 'natural',
+                              onSelected: (_) => _selectVoice('natural'),
+                            ),
+                            const SizedBox(width: 6),
+                            ChoiceChip(
+                              label: const Text('Clear'),
+                              selected: _selectedVoice == 'clear',
+                              onSelected: (_) => _selectVoice('clear'),
+                            ),
+                            const Spacer(),
+                            IconButton(
+                              tooltip: 'Preview in English and Tamil',
+                              onPressed: _previewingVoice ? null : _previewVoice,
+                              icon: _previewingVoice
+                                  ? const SizedBox(
+                                      width: 18,
+                                      height: 18,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : const Icon(Icons.play_circle_outline),
+                            ),
+                          ],
                         ),
                         const SizedBox(height: 8),
                         // Info banner

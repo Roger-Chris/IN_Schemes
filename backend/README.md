@@ -50,6 +50,44 @@ npx supabase functions deploy schemes-api
 npx supabase functions deploy search
 ```
 
+## Published mobile scheme catalog
+
+The relational scheme tables are the editorial source of truth. The mobile app
+reads only a validated, immutable release snapshot and keeps the bundled JSON as
+its factory fallback.
+
+Validate the bundled 217-scheme source before importing it:
+
+```powershell
+npm run catalog:validate
+```
+
+For the initial production import, set `SUPABASE_URL` and a server-only
+`SUPABASE_SECRET_KEY`, apply the forward migrations, then run:
+
+```powershell
+npm run catalog:bootstrap
+```
+
+Never put the secret key in Flutter or commit it to a file. The bootstrap keeps
+legacy rows for referential history but marks codes outside the imported catalog
+inactive.
+
+For subsequent edits, use the Supabase Table Editor. After reviewing a complete
+batch, publish one atomic release from the Dashboard SQL editor:
+
+```sql
+select private.publish_scheme_catalog('Describe the catalog update', false);
+```
+
+Publishing refuses empty/invalid catalogs and scheme-count drops greater than
+10 percent. After an intentional large withdrawal, pass `true` as the second
+argument. To roll back without altering release contents:
+
+```sql
+select private.promote_catalog_release('<release-uuid>');
+```
+
 ## Administration foundation
 
 The `20260727000100_admin_foundation.sql` migration builds on the existing

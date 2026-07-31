@@ -53,4 +53,53 @@ void main() {
       await controller.dispose();
     },
   );
+
+  test('uses the chosen natural voice style for English and Tamil', () async {
+    final spokenCalls = <MethodCall>[];
+    messenger.setMockMethodCallHandler(channel, (call) async {
+      if (call.method == 'capabilities') {
+        return <String, dynamic>{
+          'available': true,
+          'english': true,
+          'tamil': true,
+          'englishVoice': 'en-in-natural',
+          'tamilVoice': 'ta-in-natural',
+        };
+      }
+      if (call.method == 'speak') {
+        spokenCalls.add(call);
+        final utteranceId = 'utterance-${spokenCalls.length}';
+        await messenger.handlePlatformMessage(
+          channel.name,
+          channel.codec.encodeMethodCall(
+            MethodCall('speechEvent', <String, dynamic>{
+              'event': 'completed',
+              'utteranceId': utteranceId,
+            }),
+          ),
+          (_) {},
+        );
+        return utteranceId;
+      }
+      return null;
+    });
+    final controller = NativeSpeechOutputController(
+      channel: channel,
+      preferredVoice: 'clear',
+    );
+
+    final capabilities = await controller.initialize();
+    expect(capabilities.englishVoice, 'en-in-natural');
+    expect(capabilities.tamilVoice, 'ta-in-natural');
+    expect(await controller.speak('Welcome', languageTag: 'en-IN'), isTrue);
+    expect(await controller.speak('வணக்கம்', languageTag: 'ta-IN'), isTrue);
+    expect(spokenCalls.map((call) => call.arguments['languageTag']), [
+      'en-IN',
+      'ta-IN',
+    ]);
+    expect(spokenCalls.map((call) => call.arguments['voiceStyle']).toSet(), {
+      'clear',
+    });
+    await controller.dispose();
+  });
 }
