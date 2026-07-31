@@ -7,9 +7,11 @@ import 'package:frontend/models/scheme_model.dart';
 import 'package:frontend/models/user_profile.dart';
 import 'package:frontend/services/assistant_session_controller.dart';
 import 'package:frontend/services/intelligent_scheme_search.dart';
+import 'package:frontend/services/official_grounded_search.dart';
 import 'package:frontend/services/scheme_understanding_engine.dart';
 import 'package:frontend/services/speech_output_controller.dart';
 import 'package:frontend/services/voice_recognition_controller.dart';
+import 'package:frontend/services/voice_agent_controller.dart';
 import 'package:frontend/widgets/voice_assistant_overlay.dart';
 
 void main() {
@@ -482,6 +484,60 @@ void main() {
     expect(saved?.profileCompleted, isTrue);
   });
 
+  testWidgets(
+    'regular and Companion surfaces show cited official online evidence',
+    (tester) async {
+      for (final surface in VoiceAgentSurface.values) {
+        final grounding = _FakeOfficialGroundedSearch();
+        await tester.pumpWidget(
+          MaterialApp(
+            home: VoiceAssistantOverlay(
+              key: ValueKey(surface),
+              autoStart: false,
+              initialText: 'msme definition and registration',
+              schemes: const [
+                Scheme(
+                  id: 'IN-MSME',
+                  schemeCode: 'IN-MSME',
+                  name: 'MSME Registration Support',
+                  sector: 'Business MSME registration',
+                  benefits: 'Registration guidance',
+                  status: 'Current',
+                  verificationStatus: 'Verified official source',
+                  sourceUrl: 'https://udyamregistration.gov.in/Important.aspx',
+                ),
+              ],
+              profile: UserProfile(),
+              understandingEngine: const LocalSchemeUnderstandingEngine(),
+              recognitionController: _FakeVoiceRecognitionController(),
+              speechOutputController: _FakeSpeechOutputController(),
+              groundedSearch: grounding,
+              surface: surface,
+              onClose: () {},
+              onSubmit: (_) {},
+            ),
+          ),
+        );
+        await tester.pump();
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 20));
+
+        expect(find.byKey(const Key('voice-online-grounding')), findsOneWidget);
+        expect(find.textContaining('Grounded online'), findsOneWidget);
+        expect(find.text('Udyam Registration Portal'), findsOneWidget);
+        expect(
+          find.byKey(const Key('voice-grounding-privacy-note')),
+          findsOneWidget,
+        );
+        expect(grounding.lastRequest?.topic, 'msme_definition');
+        expect(
+          grounding.lastRequest?.sourceUrls,
+          contains('https://udyamregistration.gov.in/Important.aspx'),
+        );
+      }
+    },
+  );
+
   testWidgets('missing Tamil TTS leaves the follow-up readable and manual', (
     tester,
   ) async {
@@ -681,4 +737,28 @@ class _FakeSpeechOutputController implements SpeechOutputController {
 
   @override
   Future<void> dispose() async {}
+}
+
+class _FakeOfficialGroundedSearch implements OfficialGroundedSearch {
+  GroundedSearchRequest? lastRequest;
+
+  @override
+  Future<GroundedSearchResult> search(GroundedSearchRequest request) async {
+    lastRequest = request;
+    return GroundedSearchResult(
+      outcome: GroundedSearchOutcome.found,
+      sources: [
+        GroundedSource(
+          title: 'Udyam Registration Portal',
+          url: Uri.parse('https://udyamregistration.gov.in/Important.aspx'),
+          snippet:
+              'MSME registration is completed online through the official Udyam portal.',
+          verifiedAt: DateTime(2026, 7, 31),
+        ),
+      ],
+    );
+  }
+
+  @override
+  void close() {}
 }
