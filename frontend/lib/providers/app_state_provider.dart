@@ -48,8 +48,15 @@ class AppProvider with ChangeNotifier {
   Map<String, dynamic> _wizardAnswers = {};
   int _wizardStep = 0;
 
-  // Mock Announcements
-  final List<Map<String, String>> announcements = [
+  // Dynamic/Mock Announcements fallback
+  List<Map<String, String>> _announcementsList = [];
+
+  List<Map<String, String>> get announcements {
+    if (_announcementsList.isNotEmpty) return _announcementsList;
+    return _defaultAnnouncements;
+  }
+
+  static final List<Map<String, String>> _defaultAnnouncements = [
     {
       'title': 'National Entrepreneurs\' Day Celebration',
       'date': '16-Jan-2026',
@@ -196,28 +203,40 @@ class AppProvider with ChangeNotifier {
 
   static final List<Map<String, dynamic>> _defaultPromoAlerts = [
     {
-      'title': 'PMEGP (Closing in 5 Days)',
+      'title': 'Applications Closing Soon',
+      'subtitle': 'PMEGP · 2 days left',
       'badge_text': 'Alert',
       'badge_text_color': '#EA580C',
       'badge_bg_color': '#FFF7ED',
-      'bg_gradient_start': '#FFF7ED',
-      'bg_gradient_end': '#FFFFEDD5',
-      'btn_text': 'View Details',
-      'btn_color': '#EA580C',
       'target_route': 'notifications',
-      'graphic_type': 'calendar',
+      'bg_image': 'assets/images/Background/alert banner.png',
     },
     {
-      'title': 'TN Export Promotion Scheme',
+      'title': 'New Scheme',
+      'subtitle': 'TN Export Promotion Scheme',
       'badge_text': 'New Scheme',
       'badge_text_color': '#16A34A',
       'badge_bg_color': '#DCFCE7',
-      'bg_gradient_start': '#F0FDF4',
-      'bg_gradient_end': '#DCFCE7',
-      'btn_text': 'Explore',
-      'btn_color': '#16A34A',
       'target_route': 'discover_results',
-      'graphic_type': 'ship',
+      'bg_image': 'assets/images/Background/new scheme banner.png',
+    },
+    {
+      'title': 'Important Update',
+      'subtitle': 'UDYAM registration process updated',
+      'badge_text': 'Notify',
+      'badge_text_color': '#2563EB',
+      'badge_bg_color': '#EFF6FF',
+      'target_route': 'discover_results',
+      'bg_image': 'assets/images/Background/notification banner.png',
+    },
+    {
+      'title': 'For Women Entrepreneurs',
+      'subtitle': 'Explore special funding schemes',
+      'badge_text': 'Featured',
+      'badge_text_color': '#7C3AED',
+      'badge_bg_color': '#F5F3FF',
+      'target_route': 'discover_results',
+      'bg_image': 'assets/images/Background/suggestion banner.png',
     }
   ];
 
@@ -532,6 +551,21 @@ class AppProvider with ChangeNotifier {
         _profile,
         _allSchemes,
       );
+      
+      // Update announcements dynamically based on latest central/state schemes
+      if (_allSchemes.isNotEmpty) {
+        final recent = List<Scheme>.from(_allSchemes)
+          ..sort((a, b) => b.id.compareTo(a.id));
+        _announcementsList = recent.take(3).map((s) {
+          final isCentral = s.governmentLevel.toLowerCase() == 'central';
+          final sponsor = s.sponsoringBody.isNotEmpty ? s.sponsoringBody : (isCentral ? 'Govt of India' : s.state);
+          return {
+            'title': 'Updated: ${s.name}',
+            'date': 'Realtime Live Feed',
+            'content': '${s.overview.length > 120 ? "${s.overview.substring(0, 117)}..." : s.overview} (Source: $sponsor)',
+          };
+        }).toList();
+      }
     } catch (e) {
       _schemesError = e.toString();
       debugPrint('[AppProvider] loadSchemes error: $e');

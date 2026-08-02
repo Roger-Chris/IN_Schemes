@@ -255,7 +255,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: const ColorScheme.light(
-              primary: Color(0xFF0D47A1),
+              primary: Color(0xFF2563EB),
               onPrimary: Colors.white,
               onSurface: Color(0xFF0F172A),
             ),
@@ -318,7 +318,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF0D47A1),
+                backgroundColor: const Color(0xFF2563EB),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -491,7 +491,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
-        borderSide: const BorderSide(color: Color(0xFF0D47A1)),
+        borderSide: const BorderSide(color: Color(0xFF2563EB)),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
@@ -520,7 +520,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
       children: [
         Icon(
           icon,
-          color: const Color(0xFF0D47A1),
+          color: const Color(0xFF2563EB),
           size: 20,
         ),
         const SizedBox(width: 8),
@@ -530,7 +530,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
             style: GoogleFonts.poppins(
               fontSize: 14,
               fontWeight: FontWeight.bold,
-              color: const Color(0xFF0D47A1),
+              color: const Color(0xFF2563EB),
             ),
           ),
         ),
@@ -563,7 +563,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
               right: 0,
               height: size.height * 0.35,
               child: Image.asset(
-                'assets/images/splash_screen.png',
+                'assets/images/Background/splash_screen.png',
                 fit: BoxFit.cover,
                 alignment: Alignment.topCenter,
               ),
@@ -666,7 +666,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                             LinearProgressIndicator(
                               value: provider.profileCompletionPercentage / 100,
                               backgroundColor: Colors.blue.shade100,
-                              valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF0D47A1)),
+                              valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF2563EB)),
                               minHeight: 6,
                               borderRadius: BorderRadius.circular(3),
                             ),
@@ -841,12 +841,12 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                                         ? const SizedBox(
                                             width: 14,
                                             height: 14,
-                                            child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF0D47A1)),
+                                            child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF2563EB)),
                                           )
-                                        : const Icon(Icons.my_location, size: 14, color: Color(0xFF0D47A1)),
+                                        : const Icon(Icons.my_location, size: 14, color: Color(0xFF2563EB)),
                                     label: Text(
                                       _isLocating ? 'Locating...' : 'Use Current Location',
-                                      style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.bold, color: const Color(0xFF0D47A1)),
+                                      style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.bold, color: const Color(0xFF2563EB)),
                                       overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
@@ -1170,7 +1170,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                               onChanged: (val) {
                                 setState(() => _existingBusiness = val);
                               },
-                              activeThumbColor: const Color(0xFF0D47A1),
+                              activeThumbColor: const Color(0xFF2563EB),
                             ),
                             AnimatedSize(
                               duration: const Duration(milliseconds: 300),
@@ -1296,7 +1296,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                               height: 50,
                               child: ElevatedButton(
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF0D47A1),
+                                  backgroundColor: const Color(0xFF2563EB),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(10),
                                   ),

@@ -128,7 +128,7 @@ class _OtpScreenState extends State<OtpScreen> {
           // 1. Background image
           Positioned.fill(
             child: Image.asset(
-              'assets/images/splash_screen.png',
+              'assets/images/Background/splash_screen.png',
               fit: BoxFit.cover,
             ),
           ),
@@ -167,7 +167,7 @@ class _OtpScreenState extends State<OtpScreen> {
                               
                               // Brand Logo
                               Image.asset(
-                                'assets/images/Logo.png',
+                                'assets/images/Logo/Logo.png',
                                 height: 125,
                                 fit: BoxFit.contain,
                               ),
@@ -200,7 +200,7 @@ class _OtpScreenState extends State<OtpScreen> {
                                     style: GoogleFonts.inter(
                                       fontSize: 10.5,
                                       fontWeight: FontWeight.bold,
-                                      color: const Color(0xFF0D47A1), // Royal Blue
+                                      color: const Color(0xFF2563EB), // Royal Blue
                                     ),
                                   ),
                                   const SizedBox(width: 4),
@@ -208,7 +208,7 @@ class _OtpScreenState extends State<OtpScreen> {
                                     onTap: () => Navigator.of(context).pop(),
                                     child: const Icon(
                                       Icons.edit_outlined,
-                                      color: Color(0xFF0D47A1),
+                                      color: Color(0xFF2563EB),
                                       size: 13,
                                     ),
                                   ),
@@ -261,7 +261,7 @@ class _OtpScreenState extends State<OtpScreen> {
                                             style: GoogleFonts.inter(
                                               fontSize: 20,
                                               fontWeight: FontWeight.bold,
-                                              color: const Color(0xFF0D47A1),
+                                              color: const Color(0xFF2563EB),
                                             ),
                                             decoration: InputDecoration(
                                               counterText: '',
@@ -272,7 +272,7 @@ class _OtpScreenState extends State<OtpScreen> {
                                               ),
                                               focusedBorder: OutlineInputBorder(
                                                 borderRadius: BorderRadius.circular(10),
-                                                borderSide: const BorderSide(color: Color(0xFF0D47A1), width: 1.5),
+                                                borderSide: const BorderSide(color: Color(0xFF2563EB), width: 1.5),
                                               ),
                                             ),
                                             onChanged: (value) {
@@ -313,7 +313,7 @@ class _OtpScreenState extends State<OtpScreen> {
                                       children: [
                                         const Icon(
                                           Icons.access_time,
-                                          color: Color(0xFF0D47A1),
+                                          color: Color(0xFF2563EB),
                                           size: 14,
                                         ),
                                         const SizedBox(width: 4),
@@ -329,7 +329,7 @@ class _OtpScreenState extends State<OtpScreen> {
                                                 text: _formatTime(),
                                                 style: const TextStyle(
                                                   fontWeight: FontWeight.bold,
-                                                  color: Color(0xFF0D47A1),
+                                                  color: Color(0xFF2563EB),
                                                 ),
                                               ),
                                             ],
@@ -375,7 +375,7 @@ class _OtpScreenState extends State<OtpScreen> {
                                       height: 52,
                                       child: ElevatedButton(
                                         style: ElevatedButton.styleFrom(
-                                          backgroundColor: const Color(0xFF0D47A1),
+                                          backgroundColor: const Color(0xFF2563EB),
                                           shape: RoundedRectangleBorder(
                                             borderRadius: BorderRadius.circular(12),
                                           ),
@@ -429,7 +429,7 @@ class _OtpScreenState extends State<OtpScreen> {
                                               text: 'Resend OTP',
                                               style: TextStyle(
                                                 fontWeight: FontWeight.bold,
-                                                color: Color(0xFF0D47A1),
+                                                color: Color(0xFF2563EB),
                                               ),
                                             ),
                                           ],
@@ -473,7 +473,7 @@ class _OtpScreenState extends State<OtpScreen> {
                                           children: [
                                             const Icon(
                                               Icons.chat_bubble_outline,
-                                              color: Color(0xFF0D47A1),
+                                              color: Color(0xFF2563EB),
                                               size: 16,
                                             ),
                                             const SizedBox(width: 8),
@@ -483,13 +483,13 @@ class _OtpScreenState extends State<OtpScreen> {
                                                 style: GoogleFonts.inter(
                                                   fontSize: 12,
                                                   fontWeight: FontWeight.bold,
-                                                  color: const Color(0xFF0D47A1),
+                                                  color: const Color(0xFF2563EB),
                                                 ),
                                               ),
                                             ),
                                             const Icon(
                                               Icons.chevron_right,
-                                              color: Color(0xFF0D47A1),
+                                              color: Color(0xFF2563EB),
                                               size: 16,
                                             ),
                                           ],

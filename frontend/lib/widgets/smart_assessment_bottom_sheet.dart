@@ -85,18 +85,8 @@ class _SmartAssessmentBottomSheetState extends State<SmartAssessmentBottomSheet>
     }
   }
 
-  // Helper to get selected color theme based on card type
   Color _getThemeColor() {
-    switch (widget.cardType) {
-      case 'category':
-        return const Color(0xFF2563EB); // Royal Blue
-      case 'ministry':
-        return const Color(0xFF0D9488); // Teal
-      case 'state':
-        return const Color(0xFFEA580C); // Dark Orange
-      default:
-        return const Color(0xFF4F46E5); // Indigo
-    }
+    return const Color(0xFF2563EB); // Unified Royal Blue theme
   }
 
   void _onOptionSelected(String option) {
@@ -299,20 +289,33 @@ class _SmartAssessmentBottomSheetState extends State<SmartAssessmentBottomSheet>
               Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(6),
-                    decoration: BoxDecoration(
-                      color: themeColor.withValues(alpha: 0.1),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      widget.cardType == 'state'
-                          ? Icons.location_on_rounded
-                          : widget.cardType == 'ministry'
-                              ? Icons.account_balance_rounded
-                              : Icons.grid_view_rounded,
-                      color: themeColor,
-                      size: 16,
-                    ),
+                    padding: widget.cardType == 'state' ? EdgeInsets.zero : const EdgeInsets.all(6),
+                    decoration: widget.cardType == 'state'
+                        ? null
+                        : BoxDecoration(
+                            color: themeColor.withValues(alpha: 0.1),
+                            shape: BoxShape.circle,
+                          ),
+                    child: widget.cardType == 'state'
+                        ? Image.asset(
+                            _getStateMapAsset(widget.cardTitle),
+                            width: 32,
+                            height: 32,
+                            fit: BoxFit.contain,
+                            errorBuilder: (context, error, stackTrace) {
+                              return CustomPaint(
+                                size: const Size(32, 32),
+                                painter: StateMapPainter(widget.cardTitle),
+                              );
+                            },
+                          )
+                        : Icon(
+                            widget.cardType == 'ministry'
+                                ? Icons.account_balance_rounded
+                                : Icons.grid_view_rounded,
+                            color: themeColor,
+                            size: 16,
+                          ),
                   ),
                   const SizedBox(width: 8),
                   Text(
@@ -880,4 +883,147 @@ class _QuestionNode {
     required this.options,
     required this.nextId,
   });
+}
+
+String _getStateMapAsset(String stateName) {
+  switch (stateName.toLowerCase().trim()) {
+    case 'tamil nadu':
+      return 'assets/images/States and UTs/States/Tamil nadu.png';
+    case 'maharashtra':
+      return 'assets/images/States and UTs/States/maharashtra.png';
+    case 'uttar pradesh':
+      return 'assets/images/States and UTs/States/uttar_pradesh.png';
+    case 'karnataka':
+      return 'assets/images/States and UTs/States/karnataka.png';
+    case 'gujarat':
+      return 'assets/images/States and UTs/States/gujarat.png';
+    case 'arunachal pradesh':
+      return 'assets/images/States and UTs/States/Anrunachal pradhesh.png';
+    case 'assam':
+      return 'assets/images/States and UTs/States/Assam.png';
+    case 'bihar':
+      return 'assets/images/States and UTs/States/Bihar.png';
+    case 'chhattisgarh':
+      return 'assets/images/States and UTs/States/Chhatishgar.png';
+    case 'kerala':
+      return 'assets/images/States and UTs/States/Kerala.png';
+    case 'andhra pradesh':
+      return 'assets/images/States and UTs/States/andhra pradesh.png';
+    case 'goa':
+      return 'assets/images/States and UTs/States/goa.png';
+    case 'haryana':
+      return 'assets/images/States and UTs/States/haryana.png';
+    case 'himachal pradesh':
+      return 'assets/images/States and UTs/States/himachal pradesh.png';
+    case 'jharkhand':
+      return 'assets/images/States and UTs/States/jharkhand.png';
+    case 'madhya pradesh':
+      return 'assets/images/States and UTs/States/madhya pradesh.png';
+    case 'manipur':
+      return 'assets/images/States and UTs/States/manipur.png';
+    case 'meghalaya':
+      return 'assets/images/States and UTs/States/meghalaya.png';
+    case 'mizoram':
+      return 'assets/images/States and UTs/States/mizoram.png';
+    case 'nagaland':
+      return 'assets/images/States and UTs/States/nagaland.png';
+    case 'odisha':
+      return 'assets/images/States and UTs/States/odisha.png';
+    case 'punjab':
+      return 'assets/images/States and UTs/States/punjab.png';
+    case 'rajasthan':
+      return 'assets/images/States and UTs/States/rajasthan.png';
+    case 'sikkim':
+      return 'assets/images/States and UTs/States/sikkim.png';
+    case 'telangana':
+      return 'assets/images/States and UTs/States/telangana.png';
+    case 'tripura':
+      return 'assets/images/States and UTs/States/tripura.png';
+    case 'uttarakhand':
+    case 'uttarkhand':
+      return 'assets/images/States and UTs/States/uttarkhand.png';
+    case 'west bengal':
+      return 'assets/images/States and UTs/States/west bengal.png';
+    default:
+      return 'assets/images/States and UTs/States/Tamil nadu.png';
+  }
+}
+
+class StateMapPainter extends CustomPainter {
+  final String stateName;
+  StateMapPainter(this.stateName);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = const Color(0xFF2563EB).withValues(alpha: 0.15)
+      ..style = PaintingStyle.fill;
+
+    final borderPaint = Paint()
+      ..color = const Color(0xFF2563EB)
+      ..strokeWidth = 1.5
+      ..style = PaintingStyle.stroke;
+
+    final path = Path();
+    final w = size.width;
+    final h = size.height;
+
+    if (stateName == 'Tamil Nadu') {
+      path.moveTo(w * 0.2, h * 0.1);
+      path.quadraticBezierTo(w * 0.6, h * 0.05, w * 0.85, h * 0.15);
+      path.lineTo(w * 0.8, h * 0.55);
+      path.quadraticBezierTo(w * 0.65, h * 0.85, w * 0.5, h * 0.95);
+      path.quadraticBezierTo(w * 0.35, h * 0.85, w * 0.25, h * 0.55);
+      path.close();
+    } else if (stateName == 'Maharashtra') {
+      path.moveTo(w * 0.1, h * 0.4);
+      path.lineTo(w * 0.3, h * 0.15);
+      path.lineTo(w * 0.75, h * 0.2);
+      path.lineTo(w * 0.9, h * 0.38);
+      path.lineTo(w * 0.82, h * 0.78);
+      path.lineTo(w * 0.48, h * 0.82);
+      path.lineTo(w * 0.2, h * 0.65);
+      path.close();
+    } else if (stateName == 'Uttar Pradesh') {
+      path.moveTo(w * 0.08, h * 0.35);
+      path.lineTo(w * 0.35, h * 0.2);
+      path.lineTo(w * 0.8, h * 0.25);
+      path.lineTo(w * 0.92, h * 0.5);
+      path.lineTo(w * 0.72, h * 0.78);
+      path.lineTo(w * 0.52, h * 0.68);
+      path.lineTo(w * 0.32, h * 0.78);
+      path.lineTo(w * 0.18, h * 0.52);
+      path.close();
+    } else if (stateName == 'Karnataka') {
+      path.moveTo(w * 0.35, h * 0.08);
+      path.quadraticBezierTo(w * 0.75, h * 0.22, w * 0.6, h * 0.52);
+      path.quadraticBezierTo(w * 0.8, h * 0.72, w * 0.65, h * 0.92);
+      path.lineTo(w * 0.4, h * 0.88);
+      path.quadraticBezierTo(w * 0.2, h * 0.58, w * 0.35, h * 0.32);
+      path.close();
+    } else if (stateName == 'Gujarat') {
+      path.moveTo(w * 0.25, h * 0.22);
+      path.lineTo(w * 0.52, h * 0.12);
+      path.lineTo(w * 0.78, h * 0.22);
+      path.lineTo(w * 0.82, h * 0.52);
+      path.lineTo(w * 0.58, h * 0.82);
+      path.lineTo(w * 0.42, h * 0.58);
+      path.lineTo(w * 0.12, h * 0.48);
+      path.lineTo(w * 0.22, h * 0.34);
+      path.close();
+    } else {
+      path.moveTo(w * 0.5, h * 0.1);
+      path.quadraticBezierTo(w * 0.8, h * 0.1, w * 0.8, h * 0.45);
+      path.quadraticBezierTo(w * 0.8, h * 0.75, w * 0.5, h * 0.95);
+      path.quadraticBezierTo(w * 0.2, h * 0.75, w * 0.2, h * 0.45);
+      path.quadraticBezierTo(w * 0.2, h * 0.1, w * 0.5, h * 0.1);
+      path.close();
+    }
+
+    canvas.drawPath(path, paint);
+    canvas.drawPath(path, borderPaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

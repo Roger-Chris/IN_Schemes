@@ -82,7 +82,7 @@ class _AboutYouProfileScreenState extends State<AboutYouProfileScreen> {
           // Background Layer
           Positioned.fill(
             child: Image.asset(
-              'assets/images/Login_bg.webp',
+              'assets/images/Background/Login_bg.webp',
               fit: BoxFit.cover,
             ),
           ),

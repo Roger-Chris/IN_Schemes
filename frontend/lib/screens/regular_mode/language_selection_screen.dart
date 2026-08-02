@@ -88,7 +88,7 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
           // 1. Background Image from Asset
           Positioned.fill(
             child: Image.asset(
-              'assets/images/Login_bg.webp',
+              'assets/images/Background/Login_bg.webp',
               fit: BoxFit.cover,
             ),
           ),
@@ -224,7 +224,7 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
                       ),
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF0D47A1), // Royal Blue
+                          backgroundColor: const Color(0xFF2563EB), // Royal Blue
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
                           ),

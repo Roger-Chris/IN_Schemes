@@ -90,9 +90,19 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
 
       bool categoryMatch = true;
       if (filters['category'] != null && filters['category'] != 'All') {
-        categoryMatch =
-            scheme.category.toLowerCase() ==
-            filters['category'].toString().toLowerCase();
+        final catVal = filters['category'].toString().toLowerCase();
+        final words = catVal.split(RegExp(r'[\s&/,-]+'));
+        bool wordMatch = false;
+        for (var word in words) {
+          if (word.length > 2 &&
+              (scheme.category.toLowerCase().contains(word) ||
+                  scheme.name.toLowerCase().contains(word) ||
+                  scheme.searchKeywords.toLowerCase().contains(word))) {
+            wordMatch = true;
+            break;
+          }
+        }
+        categoryMatch = wordMatch;
       }
 
       bool genderMatch = true;
@@ -328,7 +338,7 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
                         TextSpan(
                           text: '${results.length} ',
                           style: GoogleFonts.poppins(
-                            color: const Color(0xFF0D47A1),
+                            color: const Color(0xFF2563EB),
                             fontWeight: FontWeight.bold,
                             fontSize: 14.5,
                           ),
