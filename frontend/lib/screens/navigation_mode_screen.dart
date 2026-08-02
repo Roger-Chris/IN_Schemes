@@ -44,7 +44,7 @@ class _NavigationModeScreenState extends State<NavigationModeScreen> {
           // 1. Background Image Layer
           Positioned.fill(
             child: Image.asset(
-              'assets/images/Login_bg.webp', // Using webp asset from the project
+              'assets/images/Background/Login_bg.webp', // Using webp asset from the project
               fit: BoxFit.cover,
             ),
           ),
@@ -83,7 +83,7 @@ class _NavigationModeScreenState extends State<NavigationModeScreen> {
                         children: [
                           // App Logo (Maintained at height 80 as in language selection screen)
                           Image.asset(
-                            'assets/images/Logo.png',
+                            'assets/images/Logo/Logo.png',
                             height: 80,
                             fit: BoxFit.contain,
                           ),

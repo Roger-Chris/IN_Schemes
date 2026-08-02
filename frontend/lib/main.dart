@@ -167,7 +167,7 @@ class _MainTabsContainerState extends State<MainTabsContainer> {
   ) {
     final isSelected = provider.currentTabIndex == index;
     final color = isSelected
-        ? const Color(0xFF0D47A1)
+        ? const Color(0xFF2563EB)
         : const Color(0xFF64748B);
 
     Widget iconWidget = Icon(
@@ -215,6 +215,12 @@ class _MainTabsContainerState extends State<MainTabsContainer> {
                 provider.updateTabIndex(1);
                 WidgetsBinding.instance.addPostFrameCallback((_) {
                   searchTabKey.currentState?.submitVoiceQuery(query);
+                });
+              },
+              onFilterPressed: () {
+                provider.updateTabIndex(1);
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  searchTabKey.currentState?.openFilterBottomSheet();
                 });
               },
             ),

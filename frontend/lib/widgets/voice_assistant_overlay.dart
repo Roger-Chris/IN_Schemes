@@ -904,7 +904,15 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
     final value = await showDialog<String>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text(_isCompanion ? 'Type to Saarthi' : 'Type to Ask IN AI'),
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: const BorderSide(color: Color(0xFFE2E8F0)),
+        ),
+        title: Text(
+          _isCompanion ? 'Type to Saarthi' : 'Type to Ask IN AI',
+          style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+        ),
         content: TextField(
           key: const Key('voice-typed-dialog-input'),
           controller: controller,
@@ -918,10 +926,16 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(),
+            style: TextButton.styleFrom(foregroundColor: const Color(0xFF64748B)),
             child: const Text('Cancel'),
           ),
           FilledButton(
             onPressed: () => Navigator.of(dialogContext).pop(controller.text),
+            style: FilledButton.styleFrom(
+              backgroundColor: const Color(0xFF2563EB),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
             child: const Text('Send'),
           ),
         ],
@@ -938,7 +952,15 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
     final value = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Edit ${_factLabel(fact.key)}'),
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: const BorderSide(color: Color(0xFFE2E8F0)),
+        ),
+        title: Text(
+          'Edit ${_factLabel(fact.key)}',
+          style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+        ),
         content: TextField(
           key: const Key('voice-fact-editor'),
           controller: controller,
@@ -949,10 +971,16 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
+            style: TextButton.styleFrom(foregroundColor: const Color(0xFF64748B)),
             child: const Text('Cancel'),
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(controller.text),
+            style: FilledButton.styleFrom(
+              backgroundColor: const Color(0xFF2563EB),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
             child: const Text('Use value'),
           ),
         ],
@@ -984,7 +1012,15 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
       context: context,
       builder: (context) => AlertDialog(
         key: const Key('voice-profile-review'),
-        title: const Text('Review profile updates'),
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: const BorderSide(color: Color(0xFFE2E8F0)),
+        ),
+        title: Text(
+          'Review profile updates',
+          style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+        ),
         content: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 360),
           child: Column(
@@ -1008,10 +1044,16 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
+            style: TextButton.styleFrom(foregroundColor: const Color(0xFF64748B)),
             child: const Text('Keep session only'),
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
+            style: FilledButton.styleFrom(
+              backgroundColor: const Color(0xFF2563EB),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
             child: const Text('Save confirmed'),
           ),
         ],
@@ -1396,7 +1438,7 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
             width: 56,
             height: 56,
             child: Image.asset(
-              'assets/saarthi_expressions/Ai companion.png',
+              'assets/saarthi/sarathi.png',
               key: const Key('voice-assistant-image'),
               fit: BoxFit.contain,
             ),

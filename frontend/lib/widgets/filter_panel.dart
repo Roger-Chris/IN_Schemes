@@ -4,7 +4,8 @@ import 'package:google_fonts/google_fonts.dart';
 import '../providers/app_state_provider.dart';
 
 class FilterPanel extends StatefulWidget {
-  const FilterPanel({super.key});
+  final VoidCallback? onApplied;
+  const FilterPanel({super.key, this.onApplied});
 
   @override
   State<FilterPanel> createState() => _FilterPanelState();
@@ -36,7 +37,7 @@ class _FilterPanelState extends State<FilterPanel> {
     super.initState();
     final provider = Provider.of<AppProvider>(context, listen: false);
     
-    // Initialize state from existing provider filters or defaults
+    // Initialize state from existing provider filters or defaults (defaulting to 'All')
     _state = provider.filters['state'] ?? 'All';
     _district = provider.filters['district'] ?? 'All';
     _ministry = provider.filters['ministry'] ?? 'All';
@@ -79,6 +80,9 @@ class _FilterPanelState extends State<FilterPanel> {
     provider.updateFilter('schemeType', _schemeType);
     
     Navigator.pop(context);
+    if (widget.onApplied != null) {
+      widget.onApplied!();
+    }
   }
 
   void _resetFilters() {
@@ -204,28 +208,31 @@ class _FilterPanelState extends State<FilterPanel> {
                   _buildSectionHeader('Location'),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-                    child: Row(
-                      children: [
-                        _buildDropdownCell(
-                          icon: Icons.location_on_outlined,
-                          iconColor: const Color(0xFF2563EB),
-                          iconBgColor: const Color(0xFFEFF6FF),
-                          label: 'State',
-                          value: _state,
-                          items: ['All', 'Tamil Nadu', 'Karnataka', 'Kerala', 'Maharashtra', 'Delhi'],
-                          onChanged: (val) => setState(() => _state = val ?? 'All'),
-                        ),
-                        const SizedBox(width: 10),
-                        _buildDropdownCell(
-                          icon: Icons.apartment_outlined,
-                          iconColor: const Color(0xFF2563EB),
-                          iconBgColor: const Color(0xFFEFF6FF),
-                          label: 'District',
-                          value: _district,
-                          items: ['All', 'Chennai', 'Bangalore', 'Cochin', 'Mumbai', 'New Delhi'],
-                          onChanged: (val) => setState(() => _district = val ?? 'All'),
-                        ),
-                      ],
+                    child: IntrinsicHeight(
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          _buildDropdownCell(
+                            icon: Icons.location_on_outlined,
+                            iconColor: const Color(0xFF2563EB),
+                            iconBgColor: const Color(0xFFEFF6FF),
+                            label: 'State',
+                            value: _state,
+                            items: ['All', 'Tamil Nadu', 'Karnataka', 'Kerala', 'Maharashtra', 'Delhi'],
+                            onChanged: (val) => setState(() => _state = val ?? 'All'),
+                          ),
+                          const SizedBox(width: 10),
+                          _buildDropdownCell(
+                            icon: Icons.apartment_outlined,
+                            iconColor: const Color(0xFF2563EB),
+                            iconBgColor: const Color(0xFFEFF6FF),
+                            label: 'District',
+                            value: _district,
+                            items: ['All', 'Chennai', 'Bangalore', 'Cochin', 'Mumbai', 'New Delhi'],
+                            onChanged: (val) => setState(() => _district = val ?? 'All'),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
 
@@ -233,28 +240,31 @@ class _FilterPanelState extends State<FilterPanel> {
                   _buildSectionHeader('Organization'),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-                    child: Row(
-                      children: [
-                        _buildDropdownCell(
-                          icon: Icons.account_balance_outlined,
-                          iconColor: const Color(0xFF7C3AED),
-                          iconBgColor: const Color(0xFFF5F3FF),
-                          label: 'Ministry',
-                          value: _ministry,
-                          items: ['All', 'Ministry of MSME', 'Ministry of Agriculture', 'Ministry of Finance', 'Ministry of Education'],
-                          onChanged: (val) => setState(() => _ministry = val ?? 'All'),
-                        ),
-                        const SizedBox(width: 10),
-                        _buildDropdownCell(
-                          icon: Icons.folder_open_outlined,
-                          iconColor: const Color(0xFF7C3AED),
-                          iconBgColor: const Color(0xFFF5F3FF),
-                          label: 'Department',
-                          value: _department,
-                          items: ['All', 'Dept of MSME Development', 'Dept of Agriculture Cooperation', 'Dept of Higher Education'],
-                          onChanged: (val) => setState(() => _department = val ?? 'All'),
-                        ),
-                      ],
+                    child: IntrinsicHeight(
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          _buildDropdownCell(
+                            icon: Icons.account_balance_outlined,
+                            iconColor: const Color(0xFF7C3AED),
+                            iconBgColor: const Color(0xFFF5F3FF),
+                            label: 'Ministry',
+                            value: _ministry,
+                            items: ['All', 'Ministry of MSME', 'Ministry of Agriculture', 'Ministry of Finance', 'Ministry of Education'],
+                            onChanged: (val) => setState(() => _ministry = val ?? 'All'),
+                          ),
+                          const SizedBox(width: 10),
+                          _buildDropdownCell(
+                            icon: Icons.folder_open_outlined,
+                            iconColor: const Color(0xFF7C3AED),
+                            iconBgColor: const Color(0xFFF5F3FF),
+                            label: 'Department',
+                            value: _department,
+                            items: ['All', 'Dept of MSME Development', 'Dept of Agriculture Cooperation', 'Dept of Higher Education'],
+                            onChanged: (val) => setState(() => _department = val ?? 'All'),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                   Padding(
@@ -296,79 +306,88 @@ class _FilterPanelState extends State<FilterPanel> {
                   ),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-                    child: Row(
-                      children: [
-                        _buildDropdownCell(
-                          icon: Icons.person_outline,
-                          iconColor: const Color(0xFFDB2777),
-                          iconBgColor: const Color(0xFFFDF2F8),
-                          label: 'Gender',
-                          value: _gender,
-                          items: ['All', 'Female', 'Male', 'Transgender'],
-                          onChanged: (val) => setState(() => _gender = val ?? 'All'),
-                        ),
-                        const SizedBox(width: 10),
-                        _buildDropdownCell(
-                          icon: Icons.calendar_month_outlined,
-                          iconColor: const Color(0xFF0D9488),
-                          iconBgColor: const Color(0xFFF0FDFA),
-                          label: 'Age',
-                          value: _age,
-                          items: ['All', 'Under 18', '18 - 35', '36 - 60', 'Above 60'],
-                          onChanged: (val) => setState(() => _age = val ?? 'All'),
-                        ),
-                      ],
+                    child: IntrinsicHeight(
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          _buildDropdownCell(
+                            icon: Icons.person_outline,
+                            iconColor: const Color(0xFFDB2777),
+                            iconBgColor: const Color(0xFFFDF2F8),
+                            label: 'Gender',
+                            value: _gender,
+                            items: ['All', 'Female', 'Male', 'Transgender'],
+                            onChanged: (val) => setState(() => _gender = val ?? 'All'),
+                          ),
+                          const SizedBox(width: 10),
+                          _buildDropdownCell(
+                            icon: Icons.calendar_month_outlined,
+                            iconColor: const Color(0xFF0D9488),
+                            iconBgColor: const Color(0xFFF0FDFA),
+                            label: 'Age',
+                            value: _age,
+                            items: ['All', 'Under 18', '18 - 35', '36 - 60', 'Above 60'],
+                            onChanged: (val) => setState(() => _age = val ?? 'All'),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-                    child: Row(
-                      children: [
-                        _buildDropdownCell(
-                          icon: Icons.people_outline,
-                          iconColor: const Color(0xFF7C3AED),
-                          iconBgColor: const Color(0xFFF5F3FF),
-                          label: 'Community',
-                          value: _community,
-                          items: ['All', 'General', 'OBC', 'EWS', 'SC', 'ST'],
-                          onChanged: (val) => setState(() => _community = val ?? 'All'),
-                        ),
-                        const SizedBox(width: 10),
-                        _buildDropdownCell(
-                          icon: Icons.business_center_outlined,
-                          iconColor: const Color(0xFF2563EB),
-                          iconBgColor: const Color(0xFFEFF6FF),
-                          label: 'Occupation',
-                          value: _occupation,
-                          items: ['All', 'Unemployed', 'Student', 'Farmer', 'Self Employed', 'Salaried'],
-                          onChanged: (val) => setState(() => _occupation = val ?? 'All'),
-                        ),
-                      ],
+                    child: IntrinsicHeight(
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          _buildDropdownCell(
+                            icon: Icons.people_outline,
+                            iconColor: const Color(0xFF7C3AED),
+                            iconBgColor: const Color(0xFFF5F3FF),
+                            label: 'Community',
+                            value: _community,
+                            items: ['All', 'General', 'OBC', 'EWS', 'SC', 'ST'],
+                            onChanged: (val) => setState(() => _community = val ?? 'All'),
+                          ),
+                          const SizedBox(width: 10),
+                          _buildDropdownCell(
+                            icon: Icons.business_center_outlined,
+                            iconColor: const Color(0xFF2563EB),
+                            iconBgColor: const Color(0xFFEFF6FF),
+                            label: 'Occupation',
+                            value: _occupation,
+                            items: ['All', 'Unemployed', 'Student', 'Farmer', 'Self Employed', 'Salaried'],
+                            onChanged: (val) => setState(() => _occupation = val ?? 'All'),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-                    child: Row(
-                      children: [
-                        _buildDropdownCell(
-                          icon: Icons.school_outlined,
-                          iconColor: const Color(0xFF16A34A),
-                          iconBgColor: const Color(0xFFF0FDF4),
-                          label: 'Education',
-                          value: _education,
-                          items: ['All', 'Under 10th', '12th Pass', 'Graduate', 'Post Graduate'],
-                          onChanged: (val) => setState(() => _education = val ?? 'All'),
-                        ),
-                        const SizedBox(width: 10),
-                        _buildSwitchCell(
-                          icon: Icons.workspace_premium_outlined,
-                          iconColor: const Color(0xFFEA580C),
-                          iconBgColor: const Color(0xFFFFF7ED),
-                          label: 'First Generation Graduate',
-                          value: _firstGen,
-                          onChanged: (val) => setState(() => _firstGen = val),
-                        ),
-                      ],
+                    child: IntrinsicHeight(
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          _buildDropdownCell(
+                            icon: Icons.school_outlined,
+                            iconColor: const Color(0xFF16A34A),
+                            iconBgColor: const Color(0xFFF0FDF4),
+                            label: 'Education',
+                            value: _education,
+                            items: ['All', 'Under 10th', '12th Pass', 'Graduate', 'Post Graduate'],
+                            onChanged: (val) => setState(() => _education = val ?? 'All'),
+                          ),
+                          const SizedBox(width: 10),
+                          _buildSwitchCell(
+                            icon: Icons.workspace_premium_outlined,
+                            iconColor: const Color(0xFFEA580C),
+                            iconBgColor: const Color(0xFFFFF7ED),
+                            label: 'First Generation Graduate',
+                            value: _firstGen,
+                            onChanged: (val) => setState(() => _firstGen = val),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                   Padding(
@@ -391,28 +410,31 @@ class _FilterPanelState extends State<FilterPanel> {
                   _buildSectionHeader('Scheme Preferences'),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-                    child: Row(
-                      children: [
-                        _buildDropdownCell(
-                          icon: Icons.check_circle_outline,
-                          iconColor: const Color(0xFF2563EB),
-                          iconBgColor: const Color(0xFFEFF6FF),
-                          label: 'Scheme Status',
-                          value: _schemeStatus,
-                          items: ['All', 'Active', 'Closed'],
-                          onChanged: (val) => setState(() => _schemeStatus = val ?? 'All'),
-                        ),
-                        const SizedBox(width: 10),
-                        _buildDropdownCell(
-                          icon: Icons.language_outlined,
-                          iconColor: const Color(0xFF16A34A),
-                          iconBgColor: const Color(0xFFF0FDF4),
-                          label: 'Online / Offline',
-                          value: _onlineOffline,
-                          items: ['All', 'Online Application', 'Offline Application'],
-                          onChanged: (val) => setState(() => _onlineOffline = val ?? 'All'),
-                        ),
-                      ],
+                    child: IntrinsicHeight(
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          _buildDropdownCell(
+                            icon: Icons.check_circle_outline,
+                            iconColor: const Color(0xFF2563EB),
+                            iconBgColor: const Color(0xFFEFF6FF),
+                            label: 'Scheme Status',
+                            value: _schemeStatus,
+                            items: ['All', 'Active', 'Closed'],
+                            onChanged: (val) => setState(() => _schemeStatus = val ?? 'All'),
+                          ),
+                          const SizedBox(width: 10),
+                          _buildDropdownCell(
+                            icon: Icons.language_outlined,
+                            iconColor: const Color(0xFF16A34A),
+                            iconBgColor: const Color(0xFFF0FDF4),
+                            label: 'Online / Offline',
+                            value: _onlineOffline,
+                            items: ['All', 'Online Application', 'Offline Application'],
+                            onChanged: (val) => setState(() => _onlineOffline = val ?? 'All'),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                   Padding(
@@ -461,9 +483,9 @@ class _FilterPanelState extends State<FilterPanel> {
                     height: 46,
                     child: ElevatedButton(
                       onPressed: _resetFilters,
-                      style: ElevatedButton.styleFrom(
+                      style: TextButton.styleFrom(
                         backgroundColor: const Color(0xFFEFF6FF), // Light blue 50
-                        foregroundColor: const Color(0xFF2563EB), // Blue 600
+                        foregroundColor: const Color(0xFF2563EB), // Royal Blue
                         elevation: 0,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
@@ -487,7 +509,7 @@ class _FilterPanelState extends State<FilterPanel> {
                     child: ElevatedButton(
                       onPressed: _applyFilters,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF0D47A1), // Royal Blue
+                        backgroundColor: const Color(0xFF2563EB), // Royal Blue
                         foregroundColor: Colors.white,
                         elevation: 0,
                         shape: RoundedRectangleBorder(
@@ -576,8 +598,6 @@ class _FilterPanelState extends State<FilterPanel> {
                       const SizedBox(height: 2),
                       Text(
                         value == 'All' ? 'Select $label' : value,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.inter(
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
@@ -596,11 +616,32 @@ class _FilterPanelState extends State<FilterPanel> {
                 child: DropdownButton<String>(
                   value: items.contains(value) ? value : items.first,
                   isExpanded: true,
+                  dropdownColor: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  icon: const SizedBox.shrink(),
                   underline: const SizedBox.shrink(),
                   items: items.map((String item) {
+                    final isSelected = item == value;
                     return DropdownMenuItem<String>(
                       value: item,
-                      child: Text(item),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              item,
+                              style: GoogleFonts.inter(
+                                fontSize: 13,
+                                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                color: isSelected ? const Color(0xFF2563EB) : const Color(0xFF1E293B),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          if (isSelected)
+                            const Icon(Icons.check, color: Color(0xFF2563EB), size: 14),
+                        ],
+                      ),
                     );
                   }).toList(),
                   onChanged: onChanged,
@@ -673,8 +714,8 @@ class _FilterPanelState extends State<FilterPanel> {
               alignment: Alignment.centerRight,
               child: Switch(
                 value: value,
-                activeThumbColor: const Color(0xFF0D47A1),
-                activeTrackColor: const Color(0xFF0D47A1).withAlpha(76),
+                activeThumbColor: const Color(0xFF2563EB),
+                activeTrackColor: const Color(0xFF2563EB).withAlpha(76),
                 onChanged: onChanged,
               ),
             ),

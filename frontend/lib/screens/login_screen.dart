@@ -80,7 +80,7 @@ class _LoginScreenState extends State<LoginScreen> {
           // 1. Background image
           Positioned.fill(
             child: Image.asset(
-              'assets/images/splash_screen.png',
+              'assets/images/Background/splash_screen.png',
               fit: BoxFit.cover,
             ),
           ),
@@ -104,7 +104,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               
                               // Brand Logo
                               Image.asset(
-                                'assets/images/Logo.png',
+                                'assets/images/Logo/Logo.png',
                                 height: 125,
                                 fit: BoxFit.contain,
                               ),
@@ -274,7 +274,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xFF0D47A1)), // Royal Blue
+                    borderSide: const BorderSide(color: Color(0xFF2563EB)), // Royal Blue
                   ),
                   errorBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -297,7 +297,7 @@ class _LoginScreenState extends State<LoginScreen> {
           height: 52,
           child: ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF0D47A1), // Royal Blue
+              backgroundColor: const Color(0xFF2563EB), // Royal Blue
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),

@@ -328,7 +328,7 @@ class ProfileScreen extends StatelessWidget {
                     ),
                     child: const Icon(
                       Icons.notifications_none_outlined,
-                      color: Color(0xFF0D47A1),
+                      color: Color(0xFF2563EB),
                       size: 24,
                     ),
                   ),
@@ -345,7 +345,7 @@ class ProfileScreen extends StatelessWidget {
                         constraints: const BoxConstraints(
                           minWidth: 16,
                           minHeight: 16,
-                        ),
+                         ),
                         alignment: Alignment.center,
                         child: Text(
                           '$unreadCount',
@@ -375,7 +375,7 @@ class ProfileScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(16),
                 gradient: const LinearGradient(
                   colors: [
-                    Color(0xFF0D47A1),
+                    Color(0xFF2563EB),
                     Color(0xFF1976D2),
                     Color(0xFF1E88E5),
                   ],
@@ -384,7 +384,7 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF0D47A1).withAlpha(15),
+                    color: const Color(0xFF2563EB).withAlpha(15),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),
@@ -440,7 +440,7 @@ class ProfileScreen extends StatelessWidget {
                                             File(provider.profile.profilePhoto),
                                           )
                                         : const AssetImage(
-                                                'assets/images/user_avatar.png',
+                                                'assets/supporting assets/user_avatar.png',
                                               )
                                               as ImageProvider,
                                   ),
@@ -830,7 +830,7 @@ class ProfileScreen extends StatelessWidget {
                     applicationVersion: '1.0.0',
                     applicationIcon: const Icon(
                       Icons.info,
-                      color: Color(0xFF0D47A1),
+                      color: Color(0xFF2563EB),
                     ),
                     children: [
                       const Text(

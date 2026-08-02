@@ -21,7 +21,7 @@ class SearchScreenState extends State<SearchScreen> {
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
   SearchState _currentState = SearchState.idle;
-  String _activeFilter = "For Me";
+  String _activeFilter = "All";
 
   bool get isSearching => _currentState != SearchState.idle;
 
@@ -29,6 +29,10 @@ class SearchScreenState extends State<SearchScreen> {
   List<Scheme> _searchResults = [];
   List<Scheme> _masterSearchResults = [];
   String _currentSort = "Match";
+  Map<String, int> _categoryCounts = {};
+  bool _isLoadingCounts = true;
+  int _matchingProfileCount = 0;
+  Map<String, List<String>> _activeSearchFilters = {};
 
   void _applySorting() {
     if (_masterSearchResults.isEmpty) return;
@@ -62,6 +66,102 @@ class SearchScreenState extends State<SearchScreen> {
   void initState() {
     super.initState();
     _searchController.addListener(_onSearchTextChanged);
+    _loadCategoryCounts();
+  }
+
+  Future<void> _loadCategoryCounts() async {
+    final provider = Provider.of<AppProvider>(context, listen: false);
+    try {
+      final allSchemes = await SchemeRepository.instance.getAllSchemes();
+      final Map<String, int> counts = {};
+
+      for (final title in [
+        "MSME",
+        "Startup",
+        "Women Entrepreneurs",
+        "Business Loans & Credit",
+        "SHG & Artisan",
+        "Technology",
+        "Manufacturing",
+        "Export & Trade Promotion",
+      ]) {
+        // Query the repository search engine to find matches
+        List<Scheme> matches = await SchemeRepository.instance.searchSchemes(title);
+
+        // Filter based on active filter state
+        if (_activeFilter == 'For Me') {
+          matches = matches.where((scheme) {
+            final eval = RecommendationEngine.evaluate(provider.profile, scheme);
+            return eval.score > 0;
+          }).toList();
+        } else if (_activeFilter == 'Central') {
+          matches = matches.where((scheme) {
+            return scheme.governmentLevel.toLowerCase() == 'central';
+          }).toList();
+        } else if (_activeFilter == 'State') {
+          matches = matches.where((scheme) {
+            return scheme.governmentLevel.toLowerCase() == 'state' ||
+                (scheme.state.isNotEmpty &&
+                    scheme.state.toLowerCase() != 'all india');
+          }).toList();
+        } else if (_activeFilter == 'Loan') {
+          matches = matches.where((scheme) {
+            final type = scheme.schemeType.toLowerCase();
+            final category = scheme.category.toLowerCase();
+            return type.contains('loan') || category.contains('loan');
+          }).toList();
+        } else if (_activeFilter == 'Udyam') {
+          matches = matches.where((scheme) {
+            final reqDocs = scheme.requiredDocuments.map((d) => d.toLowerCase()).join(' ');
+            final desc = scheme.searchKeywords.toLowerCase();
+            return reqDocs.contains('udyam') || desc.contains('udyam') || desc.contains('udyam registration');
+          }).toList();
+        } else if (_activeFilter == 'Startup') {
+          matches = matches.where((scheme) {
+            final desc = scheme.searchKeywords.toLowerCase();
+            final cat = scheme.category.toLowerCase();
+            return desc.contains('startup') || cat.contains('startup') || desc.contains('dpiit');
+          }).toList();
+        } else if (_activeFilter == 'Subsidy') {
+          matches = matches.where((scheme) {
+            final type = scheme.schemeType.toLowerCase();
+            final cat = scheme.category.toLowerCase();
+            final desc = scheme.searchKeywords.toLowerCase();
+            return type.contains('subsidy') || cat.contains('subsidy') || desc.contains('subsidy');
+          }).toList();
+        } else if (_activeFilter == 'Collateral-Free') {
+          matches = matches.where((scheme) {
+            final desc = scheme.searchKeywords.toLowerCase();
+            return desc.contains('cgtmse') || desc.contains('mudra') || desc.contains('collateral free') || desc.contains('collateral-free');
+          }).toList();
+        }
+
+        counts[title] = matches.length;
+      }
+
+      int matchedCount = 0;
+      for (final scheme in allSchemes) {
+        final eval = RecommendationEngine.evaluate(provider.profile, scheme);
+        if (eval.score > 0) {
+          matchedCount++;
+        }
+      }
+
+      if (mounted) {
+        setState(() {
+          _categoryCounts = counts;
+          _matchingProfileCount = matchedCount;
+          _isLoadingCounts = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('[SearchScreen] error loading dynamic category counts: $e');
+      if (mounted) {
+        setState(() {
+          _isLoadingCounts = false;
+        });
+      }
+    }
   }
 
   @override
@@ -148,7 +248,8 @@ class SearchScreenState extends State<SearchScreen> {
 
     try {
       List<Scheme> results;
-      if (searchTerm.isEmpty || searchTerm.toLowerCase() == 'all') {
+      final String normalQuery = searchTerm.toLowerCase().trim();
+      if (normalQuery.isEmpty || normalQuery == 'all' || normalQuery == 'suitable schemes' || normalQuery == 'for me') {
         results = await SchemeRepository.instance.getAllSchemes();
       } else {
         results = await SchemeRepository.instance.searchSchemes(searchTerm);
@@ -180,6 +281,122 @@ class SearchScreenState extends State<SearchScreen> {
           final category = scheme.category.toLowerCase();
           return type.contains('loan') || category.contains('loan');
         }).toList();
+      } else if (_activeFilter == 'Udyam') {
+        filteredResults = results.where((scheme) {
+          final reqDocs = scheme.requiredDocuments.map((d) => d.toLowerCase()).join(' ');
+          final desc = scheme.searchKeywords.toLowerCase();
+          return reqDocs.contains('udyam') || desc.contains('udyam') || desc.contains('udyam registration');
+        }).toList();
+      } else if (_activeFilter == 'Startup') {
+        filteredResults = results.where((scheme) {
+          final desc = scheme.searchKeywords.toLowerCase();
+          final cat = scheme.category.toLowerCase();
+          return desc.contains('startup') || cat.contains('startup') || desc.contains('dpiit');
+        }).toList();
+      } else if (_activeFilter == 'Subsidy') {
+        filteredResults = results.where((scheme) {
+          final type = scheme.schemeType.toLowerCase();
+          final cat = scheme.category.toLowerCase();
+          final desc = scheme.searchKeywords.toLowerCase();
+          return type.contains('subsidy') || cat.contains('subsidy') || desc.contains('subsidy');
+        }).toList();
+      } else if (_activeFilter == 'Collateral-Free') {
+        filteredResults = results.where((scheme) {
+          final desc = scheme.searchKeywords.toLowerCase();
+          return desc.contains('cgtmse') || desc.contains('mudra') || desc.contains('collateral free') || desc.contains('collateral-free');
+        }).toList();
+      }
+
+      // Apply FilterBottomSheet selections if any are present
+      if (_activeSearchFilters.isNotEmpty) {
+        filteredResults = filteredResults.where((scheme) {
+          // 1. Location Filter
+          final locs = _activeSearchFilters['Location'] ?? [];
+          if (locs.isNotEmpty) {
+            bool matchesLoc = false;
+            for (final loc in locs) {
+              if (loc == 'All India' && scheme.state.toLowerCase() == 'all india') {
+                matchesLoc = true;
+              } else if (loc == 'Central' && scheme.governmentLevel.toLowerCase() == 'central') {
+                matchesLoc = true;
+              } else if (loc == 'State' && (scheme.governmentLevel.toLowerCase() == 'state' || (scheme.state.isNotEmpty && scheme.state.toLowerCase() != 'all india'))) {
+                matchesLoc = true;
+              }
+            }
+            if (!matchesLoc) return false;
+          }
+
+          // 2. Applicant Filter
+          final applicants = _activeSearchFilters['Applicant'] ?? [];
+          if (applicants.isNotEmpty) {
+            bool matchesApp = false;
+            final target = scheme.targetBeneficiary.toLowerCase();
+            for (final app in applicants) {
+              if (target.contains(app.toLowerCase())) {
+                matchesApp = true;
+              }
+            }
+            if (!matchesApp) return false;
+          }
+
+          // 3. Stage Filter
+          final stages = _activeSearchFilters['Stage'] ?? [];
+          if (stages.isNotEmpty) {
+            bool matchesStage = false;
+            final kw = scheme.searchKeywords.toLowerCase();
+            final name = scheme.name.toLowerCase();
+            for (final stage in stages) {
+              if (kw.contains(stage.toLowerCase()) || name.contains(stage.toLowerCase())) {
+                matchesStage = true;
+              }
+            }
+            if (!matchesStage) return false;
+          }
+
+          // 4. Benefits Filter
+          final benefits = _activeSearchFilters['Benefits'] ?? [];
+          if (benefits.isNotEmpty) {
+            bool matchesBen = false;
+            final type = scheme.schemeType.toLowerCase();
+            final cat = scheme.category.toLowerCase();
+            final ben = scheme.benefits.toLowerCase();
+            for (final b in benefits) {
+              if (type.contains(b.toLowerCase()) || cat.contains(b.toLowerCase()) || ben.contains(b.toLowerCase())) {
+                matchesBen = true;
+              }
+            }
+            if (!matchesBen) return false;
+          }
+
+          // 5. Sector Filter
+          final sectors = _activeSearchFilters['Sector'] ?? [];
+          if (sectors.isNotEmpty) {
+            bool matchesSec = false;
+            final sector = scheme.sector.toLowerCase();
+            for (final sec in sectors) {
+              if (sector.contains(sec.toLowerCase())) {
+                matchesSec = true;
+              }
+            }
+            if (!matchesSec) return false;
+          }
+
+          // 6. Authority Filter
+          final authorities = _activeSearchFilters['Authority'] ?? [];
+          if (authorities.isNotEmpty) {
+            bool matchesAuth = false;
+            final sponsor = scheme.sponsoringBody.toLowerCase();
+            final issuer = scheme.issuingBody.toLowerCase();
+            for (final auth in authorities) {
+              if (sponsor.contains(auth.toLowerCase()) || issuer.contains(auth.toLowerCase())) {
+                matchesAuth = true;
+              }
+            }
+            if (!matchesAuth) return false;
+          }
+
+          return true;
+        }).toList();
       }
 
       setState(() {
@@ -205,56 +422,72 @@ class SearchScreenState extends State<SearchScreen> {
     final List<Map<String, dynamic>> categories = [
       {
         "title": "MSME",
-        "count": "245 Schemes",
+        "count": _isLoadingCounts
+            ? "Loading..."
+            : "${_categoryCounts["MSME"] ?? 0} Schemes",
         "icon": Icons.bar_chart,
         "iconColor": const Color(0xFF6D28D9),
         "iconBg": const Color(0xFFF5F3FF),
       },
       {
         "title": "Startup",
-        "count": "128 Schemes",
+        "count": _isLoadingCounts
+            ? "Loading..."
+            : "${_categoryCounts["Startup"] ?? 0} Schemes",
         "icon": Icons.rocket_launch,
         "iconColor": const Color(0xFF1D4ED8),
         "iconBg": const Color(0xFFEFF6FF),
       },
       {
         "title": "Women Entrepreneurs",
-        "count": "162 Schemes",
+        "count": _isLoadingCounts
+            ? "Loading..."
+            : "${_categoryCounts["Women Entrepreneurs"] ?? 0} Schemes",
         "icon": Icons.person,
         "iconColor": const Color(0xFFE11D48),
         "iconBg": const Color(0xFFFFE4E6),
       },
       {
-        "title": "Students",
-        "count": "94 Schemes",
-        "icon": Icons.school,
+        "title": "Business Loans & Credit",
+        "count": _isLoadingCounts
+            ? "Loading..."
+            : "${_categoryCounts["Business Loans & Credit"] ?? 0} Schemes",
+        "icon": Icons.account_balance,
         "iconColor": const Color(0xFF047857),
         "iconBg": const Color(0xFFECFDF5),
       },
       {
-        "title": "Farmers",
-        "count": "186 Schemes",
-        "icon": Icons.agriculture,
+        "title": "Export & Trade Promotion",
+        "count": _isLoadingCounts
+            ? "Loading..."
+            : "${_categoryCounts["Export & Trade Promotion"] ?? 0} Schemes",
+        "icon": Icons.import_export,
         "iconColor": const Color(0xFF16A34A),
         "iconBg": const Color(0xFFDCFCE7),
       },
       {
         "title": "SHG & Artisan",
-        "count": "112 Schemes",
+        "count": _isLoadingCounts
+            ? "Loading..."
+            : "${_categoryCounts["SHG & Artisan"] ?? 0} Schemes",
         "icon": Icons.groups,
         "iconColor": const Color(0xFFD97706),
         "iconBg": const Color(0xFFFEF3C7),
       },
       {
         "title": "Technology",
-        "count": "98 Schemes",
+        "count": _isLoadingCounts
+            ? "Loading..."
+            : "${_categoryCounts["Technology"] ?? 0} Schemes",
         "icon": Icons.computer,
         "iconColor": const Color(0xFF2563EB),
         "iconBg": const Color(0xFFDBEAFE),
       },
       {
         "title": "Manufacturing",
-        "count": "116 Schemes",
+        "count": _isLoadingCounts
+            ? "Loading..."
+            : "${_categoryCounts["Manufacturing"] ?? 0} Schemes",
         "icon": Icons.factory,
         "iconColor": const Color(0xFFEA580C),
         "iconBg": const Color(0xFFFFEDD5),
@@ -335,6 +568,22 @@ class SearchScreenState extends State<SearchScreen> {
     );
   }
 
+  Future<void> openFilterBottomSheet() async {
+    final Map<String, List<String>>? selectedFilters =
+        await showModalBottomSheet<Map<String, List<String>>>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => const FilterBottomSheet(),
+    );
+    if (selectedFilters != null && mounted) {
+      setState(() {
+        _activeSearchFilters = selectedFilters;
+      });
+      _triggerSearch(_searchController.text);
+    }
+  }
+
   // 1. Custom App Bar
   Widget _buildCustomAppBar(BuildContext context, AppProvider provider) {
     return Row(
@@ -349,14 +598,7 @@ class SearchScreenState extends State<SearchScreen> {
           ),
         ),
         GestureDetector(
-          onTap: () {
-            showModalBottomSheet(
-              context: context,
-              isScrollControlled: true,
-              backgroundColor: Colors.transparent,
-              builder: (context) => const FilterBottomSheet(),
-            );
-          },
+          onTap: openFilterBottomSheet,
           child: Container(
             width: 36,
             height: 36,
@@ -421,6 +663,7 @@ class SearchScreenState extends State<SearchScreen> {
                   onPressed: () {
                     _searchController.clear();
                     setState(() {
+                      _activeSearchFilters = {};
                       _currentState = SearchState.idle;
                     });
                   },
@@ -442,11 +685,14 @@ class SearchScreenState extends State<SearchScreen> {
   // 3. Quick Filters Row (Horizontal Scroll)
   Widget _buildQuickFilters() {
     final filters = [
-      {"name": "For Me", "hasSparkle": true},
       {"name": "All", "hasSparkle": false},
       {"name": "Central", "hasSparkle": false},
       {"name": "State", "hasSparkle": false},
       {"name": "Loan", "hasSparkle": false},
+      {"name": "Udyam", "hasSparkle": false},
+      {"name": "Startup", "hasSparkle": false},
+      {"name": "Subsidy", "hasSparkle": false},
+      {"name": "Collateral-Free", "hasSparkle": false},
     ];
 
     return Column(
@@ -464,6 +710,13 @@ class SearchScreenState extends State<SearchScreen> {
               ),
             ),
             PopupMenuButton<String>(
+              color: Colors.white,
+              surfaceTintColor: Colors.transparent,
+              elevation: 4,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: const BorderSide(color: Color(0xFFE2E8F0)),
+              ),
               onSelected: (String value) {
                 setState(() {
                   _currentSort = value;
@@ -471,17 +724,62 @@ class SearchScreenState extends State<SearchScreen> {
                 _applySorting();
               },
               itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-                const PopupMenuItem<String>(
+                PopupMenuItem<String>(
                   value: 'Match %',
-                  child: Text('Match %'),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Match %',
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          fontWeight: _currentSort == 'Match %' ? FontWeight.bold : FontWeight.normal,
+                          color: _currentSort == 'Match %' ? const Color(0xFF2563EB) : const Color(0xFF1E293B),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      if (_currentSort == 'Match %')
+                        const Icon(Icons.check, color: Color(0xFF2563EB), size: 14),
+                    ],
+                  ),
                 ),
-                const PopupMenuItem<String>(
+                PopupMenuItem<String>(
                   value: 'Scheme Name (A-Z)',
-                  child: Text('Scheme Name (A-Z)'),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Scheme Name (A-Z)',
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          fontWeight: _currentSort == 'Scheme Name (A-Z)' ? FontWeight.bold : FontWeight.normal,
+                          color: _currentSort == 'Scheme Name (A-Z)' ? const Color(0xFF2563EB) : const Color(0xFF1E293B),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      if (_currentSort == 'Scheme Name (A-Z)')
+                        const Icon(Icons.check, color: Color(0xFF2563EB), size: 14),
+                    ],
+                  ),
                 ),
-                const PopupMenuItem<String>(
+                PopupMenuItem<String>(
                   value: 'Scheme Name (Z-A)',
-                  child: Text('Scheme Name (Z-A)'),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Scheme Name (Z-A)',
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          fontWeight: _currentSort == 'Scheme Name (Z-A)' ? FontWeight.bold : FontWeight.normal,
+                          color: _currentSort == 'Scheme Name (Z-A)' ? const Color(0xFF2563EB) : const Color(0xFF1E293B),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      if (_currentSort == 'Scheme Name (Z-A)')
+                        const Icon(Icons.check, color: Color(0xFF2563EB), size: 14),
+                    ],
+                  ),
                 ),
               ],
               child: Row(
@@ -519,6 +817,7 @@ class SearchScreenState extends State<SearchScreen> {
                     _activeFilter = name;
                   });
                   _triggerSearch(_searchController.text);
+                  _loadCategoryCounts();
                 },
                 child: Container(
                   margin: const EdgeInsets.only(right: 8),
@@ -714,8 +1013,16 @@ class SearchScreenState extends State<SearchScreen> {
 
   // Highlight Card from Idle State
   Widget _buildHighlightSummaryCard() {
-    return Container(
-      padding: const EdgeInsets.all(16),
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _activeFilter = 'For Me';
+        });
+        _searchController.text = 'Suitable Schemes';
+        _triggerSearch('Suitable Schemes');
+      },
+      child: Container(
+        padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -785,7 +1092,9 @@ class SearchScreenState extends State<SearchScreen> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'schemes match your profile.',
+                  _isLoadingCounts
+                      ? 'Calculating matches...'
+                      : '$_matchingProfileCount schemes match your profile.',
                   style: GoogleFonts.inter(
                     fontSize: 11,
                     color: const Color(0xFF64748B),
@@ -793,29 +1102,6 @@ class SearchScreenState extends State<SearchScreen> {
                   ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 8),
-                GestureDetector(
-                  onTap: () {},
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        "View Profile Summary",
-                        style: GoogleFonts.inter(
-                          color: const Color(0xFF2563EB),
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(width: 4),
-                      const Icon(
-                        Icons.arrow_forward,
-                        size: 10,
-                        color: Color(0xFF2563EB),
-                      ),
-                    ],
-                  ),
                 ),
               ],
             ),
@@ -904,8 +1190,9 @@ class SearchScreenState extends State<SearchScreen> {
           ),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   // Browse Category Card
   Widget _buildCategoryCard(Map<String, dynamic> category) {

@@ -873,13 +873,13 @@ class _SaarthiProfileSetupScreenState extends State<SaarthiProfileSetupScreen> {
                       q.answeredValue = _selectedSpecialCategories.isEmpty ? 'None' : _selectedSpecialCategories.join(', ');
                     });
                   },
-                  selectedColor: const Color(0xFF0D47A1),
+                  selectedColor: const Color(0xFF2563EB),
                   checkmarkColor: Colors.white,
                   backgroundColor: const Color(0xFFF8FAFC),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
                     side: BorderSide(
-                      color: isSel ? const Color(0xFF0D47A1) : const Color(0xFFE2E8F0),
+                      color: isSel ? const Color(0xFF2563EB) : const Color(0xFFE2E8F0),
                     ),
                   ),
                 );
@@ -935,7 +935,7 @@ class _SaarthiProfileSetupScreenState extends State<SaarthiProfileSetupScreen> {
                     style: GoogleFonts.inter(
                       fontSize: 11.5,
                       fontWeight: isSel ? FontWeight.bold : FontWeight.normal,
-                      color: isSel ? const Color(0xFF0D47A1) : kDarkSlate,
+                      color: isSel ? const Color(0xFF2563EB) : kDarkSlate,
                     ),
                   ),
                   selected: isSel,
@@ -952,7 +952,7 @@ class _SaarthiProfileSetupScreenState extends State<SaarthiProfileSetupScreen> {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
                     side: BorderSide(
-                      color: isSel ? const Color(0xFF0D47A1) : const Color(0xFFE2E8F0),
+                      color: isSel ? const Color(0xFF2563EB) : const Color(0xFFE2E8F0),
                       width: isSel ? 1.5 : 1.0,
                     ),
                   ),
@@ -1058,7 +1058,7 @@ class _SaarthiProfileSetupScreenState extends State<SaarthiProfileSetupScreen> {
                       width: 80,
                       height: 80,
                       child: Image.asset(
-                        'assets/saarthi_expressions/Ai companion.png',
+                        'assets/saarthi/sarathi.png',
                         fit: BoxFit.contain,
                       ),
                     ),
@@ -1222,7 +1222,7 @@ class _SaarthiProfileSetupScreenState extends State<SaarthiProfileSetupScreen> {
                       ),
                       child: ClipOval(
                         child: Image.asset(
-                          'assets/saarthi_expressions/Ai companion.png',
+                          'assets/saarthi/sarathi.png',
                           fit: BoxFit.contain,
                         ),
                       ),
@@ -1329,7 +1329,7 @@ class _SaarthiProfileSetupScreenState extends State<SaarthiProfileSetupScreen> {
             // 1. Next Button (Upper position)
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF0D47A1),
+                backgroundColor: const Color(0xFF2563EB),
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -1594,7 +1594,7 @@ class _StepLabel extends StatelessWidget {
         style: GoogleFonts.inter(
           fontSize: 7.5,
           fontWeight: active ? FontWeight.bold : FontWeight.w500,
-          color: active ? const Color(0xFF0D47A1) : const Color(0xFF64748B),
+          color: active ? const Color(0xFF2563EB) : const Color(0xFF64748B),
         ),
       ),
     );

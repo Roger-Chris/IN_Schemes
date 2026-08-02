@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -7,6 +8,7 @@ import '../../widgets/filter_panel.dart';
 
 import '../../widgets/smart_assessment_bottom_sheet.dart';
 import 'discover_results_screen.dart';
+import 'search_results_screen.dart';
 
 class CategoryItem {
   final String title;
@@ -55,143 +57,13 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
   // Full 23 categories for the "View All" bottom sheet
   static const List<CategoryItem> allCategoriesList = [
     CategoryItem(
-      title: 'Agriculture',
-      description:
-          'Crop loans, subsidies for fertilizers, machinery, and allied fields',
-      icon: Icons.grass,
-      iconColor: Color(0xFF2E7D32),
-      backgroundColor: Color(0xFFE8F5E9),
-      schemeCount: '128 Schemes',
-    ),
-    CategoryItem(
-      title: 'Education',
-      description: 'Financial aid, student loans, and research grants',
-      icon: Icons.school,
-      iconColor: Color(0xFF1565C0),
-      backgroundColor: Color(0xFFE3F2FD),
-      schemeCount: '156 Schemes',
-    ),
-    CategoryItem(
-      title: 'Women & Child Welfare',
-      description:
-          'Financial support, safety, self-employment, and skill development',
-      icon: Icons.family_restroom,
-      iconColor: Color(0xFFD81B60),
-      backgroundColor: Color(0xFFFCE4EC),
-      schemeCount: '142 Schemes',
-    ),
-    CategoryItem(
-      title: 'Senior Citizens',
-      description: 'Pension plans, healthcare, and savings schemes for seniors',
-      icon: Icons.elderly,
-      iconColor: Color(0xFFE65100),
-      backgroundColor: Color(0xFFFFF3E0),
-      schemeCount: '98 Schemes',
-    ),
-    CategoryItem(
-      title: 'Healthcare',
-      description: 'Insurance policies, medical aids, and hospital treatments',
-      icon: Icons.favorite,
-      iconColor: Color(0xFFD32F2F),
-      backgroundColor: Color(0xFFFFEBEE),
-      schemeCount: '132 Schemes',
-    ),
-    CategoryItem(
-      title: 'Employment',
-      description: 'Self-employment grants, work guarantees, and jobs training',
-      icon: Icons.business_center,
-      iconColor: Color(0xFF6A1B9A),
-      backgroundColor: Color(0xFFF3E5F5),
-      schemeCount: '110 Schemes',
-    ),
-    CategoryItem(
-      title: 'Housing',
-      description:
-          'Subsidies for building houses and urban/rural housing loans',
-      icon: Icons.home,
-      iconColor: Color(0xFFFBC02D),
-      backgroundColor: Color(0xFFFFFDE7),
-      schemeCount: '95 Schemes',
-    ),
-    CategoryItem(
       title: 'Business & MSME',
       description:
-          'Subsidies, loans, and setups for micro, small & medium businesses',
+          'Subsidized loans, credit guarantees, and setup support for micro, small & medium businesses',
       icon: Icons.domain,
       iconColor: Color(0xFF00796B),
       backgroundColor: Color(0xFFE0F2F1),
       schemeCount: '123 Schemes',
-    ),
-    CategoryItem(
-      title: 'Students',
-      description:
-          'Specialized student entrepreneurship and incubation programs',
-      icon: Icons.school_outlined,
-      iconColor: Color(0xFF1976D2),
-      backgroundColor: Color(0xFFE3F2FD),
-      schemeCount: '85 Schemes',
-    ),
-    CategoryItem(
-      title: 'Farmers',
-      description:
-          'Direct income transfers, seed distributions, and equipment grants',
-      icon: Icons.agriculture,
-      iconColor: Color(0xFF4CAF50),
-      backgroundColor: Color(0xFFE8F5E9),
-      schemeCount: '143 Schemes',
-    ),
-    CategoryItem(
-      title: 'Transport',
-      description:
-          'Loans for commercial vehicles, transport subsidies, and licenses',
-      icon: Icons.directions_bus,
-      iconColor: Color(0xFFFF9800),
-      backgroundColor: Color(0xFFFFF3E0),
-      schemeCount: '76 Schemes',
-    ),
-    CategoryItem(
-      title: 'Disability',
-      description: 'Aids, monthly pensions, and special vocational training',
-      icon: Icons.accessible,
-      iconColor: Color(0xFF9C27B0),
-      backgroundColor: Color(0xFFF3E5F5),
-      schemeCount: '68 Schemes',
-    ),
-    CategoryItem(
-      title: 'Pension',
-      description:
-          'Social security pensions, old age, and widow pension schemes',
-      icon: Icons.blind,
-      iconColor: Color(0xFFFFB300),
-      backgroundColor: Color(0xFFFFF8E1),
-      schemeCount: '74 Schemes',
-    ),
-    CategoryItem(
-      title: 'Finance',
-      description:
-          'Collateral-free loans, interest subvention, and banking schemes',
-      icon: Icons.account_balance,
-      iconColor: Color(0xFF0D47A1),
-      backgroundColor: Color(0xFFE0F2FE),
-      schemeCount: '92 Schemes',
-    ),
-    CategoryItem(
-      title: 'Marriage Assistance',
-      description:
-          'Support grants for marriages of daughters from low-income groups',
-      icon: Icons.favorite_border,
-      iconColor: Color(0xFFEC407A),
-      backgroundColor: Color(0xFFFCE4EC),
-      schemeCount: '67 Schemes',
-    ),
-    CategoryItem(
-      title: 'Insurance',
-      description:
-          'Accident insurance, life covers, and health insurance plans',
-      icon: Icons.shield,
-      iconColor: Color(0xFF00897B),
-      backgroundColor: Color(0xFFE0F2F1),
-      schemeCount: '58 Schemes',
     ),
     CategoryItem(
       title: 'Startup',
@@ -203,28 +75,13 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
       schemeCount: '64 Schemes',
     ),
     CategoryItem(
-      title: 'Youth',
-      description: 'Skill development programs and sports initiatives',
-      icon: Icons.emoji_people,
-      iconColor: Color(0xFF00ACC1),
-      backgroundColor: Color(0xFFE0F7FA),
-      schemeCount: '81 Schemes',
-    ),
-    CategoryItem(
-      title: 'Minority Welfare',
-      description: 'Subsidized loans and educational aids for minority groups',
-      icon: Icons.location_city,
-      iconColor: Color(0xFF8D6E63),
-      backgroundColor: Color(0xFFEFEBE9),
-      schemeCount: '63 Schemes',
-    ),
-    CategoryItem(
-      title: 'Scholarships',
-      description: 'Pre-matric, post-matric, and merit-cum-means scholarships',
-      icon: Icons.menu_book,
-      iconColor: Color(0xFF1E88E5),
-      backgroundColor: Color(0xFFE3F2FD),
-      schemeCount: '96 Schemes',
+      title: 'Finance',
+      description:
+          'Collateral-free loans, interest subvention, and banking schemes',
+      icon: Icons.account_balance,
+      iconColor: Color(0xFF2563EB),
+      backgroundColor: Color(0xFFE0F2FE),
+      schemeCount: '92 Schemes',
     ),
     CategoryItem(
       title: 'Skill Development',
@@ -233,6 +90,15 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
       iconColor: Color(0xFF43A047),
       backgroundColor: Color(0xFFE8F5E9),
       schemeCount: '88 Schemes',
+    ),
+    CategoryItem(
+      title: 'Artisan',
+      description:
+          'Support, toolkits distribution, and exhibitions for craftsmen',
+      icon: Icons.brush,
+      iconColor: Color(0xFF4E342E),
+      backgroundColor: Color(0xFFD7CCC8),
+      schemeCount: '54 Schemes',
     ),
     CategoryItem(
       title: 'Digital India',
@@ -244,55 +110,56 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
       schemeCount: '77 Schemes',
     ),
     CategoryItem(
-      title: 'Artisan',
+      title: 'Women Entrepreneurs',
       description:
-          'Support, toolkits distribution, and exhibitions for craftsmen',
-      icon: Icons.brush,
-      iconColor: Color(0xFF4E342E),
-      backgroundColor: Color(0xFFD7CCC8),
-      schemeCount: '54 Schemes',
+          'Specialized finance, capital subsidies, and resources for women-owned businesses',
+      icon: Icons.person,
+      iconColor: Color(0xFFD81B60),
+      backgroundColor: Color(0xFFFCE4EC),
+      schemeCount: '142 Schemes',
+    ),
+    CategoryItem(
+      title: 'Student Startups',
+      description:
+          'Specialized student entrepreneurship and incubation programs',
+      icon: Icons.school_outlined,
+      iconColor: Color(0xFF1976D2),
+      backgroundColor: Color(0xFFE3F2FD),
+      schemeCount: '85 Schemes',
     ),
   ];
 
   // core curated horizontal collections matching mockup
   final List<Map<String, dynamic>> _displayCategories = [
     {
-      'title': 'Business & Entrepreneurship',
-      'count': '312 Schemes',
-      'icon': Icons.business_center,
+      'title': 'Business & MSME',
+      'count': '123 Schemes',
+      'icon': Icons.domain,
       'color': const Color(0xFF2563EB),
     },
     {
-      'title': 'Education & Skill Development',
-      'count': '256 Schemes',
-      'icon': Icons.school,
+      'title': 'Startup & Incubation',
+      'count': '64 Schemes',
+      'icon': Icons.rocket_launch,
       'color': const Color(0xFF2563EB),
     },
     {
       'title': 'Loans & Credit Support',
-      'count': '198 Schemes',
+      'count': '92 Schemes',
       'icon': Icons.monetization_on,
       'color': const Color(0xFF2563EB),
     },
     {
-      'title': 'Housing & Infrastructure',
+      'title': 'Women Entrepreneurship',
       'count': '142 Schemes',
-      'icon': Icons.home,
-      'color': const Color(0xFF2563EB),
-    },
-    {
-      'title': 'Health & Wellness',
-      'count': '98 Schemes',
-      'icon': Icons.favorite,
+      'icon': Icons.person,
       'color': const Color(0xFF2563EB),
     },
   ];
 
   final List<Map<String, dynamic>> _displayMinistries = [
     {'title': 'Ministry of MSME', 'count': '186 Schemes'},
-    {'title': 'Ministry of Education', 'count': '158 Schemes'},
     {'title': 'Ministry of Finance', 'count': '142 Schemes'},
-    {'title': 'Ministry of Agriculture', 'count': '118 Schemes'},
     {'title': 'Ministry of Rural Development', 'count': '96 Schemes'},
   ];
 
@@ -320,7 +187,17 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => const FilterPanel(),
+      builder: (context) => FilterPanel(
+        onApplied: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => SearchResultsScreen(
+                title: _searchController.text,
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 
@@ -367,19 +244,19 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
       builder: (context) {
         final stages = [
           {
-            'title': 'Student',
-            'desc': 'Scholarships, education loans, and skill dev',
-            'icon': Icons.school,
+            'title': 'Idea Stage',
+            'desc': 'Mentorship, seed funding, and business registrations',
+            'icon': Icons.lightbulb_outline,
           },
           {
-            'title': 'Youth',
-            'desc': 'Self-employment schemes and incubation setups',
-            'icon': Icons.emoji_people,
+            'title': 'Startup Stage',
+            'desc': 'Equity funding, scaling grants, and incubation facilities',
+            'icon': Icons.rocket_launch,
           },
           {
-            'title': 'Senior Citizen',
-            'desc': 'Pension plans, insurance, savings schemes',
-            'icon': Icons.elderly,
+            'title': 'Growth Stage',
+            'desc': 'Credit guarantees, term loans, and technology scaling',
+            'icon': Icons.trending_up,
           },
         ];
 
@@ -391,7 +268,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Select Life Stage',
+                  'Select Business Stage',
                   style: GoogleFonts.poppins(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -419,11 +296,6 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                     onTap: () {
                       Navigator.pop(context);
                       provider.clearFilters();
-                      if (stage['title'] == 'Student') {
-                        provider.updateFilter('occupation', 'Student');
-                      } else if (stage['title'] == 'Senior Citizen') {
-                        provider.updateFilter('age', 'Senior Citizen');
-                      }
                       _onCategorySelected(stage['title'] as String, provider);
                     },
                   );
@@ -611,7 +483,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                     ),
                     _buildStateHorizontalList(provider),
                     const SizedBox(height: 16),
-
+                    _buildBusinessUtilitiesSection(),
                     const SizedBox(height: 24),
                   ],
                 ),
@@ -641,8 +513,8 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
         'action': () => _scrollToSection(_stateSectionKey),
       },
       {
-        'title': 'By Life Stage',
-        'icon': Icons.people_alt_rounded,
+        'title': 'By Stage',
+        'icon': Icons.trending_up_rounded,
         'action': () => _openLifeStageSelector(provider),
       },
       {
@@ -951,19 +823,66 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
   }
 
   String _getStateMapAsset(String stateName) {
-    switch (stateName.toLowerCase()) {
+    switch (stateName.toLowerCase().trim()) {
       case 'tamil nadu':
-        return 'assets/images/tamil_nadu.png';
+        return 'assets/images/States and UTs/States/Tamil nadu.png';
       case 'maharashtra':
-        return 'assets/images/maharashtra.png';
+        return 'assets/images/States and UTs/States/maharashtra.png';
       case 'uttar pradesh':
-        return 'assets/images/uttar_pradesh.png';
+        return 'assets/images/States and UTs/States/uttar_pradesh.png';
       case 'karnataka':
-        return 'assets/images/karnataka.png';
+        return 'assets/images/States and UTs/States/karnataka.png';
       case 'gujarat':
-        return 'assets/images/gujarat.png';
+        return 'assets/images/States and UTs/States/gujarat.png';
+      case 'arunachal pradesh':
+        return 'assets/images/States and UTs/States/Anrunachal pradhesh.png';
+      case 'assam':
+        return 'assets/images/States and UTs/States/Assam.png';
+      case 'bihar':
+        return 'assets/images/States and UTs/States/Bihar.png';
+      case 'chhattisgarh':
+        return 'assets/images/States and UTs/States/Chhatishgar.png';
+      case 'kerala':
+        return 'assets/images/States and UTs/States/Kerala.png';
+      case 'andhra pradesh':
+        return 'assets/images/States and UTs/States/andhra pradesh.png';
+      case 'goa':
+        return 'assets/images/States and UTs/States/goa.png';
+      case 'haryana':
+        return 'assets/images/States and UTs/States/haryana.png';
+      case 'himachal pradesh':
+        return 'assets/images/States and UTs/States/himachal pradesh.png';
+      case 'jharkhand':
+        return 'assets/images/States and UTs/States/jharkhand.png';
+      case 'madhya pradesh':
+        return 'assets/images/States and UTs/States/madhya pradesh.png';
+      case 'manipur':
+        return 'assets/images/States and UTs/States/manipur.png';
+      case 'meghalaya':
+        return 'assets/images/States and UTs/States/meghalaya.png';
+      case 'mizoram':
+        return 'assets/images/States and UTs/States/mizoram.png';
+      case 'nagaland':
+        return 'assets/images/States and UTs/States/nagaland.png';
+      case 'odisha':
+        return 'assets/images/States and UTs/States/odisha.png';
+      case 'punjab':
+        return 'assets/images/States and UTs/States/punjab.png';
+      case 'rajasthan':
+        return 'assets/images/States and UTs/States/rajasthan.png';
+      case 'sikkim':
+        return 'assets/images/States and UTs/States/sikkim.png';
+      case 'telangana':
+        return 'assets/images/States and UTs/States/telangana.png';
+      case 'tripura':
+        return 'assets/images/States and UTs/States/tripura.png';
+      case 'uttarakhand':
+      case 'uttarkhand':
+        return 'assets/images/States and UTs/States/uttarkhand.png';
+      case 'west bengal':
+        return 'assets/images/States and UTs/States/west bengal.png';
       default:
-        return 'assets/images/tamil_nadu.png';
+        return 'assets/images/States and UTs/States/Tamil nadu.png';
     }
   }
 
@@ -1357,18 +1276,38 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
       backgroundColor: Colors.transparent,
       builder: (context) {
         final states = [
-          'Tamil Nadu',
-          'Maharashtra',
-          'Uttar Pradesh',
-          'Karnataka',
-          'Gujarat',
-          'Kerala',
-          'Delhi',
           'Andhra Pradesh',
-          'Telangana',
-          'Rajasthan',
-          'Punjab',
+          'Arunachal Pradesh',
+          'Assam',
+          'Bihar',
+          'Chhattisgarh',
+          'Delhi',
+          'Goa',
+          'Gujarat',
           'Haryana',
+          'Himachal Pradesh',
+          'Jammu & Kashmir',
+          'Jharkhand',
+          'Karnataka',
+          'Kerala',
+          'Ladakh',
+          'Madhya Pradesh',
+          'Maharashtra',
+          'Manipur',
+          'Meghalaya',
+          'Mizoram',
+          'Nagaland',
+          'Odisha',
+          'Puducherry',
+          'Punjab',
+          'Rajasthan',
+          'Sikkim',
+          'Tamil Nadu',
+          'Telangana',
+          'Tripura',
+          'Uttar Pradesh',
+          'Uttarakhand',
+          'West Bengal',
         ];
 
         return Container(
@@ -1422,9 +1361,17 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                     final title = states[index];
                     return ListTile(
                       contentPadding: const EdgeInsets.symmetric(vertical: 4),
-                      leading: CustomPaint(
-                        size: const Size(36, 32),
-                        painter: StateMapPainter(title),
+                      leading: Image.asset(
+                        _getStateMapAsset(title),
+                        width: 36,
+                        height: 32,
+                        fit: BoxFit.contain,
+                        errorBuilder: (context, error, stackTrace) {
+                          return CustomPaint(
+                            size: const Size(36, 32),
+                            painter: StateMapPainter(title),
+                          );
+                        },
                       ),
                       title: Text(
                         title,
@@ -1444,6 +1391,1928 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
               ),
             ],
           ),
+        );
+      },
+    );
+  }
+
+  Widget _buildBusinessUtilitiesSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: Text(
+            "Business Utilities & Tools",
+            style: GoogleFonts.poppins(
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
+              color: const Color(0xFF0F172A),
+            ),
+          ),
+        ),
+        const SizedBox(height: 10),
+        SizedBox(
+          height: 98,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            children: [
+              _buildUtilityCard(
+                icon: Icons.domain_verification,
+                title: "Udyam Classifier",
+                desc: "Check MSME tier",
+                onTap: _openUdyamClassifier,
+              ),
+              _buildUtilityCard(
+                icon: Icons.calculate_outlined,
+                title: "Subsidy Estimator",
+                desc: "Machinery subsidies",
+                onTap: _openSubsidyEstimator,
+              ),
+              _buildUtilityCard(
+                icon: Icons.percent_outlined,
+                title: "GST Calculator",
+                desc: "Compute GST invoice",
+                onTap: _openGstCalculator,
+              ),
+              _buildUtilityCard(
+                icon: Icons.monetization_on_outlined,
+                title: "EMI Calculator",
+                desc: "Calculate loan EMIs",
+                onTap: _openEmiCalculator,
+              ),
+              _buildUtilityCard(
+                icon: Icons.rocket_launch_outlined,
+                title: "DPIIT Eligibility",
+                desc: "Check startup criteria",
+                onTap: _openDpiitChecklist,
+              ),
+              _buildUtilityCard(
+                icon: Icons.trending_up_outlined,
+                title: "Valuation Estimator",
+                desc: "Seed valuation ranges",
+                onTap: _openValuationEstimator,
+              ),
+              _buildUtilityCard(
+                icon: Icons.rule_folder_outlined,
+                title: "Doc Checklist",
+                desc: "Business setup docs",
+                onTap: _openDocumentChecklist,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildUtilityCard({
+    required IconData icon,
+    required String title,
+    required String desc,
+    required VoidCallback onTap,
+  }) {
+    return Container(
+      width: 142,
+      margin: const EdgeInsets.symmetric(horizontal: 4),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFF1F5F9)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, color: const Color(0xFF2563EB), size: 20),
+              const SizedBox(height: 6),
+              Text(
+                title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.poppins(
+                  fontSize: 10.5,
+                  fontWeight: FontWeight.bold,
+                  color: const Color(0xFF0F172A),
+                ),
+              ),
+              Text(
+                desc,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.inter(
+                  fontSize: 8.5,
+                  color: const Color(0xFF64748B),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _openUdyamClassifier() {
+    final investmentController = TextEditingController();
+    final turnoverController = TextEditingController();
+    String result = '';
+    String subResult = '';
+    Color resultColor = const Color(0xFF1E293B);
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 20,
+                right: 20,
+                top: 14,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 38,
+                      height: 4,
+                      margin: const EdgeInsets.only(bottom: 16),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE2E8F0),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFEFF6FF),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(
+                          Icons.domain_verification,
+                          color: Color(0xFF2563EB),
+                          size: 18,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Udyam MSME Classifier',
+                              style: GoogleFonts.poppins(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: const Color(0xFF0F172A),
+                              ),
+                            ),
+                            Text(
+                              'Classify your business under official government guidelines.',
+                              style: GoogleFonts.inter(
+                                fontSize: 10,
+                                color: const Color(0xFF64748B),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => Navigator.pop(context),
+                        icon: const Icon(Icons.close, size: 18, color: Color(0xFF64748B)),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    'Investment in Plant & Machinery',
+                    style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.bold, color: const Color(0xFF334155)),
+                  ),
+                  const SizedBox(height: 6),
+                  TextField(
+                    controller: investmentController,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: const Color(0xFFF8FAFC),
+                      hintText: '0.5',
+                      hintStyle: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF94A3B8)),
+                      prefixText: '₹ ',
+                      suffixText: 'Cr',
+                      helperText: 'Enter original purchase value of machinery in Crores',
+                      helperStyle: GoogleFonts.inter(fontSize: 9, color: const Color(0xFF64748B)),
+                      suffixStyle: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: const Color(0xFF64748B)),
+                      prefixStyle: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A)),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Color(0xFF2563EB), width: 1.5),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  Text(
+                    'Annual Turnover',
+                    style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.bold, color: const Color(0xFF334155)),
+                  ),
+                  const SizedBox(height: 6),
+                  TextField(
+                    controller: turnoverController,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: const Color(0xFFF8FAFC),
+                      hintText: '3.0',
+                      hintStyle: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF94A3B8)),
+                      prefixText: '₹ ',
+                      suffixText: 'Cr',
+                      helperText: 'Enter total revenue/sales of last financial year in Crores',
+                      helperStyle: GoogleFonts.inter(fontSize: 9, color: const Color(0xFF64748B)),
+                      suffixStyle: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: const Color(0xFF64748B)),
+                      prefixStyle: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A)),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Color(0xFF2563EB), width: 1.5),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  if (result.isNotEmpty) ...[
+                    Container(
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: resultColor.withValues(alpha: 0.05),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: resultColor.withValues(alpha: 0.2)),
+                      ),
+                      child: IntrinsicHeight(
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 5,
+                              decoration: BoxDecoration(
+                                color: resultColor,
+                                borderRadius: const BorderRadius.only(
+                                  topLeft: Radius.circular(14),
+                                  bottomLeft: Radius.circular(14),
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Classification Result',
+                                      style: GoogleFonts.inter(
+                                        fontSize: 9.5,
+                                        fontWeight: FontWeight.bold,
+                                        color: const Color(0xFF64748B),
+                                        letterSpacing: 0.5,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      result,
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.bold,
+                                        color: resultColor,
+                                      ),
+                                    ),
+                                    if (subResult.isNotEmpty) ...[
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        subResult,
+                                        style: GoogleFonts.inter(
+                                          fontSize: 10,
+                                          color: const Color(0xFF475569),
+                                        ),
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                  ],
+                  SizedBox(
+                    width: double.infinity,
+                    height: 44,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        final double invest = double.tryParse(investmentController.text) ?? 0;
+                        final double turn = double.tryParse(turnoverController.text) ?? 0;
+
+                        if (invest <= 0 || turn <= 0) {
+                          setModalState(() {
+                            result = 'Invalid Input';
+                            subResult = 'Please enter valid values greater than 0';
+                            resultColor = const Color(0xFFDC2626);
+                          });
+                          return;
+                        }
+
+                        String category = '';
+                        if (invest <= 1 && turn <= 5) {
+                          category = 'MICRO Enterprise';
+                          resultColor = const Color(0xFF0D9488); // Teal
+                        } else if (invest <= 10 && turn <= 50) {
+                          category = 'SMALL Enterprise';
+                          resultColor = const Color(0xFF2563EB); // Royal Blue
+                        } else if (invest <= 50 && turn <= 250) {
+                          category = 'MEDIUM Enterprise';
+                          resultColor = const Color(0xFFD97706); // Amber
+                        } else {
+                          category = 'Large Enterprise (Beyond MSME Limits)';
+                          resultColor = const Color(0xFFDC2626); // Red
+                        }
+
+                        setModalState(() {
+                          result = category;
+                          subResult = 'Limits: Micro (≤1cr / ≤5cr) | Small (≤10cr / ≤50cr) | Medium (≤50cr / ≤250cr)';
+                        });
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF2563EB),
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      child: Text(
+                        'Calculate Classification',
+                        style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 12.5),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _openGstCalculator() {
+    final amountController = TextEditingController();
+    double gstPercentage = 18.0;
+    double baseVal = 0.0;
+    double cgstVal = 0.0;
+    double sgstVal = 0.0;
+    double totalVal = 0.0;
+    String error = '';
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 20,
+                right: 20,
+                top: 14,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 38,
+                      height: 4,
+                      margin: const EdgeInsets.only(bottom: 16),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE2E8F0),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFEFF6FF),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(
+                          Icons.percent_outlined,
+                          color: Color(0xFF2563EB),
+                          size: 18,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'GST / Tax Calculator',
+                              style: GoogleFonts.poppins(
+                                  fontSize: 14, fontWeight: FontWeight.bold, color: const Color(0xFF0F172A)),
+                            ),
+                            Text(
+                              'Calculate CGST, SGST, and Total invoice amounts.',
+                              style: GoogleFonts.inter(fontSize: 10, color: const Color(0xFF64748B)),
+                            ),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => Navigator.pop(context),
+                        icon: const Icon(Icons.close, size: 18, color: Color(0xFF64748B)),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    'Base Amount',
+                    style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.bold, color: const Color(0xFF334155)),
+                  ),
+                  const SizedBox(height: 6),
+                  TextField(
+                    controller: amountController,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: const Color(0xFFF8FAFC),
+                      hintText: '50000',
+                      hintStyle: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF94A3B8)),
+                      prefixText: '₹ ',
+                      helperText: 'Enter net value of goods or services before GST',
+                      helperStyle: GoogleFonts.inter(fontSize: 9, color: const Color(0xFF64748B)),
+                      prefixStyle: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A)),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Color(0xFF2563EB), width: 1.5),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  Text(
+                    'GST Rate (%)',
+                    style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.bold, color: const Color(0xFF334155)),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [5.0, 12.0, 18.0, 28.0].map((rate) {
+                      final isSelected = gstPercentage == rate;
+                      return Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                          child: ChoiceChip(
+                            label: Center(
+                              child: Text(
+                                '$rate%',
+                                style: GoogleFonts.inter(
+                                  fontSize: 11.5,
+                                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                  color: isSelected ? const Color(0xFF2563EB) : const Color(0xFF475569),
+                                ),
+                              ),
+                            ),
+                            selected: isSelected,
+                            onSelected: (val) {
+                              if (val) setModalState(() => gstPercentage = rate);
+                            },
+                            selectedColor: const Color(0xFFEFF6FF),
+                            backgroundColor: Colors.white,
+                            checkmarkColor: const Color(0xFF2563EB),
+                            showCheckmark: false,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              side: BorderSide(
+                                color: isSelected ? const Color(0xFF2563EB) : const Color(0xFFE2E8F0),
+                                width: isSelected ? 1.5 : 1,
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 20),
+                  if (error.isNotEmpty) ...[
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFEF2F2),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFFFCA5A5)),
+                      ),
+                      child: Text(
+                        error,
+                        style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFFB91C1C), fontWeight: FontWeight.w600),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ] else if (baseVal > 0) ...[
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFEFF6FF),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: const Color(0xFFDBEAFE)),
+                      ),
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text('Base Price', style: GoogleFonts.inter(fontSize: 11.5, color: const Color(0xFF475569))),
+                              Text('₹ ${baseVal.toStringAsFixed(2)}', style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A))),
+                            ],
+                          ),
+                          const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 6.0),
+                            child: Divider(color: Color(0xFFDBEAFE), height: 1),
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text('CGST (${(gstPercentage / 2).toStringAsFixed(1)}%)', style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF475569))),
+                              Text('₹ ${cgstVal.toStringAsFixed(2)}', style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A))),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text('SGST (${(gstPercentage / 2).toStringAsFixed(1)}%)', style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF475569))),
+                              Text('₹ ${sgstVal.toStringAsFixed(2)}', style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A))),
+                            ],
+                          ),
+                          const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 6.0),
+                            child: Divider(color: Color(0xFFDBEAFE), height: 1),
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text('Total Invoice', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.bold, color: const Color(0xFF1E293B))),
+                              Text('₹ ${totalVal.toStringAsFixed(2)}', style: GoogleFonts.poppins(fontSize: 13.5, fontWeight: FontWeight.bold, color: const Color(0xFF2563EB))),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                  ],
+                  SizedBox(
+                    width: double.infinity,
+                    height: 44,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        final double base = double.tryParse(amountController.text) ?? 0;
+                        if (base <= 0) {
+                          setModalState(() {
+                            error = 'Please enter a valid base amount';
+                            baseVal = 0;
+                          });
+                          return;
+                        }
+                        final double gstAmount = base * (gstPercentage / 100);
+                        setModalState(() {
+                          error = '';
+                          baseVal = base;
+                          cgstVal = gstAmount / 2;
+                          sgstVal = gstAmount / 2;
+                          totalVal = base + gstAmount;
+                        });
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF2563EB),
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      child: Text(
+                        'Calculate Tax',
+                        style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 12.5),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _openEmiCalculator() {
+    final loanController = TextEditingController();
+    final rateController = TextEditingController();
+    final tenureController = TextEditingController();
+    double emiVal = 0.0;
+    double principalVal = 0.0;
+    double interestVal = 0.0;
+    double totalVal = 0.0;
+    String error = '';
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 20,
+                right: 20,
+                top: 14,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 38,
+                      height: 4,
+                      margin: const EdgeInsets.only(bottom: 16),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE2E8F0),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFEFF6FF),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(
+                          Icons.calculate_outlined,
+                          color: Color(0xFF2563EB),
+                          size: 18,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Business Loan EMI Calculator',
+                              style: GoogleFonts.poppins(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: const Color(0xFF0F172A),
+                              ),
+                            ),
+                            Text(
+                              'Calculate monthly payments for your business loan.',
+                              style: GoogleFonts.inter(fontSize: 10, color: const Color(0xFF64748B)),
+                            ),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => Navigator.pop(context),
+                        icon: const Icon(Icons.close, size: 18, color: Color(0xFF64748B)),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    'Loan Amount',
+                    style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.bold, color: const Color(0xFF334155)),
+                  ),
+                  const SizedBox(height: 6),
+                  TextField(
+                    controller: loanController,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: const Color(0xFFF8FAFC),
+                      hintText: '500000',
+                      hintStyle: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF94A3B8)),
+                      prefixText: '₹ ',
+                      helperText: 'Enter total business loan sum required',
+                      helperStyle: GoogleFonts.inter(fontSize: 9, color: const Color(0xFF64748B)),
+                      prefixStyle: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A)),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Color(0xFF2563EB), width: 1.5),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Interest Rate (% p.a.)',
+                              style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.bold, color: const Color(0xFF334155)),
+                            ),
+                            const SizedBox(height: 6),
+                            TextField(
+                              controller: rateController,
+                              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                              decoration: InputDecoration(
+                                filled: true,
+                                fillColor: const Color(0xFFF8FAFC),
+                                hintText: '9.5',
+                                hintStyle: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF94A3B8)),
+                                suffixText: '%',
+                                helperText: 'Enter annual rate',
+                                helperStyle: GoogleFonts.inter(fontSize: 9, color: const Color(0xFF64748B)),
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(color: Color(0xFF2563EB), width: 1.5),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Tenure (Months)',
+                              style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.bold, color: const Color(0xFF334155)),
+                            ),
+                            const SizedBox(height: 6),
+                            TextField(
+                              controller: tenureController,
+                              keyboardType: TextInputType.number,
+                              decoration: InputDecoration(
+                                filled: true,
+                                fillColor: const Color(0xFFF8FAFC),
+                                hintText: '60',
+                                hintStyle: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF94A3B8)),
+                                suffixText: 'Mo',
+                                helperText: 'Enter term in months',
+                                helperStyle: GoogleFonts.inter(fontSize: 9, color: const Color(0xFF64748B)),
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(color: Color(0xFF2563EB), width: 1.5),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  if (error.isNotEmpty) ...[
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFEF2F2),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFFFCA5A5)),
+                      ),
+                      child: Text(
+                        error,
+                        style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFFB91C1C), fontWeight: FontWeight.w600),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ] else if (emiVal > 0) ...[
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFEFF6FF),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: const Color(0xFFDBEAFE)),
+                      ),
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text('Monthly EMI', style: GoogleFonts.inter(fontSize: 11.5, fontWeight: FontWeight.bold, color: const Color(0xFF1E293B))),
+                              Text('₹ ${emiVal.toStringAsFixed(2)}', style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.bold, color: const Color(0xFF2563EB))),
+                            ],
+                          ),
+                          const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 6.0),
+                            child: Divider(color: Color(0xFFDBEAFE), height: 1),
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text('Principal Amount', style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF475569))),
+                              Text('₹ ${principalVal.toStringAsFixed(2)}', style: GoogleFonts.poppins(fontSize: 11.5, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A))),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text('Total Interest Payable', style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF475569))),
+                              Text('₹ ${interestVal.toStringAsFixed(2)}', style: GoogleFonts.poppins(fontSize: 11.5, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A))),
+                            ],
+                          ),
+                          const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 6.0),
+                            child: Divider(color: Color(0xFFDBEAFE), height: 1),
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text('Total Amount (Principal + Int)', style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF475569))),
+                              Text('₹ ${totalVal.toStringAsFixed(2)}', style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.bold, color: const Color(0xFF0F172A))),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                  ],
+                  SizedBox(
+                    width: double.infinity,
+                    height: 44,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        final double p = double.tryParse(loanController.text) ?? 0;
+                        final double annualRate = double.tryParse(rateController.text) ?? 0;
+                        final double n = double.tryParse(tenureController.text) ?? 0;
+
+                        if (p <= 0 || annualRate <= 0 || n <= 0) {
+                          setModalState(() {
+                            error = 'Please enter valid inputs';
+                            emiVal = 0;
+                          });
+                          return;
+                        }
+
+                        final double r = (annualRate / 12) / 100;
+                        final double emi = (p * r * pow(1 + r, n)) / (pow(1 + r, n) - 1);
+                        final double totalPayable = emi * n;
+                        final double totalInterest = totalPayable - p;
+
+                        setModalState(() {
+                          error = '';
+                          emiVal = emi;
+                          principalVal = p;
+                          interestVal = totalInterest;
+                          totalVal = totalPayable;
+                        });
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF2563EB),
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      child: Text(
+                        'Calculate EMI',
+                        style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 12.5),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _openDpiitChecklist() {
+    bool isPvtLtdOrLlp = false;
+    bool isUnder10Years = false;
+    bool turnoverUnder100Cr = false;
+    bool isInnovative = false;
+    String result = '';
+    Color resultColor = const Color(0xFF2563EB);
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 20,
+                right: 20,
+                top: 14,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 38,
+                      height: 4,
+                      margin: const EdgeInsets.only(bottom: 16),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE2E8F0),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFEFF6FF),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(
+                          Icons.verified_outlined,
+                          color: Color(0xFF2563EB),
+                          size: 18,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'DPIIT Recognition Checklist',
+                              style: GoogleFonts.poppins(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: const Color(0xFF0F172A),
+                              ),
+                            ),
+                            Text(
+                              'Evaluate if your business qualifies as a startup under DPIIT rules.',
+                              style: GoogleFonts.inter(fontSize: 10, color: const Color(0xFF64748B)),
+                            ),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => Navigator.pop(context),
+                        icon: const Icon(Icons.close, size: 18, color: Color(0xFF64748B)),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Column(
+                      children: [
+                        CheckboxListTile(
+                          title: const Text('Registered as Pvt Ltd / LLP / Partnership', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600)),
+                          subtitle: const Text('Must be registered in India', style: TextStyle(fontSize: 9.5)),
+                          value: isPvtLtdOrLlp,
+                          activeColor: const Color(0xFF2563EB),
+                          onChanged: (val) => setModalState(() => isPvtLtdOrLlp = val ?? false),
+                          controlAffinity: ListTileControlAffinity.leading,
+                          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+                        ),
+                        const Divider(height: 1, color: Color(0xFFE2E8F0)),
+                        CheckboxListTile(
+                          title: const Text('Incorporation age is under 10 years', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600)),
+                          subtitle: const Text('From incorporation date', style: TextStyle(fontSize: 9.5)),
+                          value: isUnder10Years,
+                          activeColor: const Color(0xFF2563EB),
+                          onChanged: (val) => setModalState(() => isUnder10Years = val ?? false),
+                          controlAffinity: ListTileControlAffinity.leading,
+                        ),
+                        const Divider(height: 1, color: Color(0xFFE2E8F0)),
+                        CheckboxListTile(
+                          title: const Text('Annual turnover has never exceeded ₹100 Cr', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600)),
+                          subtitle: const Text('For any financial year', style: TextStyle(fontSize: 9.5)),
+                          value: turnoverUnder100Cr,
+                          activeColor: const Color(0xFF2563EB),
+                          onChanged: (val) => setModalState(() => turnoverUnder100Cr = val ?? false),
+                          controlAffinity: ListTileControlAffinity.leading,
+                        ),
+                        const Divider(height: 1, color: Color(0xFFE2E8F0)),
+                        CheckboxListTile(
+                          title: const Text('Working towards innovation/scaling', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600)),
+                          subtitle: const Text('Developing new products/processes', style: TextStyle(fontSize: 9.5)),
+                          value: isInnovative,
+                          activeColor: const Color(0xFF2563EB),
+                          onChanged: (val) => setModalState(() => isInnovative = val ?? false),
+                          controlAffinity: ListTileControlAffinity.leading,
+                          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(bottom: Radius.circular(16))),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  if (result.isNotEmpty) ...[
+                    Container(
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: resultColor.withValues(alpha: 0.05),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: resultColor.withValues(alpha: 0.2)),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(12.0),
+                        child: Row(
+                          children: [
+                            Icon(
+                              resultColor == const Color(0xFF047857) ? Icons.check_circle : Icons.cancel,
+                              color: resultColor,
+                              size: 18,
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                result,
+                                style: GoogleFonts.inter(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                  color: resultColor,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                  ],
+                  SizedBox(
+                    width: double.infinity,
+                    height: 44,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        final eligible = isPvtLtdOrLlp && isUnder10Years && turnoverUnder100Cr && isInnovative;
+                        setModalState(() {
+                          if (eligible) {
+                            result = 'Highly Eligible for DPIIT Startup India Recognition!';
+                            resultColor = const Color(0xFF0D9488); // Teal Green
+                          } else {
+                            result = 'Not Eligible. Startups must satisfy all 4 criteria to qualify.';
+                            resultColor = const Color(0xFFDC2626); // Red
+                          }
+                        });
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF2563EB),
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      child: Text(
+                        'Check Eligibility',
+                        style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 12.5),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _openValuationEstimator() {
+    final mrrController = TextEditingController();
+    final growthController = TextEditingController();
+    String selectedSector = 'SaaS / Tech';
+    double lowEstimate = 0.0;
+    double highEstimate = 0.0;
+    double arrVal = 0.0;
+    double appliedMultiple = 0.0;
+    String error = '';
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            String formatVal(double val) {
+              if (val >= 10000000) return '₹ ${(val / 10000000).toStringAsFixed(2)} Crores';
+              return '₹ ${(val / 100000).toStringAsFixed(2)} Lakhs';
+            }
+
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 20,
+                right: 20,
+                top: 14,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 38,
+                      height: 4,
+                      margin: const EdgeInsets.only(bottom: 16),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE2E8F0),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFEFF6FF),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(
+                          Icons.trending_up_outlined,
+                          color: Color(0xFF2563EB),
+                          size: 18,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Startup Valuation Estimator',
+                              style: GoogleFonts.poppins(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: const Color(0xFF0F172A),
+                              ),
+                            ),
+                            Text(
+                              'Get a ballpark pre-seed/seed valuation range based on MRR.',
+                              style: GoogleFonts.inter(fontSize: 10, color: const Color(0xFF64748B)),
+                            ),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => Navigator.pop(context),
+                        icon: const Icon(Icons.close, size: 18, color: Color(0xFF64748B)),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    'Monthly Recurring Revenue (MRR)',
+                    style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.bold, color: const Color(0xFF334155)),
+                  ),
+                  const SizedBox(height: 6),
+                  TextField(
+                    controller: mrrController,
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: const Color(0xFFF8FAFC),
+                      hintText: '200000',
+                      hintStyle: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF94A3B8)),
+                      prefixText: '₹ ',
+                      helperText: 'Enter monthly revenue in Rupees',
+                      helperStyle: GoogleFonts.inter(fontSize: 9, color: const Color(0xFF64748B)),
+                      prefixStyle: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A)),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Color(0xFF2563EB), width: 1.5),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'MoM Growth (%)',
+                              style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.bold, color: const Color(0xFF334155)),
+                            ),
+                            const SizedBox(height: 6),
+                            TextField(
+                              controller: growthController,
+                              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                              decoration: InputDecoration(
+                                filled: true,
+                                fillColor: const Color(0xFFF8FAFC),
+                                hintText: '15',
+                                hintStyle: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF94A3B8)),
+                                suffixText: '%',
+                                helperText: 'Enter month-on-month rate',
+                                helperStyle: GoogleFonts.inter(fontSize: 9, color: const Color(0xFF64748B)),
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(color: Color(0xFF2563EB), width: 1.5),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Business Sector',
+                              style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.bold, color: const Color(0xFF334155)),
+                            ),
+                            const SizedBox(height: 6),
+                            DropdownButtonFormField<String>(
+                              initialValue: selectedSector,
+                              decoration: InputDecoration(
+                                filled: true,
+                                fillColor: const Color(0xFFF8FAFC),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                                ),
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                              ),
+                              items: ['SaaS / Tech', 'E-commerce', 'Fintech', 'AgriTech'].map((String sector) {
+                                return DropdownMenuItem<String>(value: sector, child: Text(sector, style: const TextStyle(fontSize: 12)));
+                              }).toList(),
+                              onChanged: (val) {
+                                if (val != null) setModalState(() => selectedSector = val);
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  if (error.isNotEmpty) ...[
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFEF2F2),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFFFCA5A5)),
+                      ),
+                      child: Text(
+                        error,
+                        style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFFB91C1C), fontWeight: FontWeight.w600),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ] else if (lowEstimate > 0) ...[
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFEFF6FF),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: const Color(0xFFDBEAFE)),
+                      ),
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text('Valuation Range', style: GoogleFonts.inter(fontSize: 11.5, fontWeight: FontWeight.bold, color: const Color(0xFF1E293B))),
+                              Text('${formatVal(lowEstimate)} - ${formatVal(highEstimate)}', style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.bold, color: const Color(0xFF2563EB))),
+                            ],
+                          ),
+                          const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 6.0),
+                            child: Divider(color: Color(0xFFDBEAFE), height: 1),
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text('Calculated ARR', style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF475569))),
+                              Text('₹ ${(arrVal / 100000).toStringAsFixed(1)} Lakhs', style: GoogleFonts.poppins(fontSize: 11.5, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A))),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text('Applied ARR Multiple', style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF475569))),
+                              Text('${appliedMultiple.toStringAsFixed(1)}x', style: GoogleFonts.poppins(fontSize: 11.5, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A))),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                  ],
+                  SizedBox(
+                    width: double.infinity,
+                    height: 44,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        final double mrr = double.tryParse(mrrController.text) ?? 0;
+                        final double growth = double.tryParse(growthController.text) ?? 0;
+
+                        if (mrr <= 0) {
+                          setModalState(() {
+                            error = 'Please enter a valid MRR';
+                            lowEstimate = 0;
+                          });
+                          return;
+                        }
+
+                        double baseMultiple = 10;
+                        if (selectedSector == 'Fintech') baseMultiple = 12;
+                        if (selectedSector == 'E-commerce') baseMultiple = 6;
+                        if (selectedSector == 'AgriTech') baseMultiple = 8;
+
+                        if (growth > 20) {
+                          baseMultiple += 4;
+                        } else if (growth > 10) {
+                          baseMultiple += 2;
+                        }
+
+                        final double arr = mrr * 12;
+                        setModalState(() {
+                          error = '';
+                          arrVal = arr;
+                          appliedMultiple = baseMultiple;
+                          lowEstimate = arr * baseMultiple;
+                          highEstimate = arr * (baseMultiple + 3);
+                        });
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF2563EB),
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      child: Text(
+                        'Estimate Valuation',
+                        style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 12.5),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _openDocumentChecklist() {
+    String selectedType = 'Private Limited';
+    List<String> checklist = [
+      'Digital Signature Certificate (DSC)',
+      'Director Identification Number (DIN)',
+      'MOA & AOA Drafting',
+      'Certificate of Incorporation (COI)',
+      'Company PAN & TAN Cards',
+      'Corporate Bank Account'
+    ];
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 20,
+                right: 20,
+                top: 14,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 38,
+                      height: 4,
+                      margin: const EdgeInsets.only(bottom: 16),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE2E8F0),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFEFF6FF),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(
+                          Icons.rule_folder_outlined,
+                          color: Color(0xFF2563EB),
+                          size: 18,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Setup Document Checklist',
+                              style: GoogleFonts.poppins(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: const Color(0xFF0F172A),
+                              ),
+                            ),
+                            Text(
+                              'Checklist of documents needed to set up your business.',
+                              style: GoogleFonts.inter(fontSize: 10, color: const Color(0xFF64748B)),
+                            ),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => Navigator.pop(context),
+                        icon: const Icon(Icons.close, size: 18, color: Color(0xFF64748B)),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    'Business Entity Type',
+                    style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.bold, color: const Color(0xFF334155)),
+                  ),
+                  const SizedBox(height: 6),
+                  DropdownButtonFormField<String>(
+                    initialValue: selectedType,
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: const Color(0xFFF8FAFC),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    ),
+                    items: ['Private Limited', 'Partnership', 'One Person Company (OPC)', 'LLP'].map((String type) {
+                      return DropdownMenuItem<String>(value: type, child: Text(type, style: const TextStyle(fontSize: 12)));
+                    }).toList(),
+                    onChanged: (val) {
+                      if (val != null) {
+                        setModalState(() {
+                          selectedType = val;
+                          if (val == 'Partnership') {
+                            checklist = [
+                              'Partnership Deed drafting',
+                              'Deed Registration with Registrar',
+                              'PAN & TAN cards of Firm',
+                              'Firm Bank Account',
+                              'GST Registration (Optional)'
+                            ];
+                          } else if (val == 'LLP') {
+                            checklist = [
+                              'LLP Name Approval (RUN-LLP)',
+                              'FiLLiP Form (LLP Incorporation)',
+                              'LLP Agreement Drafting',
+                              'LLP PAN & TAN Cards',
+                              'LLP Bank Account'
+                            ];
+                          } else {
+                            checklist = [
+                              'Digital Signature Certificate (DSC)',
+                              'Director Identification Number (DIN)',
+                              'MOA & AOA Drafting',
+                              'Certificate of Incorporation (COI)',
+                              'Company PAN & TAN Cards',
+                              'Corporate Bank Account'
+                            ];
+                          }
+                        });
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    'Required Documents',
+                    style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.bold, color: const Color(0xFF334155)),
+                  ),
+                  const SizedBox(height: 8),
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(maxHeight: 220),
+                    child: ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: checklist.length,
+                      itemBuilder: (context, index) {
+                        return Container(
+                          margin: const EdgeInsets.symmetric(vertical: 4.0),
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF8FAFC),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: const Color(0xFFEFF2F5)),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.check_circle, color: Color(0xFF2563EB), size: 16),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  checklist[index],
+                                  style: GoogleFonts.inter(
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.w600,
+                                    color: const Color(0xFF1E293B),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 44,
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF2563EB),
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      child: Text(
+                        'Close Checklist',
+                        style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 12.5),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _openSubsidyEstimator() {
+    final costController = TextEditingController();
+    final subsidyController = TextEditingController();
+    double costVal = 0.0;
+    double subsidyPercentVal = 0.0;
+    double subsidyAmountVal = 0.0;
+    double netCostVal = 0.0;
+    String error = '';
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 20,
+                right: 20,
+                top: 14,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 38,
+                      height: 4,
+                      margin: const EdgeInsets.only(bottom: 16),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE2E8F0),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFEFF6FF),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(
+                          Icons.account_balance_wallet_outlined,
+                          color: Color(0xFF2563EB),
+                          size: 18,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Business Subsidy Estimator',
+                              style: GoogleFonts.poppins(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: const Color(0xFF0F172A),
+                              ),
+                            ),
+                            Text(
+                              'Estimate capital subsidies and net loan commitments for machinery.',
+                              style: GoogleFonts.inter(fontSize: 10, color: const Color(0xFF64748B)),
+                            ),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => Navigator.pop(context),
+                        icon: const Icon(Icons.close, size: 18, color: Color(0xFF64748B)),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    'Project / Machinery Cost (Lakhs)',
+                    style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.bold, color: const Color(0xFF334155)),
+                  ),
+                  const SizedBox(height: 6),
+                  TextField(
+                    controller: costController,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: const Color(0xFFF8FAFC),
+                      hintText: '25',
+                      hintStyle: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF94A3B8)),
+                      prefixText: '₹ ',
+                      suffixText: 'Lakhs',
+                      helperText: 'Enter machinery or project cost in Lakhs',
+                      helperStyle: GoogleFonts.inter(fontSize: 9, color: const Color(0xFF64748B)),
+                      suffixStyle: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: const Color(0xFF64748B)),
+                      prefixStyle: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A)),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Color(0xFF2563EB), width: 1.5),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  Text(
+                    'Expected Subsidy Percentage (%)',
+                    style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.bold, color: const Color(0xFF334155)),
+                  ),
+                  const SizedBox(height: 6),
+                  TextField(
+                    controller: subsidyController,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: const Color(0xFFF8FAFC),
+                      hintText: '15',
+                      hintStyle: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF94A3B8)),
+                      suffixText: '%',
+                      helperText: 'Enter expected subsidy rate percentage',
+                      helperStyle: GoogleFonts.inter(fontSize: 9, color: const Color(0xFF64748B)),
+                      suffixStyle: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: const Color(0xFF64748B)),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Color(0xFF2563EB), width: 1.5),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  if (error.isNotEmpty) ...[
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFEF2F2),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFFFCA5A5)),
+                      ),
+                      child: Text(
+                        error,
+                        style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFFB91C1C), fontWeight: FontWeight.w600),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ] else if (costVal > 0) ...[
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFEFF6FF),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: const Color(0xFFDBEAFE)),
+                      ),
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text('Original Project Cost', style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF475569))),
+                              Text('₹ ${costVal.toStringAsFixed(2)} Lakhs', style: GoogleFonts.poppins(fontSize: 11.5, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A))),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text('Expected Subsidy (${subsidyPercentVal.toStringAsFixed(1)}%)', style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF475569))),
+                              Text('₹ ${subsidyAmountVal.toStringAsFixed(2)} Lakhs', style: GoogleFonts.poppins(fontSize: 11.5, fontWeight: FontWeight.bold, color: const Color(0xFF0D9488))),
+                            ],
+                          ),
+                          const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 6.0),
+                            child: Divider(color: Color(0xFFDBEAFE), height: 1),
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text('Net Cost to Business', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.bold, color: const Color(0xFF1E293B))),
+                              Text('₹ ${netCostVal.toStringAsFixed(2)} Lakhs', style: GoogleFonts.poppins(fontSize: 13.5, fontWeight: FontWeight.bold, color: const Color(0xFF2563EB))),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                  ],
+                  SizedBox(
+                    width: double.infinity,
+                    height: 44,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        final double cost = double.tryParse(costController.text) ?? 0;
+                        final double percent = double.tryParse(subsidyController.text) ?? 0;
+
+                        if (cost <= 0 || percent <= 0 || percent > 100) {
+                          setModalState(() {
+                            error = 'Please enter valid values (Subsidy % must be between 0 and 100)';
+                            costVal = 0;
+                          });
+                          return;
+                        }
+
+                        final double subsidyAmount = cost * (percent / 100);
+                        final double netAmount = cost - subsidyAmount;
+
+                        setModalState(() {
+                          error = '';
+                          costVal = cost;
+                          subsidyPercentVal = percent;
+                          subsidyAmountVal = subsidyAmount;
+                          netCostVal = netAmount;
+                        });
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF2563EB),
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      child: Text(
+                        'Calculate Subsidy',
+                        style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 12.5),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
         );
       },
     );

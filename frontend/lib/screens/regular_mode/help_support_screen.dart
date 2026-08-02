@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../utils/constants.dart';
 
 class HelpSupportScreen extends StatefulWidget {
@@ -452,6 +453,22 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                                 return;
                               }
                               setModalState(() => _isSubmitting = true);
+                              
+                              // Realtime Supabase insertion of support ticket notification
+                              final userId = Supabase.instance.client.auth.currentUser?.id;
+                              if (userId != null) {
+                                Supabase.instance.client.from('notifications').insert({
+                                  'user_id': userId,
+                                  'title': 'Ticket Created: $_issueCategory',
+                                  'message': 'Your support ticket description: "$text" has been received. Our team will contact you at ${_emailController.text.trim()}.',
+                                  'notification_type': 'updates',
+                                  'is_read': false,
+                                }).catchError((e) {
+                                  debugPrint('[HelpSupportScreen] Failed to save support notification: $e');
+                                  return null;
+                                });
+                              }
+
                               Future.delayed(
                                 const Duration(milliseconds: 1200),
                                 () {
@@ -533,12 +550,12 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: const BoxDecoration(
-                          color: Color(0xFFFFF7ED),
+                          color: Color(0xFFEFF6FF),
                           shape: BoxShape.circle,
                         ),
                         child: const Icon(
                           Icons.chat_bubble_outline_rounded,
-                          color: Color(0xFFEA580C),
+                          color: Color(0xFF2563EB),
                           size: 20,
                         ),
                       ),
@@ -634,7 +651,7 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                     height: 48,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFEA580C),
+                        backgroundColor: const Color(0xFF2563EB),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -1109,7 +1126,7 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                       right: -10,
                       bottom: -5,
                       child: Image.asset(
-                        'assets/images/support_agent.png',
+                        'assets/supporting assets/support_agent.png',
                         height: 85,
                         fit: BoxFit.contain,
                       ),

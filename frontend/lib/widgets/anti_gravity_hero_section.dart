@@ -118,7 +118,7 @@ class _AntiGravityHeroSectionState extends State<AntiGravityHeroSection> with Ti
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Image.asset(
-                          'assets/images/Logo.png',
+                          'assets/images/Logo/Logo.png',
                           height: 125,
                           fit: BoxFit.contain,
                         ),

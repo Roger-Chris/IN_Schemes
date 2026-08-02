@@ -15,9 +15,10 @@ import 'discover_results_screen.dart';
 import 'profile_setup_screen.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key, this.onVoiceQuery});
+  const HomeScreen({super.key, this.onVoiceQuery, this.onFilterPressed});
 
   final ValueChanged<String>? onVoiceQuery;
+  final VoidCallback? onFilterPressed;
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -150,7 +151,7 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Stack(
               children: [
                 Image.asset(
-                  'assets/images/Home_screen_bg.webp',
+                  'assets/images/Background/Home_screen_bg.webp',
                   width: MediaQuery.of(context).size.width,
                   height: 290,
                   fit: BoxFit.cover,
@@ -183,17 +184,17 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 4),
 
                     // Unified Header
                     _buildHeader(context, provider),
 
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 10),
 
                     // Search Bar & Filter Button
                     _buildSearchAndFilter(context, provider),
 
-                    const SizedBox(height: 14),
+                    const SizedBox(height: 10),
 
                     // Quick search horizontal pills
                     _buildQuickPills(context, provider),
@@ -239,7 +240,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
 
           // 3. Floating Action Ask AI widget
-          Positioned(bottom: 24, right: 18, child: _buildAskAiFab(context)),
+          Positioned(bottom: 30, right: 18, child: _buildAskAiFab(context)),
         ],
       ),
     );
@@ -392,7 +393,11 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(width: 8),
           GestureDetector(
             onTap: () {
-              provider.updateTabIndex(1);
+              if (widget.onFilterPressed != null) {
+                widget.onFilterPressed!();
+              } else {
+                provider.updateTabIndex(1);
+              }
             },
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -486,7 +491,6 @@ class _HomeScreenState extends State<HomeScreen> {
   // Profile Completion Card (Mockup Style Redesign)
   Widget _buildProfileCompleteCard(BuildContext context, AppProvider provider) {
     final completion = provider.profileCompletionPercentage;
-    final isComplete = completion == 100;
 
     return Material(
       color: Colors.transparent,
@@ -498,11 +502,13 @@ class _HomeScreenState extends State<HomeScreen> {
         },
         borderRadius: BorderRadius.circular(16),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
           decoration: BoxDecoration(
-            color: Colors.white,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFFEFF6FF), width: 1.5),
+            image: const DecorationImage(
+              image: AssetImage('assets/images/Background/profile process banner.png'),
+              fit: BoxFit.cover,
+            ),
             boxShadow: [
               BoxShadow(
                 color: const Color(0xFF2563EB).withValues(alpha: 0.03),
@@ -518,13 +524,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 alignment: Alignment.center,
                 children: [
                   SizedBox(
-                    width: 54,
-                    height: 54,
+                    width: 48,
+                    height: 48,
                     child: CircularProgressIndicator(
                       value: completion / 100.0,
-                      strokeWidth: 4,
+                      strokeWidth: 4.0,
                       strokeCap: StrokeCap.round,
-                      backgroundColor: const Color(0xFFEFF6FF),
+                      backgroundColor: const Color(0xFFEFF6FF).withValues(alpha: 0.8),
                       valueColor: const AlwaysStoppedAnimation<Color>(
                         Color(0xFF2563EB),
                       ),
@@ -533,22 +539,22 @@ class _HomeScreenState extends State<HomeScreen> {
                   Text(
                     "$completion%",
                     style: GoogleFonts.poppins(
-                      fontSize: 12,
+                      fontSize: 11,
                       fontWeight: FontWeight.bold,
                       color: const Color(0xFF0F172A),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(width: 14),
+              const SizedBox(width: 10),
 
               // Vertical Divider Line
               Container(
                 width: 1,
-                height: 44,
-                color: const Color(0xFFE2E8F0),
+                height: 38,
+                color: const Color(0xFFE2E8F0).withValues(alpha: 0.8),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: 12),
 
               // Middle: Text Column
               Expanded(
@@ -564,22 +570,21 @@ class _HomeScreenState extends State<HomeScreen> {
                         color: const Color(0xFF0F172A),
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 3),
                     Text(
                       "Unlock personalized scheme recommendations.",
                       style: GoogleFonts.inter(
                         fontSize: 10.5,
-                        color: const Color(0xFF64748B),
-                        height: 1.4,
+                        color: const Color(0xFF334155),
+                        fontWeight: FontWeight.w600,
+                        height: 1.3,
                       ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(width: 12),
-
-              // Right: Clipboard Graphic
-              _buildClipboardGraphic(isComplete, completion),
+              // Right Spacer to prevent text from overlapping the background banner image's built-in graphic
+              const SizedBox(width: 84),
             ],
           ),
         ),
@@ -587,133 +592,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildClipboardGraphic(bool isComplete, int completion) {
-    return SizedBox(
-      width: 70,
-      height: 70,
-      child: Stack(
-        clipBehavior: Clip.none,
-        alignment: Alignment.center,
-        children: [
-          // Background light circular overlay
-          Positioned(
-            left: 2,
-            top: 10,
-            child: Container(
-              width: 58,
-              height: 58,
-              decoration: const BoxDecoration(
-                color: Color(0xFFEFF6FF),
-                shape: BoxShape.circle,
-              ),
-            ),
-          ),
-          // Sparkle top-left
-          const Positioned(
-            left: 0,
-            top: 2,
-            child: Icon(
-              Icons.star,
-              color: Color(0xFF93C5FD),
-              size: 10,
-            ),
-          ),
-          // Sparkle top-right
-          const Positioned(
-            right: 0,
-            top: 12,
-            child: Icon(
-              Icons.star,
-              color: Color(0xFF93C5FD),
-              size: 8,
-            ),
-          ),
-          // Clipboard body
-          Positioned(
-            top: 10,
-            child: Container(
-              width: 44,
-              height: 52,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: const Color(0xFFBFDBFE), width: 1.5),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.04),
-                    blurRadius: 4,
-                    offset: const Offset(0, 1.5),
-                  ),
-                ],
-              ),
-              padding: const EdgeInsets.only(top: 12, left: 6, right: 6, bottom: 6),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  // Person icon
-                  const Icon(
-                    Icons.person_rounded,
-                    color: Color(0xFF3B82F6),
-                    size: 14,
-                  ),
-                  // Mock lines
-                  Container(
-                    width: 24,
-                    height: 2.5,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFBFDBFE),
-                      borderRadius: BorderRadius.circular(1),
-                    ),
-                  ),
-                  Container(
-                    width: 18,
-                    height: 2.5,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFBFDBFE),
-                      borderRadius: BorderRadius.circular(1),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          // Symmetrical clip top
-          Positioned(
-            top: 6,
-            child: Container(
-              width: 18,
-              height: 8,
-              decoration: BoxDecoration(
-                color: const Color(0xFF2563EB),
-                borderRadius: BorderRadius.circular(3),
-              ),
-            ),
-          ),
-          // Blue shield with check badge bottom-right
-          Positioned(
-            right: 2,
-            bottom: 0,
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                const Icon(
-                  Icons.shield_rounded,
-                  color: Color(0xFF2563EB),
-                  size: 20,
-                ),
-                const Icon(
-                  Icons.check,
-                  color: Colors.white,
-                  size: 11,
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+
 
   // Promo Slider Carousel (Snapping PageView with dynamic Supabase integration)
   Widget _buildCarouselSection(BuildContext context) {
@@ -728,7 +607,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Column(
       children: [
         SizedBox(
-          height: 124,
+          height: 148,
           child: PageView.builder(
             controller: _carouselPageController,
             onPageChanged: (index) {
@@ -746,6 +625,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 _parseHexColor(item['bg_gradient_start'] ?? '#FFF7ED'),
                 _parseHexColor(item['bg_gradient_end'] ?? '#FFFFEDD5'),
               ];
+              final String? bgImage = item['bg_image'] as String?;
 
               Widget rightGraphic = const SizedBox();
               if (item['graphic_type'] == 'calendar') {
@@ -767,13 +647,13 @@ class _HomeScreenState extends State<HomeScreen> {
                     badgeTextColor: _parseHexColor(item['badge_text_color'] ?? '#0F172A'),
                     badgeBgColor: _parseHexColor(item['badge_bg_color'] ?? '#F1F5F9'),
                     title: item['title'] ?? '',
+                    subtitle: item['subtitle'] ?? '',
                     titleColor: const Color(0xFF1E293B),
-                    btnText: item['btn_text'] ?? 'View Details',
-                    btnColor: _parseHexColor(item['btn_color'] ?? '#2563EB'),
-                    onBtnTap: () {
+                    onTap: () {
                       _handleCarouselTap(context, item);
                     },
                     rightGraphic: rightGraphic,
+                    bgImage: bgImage,
                   ),
                 ),
               );
@@ -879,87 +759,107 @@ class _HomeScreenState extends State<HomeScreen> {
     required Color badgeTextColor,
     required Color badgeBgColor,
     required String title,
+    String? subtitle,
     required Color titleColor,
-    required String btnText,
-    required Color btnColor,
-    required VoidCallback onBtnTap,
+    required VoidCallback onTap,
     required Widget rightGraphic,
+    String? bgImage,
   }) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: BoxDecoration(
-        gradient: bgGradient,
+    String displayTitle = title;
+    String displaySubtitle = subtitle ?? '';
+    if (displaySubtitle.isEmpty && title.contains(' — ')) {
+      final parts = title.split(' — ');
+      displayTitle = parts[0];
+      displaySubtitle = parts[1];
+    }
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: borderColor),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.015),
-            blurRadius: 6,
-            offset: const Offset(0, 1.5),
+        child: Container(
+          margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          decoration: BoxDecoration(
+            gradient: bgImage != null ? null : bgGradient,
+            image: bgImage != null
+                ? DecorationImage(
+                    image: AssetImage(bgImage),
+                    fit: BoxFit.cover,
+                  )
+                : null,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: bgImage != null ? Colors.transparent : borderColor),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.02),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 6,
-                    vertical: 2.5,
-                  ),
-                  decoration: BoxDecoration(
-                    color: badgeBgColor,
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text(
-                    badgeText,
-                    style: GoogleFonts.inter(
-                      fontSize: 9,
-                      fontWeight: FontWeight.bold,
-                      color: badgeTextColor,
-                    ),
-                  ),
-                ),
-                Text(
-                  title,
-                  style: GoogleFonts.poppins(
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.bold,
-                    color: titleColor,
-                    height: 1.3,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                GestureDetector(
-                  onTap: onBtnTap,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        btnText,
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2.5,
+                      ),
+                      decoration: BoxDecoration(
+                        color: badgeBgColor.withValues(alpha: bgImage != null ? 0.85 : 1.0),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        badgeText,
                         style: GoogleFonts.inter(
-                          color: btnColor,
-                          fontSize: 11,
+                          fontSize: 9,
                           fontWeight: FontWeight.bold,
+                          color: badgeTextColor,
                         ),
                       ),
-                      const SizedBox(width: 3),
-                      Icon(Icons.arrow_forward, size: 11, color: btnColor),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      displayTitle,
+                      style: GoogleFonts.poppins(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.bold,
+                        color: titleColor,
+                        height: 1.25,
+                      ),
+                    ),
+                    if (displaySubtitle.isNotEmpty) ...[
+                      const Spacer(),
+                      Text(
+                        displaySubtitle,
+                        style: GoogleFonts.inter(
+                          fontSize: 10.0,
+                          color: const Color(0xFF475569),
+                          fontWeight: FontWeight.w600,
+                          height: 1.3,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ],
-                  ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+              const SizedBox(width: 6),
+              if (bgImage == null)
+                rightGraphic
+              else
+                // Reserve spacer on the right so text doesn't overlap the background image's built-in icon
+                const SizedBox(width: 80),
+            ],
           ),
-          const SizedBox(width: 6),
-          rightGraphic,
-        ],
+        ),
       ),
     );
   }
@@ -1549,20 +1449,22 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Tip of the Day Card (Yellow theme)
+  // Tip of the Day Card (Yellow theme with custom tip banner bg)
   Widget _buildTipOfTheDay(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFFFFFDF5), Color(0xFFFEF3C7)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+        image: const DecorationImage(
+          image: AssetImage('assets/images/Background/tip banner.png'),
+          fit: BoxFit.cover,
         ),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFFEF3C7)),
         boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 6),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
         ],
       ),
       child: Row(
@@ -1571,19 +1473,20 @@ class _HomeScreenState extends State<HomeScreen> {
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Row(
                   children: [
                     const Icon(
                       Icons.lightbulb,
                       color: Color(0xFFF59E0B),
-                      size: 20,
+                      size: 22,
                     ),
                     const SizedBox(width: 6),
                     Text(
                       "Tip of the Day",
                       style: GoogleFonts.poppins(
-                        fontSize: 13,
+                        fontSize: 14.5,
                         fontWeight: FontWeight.bold,
                         color: const Color(0xFF0F172A),
                       ),
@@ -1594,48 +1497,18 @@ class _HomeScreenState extends State<HomeScreen> {
                 Text(
                   "Women Entrepreneurs may receive additional subsidy under PMEGP.",
                   style: GoogleFonts.inter(
-                    fontSize: 11.5,
+                    fontSize: 11.0,
                     color: const Color(0xFF475569),
-                    fontWeight: FontWeight.w500,
-                    height: 1.35,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                GestureDetector(
-                  onTap: () {
-                    // Tip details
-                  },
-                  child: Text(
-                    "Know More ->",
-                    style: GoogleFonts.inter(
-                      fontSize: 11.5,
-                      fontWeight: FontWeight.bold,
-                      color: const Color(0xFF2563EB),
-                    ),
+                    fontWeight: FontWeight.w600,
+                    height: 1.4,
                   ),
                 ),
               ],
             ),
           ),
           const SizedBox(width: 8),
-          SizedBox(
-            width: 90,
-            height: 90,
-            child: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                Positioned(
-                  bottom: -10,
-                  right: -5,
-                  child: Image.asset(
-                    'assets/images/support_agent.png',
-                    height: 95,
-                    fit: BoxFit.contain,
-                  ),
-                ),
-              ],
-            ),
-          ),
+          // Reserved right spacer to prevent text from overlapping the built-in image graphic
+          const SizedBox(width: 80),
         ],
       ),
     );
@@ -1821,7 +1694,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             padding: const EdgeInsets.all(2),
             child: Image.asset(
-              'assets/saarthi_expressions/Ai companion.png',
+              'assets/saarthi/sarathi.png',
               fit: BoxFit.contain,
             ),
           ),

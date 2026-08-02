@@ -53,7 +53,7 @@ class EligibilityResultsScreen extends StatelessWidget {
                 icon: const Icon(
                   Icons.share_outlined,
                   size: 20,
-                  color: Color(0xFF0D47A1),
+                  color: Color(0xFF2563EB),
                 ),
                 onPressed: () {
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -84,7 +84,7 @@ class EligibilityResultsScreen extends StatelessWidget {
                       vertical: 12.0,
                     ),
                     child: Image.asset(
-                      'assets/images/eligibility_banner.png',
+                      'assets/images/Background/suggestion banner.png',
                       height: 180,
                       fit: BoxFit.contain,
                     ),

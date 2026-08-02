@@ -74,29 +74,28 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/images/Logo.png
-    - assets/images/Logo icon.png
-    - assets/images/banner_family.png
-    - assets/images/banner_farmer.png
-    - assets/images/banner_students.png
-    - assets/images/splash_screen.png
-    - assets/images/user_avatar.png
-    - assets/images/search_banner.png
-    - assets/images/eligibility_banner.png
-    - assets/images/support_agent.png
-    - assets/images/mode selection bg.png
-    - assets/images/companion intro bg.png
-    - assets/images/compoanion bot.png
-    - assets/images/Home_screen_bg.webp
-    - assets/images/Login_bg.webp
-    - assets/images/onboarding_bg.png
-    - assets/images/tamil_nadu.png
-    - assets/images/maharashtra.png
-    - assets/images/uttar_pradesh.png
-    - assets/images/karnataka.png
-    - assets/images/gujarat.png
     - assets/data/government_schemes.json
-    - assets/saarthi_expressions/
+    - assets/images/Logo/Logo.png
+    - assets/images/Logo/Logo icon.png
+    - assets/images/Logo/compoanion bot.png
+    - assets/images/Background/splash_screen.png
+    - assets/images/Background/search_banner.png
+    - assets/images/Background/mode selection bg.png
+    - assets/images/Background/companion intro bg.png
+    - assets/images/Background/profile process banner.png
+    - assets/images/Background/suggestion banner.png
+    - assets/images/Background/new scheme banner.png
+    - assets/images/Background/alert banner.png
+    - assets/images/Background/notification banner.png
+    - assets/images/Background/tip banner.png
+    - assets/images/Background/Home_screen_bg.webp
+    - assets/images/Background/Login_bg.webp
+    - assets/images/Background/onboarding_bg.png
+    - assets/images/States and UTs/States/
+    - assets/saarthi/sarathi.png
+    - assets/supporting assets/support_agent.png
+    - assets/supporting assets/user_avatar.png
+    - assets/data/government_schemes.json
 
 
 
@@ -131,3 +130,6 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+  #  
+
+

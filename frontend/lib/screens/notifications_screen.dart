@@ -583,7 +583,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   shape: BoxShape.circle,
                 ),
                 alignment: Alignment.center,
-                child: Icon(icon, color: const Color(0xFF0D47A1), size: 24),
+                child: Icon(icon, color: const Color(0xFF2563EB), size: 24),
               ),
               const SizedBox(width: 14),
               Expanded(
@@ -1080,7 +1080,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                       subtitle: 'Important announcements and updates',
                       headerIcon: Icons.campaign_outlined,
                       headerIconBg: const Color(0xFFEFF6FF),
-                      headerIconColor: const Color(0xFF0D47A1),
+                      headerIconColor: const Color(0xFF2563EB),
                       cards: updates
                           .map(
                             (item) =>

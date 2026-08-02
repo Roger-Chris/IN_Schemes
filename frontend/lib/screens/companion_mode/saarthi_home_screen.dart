@@ -144,7 +144,7 @@ class _SaarthiHomeScreenState extends State<SaarthiHomeScreen> {
                                 backgroundColor: const Color(0xFFEFF6FF),
                                 child: ClipOval(
                                   child: Image.asset(
-                                    'assets/images/user_avatar.png',
+                                    'assets/supporting assets/user_avatar.png',
                                     width: 36,
                                     height: 36,
                                     fit: BoxFit.cover,
@@ -184,7 +184,7 @@ class _SaarthiHomeScreenState extends State<SaarthiHomeScreen> {
                             ),
                             child: ClipOval(
                               child: Image.asset(
-                                'assets/saarthi_expressions/Ai companion.png',
+                                'assets/saarthi/sarathi.png',
                                 fit: BoxFit.cover,
                               ),
                             ),

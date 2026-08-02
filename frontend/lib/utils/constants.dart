@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class AppConstants {
   // App Color Palette (New Light-Themed Premium Palette)
-  static const Color primaryColor = Color(0xFF0D47A1); // Royal Blue
+  static const Color primaryColor = Color(0xFF2563EB); // Royal Blue
   static const Color secondaryColor = Color(0xFF1565C0); // Azure Blue
   static const Color accentColor = Color(0xFFFF9933); // Saffron Orange
   static const Color successColor = Color(0xFF2E7D32); // Emerald Green

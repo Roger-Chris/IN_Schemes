@@ -80,7 +80,7 @@ class _SaarthiWelcomeScreenState extends State<SaarthiWelcomeScreen> {
                     child: Opacity(
                       opacity: 0.8,
                       child: Image.asset(
-                        'assets/images/companion intro bg.png',
+                        'assets/images/Background/companion intro bg.png',
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
                       ),
@@ -137,7 +137,7 @@ class _SaarthiWelcomeScreenState extends State<SaarthiWelcomeScreen> {
                                   child: SizedBox(
                                     height: 100,
                                     child: Image.asset(
-                                      'assets/saarthi_expressions/Ai companion.png',
+                                      'assets/saarthi/sarathi.png',
                                       fit: BoxFit.contain,
                                       errorBuilder: (context, error, stackTrace) => const Icon(
                                         Icons.android,
