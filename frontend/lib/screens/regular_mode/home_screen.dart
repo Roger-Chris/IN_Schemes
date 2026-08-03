@@ -184,7 +184,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 20),
 
                     // Unified Header
                     _buildHeader(context, provider),

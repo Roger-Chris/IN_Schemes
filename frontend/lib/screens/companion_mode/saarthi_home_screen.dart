@@ -50,9 +50,11 @@ class _SaarthiHomeScreenState extends State<SaarthiHomeScreen> {
             Expanded(
               child: SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20.0,
-                  vertical: 16.0,
+                padding: const EdgeInsets.only(
+                  left: 20.0,
+                  right: 20.0,
+                  top: 28.0,
+                  bottom: 16.0,
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
