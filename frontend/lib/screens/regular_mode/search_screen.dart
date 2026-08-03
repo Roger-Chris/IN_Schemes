@@ -1345,7 +1345,7 @@ class _ResultSchemeCard extends StatelessWidget {
     if (localStateEmblem != null) {
       return Image.asset(
         localStateEmblem,
-        fit: BoxFit.contain,
+        fit: BoxFit.cover,
         width: size,
         height: size,
         errorBuilder: (context, error, stackTrace) {
@@ -1521,10 +1521,12 @@ class _ResultSchemeCard extends StatelessWidget {
                         width: 1.2,
                       ),
                     ),
-                    padding: const EdgeInsets.all(10),
-                    child: _buildSchemeLogo(
-                      scheme,
-                      size: 52,
+                    padding: _getLocalStateEmblem(scheme) != null ? EdgeInsets.zero : const EdgeInsets.all(10),
+                    child: ClipOval(
+                      child: _buildSchemeLogo(
+                        scheme,
+                        size: 72,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 16),

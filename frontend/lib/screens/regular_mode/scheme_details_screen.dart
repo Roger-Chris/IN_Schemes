@@ -1086,7 +1086,7 @@ class _HeroSection extends StatelessWidget {
     if (localStateEmblem != null) {
       return Image.asset(
         localStateEmblem,
-        fit: BoxFit.contain,
+        fit: BoxFit.cover,
         width: size,
         height: size,
         errorBuilder: (context, error, stackTrace) {
@@ -1216,10 +1216,12 @@ class _HeroSection extends StatelessWidget {
                       ),
                     ],
                   ),
-                  padding: const EdgeInsets.all(8),
-                  child: _buildSchemeLogo(
-                    scheme,
-                    size: 56,
+                  padding: _getLocalStateEmblem(scheme) != null ? EdgeInsets.zero : const EdgeInsets.all(8),
+                  child: ClipOval(
+                    child: _buildSchemeLogo(
+                      scheme,
+                      size: 72,
+                    ),
                   ),
                 ),
               ),
