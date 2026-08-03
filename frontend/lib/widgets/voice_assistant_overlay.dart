@@ -1272,7 +1272,7 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
             width: 56,
             height: 56,
             child: Image.asset(
-              'assets/saarthi/sarathi.png',
+              'assets/images/saarthi/sarathi.png',
               key: const Key('voice-assistant-image'),
               fit: BoxFit.contain,
             ),

@@ -1058,7 +1058,7 @@ class _SaarthiProfileSetupScreenState extends State<SaarthiProfileSetupScreen> {
                       width: 80,
                       height: 80,
                       child: Image.asset(
-                        'assets/saarthi/sarathi.png',
+                        'assets/images/saarthi/sarathi.png',
                         fit: BoxFit.contain,
                       ),
                     ),
@@ -1222,7 +1222,7 @@ class _SaarthiProfileSetupScreenState extends State<SaarthiProfileSetupScreen> {
                       ),
                       child: ClipOval(
                         child: Image.asset(
-                          'assets/saarthi/sarathi.png',
+                          'assets/images/saarthi/sarathi.png',
                           fit: BoxFit.contain,
                         ),
                       ),

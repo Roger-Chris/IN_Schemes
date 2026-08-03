@@ -1690,7 +1690,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             padding: const EdgeInsets.all(2),
             child: Image.asset(
-              'assets/saarthi/sarathi.png',
+              'assets/images/saarthi/sarathi.png',
               fit: BoxFit.contain,
             ),
           ),

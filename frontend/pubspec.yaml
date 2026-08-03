@@ -92,9 +92,10 @@ flutter:
     - assets/images/Background/Login_bg.webp
     - assets/images/Background/onboarding_bg.png
     - assets/images/States and UTs/States/
-    - assets/saarthi/sarathi.png
-    - assets/supporting assets/support_agent.png
-    - assets/supporting assets/user_avatar.png
+    - assets/images/States and UTs/States emblem/
+    - assets/images/saarthi/sarathi.png
+    - assets/images/supporting assets/support_agent.png
+    - assets/images/supporting assets/user_avatar.png
     - assets/data/government_schemes.json
 
 
