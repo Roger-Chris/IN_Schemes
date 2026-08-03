@@ -228,10 +228,7 @@ class _DiscoverResultsScreenState extends State<DiscoverResultsScreen> {
         elevation: 0,
         shadowColor: Colors.transparent,
         scrolledUnderElevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF0F172A)),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
+        automaticallyImplyLeading: false,
         title: !widget.isAssessmentCompleted
             ? Text(
                 "Discover Results",
@@ -390,7 +387,7 @@ class _DiscoverResultsScreenState extends State<DiscoverResultsScreen> {
                           Text(
                             "Top Recommended Schemes (${filteredSchemes.length})",
                             style: GoogleFonts.poppins(
-                              fontSize: 16,
+                              fontSize: 13.5,
                               fontWeight: FontWeight.bold,
                               color: const Color(0xFF0F172A),
                             ),
