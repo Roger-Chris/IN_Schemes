@@ -726,7 +726,17 @@ class _SaarthiProfileSetupScreenState extends State<SaarthiProfileSetupScreen> {
     const Color kDarkSlate = Color(0xFF0F172A);
     const Color kSlate500 = Color(0xFF64748B);
 
-    return Container(
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () {
+        if (_activeQuestionIndex != index) {
+          setState(() {
+            _activeQuestionIndex = index;
+          });
+          _startSimulatedListening();
+        }
+      },
+      child: Container(
       margin: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -825,6 +835,7 @@ class _SaarthiProfileSetupScreenState extends State<SaarthiProfileSetupScreen> {
                   selected: isSel,
                   onSelected: (selected) {
                     setState(() {
+                      _activeQuestionIndex = index;
                       if (option == "None") {
                         _selectedSpecialCategories.clear();
                         _selectedSpecialCategories.add("None");
@@ -881,6 +892,7 @@ class _SaarthiProfileSetupScreenState extends State<SaarthiProfileSetupScreen> {
                   onChanged: (newVal) {
                     if (newVal != null) {
                       setState(() {
+                        _activeQuestionIndex = index;
                         q.onSave(newVal, this);
                         q.answeredValue = newVal;
                       });
@@ -909,6 +921,7 @@ class _SaarthiProfileSetupScreenState extends State<SaarthiProfileSetupScreen> {
                   onSelected: (selected) {
                     if (selected) {
                       setState(() {
+                        _activeQuestionIndex = index;
                         q.onSave(option, this);
                         q.answeredValue = option;
                       });
@@ -964,8 +977,9 @@ class _SaarthiProfileSetupScreenState extends State<SaarthiProfileSetupScreen> {
           ],
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   @override
   Widget build(BuildContext context) {
