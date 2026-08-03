@@ -528,12 +528,18 @@ class SearchScreenState extends State<SearchScreen> {
                         size: 12,
                       ),
                       const SizedBox(width: 4),
-                      Text(
-                        "Try: Search PMEGP, Startup India, MSME loans...",
-                        style: GoogleFonts.inter(
-                          color: const Color(0xFF64748B),
-                          fontSize: 11,
-                          fontWeight: FontWeight.w500,
+                      Expanded(
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            "Try: Search PMEGP, Startup India, MSME loans...",
+                            style: GoogleFonts.inter(
+                              color: const Color(0xFF64748B),
+                              fontSize: 11,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
                         ),
                       ),
                     ],

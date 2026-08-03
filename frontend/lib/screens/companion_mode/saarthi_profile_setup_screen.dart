@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../providers/app_state_provider.dart';
-import '../../main.dart';
+import '../permission_screen.dart';
 import '../regular_mode/eligibility_results_screen.dart';
 import '../../services/voice_recognition_controller.dart';
 import 'package:geolocator/geolocator.dart';
@@ -690,7 +690,7 @@ class _SaarthiProfileSetupScreenState extends State<SaarthiProfileSetupScreen> {
         );
       } else {
         Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (_) => const MainTabsContainer()),
+          MaterialPageRoute(builder: (_) => const PermissionScreen()),
           (route) => false,
         );
       }

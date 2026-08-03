@@ -231,8 +231,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     _buildTipOfTheDay(context),
 
                     const SizedBox(
-                      height: 100,
-                    ), // Spacing for sticky floating Ask AI button
+                      height: 24,
+                    ), // Clean spacing at the bottom of the page
                   ],
                 ),
               ),
@@ -701,6 +701,7 @@ class _HomeScreenState extends State<HomeScreen> {
               builder: (_) => const DiscoverResultsScreen(
                 title: 'Business & MSME',
                 type: 'category',
+                isAssessmentCompleted: true,
               ),
             ),
           );
@@ -1034,20 +1035,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return GestureDetector(
       onTap: () {
-        SmartAssessmentBottomSheet.show(
-          context,
-          categoryName,
-          'category',
-          () {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => DiscoverResultsScreen(
-                  title: categoryName,
-                  type: 'category',
-                ),
-              ),
-            );
-          },
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => DiscoverResultsScreen(
+              title: title,
+              type: 'category',
+              isAssessmentCompleted: false,
+            ),
+          ),
         );
       },
       child: Container(

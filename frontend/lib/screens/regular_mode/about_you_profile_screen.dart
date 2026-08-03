@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../main.dart';
 import 'package:provider/provider.dart';
 import '../../providers/app_state_provider.dart';
+import '../permission_screen.dart';
 
 class AboutYouProfileScreen extends StatefulWidget {
   const AboutYouProfileScreen({super.key});
@@ -237,7 +237,7 @@ class _AboutYouProfileScreenState extends State<AboutYouProfileScreen> {
                                       if (!context.mounted) return;
                                       Navigator.of(context).pushAndRemoveUntil(
                                         MaterialPageRoute(
-                                          builder: (_) => const MainTabsContainer(),
+                                          builder: (_) => const PermissionScreen(),
                                         ),
                                         (route) => false,
                                       );

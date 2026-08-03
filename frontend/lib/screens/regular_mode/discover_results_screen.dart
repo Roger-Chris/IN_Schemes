@@ -13,11 +13,13 @@ import 'search_results_screen.dart';
 class DiscoverResultsScreen extends StatefulWidget {
   final String title;
   final String type;
+  final bool isAssessmentCompleted;
 
   const DiscoverResultsScreen({
     super.key,
     required this.title,
     required this.type,
+    this.isAssessmentCompleted = false,
   });
 
   @override
@@ -228,192 +230,211 @@ class _DiscoverResultsScreenState extends State<DiscoverResultsScreen> {
           icon: const Icon(Icons.arrow_back, color: Color(0xFF0F172A)),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              "Discover Results",
-              style: GoogleFonts.poppins(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: const Color(0xFF0F172A),
-              ),
-            ),
-            Row(
-              children: [
-                Text(
-                  "Based on your answers",
-                  style: GoogleFonts.inter(
-                    fontSize: 11,
-                    color: const Color(0xFF64748B),
-                  ),
+        title: !widget.isAssessmentCompleted
+            ? Text(
+                "Discover Results",
+                style: GoogleFonts.poppins(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: const Color(0xFF0F172A),
                 ),
-                const SizedBox(width: 6),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 6,
-                    vertical: 2,
-                  ),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFEFF6FF),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    "5/5 Completed",
-                    style: GoogleFonts.poppins(
-                      fontSize: 8.5,
-                      fontWeight: FontWeight.bold,
-                      color: const Color(0xFF2563EB),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-
-      ),
-      body: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.only(bottom: 24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 12),
-
-            // 3. Filters Strip
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                children: [
-                  // Filter Button
-                  OutlinedButton.icon(
-                    onPressed: _openFilterPanel,
-                    icon: const Icon(
-                      Icons.filter_list,
-                      size: 14,
-                      color: Color(0xFF2563EB),
-                    ),
-                    label: Text(
-                      "Filter",
-                      style: GoogleFonts.inter(
-                        fontSize: 11.5,
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xFF2563EB),
-                      ),
-                    ),
-                    style: OutlinedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      side: const BorderSide(color: Color(0xFFE2E8F0)),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-
-                  // Dropdowns
-                  _buildDropdownChip(
-                    'Sort',
-                    ['Relevance', 'Benefits: High to Low', 'Match %'],
-                    _sortBy,
-                    (v) => setState(() => _sortBy = v),
-                  ),
-                  _buildDropdownChip(
-                    'Type',
-                    ['All', 'Loan', 'Subsidy', 'Scholarship', 'Pension'],
-                    _selectedType,
-                    (v) => setState(() => _selectedType = v),
-                  ),
-                  _buildDropdownChip(
-                    'Benefit Type',
-                    ['All', 'Financial', 'Skill training', 'Infrastructure'],
-                    _selectedBenefit,
-                    (v) => setState(() => _selectedBenefit = v),
-                  ),
-                  _buildDropdownChip(
-                    'Ministry',
-                    ['All', 'MSME', 'Education', 'Finance', 'Agriculture'],
-                    _selectedMinistry,
-                    (v) => setState(() => _selectedMinistry = v),
-                  ),
-
-                  // Clear All
-                  TextButton(
-                    onPressed: () {
-                      setState(() {
-                        _sortBy = 'Relevance';
-                        _selectedType = 'All';
-                        _selectedBenefit = 'All';
-                        _selectedMinistry = 'All';
-                      });
-                    },
-                    child: Text(
-                      "Clear All",
-                      style: GoogleFonts.inter(
-                        fontSize: 11.5,
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xFF64748B),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 20),
-
-            // 4. Recommended Header
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Column(
+              )
+            : Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Text(
+                    "Discover Results",
+                    style: GoogleFonts.poppins(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF0F172A),
+                    ),
+                  ),
                   Row(
                     children: [
                       Text(
-                        "Top Recommended Schemes (${filteredSchemes.length})",
-                        style: GoogleFonts.poppins(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: const Color(0xFF0F172A),
+                        "Based on your answers",
+                        style: GoogleFonts.inter(
+                          fontSize: 11,
+                          color: const Color(0xFF64748B),
                         ),
                       ),
-                      const SizedBox(width: 4),
-                      const Icon(
-                        Icons.info_outline,
-                        size: 14,
-                        color: Color(0xFF94A3B8),
+                      const SizedBox(width: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFEFF6FF),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          "5/5 Completed",
+                          style: GoogleFonts.poppins(
+                            fontSize: 8.5,
+                            fontWeight: FontWeight.bold,
+                            color: const Color(0xFF2563EB),
+                          ),
+                        ),
                       ),
                     ],
                   ),
-                  Text(
-                    "Best matches for your answers",
-                    style: GoogleFonts.inter(
-                      fontSize: 11.5,
-                      color: const Color(0xFF64748B),
-                    ),
-                  ),
                 ],
               ),
+
+      ),
+      body: CustomScrollView(
+        physics: const BouncingScrollPhysics(),
+        slivers: [
+          // Header and Filters
+          SliverToBoxAdapter(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 12),
+
+                // 3. Filters Strip
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  physics: const BouncingScrollPhysics(),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Row(
+                    children: [
+                      // Filter Button
+                      OutlinedButton.icon(
+                        onPressed: _openFilterPanel,
+                        icon: const Icon(
+                          Icons.filter_list,
+                          size: 14,
+                          color: Color(0xFF2563EB),
+                        ),
+                        label: Text(
+                          "Filter",
+                          style: GoogleFonts.inter(
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.bold,
+                            color: const Color(0xFF2563EB),
+                          ),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          side: const BorderSide(color: Color(0xFFE2E8F0)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+
+                      // Dropdowns
+                      _buildDropdownChip(
+                        'Sort',
+                        ['Relevance', 'Benefits: High to Low', 'Match %'],
+                        _sortBy,
+                        (v) => setState(() => _sortBy = v),
+                      ),
+                      _buildDropdownChip(
+                        'Type',
+                        ['All', 'Loan', 'Subsidy', 'Scholarship', 'Pension'],
+                        _selectedType,
+                        (v) => setState(() => _selectedType = v),
+                      ),
+                      _buildDropdownChip(
+                        'Benefit Type',
+                        ['All', 'Financial', 'Skill training', 'Infrastructure'],
+                        _selectedBenefit,
+                        (v) => setState(() => _selectedBenefit = v),
+                      ),
+                      _buildDropdownChip(
+                        'Ministry',
+                        ['All', 'MSME', 'Education', 'Finance', 'Agriculture'],
+                        _selectedMinistry,
+                        (v) => setState(() => _selectedMinistry = v),
+                      ),
+
+                      // Clear All
+                      TextButton(
+                        onPressed: () {
+                          setState(() {
+                            _sortBy = 'Relevance';
+                            _selectedType = 'All';
+                            _selectedBenefit = 'All';
+                            _selectedMinistry = 'All';
+                          });
+                        },
+                        child: Text(
+                          "Clear All",
+                          style: GoogleFonts.inter(
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.bold,
+                            color: const Color(0xFF64748B),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                // 4. Recommended Header
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            "Top Recommended Schemes (${filteredSchemes.length})",
+                            style: GoogleFonts.poppins(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xFF0F172A),
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          const Icon(
+                            Icons.info_outline,
+                            size: 14,
+                            color: Color(0xFF94A3B8),
+                          ),
+                        ],
+                      ),
+                      Text(
+                        widget.isAssessmentCompleted
+                            ? "Best matches for your answers"
+                            : "Best matches for ${widget.title}",
+                        style: GoogleFonts.inter(
+                          fontSize: 11.5,
+                          color: const Color(0xFF64748B),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 12),
+              ],
             ),
+          ),
 
-            const SizedBox(height: 12),
-
-            // 5. Schemes List
-            if (provider.schemesLoading)
-              const Center(
+          // 5. Schemes List or Loader / Empty States
+          if (provider.schemesLoading)
+            const SliverToBoxAdapter(
+              child: Center(
                 child: Padding(
                   padding: EdgeInsets.symmetric(vertical: 64.0),
                   child: CircularProgressIndicator(
                     valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2563EB)),
                   ),
                 ),
-              )
-            else if (provider.schemesError != null)
-              Center(
+              ),
+            )
+          else if (provider.schemesError != null)
+            SliverToBoxAdapter(
+              child: Center(
                 child: Padding(
                   padding: const EdgeInsets.all(24.0),
                   child: Column(
@@ -440,9 +461,11 @@ class _DiscoverResultsScreenState extends State<DiscoverResultsScreen> {
                     ],
                   ),
                 ),
-              )
-            else if (filteredSchemes.isEmpty)
-              Center(
+              ),
+            )
+          else if (filteredSchemes.isEmpty)
+            SliverToBoxAdapter(
+              child: Center(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
                     vertical: 48.0,
@@ -467,7 +490,9 @@ class _DiscoverResultsScreenState extends State<DiscoverResultsScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        "Try retaking the assessment or editing your profile details to match more criteria.",
+                        widget.isAssessmentCompleted
+                            ? "Try retaking the assessment or editing your profile details to match more criteria."
+                            : "Try searching for other keywords or editing your profile details to match more criteria.",
                         textAlign: TextAlign.center,
                         style: GoogleFonts.inter(
                           fontSize: 11.5,
@@ -511,112 +536,121 @@ class _DiscoverResultsScreenState extends State<DiscoverResultsScreen> {
                     ],
                   ),
                 ),
-              )
-            else
-              ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: filteredSchemes.length,
-                itemBuilder: (context, index) {
+              ),
+            )
+          else
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
                   final entry = filteredSchemes[index];
-                  return SchemeCard(
-                    scheme: entry.key,
-                    result: entry.value,
-                    isBookmarked: provider.bookmarkedIds.contains(entry.key.id),
-                    onBookmarkToggle: () =>
-                        provider.toggleBookmark(entry.key.id),
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) =>
-                              SchemeDetailsScreen(scheme: entry.key),
-                        ),
-                      );
-                    },
-                  );
-                },
-              ),
-
-            const SizedBox(height: 16),
-
-            // 6. Want more accurate results? Banner
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 16),
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: const Color(0xFFEFF6FF),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFFBFDBFE)),
-              ),
-              child: Row(
-                children: [
-                  const Icon(
-                    Icons.assignment_outlined,
-                    color: Color(0xFF2563EB),
-                    size: 28,
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "Want more accurate results?",
-                          style: GoogleFonts.poppins(
-                            fontSize: 12.5,
-                            fontWeight: FontWeight.bold,
-                            color: const Color(0xFF1E3A8A),
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          "Add a few more details to unlock additional relevant schemes.",
-                          style: GoogleFonts.inter(
-                            fontSize: 10.5,
-                            color: const Color(0xFF475569),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Flexible(
-                    child: ElevatedButton(
-                      onPressed: () {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12.0),
+                    child: SchemeCard(
+                      scheme: entry.key,
+                      result: entry.value,
+                      isBookmarked: provider.bookmarkedIds.contains(entry.key.id),
+                      onBookmarkToggle: () =>
+                          provider.toggleBookmark(entry.key.id),
+                      showActions: false,
+                      onTap: () {
                         Navigator.of(context).push(
                           MaterialPageRoute(
                             builder: (_) =>
-                                const ProfileSetupScreen(),
+                                SchemeDetailsScreen(scheme: entry.key),
                           ),
                         );
                       },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF2563EB),
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 8,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      child: Text(
-                        "Update Profile",
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.inter(
-                          fontSize: 10.5,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
                     ),
-                  ),
-                ],
+                  );
+                },
+                childCount: filteredSchemes.length,
               ),
             ),
 
-          ],
-        ),
+          // 6. Want more accurate results? Banner
+          SliverToBoxAdapter(
+            child: Column(
+              children: [
+                const SizedBox(height: 16),
+                Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 16),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEFF6FF),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: const Color(0xFFBFDBFE)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.assignment_outlined,
+                        color: Color(0xFF2563EB),
+                        size: 28,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "Want more accurate results?",
+                              style: GoogleFonts.poppins(
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.bold,
+                                color: const Color(0xFF1E3A8A),
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              "Add a few more details to unlock additional relevant schemes.",
+                              style: GoogleFonts.inter(
+                                fontSize: 10.5,
+                                color: const Color(0xFF475569),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Flexible(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) =>
+                                    const ProfileSetupScreen(),
+                              ),
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF2563EB),
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 8,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          child: Text(
+                            "Update Profile",
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.inter(
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 32),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
