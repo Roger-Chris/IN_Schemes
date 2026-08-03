@@ -939,42 +939,6 @@ class _SaarthiProfileSetupScreenState extends State<SaarthiProfileSetupScreen> {
                 );
               }).toList(),
             ),
-
-          if (isActive && _listeningState != 'confirm') ...[
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              decoration: BoxDecoration(
-                color: _listeningState == 'listening' ? const Color(0xFFF0F6FF) : const Color(0xFFF0FDF4),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(
-                  color: _listeningState == 'listening' ? const Color(0xFFBFDBFE) : const Color(0xFFDCFCE7),
-                ),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    _listeningState == 'listening' ? Icons.mic : Icons.check_circle,
-                    color: _listeningState == 'listening' ? kBrandBlue : const Color(0xFF16A34A),
-                    size: 14,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      _listeningState == 'listening' 
-                          ? 'Listening: "$_userTranscript"' 
-                          : 'Understood: "$_userTranscript"',
-                      style: GoogleFonts.inter(
-                        fontSize: 11.5,
-                        fontWeight: FontWeight.bold,
-                        color: _listeningState == 'listening' ? kBrandBlue : const Color(0xFF15803D),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
         ],
       ),
     ),
