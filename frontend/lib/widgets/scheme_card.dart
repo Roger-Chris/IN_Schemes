@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import '../models/scheme_model.dart';
 import '../engine/recommendation_engine.dart';
 import '../providers/app_state_provider.dart';
-import '../screens/regular_mode/scheme_details_screen.dart';
 
 class SchemeCard extends StatelessWidget {
   final Scheme scheme;
