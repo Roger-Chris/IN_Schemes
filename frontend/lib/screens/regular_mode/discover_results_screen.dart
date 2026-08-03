@@ -41,12 +41,6 @@ class _DiscoverResultsScreenState extends State<DiscoverResultsScreen> {
 
     final filtered = provider.recommendedSchemes.where((entry) {
       final scheme = entry.key;
-      final recommendationResult = entry.value;
-
-      // Skip completely ineligible schemes (wrong residency/state or wrong gender)
-      if (recommendationResult.score <= 0.0) {
-        return false;
-      }
 
       // 1. Filter by category keyword match in searchKeywords, name, category, or sponsoringBody
       final nameMatch = scheme.name.toLowerCase().contains(searchKeyword);
@@ -158,109 +152,6 @@ class _DiscoverResultsScreenState extends State<DiscoverResultsScreen> {
     }
 
     return filtered;
-  }
-
-  Map<String, List<MapEntry<Scheme, RecommendationResult>>> _groupSchemesByCategory(
-    List<MapEntry<Scheme, RecommendationResult>> schemes,
-  ) {
-    final Map<String, List<MapEntry<Scheme, RecommendationResult>>> grouped = {};
-    for (final entry in schemes) {
-      final cat = entry.key.category.trim();
-      final categoryName = cat.isNotEmpty ? cat : 'General / Other';
-      grouped.putIfAbsent(categoryName, () => []).add(entry);
-    }
-    return grouped;
-  }
-
-  List<Widget> _buildGroupedSlivers(
-    List<MapEntry<Scheme, RecommendationResult>> schemes,
-    AppProvider provider,
-  ) {
-    final grouped = _groupSchemesByCategory(schemes);
-    final List<Widget> slivers = [];
-
-    for (final categoryName in grouped.keys) {
-      final categorySchemes = grouped[categoryName]!;
-
-      slivers.add(
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.only(left: 16.0, right: 16.0, top: 20.0, bottom: 8.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 4,
-                      height: 18,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF2563EB),
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      categoryName,
-                      style: GoogleFonts.poppins(
-                        fontSize: 14.5,
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xFF1E293B),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFEFF6FF),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        '${categorySchemes.length}',
-                        style: GoogleFonts.inter(
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                          color: const Color(0xFF2563EB),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-              ],
-            ),
-          ),
-        ),
-      );
-
-      slivers.add(
-        SliverList(
-          delegate: SliverChildBuilderDelegate(
-            (context, idx) {
-              final entry = categorySchemes[idx];
-              return SchemeCard(
-                scheme: entry.key,
-                result: entry.value,
-                isBookmarked: provider.bookmarkedIds.contains(entry.key.id),
-                onBookmarkToggle: () => provider.toggleBookmark(entry.key.id),
-                showActions: false,
-                showMatchPercentage: false,
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => SchemeDetailsScreen(scheme: entry.key),
-                    ),
-                  );
-                },
-              );
-            },
-            childCount: categorySchemes.length,
-          ),
-        ),
-      );
-    }
-
-    return slivers;
   }
 
   void _openFilterPanel() {
@@ -652,7 +543,34 @@ class _DiscoverResultsScreenState extends State<DiscoverResultsScreen> {
               ),
             )
           else
-            ..._buildGroupedSlivers(filteredSchemes, provider),
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  final entry = filteredSchemes[index];
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12.0),
+                    child: SchemeCard(
+                      scheme: entry.key,
+                      result: entry.value,
+                      isBookmarked: provider.bookmarkedIds.contains(entry.key.id),
+                      onBookmarkToggle: () =>
+                          provider.toggleBookmark(entry.key.id),
+                      showActions: false,
+                      showMatchPercentage: false,
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                SchemeDetailsScreen(scheme: entry.key),
+                          ),
+                        );
+                      },
+                    ),
+                  );
+                },
+                childCount: filteredSchemes.length,
+              ),
+            ),
 
           // 6. Want more accurate results? Banner
           SliverToBoxAdapter(
