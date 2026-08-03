@@ -1523,10 +1523,7 @@ class _ResultSchemeCard extends StatelessWidget {
                     ),
                     padding: const EdgeInsets.all(10),
                     child: _buildSchemeLogo(
-                      scheme.schemeCode,
-                      scheme.category,
-                      scheme.governmentLevel,
-                      scheme.state,
+                      scheme,
                       size: 52,
                     ),
                   ),
