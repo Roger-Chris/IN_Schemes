@@ -1356,7 +1356,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     fontWeight: FontWeight.bold,
                                     color: const Color(0xFF0F172A),
                                   ),
-                                  maxLines: 1,
+                                  maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
                                 ),
                                 if (fullName.isNotEmpty) ...[
@@ -1368,7 +1368,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       fontWeight: FontWeight.w500,
                                       color: const Color(0xFF64748B),
                                     ),
-                                    maxLines: 1,
+                                    maxLines: 2,
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                 ],
