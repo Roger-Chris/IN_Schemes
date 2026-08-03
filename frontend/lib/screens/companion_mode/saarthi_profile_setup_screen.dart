@@ -1036,8 +1036,8 @@ class _SaarthiProfileSetupScreenState extends State<SaarthiProfileSetupScreen> {
                     ),
                     const SizedBox(width: 12),
                     SizedBox(
-                      width: 110,
-                      height: 110,
+                      width: 140,
+                      height: 140,
                       child: Image.asset(
                         'assets/images/saarthi/sarathi.png',
                         fit: BoxFit.contain,
