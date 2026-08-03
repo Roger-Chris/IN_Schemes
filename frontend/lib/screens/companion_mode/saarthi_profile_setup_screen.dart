@@ -24,7 +24,6 @@ class SaarthiProfileSetupScreen extends StatefulWidget {
 class _SaarthiProfileSetupScreenState extends State<SaarthiProfileSetupScreen> {
   // State variables for voice interaction
   int _activeQuestionIndex = 0;
-  String _listeningState = 'listening'; // 'listening', 'understood', 'confirm'
   String _userTranscript = '';
   String? _voiceSelectionVal;
   Timer? _listeningTimer;
@@ -587,7 +586,6 @@ class _SaarthiProfileSetupScreenState extends State<SaarthiProfileSetupScreen> {
 
     setState(() {
       _isRecording = false;
-      _listeningState = 'listening';
       _userTranscript = '';
       _voiceSelectionVal = null;
     });
@@ -597,14 +595,12 @@ class _SaarthiProfileSetupScreenState extends State<SaarthiProfileSetupScreen> {
     _listeningTimer = Timer(const Duration(milliseconds: 3000), () {
       if (!mounted) return;
       setState(() {
-        _listeningState = 'understood';
         _userTranscript = currentQuestion.understoodTranscript;
       });
 
       _transcriptTimer = Timer(const Duration(milliseconds: 1800), () {
         if (!mounted) return;
         setState(() {
-          _listeningState = 'confirm';
           if (currentQuestion.isMultiSelect) {
             _voiceSelectionVal = _selectedSpecialCategories.isEmpty ? 'None' : _selectedSpecialCategories.join(', ');
           } else {
@@ -1387,7 +1383,6 @@ class _SaarthiProfileSetupScreenState extends State<SaarthiProfileSetupScreen> {
                           final localeId = provider.selectedLanguage == 'ta' ? 'ta-IN' : 'en-IN';
                           setState(() {
                             _isRecording = true;
-                            _listeningState = 'listening';
                             _userTranscript = 'Listening...';
                           });
                           try {
@@ -1429,7 +1424,6 @@ class _SaarthiProfileSetupScreenState extends State<SaarthiProfileSetupScreen> {
                           }
                           final currentQuestion = _companionQuestions[_activeQuestionIndex];
                           setState(() {
-                            _listeningState = 'understood';
                             if (_userTranscript == 'Listening...' || _userTranscript.isEmpty) {
                               _userTranscript = currentQuestion.understoodTranscript;
                             }
@@ -1437,7 +1431,6 @@ class _SaarthiProfileSetupScreenState extends State<SaarthiProfileSetupScreen> {
                           _transcriptTimer = Timer(const Duration(milliseconds: 1000), () {
                             if (!mounted) return;
                             setState(() {
-                              _listeningState = 'confirm';
                               String confirmedVal = _voiceSelectionVal ?? currentQuestion.confirmValue;
                               if (confirmedVal == 'Listening...') {
                                 confirmedVal = currentQuestion.confirmValue;
