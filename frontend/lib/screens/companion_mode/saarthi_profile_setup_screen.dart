@@ -756,20 +756,7 @@ class _SaarthiProfileSetupScreenState extends State<SaarthiProfileSetupScreen> {
         children: [
           Row(
             children: [
-              Container(
-                width: 20,
-                height: 20,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: isAnswered ? const Color(0xFFEFF6FF) : const Color(0xFFF1F5F9),
-                ),
-                child: Icon(
-                  isAnswered ? Icons.check_circle : Icons.circle_outlined,
-                  color: isAnswered ? kBrandBlue : kSlate500,
-                  size: 14,
-                ),
-              ),
-              const SizedBox(width: 8),
+
               Text(
                 q.confirmLabel,
                 style: GoogleFonts.inter(
