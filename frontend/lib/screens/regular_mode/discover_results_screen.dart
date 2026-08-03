@@ -6,6 +6,7 @@ import '../../models/scheme_model.dart';
 import '../../engine/recommendation_engine.dart';
 import '../../widgets/scheme_card.dart';
 import '../../widgets/filter_panel.dart';
+import '../../widgets/gradient_scaffold.dart';
 import 'scheme_details_screen.dart';
 import 'profile_setup_screen.dart';
 import 'search_results_screen.dart';
@@ -221,13 +222,13 @@ class _DiscoverResultsScreenState extends State<DiscoverResultsScreen> {
     final provider = Provider.of<AppProvider>(context);
     final filteredSchemes = _getFilteredSchemes(provider);
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+    return GradientScaffold(
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.transparent,
         elevation: 0,
+        scrolledUnderElevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF0F172A)),
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: !widget.isAssessmentCompleted
@@ -236,7 +237,7 @@ class _DiscoverResultsScreenState extends State<DiscoverResultsScreen> {
                 style: GoogleFonts.poppins(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: const Color(0xFF0F172A),
+                  color: Colors.white,
                 ),
               )
             : Column(
@@ -247,7 +248,7 @@ class _DiscoverResultsScreenState extends State<DiscoverResultsScreen> {
                     style: GoogleFonts.poppins(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: const Color(0xFF0F172A),
+                      color: Colors.white,
                     ),
                   ),
                   Row(
@@ -256,7 +257,7 @@ class _DiscoverResultsScreenState extends State<DiscoverResultsScreen> {
                         "Based on your answers",
                         style: GoogleFonts.inter(
                           fontSize: 11,
-                          color: const Color(0xFF64748B),
+                          color: const Color(0xFFDBEAFE),
                         ),
                       ),
                       const SizedBox(width: 6),
@@ -266,7 +267,7 @@ class _DiscoverResultsScreenState extends State<DiscoverResultsScreen> {
                           vertical: 2,
                         ),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFEFF6FF),
+                          color: Colors.white.withAlpha(50),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
@@ -274,7 +275,7 @@ class _DiscoverResultsScreenState extends State<DiscoverResultsScreen> {
                           style: GoogleFonts.poppins(
                             fontSize: 8.5,
                             fontWeight: FontWeight.bold,
-                            color: const Color(0xFF2563EB),
+                            color: Colors.white,
                           ),
                         ),
                       ),
@@ -282,7 +283,6 @@ class _DiscoverResultsScreenState extends State<DiscoverResultsScreen> {
                   ),
                 ],
               ),
-
       ),
       body: CustomScrollView(
         physics: const BouncingScrollPhysics(),
@@ -391,14 +391,14 @@ class _DiscoverResultsScreenState extends State<DiscoverResultsScreen> {
                             style: GoogleFonts.poppins(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
-                              color: const Color(0xFF0F172A),
+                              color: Colors.white,
                             ),
                           ),
                           const SizedBox(width: 4),
                           const Icon(
                             Icons.info_outline,
                             size: 14,
-                            color: Color(0xFF94A3B8),
+                            color: Colors.white70,
                           ),
                         ],
                       ),
@@ -408,7 +408,7 @@ class _DiscoverResultsScreenState extends State<DiscoverResultsScreen> {
                             : "Best matches for ${widget.title}",
                         style: GoogleFonts.inter(
                           fontSize: 11.5,
-                          color: const Color(0xFF64748B),
+                          color: Colors.white70,
                         ),
                       ),
                     ],
