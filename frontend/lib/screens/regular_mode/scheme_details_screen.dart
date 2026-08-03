@@ -1056,6 +1056,124 @@ class _HeroSection extends StatelessWidget {
 
   const _HeroSection({required this.scheme, required this.imagePath});
 
+  String? _getLocalStateEmblem(String stateName) {
+    final name = stateName.toLowerCase().trim();
+    if (name.isEmpty || name == 'all india' || name == 'central') return null;
+
+    if (name.contains('tamil nadu') || name.contains('tamilnadu')) {
+      return 'assets/images/States and UTs/States/Tamil nadu.png';
+    } else if (name.contains('andhra')) {
+      return 'assets/images/States and UTs/States/andhra pradesh.png';
+    } else if (name.contains('arunachal')) {
+      return 'assets/images/States and UTs/States/Anrunachal pradhesh.png';
+    } else if (name.contains('assam')) {
+      return 'assets/images/States and UTs/States/Assam.png';
+    } else if (name.contains('bihar')) {
+      return 'assets/images/States and UTs/States/Bihar.png';
+    } else if (name.contains('chhattisgarh') || name.contains('chhatishgarh')) {
+      return 'assets/images/States and UTs/States/Chhatishgar.png';
+    } else if (name.contains('goa')) {
+      return 'assets/images/States and UTs/States/goa.png';
+    } else if (name.contains('gujarat')) {
+      return 'assets/images/States and UTs/States/gujarat.png';
+    } else if (name.contains('haryana')) {
+      return 'assets/images/States and UTs/States/haryana.png';
+    } else if (name.contains('himachal')) {
+      return 'assets/images/States and UTs/States/himachal pradesh.png';
+    } else if (name.contains('jharkhand')) {
+      return 'assets/images/States and UTs/States/jharkhand.png';
+    } else if (name.contains('karnataka')) {
+      return 'assets/images/States and UTs/States/karnataka.png';
+    } else if (name.contains('kerala')) {
+      return 'assets/images/States and UTs/States/Kerala.png';
+    } else if (name.contains('madhya')) {
+      return 'assets/images/States and UTs/States/madhya pradesh.png';
+    } else if (name.contains('maharashtra')) {
+      return 'assets/images/States and UTs/States/maharashtra.png';
+    } else if (name.contains('manipur')) {
+      return 'assets/images/States and UTs/States/manipur.png';
+    } else if (name.contains('meghalaya')) {
+      return 'assets/images/States and UTs/States/meghalaya.png';
+    } else if (name.contains('mizoram')) {
+      return 'assets/images/States and UTs/States/mizoram.png';
+    } else if (name.contains('nagaland')) {
+      return 'assets/images/States and UTs/States/nagaland.png';
+    } else if (name.contains('odisha') || name.contains('orissa')) {
+      return 'assets/images/States and UTs/States/odisha.png';
+    } else if (name.contains('punjab')) {
+      return 'assets/images/States and UTs/States/punjab.png';
+    } else if (name.contains('rajasthan')) {
+      return 'assets/images/States and UTs/States/rajasthan.png';
+    } else if (name.contains('sikkim')) {
+      return 'assets/images/States and UTs/States/sikkim.png';
+    } else if (name.contains('telangana')) {
+      return 'assets/images/States and UTs/States/telangana.png';
+    } else if (name.contains('tripura')) {
+      return 'assets/images/States and UTs/States/tripura.png';
+    } else if (name.contains('uttar pradesh')) {
+      return 'assets/images/States and UTs/States/uttar_pradesh.png';
+    } else if (name.contains('uttarakhand')) {
+      return 'assets/images/States and UTs/States/uttarkhand.png';
+    } else if (name.contains('west bengal')) {
+      return 'assets/images/States and UTs/States/west bengal.png';
+    }
+    return null;
+  }
+
+  Widget _buildSchemeLogo(String schemeCode, String category, String governmentLevel, String state, {double size = 48}) {
+    final localStateEmblem = _getLocalStateEmblem(state);
+    
+    if (localStateEmblem != null) {
+      return Image.asset(
+        localStateEmblem,
+        fit: BoxFit.contain,
+        width: size,
+        height: size,
+      );
+    }
+    
+    final code = schemeCode.toUpperCase();
+    String logoUrl = 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Emblem_of_India.svg/358px-Emblem_of_India.svg.png';
+    
+    if (code.contains('MUDRA') || code.contains('PMMY')) {
+      logoUrl = 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Logo_of_the_Pradhan_Mantri_Mudra_Yojana.svg/450px-Logo_of_the_Pradhan_Mantri_Mudra_Yojana.svg.png';
+    } else if (code.contains('MSME') || code.contains('CGTMSE') || code.contains('PMEGP')) {
+      logoUrl = 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/00/MSME_logo_%28colour%29.svg/330px-MSME_logo_%28colour%29.svg.png';
+    }
+
+    return Image.network(
+      logoUrl,
+      fit: BoxFit.contain,
+      width: size,
+      height: size,
+      errorBuilder: (context, error, stackTrace) {
+        return Image.asset(
+          'assets/images/Logo/Logo icon.png',
+          fit: BoxFit.contain,
+          width: size,
+          height: size,
+        );
+      },
+      loadingBuilder: (context, child, loadingProgress) {
+        if (loadingProgress == null) return child;
+        return SizedBox(
+          width: size,
+          height: size,
+          child: const Center(
+            child: SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(
+                strokeWidth: 1.5,
+                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2563EB)),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final title = scheme.name;
@@ -1100,15 +1218,45 @@ class _HeroSection extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Left Image
+            // Left Image (Emblem Container)
             Expanded(
               flex: 2,
-              child: ClipRRect(
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(14),
-                  bottomLeft: Radius.circular(14),
+              child: Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Color(0xFFF1F5F9), Color(0xFFEFF6FF)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(14),
+                    bottomLeft: Radius.circular(14),
+                  ),
                 ),
-                child: Image.asset(imagePath, fit: BoxFit.cover),
+                alignment: Alignment.center,
+                child: Container(
+                  width: 72,
+                  height: 72,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.04),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  padding: const EdgeInsets.all(8),
+                  child: _buildSchemeLogo(
+                    scheme.schemeCode,
+                    scheme.category,
+                    scheme.governmentLevel,
+                    scheme.state,
+                    size: 56,
+                  ),
+                ),
               ),
             ),
 
