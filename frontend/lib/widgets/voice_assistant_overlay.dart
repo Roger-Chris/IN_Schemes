@@ -1271,10 +1271,12 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
           child: SizedBox(
             width: 56,
             height: 56,
-            child: Image.asset(
-              'assets/images/saarthi/sarathi.png',
-              key: const Key('voice-assistant-image'),
-              fit: BoxFit.contain,
+            child: ClipOval(
+              child: Image.asset(
+                'assets/images/saarthi/sarathi.png',
+                key: const Key('voice-assistant-image'),
+                fit: BoxFit.cover,
+              ),
             ),
           ),
         ),

@@ -1689,9 +1689,11 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
             padding: const EdgeInsets.all(2),
-            child: Image.asset(
-              'assets/images/saarthi/sarathi.png',
-              fit: BoxFit.contain,
+            child: ClipOval(
+              child: Image.asset(
+                'assets/images/saarthi/sarathi.png',
+                fit: BoxFit.cover,
+              ),
             ),
           ),
           const SizedBox(height: 4),
