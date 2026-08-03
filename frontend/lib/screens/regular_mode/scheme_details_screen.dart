@@ -1056,16 +1056,32 @@ class _HeroSection extends StatelessWidget {
 
   const _HeroSection({required this.scheme, required this.imagePath});
 
-  String? _getLocalStateEmblem(String stateName) {
-    final name = stateName.toLowerCase().trim();
-    if (name.contains('tamil nadu') || name.contains('tamilnadu') || name.contains('tn')) {
+  String? _getLocalStateEmblem(Scheme scheme) {
+    final state = scheme.state.toLowerCase();
+    final code = scheme.schemeCode.toLowerCase();
+    final name = scheme.name.toLowerCase();
+    final sponsor = scheme.sponsoringBody.toLowerCase();
+    final issuer = scheme.issuingBody.toLowerCase();
+
+    if (state.contains('tamil') ||
+        state.contains('tn') ||
+        code.startsWith('tn_') ||
+        code.contains('_tn_') ||
+        code.endsWith('_tn') ||
+        name.contains('tamil') ||
+        name.contains('tn ') ||
+        name.contains('tanglish') ||
+        sponsor.contains('tamil') ||
+        sponsor.contains('tn') ||
+        issuer.contains('tamil') ||
+        issuer.contains('tn')) {
       return 'assets/images/States and UTs/States emblem/tamilnadu emblem.jpeg';
     }
     return null;
   }
 
-  Widget _buildSchemeLogo(String schemeCode, String category, String governmentLevel, String state, {double size = 48}) {
-    final localStateEmblem = _getLocalStateEmblem(state);
+  Widget _buildSchemeLogo(Scheme scheme, {double size = 48}) {
+    final localStateEmblem = _getLocalStateEmblem(scheme);
     
     if (localStateEmblem != null) {
       return Image.asset(
@@ -1073,10 +1089,18 @@ class _HeroSection extends StatelessWidget {
         fit: BoxFit.contain,
         width: size,
         height: size,
+        errorBuilder: (context, error, stackTrace) {
+          return Image.asset(
+            'assets/images/Logo/Logo icon.png',
+            fit: BoxFit.contain,
+            width: size,
+            height: size,
+          );
+        },
       );
     }
     
-    final code = schemeCode.toUpperCase();
+    final code = scheme.schemeCode.toUpperCase();
     String logoUrl = 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Emblem_of_India.svg/358px-Emblem_of_India.svg.png';
     
     if (code.contains('MUDRA') || code.contains('PMMY')) {
@@ -1194,10 +1218,7 @@ class _HeroSection extends StatelessWidget {
                   ),
                   padding: const EdgeInsets.all(8),
                   child: _buildSchemeLogo(
-                    scheme.schemeCode,
-                    scheme.category,
-                    scheme.governmentLevel,
-                    scheme.state,
+                    scheme,
                     size: 56,
                   ),
                 ),
