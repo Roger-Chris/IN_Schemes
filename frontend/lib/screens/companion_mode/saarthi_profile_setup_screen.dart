@@ -1001,12 +1001,14 @@ class _SaarthiProfileSetupScreenState extends State<SaarthiProfileSetupScreen> {
             children: [
               // 1. Title section with robot avatar
               Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20.0,
-                  vertical: 12.0,
+                padding: const EdgeInsets.only(
+                  left: 20.0,
+                  right: 20.0,
+                  top: 24.0,
+                  bottom: 4.0,
                 ),
                 child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Expanded(
                       child: Column(
@@ -1026,7 +1028,7 @@ class _SaarthiProfileSetupScreenState extends State<SaarthiProfileSetupScreen> {
                           Text(
                             "I'll ask a few simple questions using voice conversation.",
                             style: GoogleFonts.inter(
-                              fontSize: 11.5,
+                              fontSize: 10.0,
                               color: kSlate500,
                               height: 1.35,
                             ),
