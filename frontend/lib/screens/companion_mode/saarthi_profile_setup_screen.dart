@@ -786,7 +786,7 @@ class _SaarthiProfileSetupScreenState extends State<SaarthiProfileSetupScreen> {
                   : TextInputType.text,
               style: GoogleFonts.inter(
                 fontSize: 13.5,
-                fontWeight: FontWeight.bold,
+                fontWeight: FontWeight.normal,
                 color: kDarkSlate,
               ),
               decoration: InputDecoration(
