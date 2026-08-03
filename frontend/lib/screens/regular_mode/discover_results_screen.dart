@@ -229,7 +229,7 @@ class _DiscoverResultsScreenState extends State<DiscoverResultsScreen> {
         shadowColor: Colors.transparent,
         scrolledUnderElevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: const Icon(Icons.arrow_back, color: Color(0xFF0F172A)),
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: !widget.isAssessmentCompleted
@@ -238,7 +238,7 @@ class _DiscoverResultsScreenState extends State<DiscoverResultsScreen> {
                 style: GoogleFonts.poppins(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: const Color(0xFF0F172A),
                 ),
               )
             : Column(
@@ -249,7 +249,7 @@ class _DiscoverResultsScreenState extends State<DiscoverResultsScreen> {
                     style: GoogleFonts.poppins(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: const Color(0xFF0F172A),
                     ),
                   ),
                   Row(
@@ -258,7 +258,7 @@ class _DiscoverResultsScreenState extends State<DiscoverResultsScreen> {
                         "Based on your answers",
                         style: GoogleFonts.inter(
                           fontSize: 11,
-                          color: const Color(0xFFDBEAFE),
+                          color: const Color(0xFF64748B),
                         ),
                       ),
                       const SizedBox(width: 6),
@@ -268,7 +268,7 @@ class _DiscoverResultsScreenState extends State<DiscoverResultsScreen> {
                           vertical: 2,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.white.withAlpha(50),
+                          color: const Color(0xFFEFF6FF),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
@@ -276,7 +276,7 @@ class _DiscoverResultsScreenState extends State<DiscoverResultsScreen> {
                           style: GoogleFonts.poppins(
                             fontSize: 8.5,
                             fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                            color: const Color(0xFF2563EB),
                           ),
                         ),
                       ),
@@ -392,14 +392,14 @@ class _DiscoverResultsScreenState extends State<DiscoverResultsScreen> {
                             style: GoogleFonts.poppins(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                              color: const Color(0xFF0F172A),
                             ),
                           ),
                           const SizedBox(width: 4),
                           const Icon(
                             Icons.info_outline,
                             size: 14,
-                            color: Colors.white70,
+                            color: Color(0xFF94A3B8),
                           ),
                         ],
                       ),
@@ -409,7 +409,7 @@ class _DiscoverResultsScreenState extends State<DiscoverResultsScreen> {
                             : "Best matches for ${widget.title}",
                         style: GoogleFonts.inter(
                           fontSize: 11.5,
-                          color: Colors.white70,
+                          color: const Color(0xFF64748B),
                         ),
                       ),
                     ],
@@ -553,6 +553,7 @@ class _DiscoverResultsScreenState extends State<DiscoverResultsScreen> {
                       onBookmarkToggle: () =>
                           provider.toggleBookmark(entry.key.id),
                       showActions: false,
+                      showMatchPercentage: false,
                       onTap: () {
                         Navigator.of(context).push(
                           MaterialPageRoute(

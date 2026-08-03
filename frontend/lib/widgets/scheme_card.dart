@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import '../models/scheme_model.dart';
 import '../engine/recommendation_engine.dart';
+import '../providers/app_state_provider.dart';
+import '../screens/regular_mode/scheme_details_screen.dart';
 
 class SchemeCard extends StatelessWidget {
   final Scheme scheme;
@@ -10,6 +13,7 @@ class SchemeCard extends StatelessWidget {
   final VoidCallback onBookmarkToggle;
   final VoidCallback onTap;
   final bool showActions;
+  final bool showMatchPercentage;
 
   const SchemeCard({
     super.key,
@@ -19,172 +23,168 @@ class SchemeCard extends StatelessWidget {
     required this.onBookmarkToggle,
     required this.onTap,
     this.showActions = true,
+    this.showMatchPercentage = true,
   });
 
-  Map<String, dynamic> _getCategoryStyle(String category, String id) {
-    switch (id) {
-      case 'POST_MATRIC':
-        return {
-          'icon': Icons.school_outlined,
-          'iconColor': const Color(0xFF137C47), // Green
-          'backgroundColor': const Color(0xFFE8F5E9), // Light Green
-        };
-      case 'MERIT_MEANS':
-        return {
-          'icon': Icons.currency_rupee_outlined,
-          'iconColor': const Color(0xFFEA580C), // Orange
-          'backgroundColor': const Color(0xFFFFF7ED), // Light Orange
-        };
-      case 'INSPIRE':
-        return {
-          'icon': Icons.local_library_outlined,
-          'iconColor': const Color(0xFF7C3AED), // Purple
-          'backgroundColor': const Color(0xFFF5F3FF), // Light Purple
-        };
-      case 'PRAGATI':
-        return {
-          'icon': Icons.laptop_chromebook_outlined,
-          'iconColor': const Color(0xFF2563EB), // Blue
-          'backgroundColor': const Color(0xFFEFF6FF), // Light Blue
-        };
+  List<String> get _otherTags {
+    final List<String> list = [];
+
+    void addSplit(String value) {
+      if (value.isNotEmpty) {
+        list.addAll(
+          value
+              .split(',')
+              .map((s) => s.trim())
+              .where(
+                (s) =>
+                    s.isNotEmpty &&
+                    s.toLowerCase() != 'pending official verification',
+              ),
+        );
+      }
     }
-    switch (category.toLowerCase()) {
-      case 'agriculture':
-        return {
-          'icon': Icons.grass_outlined,
-          'iconColor': const Color(0xFF16A34A), // Green 600
-          'backgroundColor': const Color(0xFFF0FDF4), // Green 50
-        };
-      case 'scholarship':
-        return {
-          'icon': Icons.school_outlined,
-          'iconColor': const Color(0xFFF43F5E), // Rose 500
-          'backgroundColor': const Color(0xFFFFF1F2), // Rose 50
-        };
-      case 'education':
-        return {
-          'icon': Icons.book_outlined,
-          'iconColor': const Color(0xFF16A34A), // Green 600
-          'backgroundColor': const Color(0xFFF0FDF4), // Green 50
-        };
-      case 'healthcare':
-        return {
-          'icon': Icons.favorite_border_outlined,
-          'iconColor': const Color(0xFFD32F2F),
-          'backgroundColor': const Color(0xFFFFEBEE),
-        };
-      case 'housing':
-        return {
-          'icon': Icons.home_outlined,
-          'iconColor': const Color(0xFFEA580C),
-          'backgroundColor': const Color(0xFFFFF7ED),
-        };
-      case 'business':
-      case 'employment':
-        return {
-          'icon': Icons.business_center_outlined,
-          'iconColor': const Color(0xFF2563EB),
-          'backgroundColor': const Color(0xFFEFF6FF),
-        };
-      default:
-        return {
-          'icon': Icons.assignment_outlined,
-          'iconColor': const Color(0xFF7C3AED), // Purple 500
-          'backgroundColor': const Color(0xFFF5F3FF), // Purple 50
-        };
+
+    addSplit(scheme.category);
+    addSplit(scheme.schemeType);
+    addSplit(scheme.sector);
+
+    final Set<String> seen = {};
+    final List<String> uniqueList = [];
+
+    final sponsoringLower = scheme.sponsoringBody.toLowerCase();
+    final govLevelLower = scheme.governmentLevel.toLowerCase();
+    final stateLower = scheme.state.toLowerCase();
+
+    for (final tag in list) {
+      final lower = tag.toLowerCase();
+      final isSubtitleTerm =
+          sponsoringLower.contains(lower) ||
+          govLevelLower.contains(lower) ||
+          stateLower.contains(lower) ||
+          lower == 'central' ||
+          lower == 'state';
+      if (!seen.contains(lower) && !isSubtitleTerm) {
+        seen.add(lower);
+        uniqueList.add(tag);
+      }
+    }
+
+    return uniqueList.take(3).toList(); // limit to 3 tags to avoid overflow
+  }
+
+  String _getOnlineLogoUrl(
+    String schemeCode,
+    String category,
+    String governmentLevel,
+    String state,
+  ) {
+    final code = schemeCode.toUpperCase();
+    final st = state.toLowerCase();
+
+    if (code.contains('MUDRA') || code.contains('PMMY')) {
+      return 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Logo_of_the_Pradhan_Mantri_Mudra_Yojana.svg/450px-Logo_of_the_Pradhan_Mantri_Mudra_Yojana.svg.png';
+    } else if (code.contains('MSME') ||
+        code.contains('CGTMSE') ||
+        code.contains('PMEGP')) {
+      return 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/00/MSME_logo_%28colour%29.svg/330px-MSME_logo_%28colour%29.svg.png';
+    } else if (code.startsWith('TN_') ||
+        st.contains('tamil') ||
+        st.contains('tn')) {
+      return 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/Emblem_of_Tamil_Nadu.svg/360px-Emblem_of_Tamil_Nadu.svg.png';
+    } else {
+      return 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Emblem_of_India.svg/358px-Emblem_of_India.svg.png';
     }
   }
 
-  // Helper method to resolve detailed layout attributes dynamically
-  Map<String, String> _getSchemeDetails() {
-    // Exact detail strings for the popular schemes shown in the mockup
-    final Map<String, Map<String, String>> specialDetails = {
-      'NSP': {
-        'benefit': 'Up to ₹75,000',
-        'target': 'UG, PG, PhD',
-        'deadline': 'Apply by 31 Dec 2026',
-        'tag1': 'Central Scheme',
-        'tag2': 'Education',
-        'tag3': 'Students',
-      },
-      'POST_MATRIC': {
-        'benefit': 'Up to ₹1,00,000',
-        'target': 'Class 11 to PhD',
-        'deadline': 'Apply by 31 Nov 2026',
-        'tag1': 'Central Scheme',
-        'tag2': 'Education',
-        'tag3': 'Students',
-      },
-      'MERIT_MEANS': {
-        'benefit': 'Up to ₹20,000',
-        'target': 'UG & PG',
-        'deadline': 'Apply by 30 Nov 2026',
-        'tag1': 'Central Scheme',
-        'tag2': 'Education',
-        'tag3': 'Students',
-      },
-      'INSPIRE': {
-        'benefit': 'Up to ₹80,000',
-        'target': 'UG (Science)',
-        'deadline': 'Apply by 31 Oct 2026',
-        'tag1': 'Central Scheme',
-        'tag2': 'Education',
-        'tag3': 'Students',
-      },
-      'PRAGATI': {
-        'benefit': 'Up to ₹50,000',
-        'target': 'Diploma, UG, PG',
-        'deadline': 'Apply by 31 Dec 2026',
-        'tag1': 'Central Scheme',
-        'tag2': 'Education',
-        'tag3': 'Women Students',
-      },
-      'IN009': {
-        'benefit': 'Free Mentorship',
-        'target': 'Entrepreneurs',
-        'deadline': 'Ongoing',
-        'tag1': 'Central Scheme',
-        'tag2': 'Startup India',
-        'tag3': 'Capacity Building',
-      },
-    };
+  Map<String, Color> _getTagColors(String tag, String category) {
+    final cleanTag = tag.toLowerCase().trim();
+    final cleanCat = category.toLowerCase().trim();
 
-    if (specialDetails.containsKey(scheme.id)) {
-      return specialDetails[scheme.id]!;
-    }
-    if (specialDetails.containsKey(scheme.schemeCode)) {
-      return specialDetails[scheme.schemeCode]!;
+    if (cleanTag == cleanCat) {
+      if (cleanCat.contains('farmer') ||
+          cleanCat.contains('agri') ||
+          cleanCat.contains('rural')) {
+        return {'text': const Color(0xFF15803D), 'bg': const Color(0xFFDCFCE7)};
+      } else if (cleanCat.contains('student') ||
+          cleanCat.contains('edu') ||
+          cleanCat.contains('scholarship')) {
+        return {'text': const Color(0xFF6D28D9), 'bg': const Color(0xFFF5F3FF)};
+      } else if (cleanCat.contains('business') ||
+          cleanCat.contains('msme') ||
+          cleanCat.contains('employment')) {
+        return {'text': const Color(0xFF1E3A8A), 'bg': const Color(0xFFDBEAFE)};
+      } else if (cleanCat.contains('women') ||
+          cleanCat.contains('female') ||
+          cleanCat.contains('girl') ||
+          cleanCat.contains('child')) {
+        return {'text': const Color(0xFFBE185D), 'bg': const Color(0xFFFCE7F3)};
+      } else {
+        return {'text': const Color(0xFF0F766E), 'bg': const Color(0xFFCCFBF1)};
+      }
     }
 
-    // Default fallbacks based on scheme attributes
-    final isCentral = !scheme.sponsoringBody.toLowerCase().contains('tamil nadu') && 
-                      !scheme.sponsoringBody.toLowerCase().contains('state');
-    return {
-      'benefit': scheme.benefits.contains('₹') 
-          ? 'Up to ${scheme.benefits.substring(scheme.benefits.indexOf('₹')).split(' ').first}'
-          : 'Financial Aid',
-      'target': scheme.category.toLowerCase().contains('women') ? 'Women' : 'General',
-      'deadline': 'Apply by 31 Dec 2026',
-      'tag1': isCentral ? 'Central Scheme' : 'State Scheme',
-      'tag2': scheme.category,
-      'tag3': 'All Citizens',
-    };
+    if (cleanTag.contains('central') ||
+        cleanTag.contains('national') ||
+        cleanTag.contains('india')) {
+      return {'text': const Color(0xFFC2410C), 'bg': const Color(0xFFFFEDD5)};
+    } else if (cleanTag.contains('state') ||
+        cleanTag.contains('tamil') ||
+        cleanTag.contains('tn')) {
+      return {'text': const Color(0xFF7C3AED), 'bg': const Color(0xFFF3E8FF)};
+    } else if (cleanTag.contains('loan') || cleanTag.contains('credit')) {
+      return {'text': const Color(0xFFB91C1C), 'bg': const Color(0xFFFEE2E2)};
+    } else if (cleanTag.contains('subsidy') || cleanTag.contains('grant')) {
+      return {'text': const Color(0xFF047857), 'bg': const Color(0xFFD1FAE5)};
+    } else if (cleanTag.contains('msme')) {
+      return {'text': const Color(0xFF15803D), 'bg': const Color(0xFFE8F5E9)};
+    }
+
+    final hash = cleanTag.hashCode;
+    final index = hash.abs() % 4;
+    if (index == 0) {
+      return {'text': const Color(0xFF0369A1), 'bg': const Color(0xFFE0F2FE)};
+    } else if (index == 1) {
+      return {'text': const Color(0xFF0F766E), 'bg': const Color(0xFFE6FFFA)};
+    } else if (index == 2) {
+      return {'text': const Color(0xFF6D28D9), 'bg': const Color(0xFFF5F3FF)};
+    } else {
+      return {'text': const Color(0xFFB45309), 'bg': const Color(0xFFFEF3C7)};
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final catStyle = _getCategoryStyle(scheme.category, scheme.id);
-    final details = _getSchemeDetails();
+    final tags = List<String>.from(_otherTags)
+      ..sort((a, b) => a.length.compareTo(b.length));
+    final provider = Provider.of<AppProvider>(context);
+
+    final logoUrl = _getOnlineLogoUrl(
+      scheme.schemeCode,
+      scheme.category,
+      scheme.governmentLevel,
+      scheme.state,
+    );
+
+    final department = scheme.sponsoringBody.isNotEmpty
+        ? scheme.sponsoringBody
+        : scheme.issuingBody;
+    final level = scheme.state.isNotEmpty && scheme.state != 'All India'
+        ? scheme.state
+        : scheme.governmentLevel;
+    final subtitleText = [
+      if (department.isNotEmpty) department,
+      if (level.isNotEmpty) level,
+    ].join(' • ');
 
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFF1F5F9)),
+        border: Border.all(color: const Color(0xFFE2E8F0), width: 1.2),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withAlpha(3),
+            color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -200,174 +200,163 @@ class SchemeCard extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Left side: Soft category background color circle with icon (52x52)
+                // Left: Circular Logo Container (64x64)
                 Container(
-                  width: 52,
-                  height: 52,
+                  width: 64,
+                  height: 64,
                   decoration: BoxDecoration(
-                    color: catStyle['backgroundColor'],
+                    color: Colors.white,
                     shape: BoxShape.circle,
+                    border: Border.all(
+                      color: const Color(0xFFE2E8F0),
+                      width: 1.2,
+                    ),
                   ),
-                  child: Icon(
-                    catStyle['icon'],
-                    color: catStyle['iconColor'],
-                    size: 26,
+                  padding: const EdgeInsets.all(8),
+                  child: Image.network(
+                    logoUrl,
+                    fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) {
+                      return const Icon(
+                        Icons.account_balance,
+                        color: Color(0xFF2563EB),
+                        size: 24,
+                      );
+                    },
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return const Center(
+                        child: SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 1.5,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Color(0xFF2563EB),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ),
                 const SizedBox(width: 12),
-                
-                // Middle column: Title, tags, description, details
+
+                // Middle Content Block
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Title
-                      Text(
-                        scheme.name,
-                        style: GoogleFonts.poppins(
-                          fontSize: 13.5,
-                          fontWeight: FontWeight.bold,
-                          color: const Color(0xFF0F172A), // Slate 900
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 6),
-                      
-                      // Row of Pill Badges
-                      Builder(
-                        builder: (context) {
-                          final tagList = [
-                            {'text': details['tag1']!, 'bg': const Color(0xFFEFF6FF), 'fg': const Color(0xFF2563EB)},
-                            {'text': details['tag2']!, 'bg': const Color(0xFFF5F3FF), 'fg': const Color(0xFF7C3AED)},
-                            {'text': details['tag3']!, 'bg': const Color(0xFFF0FDF4), 'fg': const Color(0xFF16A34A)},
-                          ];
-                          tagList.sort((a, b) => (a['text'] as String).length.compareTo((b['text'] as String).length));
-
-                          return Wrap(
-                            spacing: 6,
-                            runSpacing: 4,
-                            children: tagList.map((t) {
-                              return Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                decoration: BoxDecoration(
-                                  color: t['bg'] as Color,
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: Text(
-                                  t['text'] as String,
-                                  style: GoogleFonts.inter(
-                                    fontSize: 9.5,
-                                    fontWeight: FontWeight.bold,
-                                    color: t['fg'] as Color,
-                                  ),
-                                ),
-                              );
-                            }).toList(),
-                          );
-                        },
-                      ),
-                      const SizedBox(height: 8),
-                      
-                      // Overview / Description
-                      Text(
-                        scheme.overview,
-                        style: GoogleFonts.inter(
-                          fontSize: 11.5,
-                          color: const Color(0xFF475569), // Slate 600
-                          height: 1.4,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 12),
-                      
-                      // Bottom Details row
-                      SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          children: [
-                            // Detail 1: Rupee icon
-                            Row(
-                              children: [
-                                const Icon(Icons.help_outline, size: 12, color: Color(0xFF64748B)),
-                                const SizedBox(width: 3),
-                                Text(
-                                  details['benefit']!,
-                                  style: GoogleFonts.inter(
-                                    fontSize: 10.5,
-                                    fontWeight: FontWeight.w500,
-                                    color: const Color(0xFF64748B),
-                                  ),
-                                ),
-                              ],
+                      // Match Badge Pill & Title block
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              scheme.name,
+                              style: GoogleFonts.poppins(
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                                color: const Color(0xFF0F172A),
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                            const SizedBox(width: 12),
-                            // Detail 2: Group icon
-                            Row(
-                              children: [
-                                const Icon(Icons.people_outline, size: 12, color: Color(0xFF64748B)),
-                                const SizedBox(width: 3),
-                                Text(
-                                  details['target']!,
-                                  style: GoogleFonts.inter(
-                                    fontSize: 10.5,
-                                    fontWeight: FontWeight.w500,
-                                    color: const Color(0xFF64748B),
-                                  ),
+                          ),
+                          if (showMatchPercentage) ...[
+                            const SizedBox(width: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFE8F5E9),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                "${RecommendationEngine.evaluate(provider.profile, scheme).percentage}% Match",
+                                style: GoogleFonts.inter(
+                                  color: const Color(0xFF2E7D32),
+                                  fontSize: 8,
+                                  fontWeight: FontWeight.bold,
                                 ),
-                              ],
-                            ),
-                            const SizedBox(width: 12),
-                            // Detail 3: Calendar icon
-                            Row(
-                              children: [
-                                const Icon(Icons.calendar_month_outlined, size: 12, color: Color(0xFF64748B)),
-                                const SizedBox(width: 3),
-                                Text(
-                                  details['deadline']!,
-                                  style: GoogleFonts.inter(
-                                    fontSize: 10.5,
-                                    fontWeight: FontWeight.w500,
-                                    color: const Color(0xFF64748B),
-                                  ),
-                                ),
-                              ],
+                              ),
                             ),
                           ],
+                        ],
+                      ),
+                      if (subtitleText.isNotEmpty) ...[
+                        const SizedBox(height: 3),
+                        Text(
+                          subtitleText,
+                          style: GoogleFonts.inter(
+                            fontSize: 10,
+                            color: const Color(0xFF64748B),
+                            fontWeight: FontWeight.w500,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
+                      ],
+                      const SizedBox(height: 10),
+
+                      // Tags Row
+                      Wrap(
+                        spacing: 5,
+                        runSpacing: 4,
+                        children: tags.map((tag) {
+                          final colors = _getTagColors(tag, scheme.category);
+                          return Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: colors['bg'],
+                              borderRadius: BorderRadius.circular(5),
+                            ),
+                            child: Text(
+                              tag,
+                              style: GoogleFonts.inter(
+                                fontSize: 8.5,
+                                fontWeight: FontWeight.bold,
+                                color: colors['text'],
+                              ),
+                            ),
+                          );
+                        }).toList(),
                       ),
                     ],
                   ),
                 ),
+
+                // Far Right Actions Column
                 if (showActions) ...[
-                  const SizedBox(width: 10),
-                  
-                  // Far Right: Bookmark & Share Actions Column
+                  const SizedBox(width: 8),
                   Column(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       GestureDetector(
                         onTap: onBookmarkToggle,
                         child: Container(
-                          width: 32,
-                          height: 32,
+                          width: 30,
+                          height: 30,
                           decoration: BoxDecoration(
                             color: Colors.white,
-                            border: Border.all(color: const Color(0xFFDBEAFE)), // Light blue 100
+                            border: Border.all(color: const Color(0xFFDBEAFE)),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Icon(
                             isBookmarked ? Icons.bookmark : Icons.bookmark_border,
-                            color: const Color(0xFF2563EB), // Blue 600
-                            size: 18,
+                            color: const Color(0xFF2563EB),
+                            size: 16,
                           ),
                         ),
                       ),
                       const SizedBox(height: 8),
                       GestureDetector(
                         onTap: () {
-                          // Share Action
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text('Sharing "${scheme.name}"...'),
@@ -376,17 +365,17 @@ class SchemeCard extends StatelessWidget {
                           );
                         },
                         child: Container(
-                          width: 32,
-                          height: 32,
+                          width: 30,
+                          height: 30,
                           decoration: BoxDecoration(
                             color: Colors.white,
-                            border: Border.all(color: const Color(0xFFDBEAFE)), // Light blue 100
+                            border: Border.all(color: const Color(0xFFDBEAFE)),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: const Icon(
                             Icons.share_outlined,
-                            color: Color(0xFF2563EB), // Blue 600
-                            size: 18,
+                            color: Color(0xFF2563EB),
+                            size: 16,
                           ),
                         ),
                       ),
