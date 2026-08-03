@@ -651,41 +651,43 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
             child: Row(
               children: benefitCards.map((card) {
                 return Container(
-                  width: 120,
-                  height: 120,
                   margin: const EdgeInsets.only(right: 12, bottom: 4),
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                   decoration: BoxDecoration(
                     color: card["bg"] as Color,
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(
                         card["icon"] as IconData,
                         color: card["color"] as Color,
-                        size: 24,
+                        size: 18,
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        card["title"] as String,
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.inter(
-                          fontSize: 11.0,
-                          fontWeight: FontWeight.bold,
-                          color: const Color(0xFF0F172A),
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        card["desc"] as String,
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.inter(
-                          fontSize: 9.5,
-                          color: const Color(0xFF64748B),
-                        ),
+                      const SizedBox(width: 8),
+                      Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            card["title"] as String,
+                            style: GoogleFonts.inter(
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xFF0F172A),
+                            ),
+                          ),
+                          const SizedBox(height: 1),
+                          Text(
+                            card["desc"] as String,
+                            style: GoogleFonts.inter(
+                              fontSize: 9.5,
+                              color: const Color(0xFF64748B),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
