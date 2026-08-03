@@ -721,7 +721,6 @@ class _SaarthiProfileSetupScreenState extends State<SaarthiProfileSetupScreen> {
   Widget _buildQuestionCard(int index) {
     final q = _companionQuestions[index];
     final bool isActive = _activeQuestionIndex == index;
-    final bool isAnswered = q.answeredValue != null || (q.isText && q.textController != null && q.textController!.text.isNotEmpty);
     
     const Color kBrandBlue = Color(0xFF2563EB);
     const Color kDarkSlate = Color(0xFF0F172A);
