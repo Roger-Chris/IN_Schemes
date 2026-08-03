@@ -899,22 +899,7 @@ class ProfileScreen extends StatelessWidget {
               ),
             ),
 
-            // 3. Grouped Navigation Actions: Card 1
             _buildGroupCard([
-              _buildProfileTile(
-                icon: Icons.shield_outlined,
-                iconColor: const Color(0xFF16A34A),
-                iconBgColor: const Color(0xFFDCFCE7),
-                title: 'Eligibility Profile',
-                subtitle: 'View and update your eligibility details',
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => const ProfileSetupScreen(),
-                    ),
-                  );
-                },
-              ),
               _buildProfileTile(
                 icon: Icons.bookmark_border_outlined,
                 iconColor: const Color(0xFFEA580C),
