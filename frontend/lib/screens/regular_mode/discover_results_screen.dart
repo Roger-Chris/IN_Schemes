@@ -7,7 +7,6 @@ import '../../models/scheme_model.dart';
 import '../../engine/recommendation_engine.dart';
 import '../../widgets/scheme_card.dart';
 import '../../widgets/filter_panel.dart';
-import '../../widgets/gradient_scaffold.dart';
 import 'scheme_details_screen.dart';
 import 'profile_setup_screen.dart';
 import 'search_results_screen.dart';
@@ -578,9 +577,9 @@ class _DiscoverResultsScreenState extends State<DiscoverResultsScreen> {
                   margin: const EdgeInsets.symmetric(horizontal: 16),
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.15),
+                    color: Colors.white.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.white.withOpacity(0.25)),
+                    border: Border.all(color: Colors.white.withValues(alpha: 0.25)),
                   ),
                   child: Row(
                     children: [
@@ -607,7 +606,7 @@ class _DiscoverResultsScreenState extends State<DiscoverResultsScreen> {
                               "Add a few more details to unlock additional relevant schemes.",
                               style: GoogleFonts.inter(
                                 fontSize: 10.5,
-                                color: Colors.white.withOpacity(0.8),
+                                color: Colors.white.withValues(alpha: 0.8),
                               ),
                             ),
                           ],
