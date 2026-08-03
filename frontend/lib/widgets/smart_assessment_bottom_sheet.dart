@@ -52,21 +52,12 @@ class _SmartAssessmentBottomSheetState extends State<SmartAssessmentBottomSheet>
     final title = widget.cardTitle.toLowerCase().trim();
 
     if (widget.cardType == 'category') {
-      if (title.contains('agri') || title.contains('farm')) {
-        _questionFlow = _getAgricultureFlow();
-        _currentQuestionId = 'agri_q1';
-      } else if (title.contains('educat') || title.contains('scholar') || title.contains('student')) {
+      if (title.contains('educat') || title.contains('scholar') || title.contains('student')) {
         _questionFlow = _getEducationFlow();
         _currentQuestionId = 'edu_q1';
       } else if (title.contains('women') || title.contains('child') || title.contains('matern')) {
         _questionFlow = _getWomenFlow();
         _currentQuestionId = 'women_q1';
-      } else if (title.contains('senior') || title.contains('pension') || title.contains('elder')) {
-        _questionFlow = _getSeniorFlow();
-        _currentQuestionId = 'senior_q1';
-      } else if (title.contains('health') || title.contains('well')) {
-        _questionFlow = _getHealthFlow();
-        _currentQuestionId = 'health_q1';
       } else if (title.contains('business') || title.contains('msme') || title.contains('start') || title.contains('artisan')) {
         _questionFlow = _getBusinessFlow();
         _currentQuestionId = 'biz_q1';
@@ -464,79 +455,6 @@ class _SmartAssessmentBottomSheetState extends State<SmartAssessmentBottomSheet>
 
   // --- QUESTION FLOW GENERATORS ---
 
-  Map<String, _QuestionNode> _getAgricultureFlow() {
-    return {
-      'agri_q1': _QuestionNode(
-        questionText: "Do you own cultivable agricultural land?",
-        options: ["Yes, I am a land owner", "No, I am a tenant farmer / laborer"],
-        nextId: (ans) => ans.contains("Yes") ? "agri_q2_owner" : "agri_q2_landless",
-      ),
-      'agri_q2_owner': _QuestionNode(
-        questionText: "What is the total size of your land holding?",
-        options: [
-          "Marginal (Less than 1 Hectare)",
-          "Small (1 to 2 Hectares)",
-          "Medium (2 to 5 Hectares)",
-          "Large (Over 5 Hectares)"
-        ],
-        nextId: (ans) => ans.contains("Marginal") || ans.contains("Small") ? "agri_q3_small" : "agri_q3_large",
-      ),
-      'agri_q2_landless': _QuestionNode(
-        questionText: "What describes your farm activity best?",
-        options: [
-          "Allied Activities (Dairy / Poultry / Fisheries)",
-          "Manual Farm Laborer",
-        ],
-        nextId: (ans) => ans.contains("Allied") ? "agri_q3_allied" : "agri_q3_labor",
-      ),
-      'agri_q3_small': _QuestionNode(
-        questionText: "Are you registered under PM-KISAN database?",
-        options: ["Yes, registered", "No, not registered"],
-        nextId: (_) => "agri_q4_owner",
-      ),
-      'agri_q3_large': _QuestionNode(
-        questionText: "Do you have access to a permanent borewell/irrigation source?",
-        options: ["Yes, full irrigation", "No, rain-fed only"],
-        nextId: (_) => "agri_q4_owner",
-      ),
-      'agri_q3_allied': _QuestionNode(
-        questionText: "Do you hold a Kisan Credit Card (KCC) for allied activities?",
-        options: ["Yes, active KCC", "No, need credit support"],
-        nextId: (_) => "agri_q4_allied",
-      ),
-      'agri_q3_labor': _QuestionNode(
-        questionText: "Do you possess an active MGNREGA Job Card or E-Shram card?",
-        options: ["Yes, possess one", "No, neither"],
-        nextId: (_) => "agri_q4_labor",
-      ),
-      'agri_q4_owner': _QuestionNode(
-        questionText: "Which equipment subsidy do you require most?",
-        options: ["Solar Water Pumps (PM-KUSUM)", "Drip/Sprinkler Irrigation kits", "Tractor & farm machinery", "Crop Insurance coverage"],
-        nextId: (_) => "agri_income",
-      ),
-      'agri_q4_allied': _QuestionNode(
-        questionText: "What capital support do you need for livestock/feed?",
-        options: ["Micro-loan under ₹1 Lakh", "Subsidized dairy/poultry tools", "Cold storage infrastructure grant"],
-        nextId: (_) => "agri_income",
-      ),
-      'agri_q4_labor': _QuestionNode(
-        questionText: "What type of support would benefit you most?",
-        options: ["Personal accident insurance", "Subsidized ration card benefits", "Skill training in allied crafts"],
-        nextId: (_) => "agri_income",
-      ),
-      'agri_income': _QuestionNode(
-        questionText: "What is your annual family income?",
-        options: [
-          "Under ₹1.2 Lakhs",
-          "₹1.2 Lakhs - ₹2.5 Lakhs",
-          "₹2.5 Lakhs - ₹6 Lakhs",
-          "Over ₹6 Lakhs"
-        ],
-        nextId: (_) => null, // Ends flow
-      ),
-    };
-  }
-
   Map<String, _QuestionNode> _getEducationFlow() {
     return {
       'edu_q1': _QuestionNode(
@@ -647,81 +565,6 @@ class _SmartAssessmentBottomSheetState extends State<SmartAssessmentBottomSheet>
       'women_q5_income': _QuestionNode(
         questionText: "What is your family's annual income?",
         options: ["Under ₹1.5 Lakhs", "₹1.5 Lakhs - ₹5 Lakhs", "Over ₹5 Lakhs"],
-        nextId: (_) => null,
-      ),
-    };
-  }
-
-  Map<String, _QuestionNode> _getSeniorFlow() {
-    return {
-      'senior_q1': _QuestionNode(
-        questionText: "What is the age of the senior applicant?",
-        options: ["60 - 69 Years", "70 - 79 Years", "80 Years and above"],
-        nextId: (ans) => ans.contains("80") ? "senior_q2_super" : "senior_q2_active",
-      ),
-      'senior_q2_active': _QuestionNode(
-        questionText: "What is your primary requirement?",
-        options: ["Monthly Social Security Pension", "Health Insurance Cover", "Savings interest schemes"],
-        nextId: (ans) => ans.contains("Pension") ? "senior_q3_pension" : "senior_q3_health",
-      ),
-      'senior_q2_super': _QuestionNode(
-        questionText: "Do you require home-care assistance or medical devices?",
-        options: ["Yes, need wheelchair/assistive aids", "No, looking for pension"],
-        nextId: (ans) => ans.contains("pension") ? "senior_q3_pension" : "senior_q3_health",
-      ),
-      'senior_q3_pension': _QuestionNode(
-        questionText: "What is your employment background?",
-        options: ["Retired from unorganized manual labor", "Retired from organized/corporate sector", "No formal employment"],
-        nextId: (_) => "senior_q4_ration",
-      ),
-      'senior_q3_health': _QuestionNode(
-        questionText: "Do you hold an active Ayushman Bharat PM-JAY health card?",
-        options: ["Yes, active card", "No, not registered"],
-        nextId: (_) => "senior_q4_ration",
-      ),
-      'senior_q4_ration': _QuestionNode(
-        questionText: "What type of ration card do you possess?",
-        options: ["BPL (Below Poverty Line)", "AAY (Antyodaya Anna Yojana)", "APL / General / None"],
-        nextId: (_) => "senior_q5_income",
-      ),
-      'senior_q5_income': _QuestionNode(
-        questionText: "What is your annual family income?",
-        options: ["Under ₹1.5 Lakhs", "Over ₹1.5 Lakhs"],
-        nextId: (_) => null,
-      ),
-    };
-  }
-
-  Map<String, _QuestionNode> _getHealthFlow() {
-    return {
-      'health_q1': _QuestionNode(
-        questionText: "Do you have an active health insurance card (Ayushman Card)?",
-        options: ["Yes, active card", "No, do not have one"],
-        nextId: (ans) => ans.contains("Yes") ? "health_q2_card" : "health_q2_nocard",
-      ),
-      'health_q2_card': _QuestionNode(
-        questionText: "What type of medical support are you seeking?",
-        options: ["Cashless surgery & hospitalization", "Critical care / Cancer support", "Daily medicines discounts"],
-        nextId: (_) => "health_q3_income",
-      ),
-      'health_q2_nocard': _QuestionNode(
-        questionText: "What describes your primary livelihood sector?",
-        options: ["Unorganized manual laborer", "Small-scale farmer", "Salaried / Organized employee", "Self-employed trader"],
-        nextId: (_) => "health_q3_income",
-      ),
-      'health_q3_income': _QuestionNode(
-        questionText: "What is your family's annual income?",
-        options: ["Under ₹1.2 Lakhs", "₹1.2 Lakhs - ₹3 Lakhs", "Over ₹3 Lakhs"],
-        nextId: (_) => "health_q4_patient",
-      ),
-      'health_q4_patient': _QuestionNode(
-        questionText: "Who is the primary patient requiring coverage?",
-        options: ["Senior Citizen (60+)", "Pregnant Mother", "Child (Under 14)", "General Adult"],
-        nextId: (_) => "health_q5_ration",
-      ),
-      'health_q5_ration': _QuestionNode(
-        questionText: "What type of ration card does your family hold?",
-        options: ["BPL Card", "AAY Card", "APL Card / General", "None"],
         nextId: (_) => null,
       ),
     };

@@ -311,7 +311,8 @@ class AppProvider with ChangeNotifier, WidgetsBindingObserver {
         .eq('user_id', userId)
         .listen((data) async {
           if (data.isEmpty) {
-            await _seedDefaultNotifications(userId);
+            _notificationsList = [];
+            notifyListeners();
             return;
           }
 
@@ -370,75 +371,6 @@ class AppProvider with ChangeNotifier, WidgetsBindingObserver {
   void _unsubscribeFromNotifications() {
     _notificationsSubscription?.cancel();
     _notificationsSubscription = null;
-  }
-
-  Future<void> _seedDefaultNotifications(String userId) async {
-    try {
-      final List<Map<String, dynamic>> defaultMocks = [
-        {
-          'user_id': userId,
-          'title': 'Fisheries and Aquaculture Infra Development Fund Scheme Launched',
-          'message': 'Government has launched the Fisheries and Aquaculture Infrastructure Development Fund to provide concessionary finance.',
-          'notification_type': 'updates',
-          'is_read': false,
-        },
-        {
-          'user_id': userId,
-          'title': 'PM Vidyalaxmi Education Loan Scheme',
-          'message': 'A new scheme for students to provide collateral-free education loans for higher studies.',
-          'notification_type': 'new_schemes',
-          'is_read': false,
-        },
-        {
-          'user_id': userId,
-          'title': 'PM Vishwakarma Yojana',
-          'message': 'Financial support for traditional artisans and craftspeople to upgrade their skills and tools.',
-          'notification_type': 'new_schemes',
-          'is_read': false,
-        },
-        {
-          'user_id': userId,
-          'title': 'Post Matric Scholarship Scheme',
-          'message': 'Last date to apply is approaching',
-          'notification_type': 'reminders',
-          'is_read': false,
-        },
-        {
-          'user_id': userId,
-          'title': 'PM Internship Scheme',
-          'message': 'Application window will close soon',
-          'notification_type': 'reminders',
-          'is_read': false,
-        },
-        {
-          'user_id': userId,
-          'title': 'New Update on Ayushman Bharat Yojana',
-          'message': 'Changes in empanelment process for hospitals. Check full details.',
-          'notification_type': 'updates',
-          'is_read': false,
-        },
-        {
-          'user_id': userId,
-          'title': 'Income Limit Revised for Several Schemes',
-          'message': 'Revised income criteria effective from 1st April 2024 for multiple schemes.',
-          'notification_type': 'updates',
-          'is_read': false,
-        },
-        {
-          'user_id': userId,
-          'title': 'Complete Your Profile',
-          'message': 'Add your income details to find schemes you are eligible for.',
-          'notification_type': 'profile',
-          'is_read': false,
-        },
-      ];
-
-      await Supabase.instance.client
-          .from('notifications')
-          .insert(defaultMocks);
-    } catch (e) {
-      debugPrint('[AppProvider] Error seeding notifications: $e');
-    }
   }
 
   void _setupAuthListener() {
@@ -643,11 +575,9 @@ class AppProvider with ChangeNotifier, WidgetsBindingObserver {
       }
 
       _bookmarkedIds =
-          await SessionCacheService.instance.getBookmarks() ??
-          ['POST_MATRIC', 'PM_MATRU_VANDANA', 'PM_AWAS'];
+          await SessionCacheService.instance.getBookmarks() ?? [];
       _recentlyViewedIds =
-          await SessionCacheService.instance.getRecentlyViewed() ??
-          ['NSP_PORTAL', 'PM_EDRIVE', 'AYUSHMAN_BHARAT', 'MUDRA'];
+          await SessionCacheService.instance.getRecentlyViewed() ?? [];
 
       final downloadedDocsStr = await SessionCacheService.instance
           .getDownloadedDocs();
@@ -656,22 +586,7 @@ class AppProvider with ChangeNotifier, WidgetsBindingObserver {
           jsonDecode(downloadedDocsStr),
         );
       } else {
-        _downloadedDocs = [
-          {
-            'id': 'POST_MATRIC_GUIDE',
-            'title': 'Post Matric Scholarship Scheme – Information Guide',
-            'size': '1.2 MB',
-            'date': 'Downloaded on 20 May 2024',
-            'fileType': 'PDF',
-          },
-          {
-            'id': 'PMAY_ELIGIBILITY',
-            'title': 'PMAY (Urban) – Eligibility & Benefits',
-            'size': '0.8 MB',
-            'date': 'Downloaded on 12 Jun 2024',
-            'fileType': 'PDF',
-          },
-        ];
+        _downloadedDocs = [];
       }
 
       // Initialize filters based on loaded profile
@@ -711,11 +626,64 @@ class AppProvider with ChangeNotifier, WidgetsBindingObserver {
     await SessionCacheService.instance.saveProfile(_profile);
   }
 
+  // Sync profile to Supabase in the background (asynchronous, non-blocking)
+  Future<void> _syncProfileToSupabaseInBackground(UserProfile profileToSync) async {
+    if (!_isLoggedIn) return;
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user == null) return;
+
+    try {
+      debugPrint('[AppProvider] Background syncing profile to Supabase...');
+      // Sync profiles table (single source of truth)
+      await SchemeRepository.instance.createProfile(profileToSync);
+
+      // Sync startup_profiles table if they have business details
+      final existingStartups = await Supabase.instance.client
+          .from('startup_profiles')
+          .select('id')
+          .eq('user_id', user.id)
+          .limit(1);
+
+      final Map<String, dynamic> startupData = {
+        'user_id': user.id,
+        'profile_name': '${profileToSync.name} Business',
+        'industry': profileToSync.businessIndustry.isNotEmpty
+            ? profileToSync.businessIndustry
+            : 'Technology',
+        'applicant_type': profileToSync.employmentStatus.isNotEmpty
+            ? profileToSync.employmentStatus
+            : 'Student',
+        'business_stage': profileToSync.businessStage.isNotEmpty
+            ? profileToSync.businessStage
+            : 'Idea',
+        'business_registered': profileToSync.existingBusiness,
+        'funding_required_amount': profileToSync.fundingRequired,
+        'registration_numbers': profileToSync.registrationNumbers,
+        'is_active': true,
+      };
+
+      if (existingStartups.isNotEmpty) {
+        startupData['id'] = existingStartups.first['id'];
+      }
+
+      await Supabase.instance.client
+          .from('startup_profiles')
+          .upsert(startupData);
+      debugPrint('[AppProvider] Background sync to Supabase completed.');
+    } catch (e) {
+      debugPrint('[AppProvider] Error during background sync to Supabase: $e');
+    }
+  }
+
   // Setters & Actions
   void changeLanguage(String lang) async {
     _selectedLanguage = lang;
+    _profile = _profile.copyWith(language: lang, updatedAt: DateTime.now());
     notifyListeners();
     await SessionCacheService.instance.saveLanguage(lang);
+    await _saveProfile();
+
+    _syncProfileToSupabaseInBackground(_profile);
   }
 
   void changeNavigationMode(String mode) async {
@@ -725,21 +693,7 @@ class AppProvider with ChangeNotifier, WidgetsBindingObserver {
     await SessionCacheService.instance.saveNavigationMode(mode);
     await SessionCacheService.instance.saveProfile(_profile);
 
-    if (_isLoggedIn) {
-      final user = Supabase.instance.client.auth.currentUser;
-      if (user != null) {
-        try {
-          await SchemeRepository.instance.createProfile(_profile);
-          debugPrint(
-            '[AppProvider] Successfully synced navigation mode ($mode) to Supabase.',
-          );
-        } catch (e) {
-          debugPrint(
-            '[AppProvider] Error syncing navigation mode to database: $e',
-          );
-        }
-      }
-    }
+    _syncProfileToSupabaseInBackground(_profile);
   }
 
   void login(String mobile) async {
@@ -1272,73 +1226,70 @@ class AppProvider with ChangeNotifier, WidgetsBindingObserver {
     notifyListeners();
     await _saveProfile();
 
-    if (_isLoggedIn) {
-      final user = Supabase.instance.client.auth.currentUser;
-      if (user != null) {
-        try {
-          // Sync profiles table (single source of truth)
-          await SchemeRepository.instance.createProfile(_profile);
-
-          // Sync startup_profiles table if they have business details
-          final existingStartups = await Supabase.instance.client
-              .from('startup_profiles')
-              .select('id')
-              .eq('user_id', user.id)
-              .limit(1);
-
-          final Map<String, dynamic> startupData = {
-            'user_id': user.id,
-            'profile_name': '${_profile.name} Business',
-            'industry': _profile.businessIndustry.isNotEmpty
-                ? _profile.businessIndustry
-                : 'Technology',
-            'applicant_type': _profile.employmentStatus.isNotEmpty
-                ? _profile.employmentStatus
-                : 'Student',
-            'business_stage': _profile.businessStage.isNotEmpty
-                ? _profile.businessStage
-                : 'Idea',
-            'business_registered': _profile.existingBusiness,
-            'funding_required_amount': _profile.fundingRequired,
-            'registration_numbers': _profile.registrationNumbers,
-            'is_active': true,
-          };
-
-          if (existingStartups.isNotEmpty) {
-            startupData['id'] = existingStartups.first['id'];
-          }
-
-          await Supabase.instance.client
-              .from('startup_profiles')
-              .upsert(startupData);
-        } catch (e) {
-          debugPrint('Error syncing profile updates: $e');
-        }
-      }
-    }
+    _syncProfileToSupabaseInBackground(_profile);
   }
 
   Future<void> updateProfilePhoto(String path) async {
     _profile = _profile.copyWith(profilePhoto: path, updatedAt: DateTime.now());
     notifyListeners();
     await _saveProfile();
+
+    _syncProfileToSupabaseInBackground(_profile);
+  }
+
+  Future<Map<String, dynamic>> _getFallbackLocation() async {
+    final locData = {
+      'house': 'Flat 402',
+      'street': 'Royal Enclave',
+      'area': 'Anna Nagar West',
+      'village': '',
+      'state': 'Tamil Nadu',
+      'district': 'Chennai',
+      'city': 'Chennai',
+      'pinCode': '600040',
+      'latitude': 13.0827,
+      'longitude': 80.2707,
+      'isFallback': true,
+    };
+
+    _profile = _profile.copyWith(
+      house: locData['house'] as String,
+      street: locData['street'] as String,
+      area: locData['area'] as String,
+      village: locData['village'] as String,
+      state: locData['state'] as String,
+      district: locData['district'] as String,
+      city: locData['city'] as String,
+      pinCode: locData['pinCode'] as String,
+    );
+
+    notifyListeners();
+    await _saveProfile();
+    _syncProfileToSupabaseInBackground(_profile);
+    return locData;
   }
 
   // Location/GPS Helper
   Future<Map<String, dynamic>?> fetchLocationAndPopulate() async {
     try {
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        debugPrint('Location services are disabled. Using Chennai fallback.');
+        return await _getFallbackLocation();
+      }
+
       LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
         if (permission == LocationPermission.denied) {
-          debugPrint('Location permissions are denied');
-          return null;
+          debugPrint('Location permissions are denied. Using Chennai fallback.');
+          return await _getFallbackLocation();
         }
       }
 
       if (permission == LocationPermission.deniedForever) {
-        debugPrint('Location permissions are permanently denied');
-        return null;
+        debugPrint('Location permissions are permanently denied. Using Chennai fallback.');
+        return await _getFallbackLocation();
       }
 
       final position = await Geolocator.getCurrentPosition(
@@ -1374,6 +1325,7 @@ class AppProvider with ChangeNotifier, WidgetsBindingObserver {
           'pinCode': placemark.postalCode ?? '',
           'latitude': position.latitude,
           'longitude': position.longitude,
+          'isFallback': false,
         };
 
         _profile = _profile.copyWith(
@@ -1389,12 +1341,13 @@ class AppProvider with ChangeNotifier, WidgetsBindingObserver {
 
         notifyListeners();
         await _saveProfile();
+        _syncProfileToSupabaseInBackground(_profile);
         return locData;
       }
     } catch (e) {
-      debugPrint('Error fetching location: $e');
+      debugPrint('Error fetching location: $e. Using Chennai fallback.');
     }
-    return null;
+    return await _getFallbackLocation();
   }
 
   List<Map<String, dynamic>> get downloadedDocs => _downloadedDocs;

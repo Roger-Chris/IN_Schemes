@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../providers/app_state_provider.dart';
 import '../../utils/constants.dart';
-import '../../main.dart';
+import '../permission_screen.dart';
 import 'eligibility_results_screen.dart';
 import '../companion_mode/saarthi_profile_setup_screen.dart';
 
@@ -383,10 +383,13 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
         });
 
         if (mounted) {
+          final isFallback = locData['isFallback'] == true;
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Location fetched and populated successfully!'),
-              backgroundColor: AppConstants.successColor,
+            SnackBar(
+              content: Text(isFallback
+                  ? 'Using default location (Chennai) due to GPS/permission constraints.'
+                  : 'Location fetched and populated successfully!'),
+              backgroundColor: isFallback ? const Color(0xFFF59E0B) : AppConstants.successColor,
             ),
           );
         }
@@ -468,7 +471,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
       } else {
         Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(
-            builder: (_) => const MainTabsContainer(),
+            builder: (_) => const PermissionScreen(),
           ),
           (route) => false,
         );

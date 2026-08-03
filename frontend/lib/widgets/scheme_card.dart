@@ -9,6 +9,7 @@ class SchemeCard extends StatelessWidget {
   final bool isBookmarked;
   final VoidCallback onBookmarkToggle;
   final VoidCallback onTap;
+  final bool showActions;
 
   const SchemeCard({
     super.key,
@@ -17,6 +18,7 @@ class SchemeCard extends StatelessWidget {
     required this.isBookmarked,
     required this.onBookmarkToggle,
     required this.onTap,
+    this.showActions = true,
   });
 
   Map<String, dynamic> _getCategoryStyle(String category, String id) {
@@ -338,57 +340,59 @@ class SchemeCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                const SizedBox(width: 10),
-                
-                // Far Right: Bookmark & Share Actions Column
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    GestureDetector(
-                      onTap: onBookmarkToggle,
-                      child: Container(
-                        width: 32,
-                        height: 32,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          border: Border.all(color: const Color(0xFFDBEAFE)), // Light blue 100
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Icon(
-                          isBookmarked ? Icons.bookmark : Icons.bookmark_border,
-                          color: const Color(0xFF2563EB), // Blue 600
-                          size: 18,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    GestureDetector(
-                      onTap: () {
-                        // Share Action
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Sharing "${scheme.name}"...'),
-                            duration: const Duration(seconds: 1),
+                if (showActions) ...[
+                  const SizedBox(width: 10),
+                  
+                  // Far Right: Bookmark & Share Actions Column
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      GestureDetector(
+                        onTap: onBookmarkToggle,
+                        child: Container(
+                          width: 32,
+                          height: 32,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            border: Border.all(color: const Color(0xFFDBEAFE)), // Light blue 100
+                            borderRadius: BorderRadius.circular(8),
                           ),
-                        );
-                      },
-                      child: Container(
-                        width: 32,
-                        height: 32,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          border: Border.all(color: const Color(0xFFDBEAFE)), // Light blue 100
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Icon(
-                          Icons.share_outlined,
-                          color: Color(0xFF2563EB), // Blue 600
-                          size: 18,
+                          child: Icon(
+                            isBookmarked ? Icons.bookmark : Icons.bookmark_border,
+                            color: const Color(0xFF2563EB), // Blue 600
+                            size: 18,
+                          ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
+                      const SizedBox(height: 8),
+                      GestureDetector(
+                        onTap: () {
+                          // Share Action
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Sharing "${scheme.name}"...'),
+                              duration: const Duration(seconds: 1),
+                            ),
+                          );
+                        },
+                        child: Container(
+                          width: 32,
+                          height: 32,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            border: Border.all(color: const Color(0xFFDBEAFE)), // Light blue 100
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Icon(
+                            Icons.share_outlined,
+                            color: Color(0xFF2563EB), // Blue 600
+                            size: 18,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ],
             ),
           ),

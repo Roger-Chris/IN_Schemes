@@ -30,6 +30,15 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
+  String _mapIncomeToRange(double income) {
+    if (income <= 0) return 'Under ₹1.5 Lakhs';
+    if (income <= 150000) return 'Under ₹1.5 Lakhs';
+    if (income <= 300000) return '₹1.5 Lakhs - ₹3 Lakhs';
+    if (income <= 500000) return '₹3 Lakhs - ₹5 Lakhs';
+    if (income <= 800000) return '₹5 Lakhs - ₹8 Lakhs';
+    return 'Above ₹8 Lakhs';
+  }
+
   // Info Column Helper for the Grid
   Widget _buildInfoCol(String label, String value, int flex) {
     return Expanded(
@@ -714,6 +723,178 @@ class ProfileScreen extends StatelessWidget {
                       ),
                     ],
                   ),
+                ],
+              ),
+            ),
+
+            // 2b. Eligibility & Professional Details Card
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFFE2E8F0)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withAlpha(3),
+                    blurRadius: 10,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Title Header
+                  Row(
+                    children: [
+                      Container(
+                        width: 32,
+                        height: 32,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFEFF6FF),
+                          shape: BoxShape.circle,
+                        ),
+                        alignment: Alignment.center,
+                        child: const Icon(
+                          Icons.assignment_outlined,
+                          color: Color(0xFF2563EB),
+                          size: 18,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Text(
+                        'Eligibility & Professional Details',
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF0F172A),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  
+                  // Details Row 1: Qualification & Employment
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildInfoCol(
+                        'Education Level',
+                        profile.qualification.isNotEmpty ? profile.qualification : 'Not Set',
+                        1,
+                      ),
+                      _buildDividerCol(),
+                      _buildInfoCol(
+                        'Employment',
+                        profile.employmentStatus.isNotEmpty ? profile.employmentStatus : 'Not Set',
+                        1,
+                      ),
+                    ],
+                  ),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 10.0),
+                    child: Divider(color: Color(0xFFF1F5F9), height: 1),
+                  ),
+
+                  // Details Row 2: Community & Income
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildInfoCol(
+                        'Community Category',
+                        profile.community.isNotEmpty ? profile.community : 'Not Set',
+                        1,
+                      ),
+                      _buildDividerCol(),
+                      _buildInfoCol(
+                        'Annual Income',
+                        _mapIncomeToRange(profile.annualIncome),
+                        1,
+                      ),
+                    ],
+                  ),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 10.0),
+                    child: Divider(color: Color(0xFFF1F5F9), height: 1),
+                  ),
+
+                  // Details Row 3: Special Statuses (Disability & Veteran)
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildInfoCol(
+                        'Differently Abled',
+                        profile.disability.isNotEmpty && profile.disability != 'None'
+                            ? profile.disability
+                            : 'No',
+                        1,
+                      ),
+                      _buildDividerCol(),
+                      _buildInfoCol(
+                        'Ex-Serviceman / Veteran',
+                        profile.veteran ? 'Yes' : 'No',
+                        1,
+                      ),
+                    ],
+                  ),
+
+                  // Business Details (Optional)
+                  if (profile.existingBusiness) ...[
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 10.0),
+                      child: Divider(color: Color(0xFFF1F5F9), height: 1),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Business Information',
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF2563EB),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildInfoCol(
+                          'Business Stage',
+                          profile.businessStage.isNotEmpty ? profile.businessStage : 'Not Set',
+                          1,
+                        ),
+                        _buildDividerCol(),
+                        _buildInfoCol(
+                          'Industry',
+                          profile.businessIndustry.isNotEmpty ? profile.businessIndustry : 'Not Set',
+                          1,
+                        ),
+                      ],
+                    ),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 10.0),
+                      child: Divider(color: Color(0xFFF1F5F9), height: 1),
+                    ),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildInfoCol(
+                          'Funding Required',
+                          profile.fundingRequired > 0 
+                              ? '₹${profile.fundingRequired.toStringAsFixed(0)}' 
+                              : 'None / Not Set',
+                          1,
+                        ),
+                        _buildDividerCol(),
+                        _buildInfoCol(
+                          'Reg. Numbers',
+                          profile.registrationNumbers.isNotEmpty ? profile.registrationNumbers : 'Not Set',
+                          1,
+                        ),
+                      ],
+                    ),
+                  ],
                 ],
               ),
             ),

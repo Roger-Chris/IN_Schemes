@@ -206,7 +206,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
       Navigator.of(context).push(
         MaterialPageRoute(
           builder: (_) =>
-              DiscoverResultsScreen(title: categoryName, type: 'category'),
+              DiscoverResultsScreen(title: categoryName, type: 'category', isAssessmentCompleted: true),
         ),
       );
     });
@@ -217,7 +217,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
       Navigator.of(context).push(
         MaterialPageRoute(
           builder: (_) =>
-              DiscoverResultsScreen(title: ministryName, type: 'ministry'),
+              DiscoverResultsScreen(title: ministryName, type: 'ministry', isAssessmentCompleted: true),
         ),
       );
     });
@@ -228,7 +228,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
       Navigator.of(context).push(
         MaterialPageRoute(
           builder: (_) =>
-              DiscoverResultsScreen(title: stateName, type: 'state'),
+              DiscoverResultsScreen(title: stateName, type: 'state', isAssessmentCompleted: true),
         ),
       );
     });
