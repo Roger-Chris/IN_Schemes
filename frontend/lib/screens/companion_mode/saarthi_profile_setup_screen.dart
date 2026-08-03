@@ -1011,29 +1011,32 @@ class _SaarthiProfileSetupScreenState extends State<SaarthiProfileSetupScreen> {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const SizedBox(height: 8),
-                          Text(
-                            "Let's build your\nMSME profile",
-                            style: GoogleFonts.poppins(
-                              fontSize: 19.0,
-                              fontWeight: FontWeight.bold,
-                              color: kDarkSlate,
-                              height: 1.15,
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 14.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: 8),
+                            Text(
+                              "Let's build your\nMSME profile",
+                              style: GoogleFonts.poppins(
+                                fontSize: 19.0,
+                                fontWeight: FontWeight.bold,
+                                color: kDarkSlate,
+                                height: 1.15,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            "I'll ask a few simple questions using voice conversation.",
-                            style: GoogleFonts.inter(
-                              fontSize: 10.0,
-                              color: kSlate500,
-                              height: 1.35,
+                            const SizedBox(height: 6),
+                            Text(
+                              "I'll ask a few simple questions using voice conversation.",
+                              style: GoogleFonts.inter(
+                                fontSize: 10.0,
+                                color: kSlate500,
+                                height: 1.35,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                     const SizedBox(width: 12),
