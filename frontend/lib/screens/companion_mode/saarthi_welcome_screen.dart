@@ -137,7 +137,7 @@ class _SaarthiWelcomeScreenState extends State<SaarthiWelcomeScreen> {
                                   child: SizedBox(
                                     height: 100,
                                     child: Image.asset(
-                                      'assets/saarthi/sarathi.png',
+                                      'assets/images/saarthi/sarathi.png',
                                       fit: BoxFit.contain,
                                       errorBuilder: (context, error, stackTrace) => const Icon(
                                         Icons.android,

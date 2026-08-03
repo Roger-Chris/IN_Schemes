@@ -929,6 +929,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   },
                 ),
                 PopupMenuButton<String>(
+                  color: Colors.white,
+                  elevation: 8,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    side: const BorderSide(color: Color(0xFFE2E8F0)),
+                  ),
                   icon: const Icon(
                     Icons.more_vert,
                     color: AppConstants.primaryText,

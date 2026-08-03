@@ -449,7 +449,7 @@ class ProfileScreen extends StatelessWidget {
                                             File(provider.profile.profilePhoto),
                                           )
                                         : const AssetImage(
-                                                'assets/supporting assets/user_avatar.png',
+                                                'assets/images/supporting assets/user_avatar.png',
                                               )
                                               as ImageProvider,
                                   ),

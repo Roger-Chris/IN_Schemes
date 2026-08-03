@@ -645,53 +645,70 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
         ),
         if (benefitCards.isNotEmpty) ...[
           const SizedBox(height: 14),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            physics: const BouncingScrollPhysics(),
-            child: Row(
-              children: benefitCards.map((card) {
-                return Container(
-                  width: 120,
-                  height: 120,
-                  margin: const EdgeInsets.only(right: 12, bottom: 4),
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: card["bg"] as Color,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Icon(
-                        card["icon"] as IconData,
-                        color: card["color"] as Color,
-                        size: 24,
+          Builder(
+            builder: (context) {
+              final screenWidth = MediaQuery.of(context).size.width;
+              final cardWidth = (screenWidth - 32 - 12) / 2;
+              final cardHeight = cardWidth / 2;
+
+              return SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                physics: const BouncingScrollPhysics(),
+                child: Row(
+                  children: benefitCards.map((card) {
+                    return Container(
+                      width: cardWidth,
+                      height: cardHeight,
+                      margin: const EdgeInsets.only(right: 12, bottom: 4),
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: card["bg"] as Color,
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        card["title"] as String,
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.inter(
-                          fontSize: 11.0,
-                          fontWeight: FontWeight.bold,
-                          color: const Color(0xFF0F172A),
-                        ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            card["icon"] as IconData,
+                            color: card["color"] as Color,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  card["title"] as String,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 11.0,
+                                    fontWeight: FontWeight.bold,
+                                    color: const Color(0xFF0F172A),
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  card["desc"] as String,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 9.5,
+                                    color: const Color(0xFF64748B),
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        card["desc"] as String,
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.inter(
-                          fontSize: 9.5,
-                          color: const Color(0xFF64748B),
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              }).toList(),
-            ),
+                    );
+                  }).toList(),
+                ),
+              );
+            },
           ),
         ],
       ],
@@ -1039,6 +1056,92 @@ class _HeroSection extends StatelessWidget {
 
   const _HeroSection({required this.scheme, required this.imagePath});
 
+  String? _getLocalStateEmblem(Scheme scheme) {
+    final state = scheme.state.toLowerCase();
+    final code = scheme.schemeCode.toLowerCase();
+    final name = scheme.name.toLowerCase();
+    final sponsor = scheme.sponsoringBody.toLowerCase();
+    final issuer = scheme.issuingBody.toLowerCase();
+
+    if (state.contains('tamil') ||
+        state.contains('tn') ||
+        code.startsWith('tn_') ||
+        code.contains('_tn_') ||
+        code.endsWith('_tn') ||
+        name.contains('tamil') ||
+        name.contains('tn ') ||
+        name.contains('tanglish') ||
+        sponsor.contains('tamil') ||
+        sponsor.contains('tn') ||
+        issuer.contains('tamil') ||
+        issuer.contains('tn')) {
+      return 'assets/images/States and UTs/States emblem/tamilnadu emblem.jpeg';
+    }
+    return null;
+  }
+
+  Widget _buildSchemeLogo(Scheme scheme, {double size = 48}) {
+    final localStateEmblem = _getLocalStateEmblem(scheme);
+    
+    if (localStateEmblem != null) {
+      return Image.asset(
+        localStateEmblem,
+        fit: BoxFit.cover,
+        width: size,
+        height: size,
+        errorBuilder: (context, error, stackTrace) {
+          return Image.asset(
+            'assets/images/Logo/Logo icon.png',
+            fit: BoxFit.contain,
+            width: size,
+            height: size,
+          );
+        },
+      );
+    }
+    
+    final code = scheme.schemeCode.toUpperCase();
+    String logoUrl = 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Emblem_of_India.svg/358px-Emblem_of_India.svg.png';
+    
+    if (code.contains('MUDRA') || code.contains('PMMY')) {
+      logoUrl = 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Logo_of_the_Pradhan_Mantri_Mudra_Yojana.svg/450px-Logo_of_the_Pradhan_Mantri_Mudra_Yojana.svg.png';
+    } else if (code.contains('MSME') || code.contains('CGTMSE') || code.contains('PMEGP')) {
+      logoUrl = 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/00/MSME_logo_%28colour%29.svg/330px-MSME_logo_%28colour%29.svg.png';
+    }
+
+    return Image.network(
+      logoUrl,
+      fit: BoxFit.contain,
+      width: size,
+      height: size,
+      errorBuilder: (context, error, stackTrace) {
+        return Image.asset(
+          'assets/images/Logo/Logo icon.png',
+          fit: BoxFit.contain,
+          width: size,
+          height: size,
+        );
+      },
+      loadingBuilder: (context, child, loadingProgress) {
+        if (loadingProgress == null) return child;
+        return SizedBox(
+          width: size,
+          height: size,
+          child: const Center(
+            child: SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(
+                strokeWidth: 1.5,
+                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2563EB)),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final title = scheme.name;
@@ -1083,15 +1186,44 @@ class _HeroSection extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Left Image
+            // Left Image (Emblem Container)
             Expanded(
               flex: 2,
-              child: ClipRRect(
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(14),
-                  bottomLeft: Radius.circular(14),
+              child: Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Color(0xFFF1F5F9), Color(0xFFEFF6FF)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(14),
+                    bottomLeft: Radius.circular(14),
+                  ),
                 ),
-                child: Image.asset(imagePath, fit: BoxFit.cover),
+                alignment: Alignment.center,
+                child: Container(
+                  width: 120,
+                  height: 120,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.04),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  padding: _getLocalStateEmblem(scheme) != null ? EdgeInsets.zero : const EdgeInsets.all(8),
+                  child: ClipOval(
+                    child: _buildSchemeLogo(
+                      scheme,
+                      size: 120,
+                    ),
+                  ),
+                ),
               ),
             ),
 

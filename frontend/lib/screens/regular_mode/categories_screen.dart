@@ -320,48 +320,29 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
           children: [
             // Premium Header (Discover, Search, AI avatar)
             Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 16.0,
-                vertical: 12.0,
+              padding: const EdgeInsets.only(
+                left: 16.0,
+                right: 16.0,
+                top: 28.0,
+                bottom: 12.0,
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Discover',
-                          style: GoogleFonts.poppins(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: const Color(0xFF0F172A),
-                          ),
-                        ),
-                        Text(
-                          'Explore government schemes and opportunities',
-                          style: GoogleFonts.inter(
-                            fontSize: 12,
-                            color: const Color(0xFF64748B),
-                          ),
-                        ),
-                      ],
+                  Text(
+                    'Discover',
+                    style: GoogleFonts.poppins(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF0F172A),
                     ),
                   ),
-                  Row(
-                    children: [
-                      IconButton(
-                        onPressed: () {
-                          provider.updateTabIndex(1); // Go to Search Screen tab
-                        },
-                        icon: const Icon(
-                          Icons.search,
-                          color: Color(0xFF0F172A),
-                          size: 24,
-                        ),
-                      ),
-                    ],
+                  Text(
+                    'Explore government schemes and opportunities',
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      color: const Color(0xFF64748B),
+                    ),
                   ),
                 ],
               ),

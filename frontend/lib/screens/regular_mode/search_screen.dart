@@ -504,7 +504,7 @@ class SearchScreenState extends State<SearchScreen> {
               padding: const EdgeInsets.only(
                 left: 16.0,
                 right: 16.0,
-                top: 16.0,
+                top: 28.0,
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -1315,28 +1315,90 @@ class _ResultSchemeCard extends StatelessWidget {
     return uniqueList.take(4).toList();
   }
 
-  String _getOnlineLogoUrl(
-    String schemeCode,
-    String category,
-    String governmentLevel,
-    String state,
-  ) {
-    final code = schemeCode.toUpperCase();
-    final st = state.toLowerCase();
+  String? _getLocalStateEmblem(Scheme scheme) {
+    final state = scheme.state.toLowerCase();
+    final code = scheme.schemeCode.toLowerCase();
+    final name = scheme.name.toLowerCase();
+    final sponsor = scheme.sponsoringBody.toLowerCase();
+    final issuer = scheme.issuingBody.toLowerCase();
 
-    if (code.contains('MUDRA') || code.contains('PMMY')) {
-      return 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Logo_of_the_Pradhan_Mantri_Mudra_Yojana.svg/450px-Logo_of_the_Pradhan_Mantri_Mudra_Yojana.svg.png';
-    } else if (code.contains('MSME') ||
-        code.contains('CGTMSE') ||
-        code.contains('PMEGP')) {
-      return 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/00/MSME_logo_%28colour%29.svg/330px-MSME_logo_%28colour%29.svg.png';
-    } else if (code.startsWith('TN_') ||
-        st.contains('tamil') ||
-        st.contains('tn')) {
-      return 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/Emblem_of_Tamil_Nadu.svg/360px-Emblem_of_Tamil_Nadu.svg.png';
-    } else {
-      return 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Emblem_of_India.svg/358px-Emblem_of_India.svg.png';
+    if (state.contains('tamil') ||
+        state.contains('tn') ||
+        code.startsWith('tn_') ||
+        code.contains('_tn_') ||
+        code.endsWith('_tn') ||
+        name.contains('tamil') ||
+        name.contains('tn ') ||
+        name.contains('tanglish') ||
+        sponsor.contains('tamil') ||
+        sponsor.contains('tn') ||
+        issuer.contains('tamil') ||
+        issuer.contains('tn')) {
+      return 'assets/images/States and UTs/States emblem/tamilnadu emblem.jpeg';
     }
+    return null;
+  }
+
+  Widget _buildSchemeLogo(Scheme scheme, {double size = 48}) {
+    final localStateEmblem = _getLocalStateEmblem(scheme);
+    
+    if (localStateEmblem != null) {
+      return Image.asset(
+        localStateEmblem,
+        fit: BoxFit.cover,
+        width: size,
+        height: size,
+        errorBuilder: (context, error, stackTrace) {
+          return Image.asset(
+            'assets/images/Logo/Logo icon.png',
+            fit: BoxFit.contain,
+            width: size,
+            height: size,
+          );
+        },
+      );
+    }
+    
+    final code = scheme.schemeCode.toUpperCase();
+    String logoUrl = 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Emblem_of_India.svg/358px-Emblem_of_India.svg.png';
+    
+    if (code.contains('MUDRA') || code.contains('PMMY')) {
+      logoUrl = 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Logo_of_the_Pradhan_Mantri_Mudra_Yojana.svg/450px-Logo_of_the_Pradhan_Mantri_Mudra_Yojana.svg.png';
+    } else if (code.contains('MSME') || code.contains('CGTMSE') || code.contains('PMEGP')) {
+      logoUrl = 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/00/MSME_logo_%28colour%29.svg/330px-MSME_logo_%28colour%29.svg.png';
+    }
+
+    return Image.network(
+      logoUrl,
+      fit: BoxFit.contain,
+      width: size,
+      height: size,
+      errorBuilder: (context, error, stackTrace) {
+        return Image.asset(
+          'assets/images/Logo/Logo icon.png',
+          fit: BoxFit.contain,
+          width: size,
+          height: size,
+        );
+      },
+      loadingBuilder: (context, child, loadingProgress) {
+        if (loadingProgress == null) return child;
+        return SizedBox(
+          width: size,
+          height: size,
+          child: const Center(
+            child: SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(
+                strokeWidth: 1.5,
+                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2563EB)),
+              ),
+            ),
+          ),
+        );
+      },
+    );
   }
 
   Map<String, Color> _getTagColors(String tag, String category) {
@@ -1403,12 +1465,7 @@ class _ResultSchemeCard extends StatelessWidget {
 
     // Display the full scheme name as requested
 
-    final logoUrl = _getOnlineLogoUrl(
-      scheme.schemeCode,
-      scheme.category,
-      scheme.governmentLevel,
-      scheme.state,
-    );
+
 
     // Build subtitle combining department and state/central level
     final department = scheme.sponsoringBody.isNotEmpty
@@ -1452,7 +1509,7 @@ class _ResultSchemeCard extends StatelessWidget {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // Left: Circular Logo Container (Enlarged to 72)
+                  // Left: Circular Logo Container
                   Container(
                     width: 72,
                     height: 72,
@@ -1464,32 +1521,12 @@ class _ResultSchemeCard extends StatelessWidget {
                         width: 1.2,
                       ),
                     ),
-                    padding: const EdgeInsets.all(10),
-                    child: Image.network(
-                      logoUrl,
-                      fit: BoxFit.contain,
-                      errorBuilder: (context, error, stackTrace) {
-                        return const Icon(
-                          Icons.account_balance,
-                          color: Color(0xFF2563EB),
-                          size: 28,
-                        );
-                      },
-                      loadingBuilder: (context, child, loadingProgress) {
-                        if (loadingProgress == null) return child;
-                        return const Center(
-                          child: SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 1.5,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                Color(0xFF2563EB),
-                              ),
-                            ),
-                          ),
-                        );
-                      },
+                    padding: _getLocalStateEmblem(scheme) != null ? EdgeInsets.zero : const EdgeInsets.all(10),
+                    child: ClipOval(
+                      child: _buildSchemeLogo(
+                        scheme,
+                        size: 72,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 16),

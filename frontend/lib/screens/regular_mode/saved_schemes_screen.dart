@@ -518,7 +518,7 @@ class _SavedSchemesScreenState extends State<SavedSchemesScreen> {
         child: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
+              padding: const EdgeInsets.fromLTRB(20, 36, 20, 16),
               child: Row(
                 children: [
                   Expanded(

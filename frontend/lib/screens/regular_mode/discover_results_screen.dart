@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../widgets/gradient_scaffold.dart';
 import '../../providers/app_state_provider.dart';
 import '../../models/scheme_model.dart';
 import '../../engine/recommendation_engine.dart';
@@ -182,8 +183,24 @@ class _DiscoverResultsScreenState extends State<DiscoverResultsScreen> {
       margin: const EdgeInsets.only(right: 8),
       child: PopupMenuButton<String>(
         onSelected: onChanged,
+        color: Colors.white,
+        elevation: 8,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(14),
+          side: const BorderSide(color: Color(0xFFE2E8F0)),
+        ),
         itemBuilder: (context) => options
-            .map((opt) => PopupMenuItem(value: opt, child: Text(opt)))
+            .map((opt) => PopupMenuItem(
+                  value: opt,
+                  child: Text(
+                    opt,
+                    style: GoogleFonts.inter(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w500,
+                      color: const Color(0xFF0F172A),
+                    ),
+                  ),
+                ))
             .toList(),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -221,15 +238,13 @@ class _DiscoverResultsScreenState extends State<DiscoverResultsScreen> {
     final provider = Provider.of<AppProvider>(context);
     final filteredSchemes = _getFilteredSchemes(provider);
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+    return GradientScaffold(
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF0F172A)),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
+        shadowColor: Colors.transparent,
+        scrolledUnderElevation: 0,
+        automaticallyImplyLeading: false,
         title: !widget.isAssessmentCompleted
             ? Text(
                 "Discover Results",
@@ -282,7 +297,6 @@ class _DiscoverResultsScreenState extends State<DiscoverResultsScreen> {
                   ),
                 ],
               ),
-
       ),
       body: CustomScrollView(
         physics: const BouncingScrollPhysics(),
@@ -384,23 +398,13 @@ class _DiscoverResultsScreenState extends State<DiscoverResultsScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        children: [
-                          Text(
-                            "Top Recommended Schemes (${filteredSchemes.length})",
-                            style: GoogleFonts.poppins(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: const Color(0xFF0F172A),
-                            ),
-                          ),
-                          const SizedBox(width: 4),
-                          const Icon(
-                            Icons.info_outline,
-                            size: 14,
-                            color: Color(0xFF94A3B8),
-                          ),
-                        ],
+                      Text(
+                        "Top Recommended Schemes (${filteredSchemes.length})",
+                        style: GoogleFonts.poppins(
+                          fontSize: 15.5,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF0F172A),
+                        ),
                       ),
                       Text(
                         widget.isAssessmentCompleted
@@ -552,6 +556,7 @@ class _DiscoverResultsScreenState extends State<DiscoverResultsScreen> {
                       onBookmarkToggle: () =>
                           provider.toggleBookmark(entry.key.id),
                       showActions: false,
+                      showMatchPercentage: false,
                       onTap: () {
                         Navigator.of(context).push(
                           MaterialPageRoute(
@@ -576,15 +581,15 @@ class _DiscoverResultsScreenState extends State<DiscoverResultsScreen> {
                   margin: const EdgeInsets.symmetric(horizontal: 16),
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFEFF6FF),
+                    color: Colors.white.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: const Color(0xFFBFDBFE)),
+                    border: Border.all(color: Colors.white.withValues(alpha: 0.25)),
                   ),
                   child: Row(
                     children: [
                       const Icon(
                         Icons.assignment_outlined,
-                        color: Color(0xFF2563EB),
+                        color: Colors.white,
                         size: 28,
                       ),
                       const SizedBox(width: 12),
@@ -597,7 +602,7 @@ class _DiscoverResultsScreenState extends State<DiscoverResultsScreen> {
                               style: GoogleFonts.poppins(
                                 fontSize: 12.5,
                                 fontWeight: FontWeight.bold,
-                                color: const Color(0xFF1E3A8A),
+                                color: Colors.white,
                               ),
                             ),
                             const SizedBox(height: 2),
@@ -605,7 +610,7 @@ class _DiscoverResultsScreenState extends State<DiscoverResultsScreen> {
                               "Add a few more details to unlock additional relevant schemes.",
                               style: GoogleFonts.inter(
                                 fontSize: 10.5,
-                                color: const Color(0xFF475569),
+                                color: Colors.white.withValues(alpha: 0.8),
                               ),
                             ),
                           ],
@@ -622,8 +627,8 @@ class _DiscoverResultsScreenState extends State<DiscoverResultsScreen> {
                             );
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF2563EB),
-                            foregroundColor: Colors.white,
+                            backgroundColor: Colors.white,
+                            foregroundColor: const Color(0xFF2563EB),
                             elevation: 0,
                             padding: const EdgeInsets.symmetric(
                               horizontal: 8,

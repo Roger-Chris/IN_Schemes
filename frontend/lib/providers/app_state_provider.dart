@@ -1084,6 +1084,11 @@ class AppProvider with ChangeNotifier, WidgetsBindingObserver {
 
   // Notification action
   Future<void> markNotificationRead(String id) async {
+    final index = _notificationsList.indexWhere((n) => n['id'] == id);
+    if (index != -1) {
+      _notificationsList[index]['read'] = true;
+      notifyListeners();
+    }
     try {
       await Supabase.instance.client
           .from('notifications')
@@ -1095,6 +1100,10 @@ class AppProvider with ChangeNotifier, WidgetsBindingObserver {
   }
 
   Future<void> markAllNotificationsRead() async {
+    for (var n in _notificationsList) {
+      n['read'] = true;
+    }
+    notifyListeners();
     final userId = Supabase.instance.client.auth.currentUser?.id;
     if (userId == null) return;
     try {
@@ -1108,6 +1117,8 @@ class AppProvider with ChangeNotifier, WidgetsBindingObserver {
   }
 
   Future<void> deleteAllNotifications() async {
+    _notificationsList.clear();
+    notifyListeners();
     final userId = Supabase.instance.client.auth.currentUser?.id;
     if (userId == null) return;
     try {
@@ -1121,6 +1132,8 @@ class AppProvider with ChangeNotifier, WidgetsBindingObserver {
   }
 
   Future<void> deleteNotifications(List<String> ids) async {
+    _notificationsList.removeWhere((n) => ids.contains(n['id']));
+    notifyListeners();
     try {
       await Supabase.instance.client
           .from('notifications')
@@ -1132,6 +1145,12 @@ class AppProvider with ChangeNotifier, WidgetsBindingObserver {
   }
 
   Future<void> markNotificationsRead(List<String> ids) async {
+    for (var n in _notificationsList) {
+      if (ids.contains(n['id'])) {
+        n['read'] = true;
+      }
+    }
+    notifyListeners();
     try {
       await Supabase.instance.client
           .from('notifications')
