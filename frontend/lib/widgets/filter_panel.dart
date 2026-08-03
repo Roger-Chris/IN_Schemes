@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../providers/app_state_provider.dart';
+import '../utils/constants.dart';
 
 class FilterPanel extends StatefulWidget {
   final VoidCallback? onApplied;
@@ -138,7 +139,7 @@ class _FilterPanelState extends State<FilterPanel> {
     return Container(
       height: MediaQuery.of(context).size.height * 0.85,
       decoration: const BoxDecoration(
-        color: Color(0xFFF8FAFC), // Off-white/slate 50 background
+        gradient: AppConstants.blueGradient,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: Column(

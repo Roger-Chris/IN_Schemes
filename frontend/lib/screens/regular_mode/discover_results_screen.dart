@@ -183,8 +183,24 @@ class _DiscoverResultsScreenState extends State<DiscoverResultsScreen> {
       margin: const EdgeInsets.only(right: 8),
       child: PopupMenuButton<String>(
         onSelected: onChanged,
+        color: Colors.white,
+        elevation: 8,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(14),
+          side: const BorderSide(color: Color(0xFFE2E8F0)),
+        ),
         itemBuilder: (context) => options
-            .map((opt) => PopupMenuItem(value: opt, child: Text(opt)))
+            .map((opt) => PopupMenuItem(
+                  value: opt,
+                  child: Text(
+                    opt,
+                    style: GoogleFonts.inter(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w500,
+                      color: const Color(0xFF0F172A),
+                    ),
+                  ),
+                ))
             .toList(),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -382,23 +398,13 @@ class _DiscoverResultsScreenState extends State<DiscoverResultsScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        children: [
-                          Text(
-                            "Top Recommended Schemes (${filteredSchemes.length})",
-                            style: GoogleFonts.poppins(
-                              fontSize: 13.5,
-                              fontWeight: FontWeight.bold,
-                              color: const Color(0xFF0F172A),
-                            ),
-                          ),
-                          const SizedBox(width: 4),
-                          const Icon(
-                            Icons.info_outline,
-                            size: 14,
-                            color: Color(0xFF94A3B8),
-                          ),
-                        ],
+                      Text(
+                        "Top Recommended Schemes (${filteredSchemes.length})",
+                        style: GoogleFonts.poppins(
+                          fontSize: 15.5,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF0F172A),
+                        ),
                       ),
                       Text(
                         widget.isAssessmentCompleted
