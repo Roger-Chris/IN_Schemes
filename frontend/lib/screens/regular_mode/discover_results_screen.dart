@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../widgets/gradient_scaffold.dart';
 import '../../providers/app_state_provider.dart';
 import '../../models/scheme_model.dart';
 import '../../engine/recommendation_engine.dart';
@@ -226,6 +227,7 @@ class _DiscoverResultsScreenState extends State<DiscoverResultsScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
+        shadowColor: Colors.transparent,
         scrolledUnderElevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
@@ -576,15 +578,15 @@ class _DiscoverResultsScreenState extends State<DiscoverResultsScreen> {
                   margin: const EdgeInsets.symmetric(horizontal: 16),
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFEFF6FF),
+                    color: Colors.white.withOpacity(0.15),
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: const Color(0xFFBFDBFE)),
+                    border: Border.all(color: Colors.white.withOpacity(0.25)),
                   ),
                   child: Row(
                     children: [
                       const Icon(
                         Icons.assignment_outlined,
-                        color: Color(0xFF2563EB),
+                        color: Colors.white,
                         size: 28,
                       ),
                       const SizedBox(width: 12),
@@ -597,7 +599,7 @@ class _DiscoverResultsScreenState extends State<DiscoverResultsScreen> {
                               style: GoogleFonts.poppins(
                                 fontSize: 12.5,
                                 fontWeight: FontWeight.bold,
-                                color: const Color(0xFF1E3A8A),
+                                color: Colors.white,
                               ),
                             ),
                             const SizedBox(height: 2),
@@ -605,7 +607,7 @@ class _DiscoverResultsScreenState extends State<DiscoverResultsScreen> {
                               "Add a few more details to unlock additional relevant schemes.",
                               style: GoogleFonts.inter(
                                 fontSize: 10.5,
-                                color: const Color(0xFF475569),
+                                color: Colors.white.withOpacity(0.8),
                               ),
                             ),
                           ],
@@ -622,8 +624,8 @@ class _DiscoverResultsScreenState extends State<DiscoverResultsScreen> {
                             );
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF2563EB),
-                            foregroundColor: Colors.white,
+                            backgroundColor: Colors.white,
+                            foregroundColor: const Color(0xFF2563EB),
                             elevation: 0,
                             padding: const EdgeInsets.symmetric(
                               horizontal: 8,
