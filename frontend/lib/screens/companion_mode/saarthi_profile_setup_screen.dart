@@ -32,6 +32,7 @@ class _SaarthiProfileSetupScreenState extends State<SaarthiProfileSetupScreen> {
   late final List<_CompanionQuestion> _companionQuestions;
   final VoiceRecognitionController _recognitionController = AutomaticVoiceRecognitionController();
   bool _recognitionInitialized = false;
+  bool _isRecording = false;
   final ScrollController _scrollController = ScrollController();
   int _activeStepNumber = 1;
 
@@ -585,6 +586,7 @@ class _SaarthiProfileSetupScreenState extends State<SaarthiProfileSetupScreen> {
     _transcriptTimer?.cancel();
 
     setState(() {
+      _isRecording = false;
       _listeningState = 'listening';
       _userTranscript = '';
       _voiceSelectionVal = null;
@@ -1411,78 +1413,78 @@ class _SaarthiProfileSetupScreenState extends State<SaarthiProfileSetupScreen> {
                   Expanded(
                     flex: 2,
                     child: GestureDetector(
-                      onTapDown: (_) async {
+                      onTap: () async {
                         _listeningTimer?.cancel();
                         _transcriptTimer?.cancel();
-                        final provider = Provider.of<AppProvider>(context, listen: false);
-                        final localeId = provider.selectedLanguage == 'ta' ? 'ta-IN' : 'en-IN';
-                        setState(() {
-                          _listeningState = 'listening';
-                          _userTranscript = 'Listening...';
-                        });
-                        try {
-                          if (!_recognitionInitialized) {
-                            await _recognitionController.initialize(
-                              onStatus: (status) {
-                                debugPrint('[SaarthiProfile] Voice status: $status');
-                              },
-                              onResult: (result) {
-                                setState(() {
-                                  if (result.transcript.isNotEmpty) {
-                                    _userTranscript = result.transcript;
-                                    _voiceSelectionVal = result.transcript;
-                                  }
-                                });
-                              },
-                              onSoundLevel: (level) {},
-                              onLanguage: (lang) {},
-                              onError: (error) {
-                                debugPrint('[SaarthiProfile] Voice error: ${error.message}');
-                              },
-                            );
-                            _recognitionInitialized = true;
-                          }
-                          await _recognitionController.listen(
-                            localeId: localeId,
-                          );
-                        } catch (e) {
-                          debugPrint('[SaarthiProfile] Error starting voice: $e');
-                        }
-                      },
-                      onTapUp: (_) async {
-                        try {
-                          await _recognitionController.stop();
-                        } catch (e) {
-                          debugPrint('[SaarthiProfile] Error stopping voice: $e');
-                        }
-                        final currentQuestion = _companionQuestions[_activeQuestionIndex];
-                        setState(() {
-                          _listeningState = 'understood';
-                          if (_userTranscript == 'Listening...' || _userTranscript.isEmpty) {
-                            _userTranscript = currentQuestion.understoodTranscript;
-                          }
-                        });
-                        _transcriptTimer = Timer(const Duration(milliseconds: 1000), () {
-                          if (!mounted) return;
+
+                        if (!_isRecording) {
+                          final provider = Provider.of<AppProvider>(context, listen: false);
+                          final localeId = provider.selectedLanguage == 'ta' ? 'ta-IN' : 'en-IN';
                           setState(() {
-                            _listeningState = 'confirm';
-                            String confirmedVal = _voiceSelectionVal ?? currentQuestion.confirmValue;
-                            if (confirmedVal == 'Listening...') {
-                              confirmedVal = currentQuestion.confirmValue;
+                            _isRecording = true;
+                            _listeningState = 'listening';
+                            _userTranscript = 'Listening...';
+                          });
+                          try {
+                            if (!_recognitionInitialized) {
+                              await _recognitionController.initialize(
+                                onStatus: (status) {
+                                  debugPrint('[SaarthiProfile] Voice status: $status');
+                                },
+                                onResult: (result) {
+                                  setState(() {
+                                    if (result.transcript.isNotEmpty) {
+                                      _userTranscript = result.transcript;
+                                      _voiceSelectionVal = result.transcript;
+                                    }
+                                  });
+                                },
+                                onSoundLevel: (level) {},
+                                onLanguage: (lang) {},
+                                onError: (error) {
+                                  debugPrint('[SaarthiProfile] Voice error: ${error.message}');
+                                },
+                              );
+                              _recognitionInitialized = true;
                             }
-                            currentQuestion.onSave(confirmedVal, this);
-                            currentQuestion.answeredValue = confirmedVal;
-                            if (currentQuestion.isText && currentQuestion.textController != null) {
-                              currentQuestion.textController!.text = confirmedVal;
+                            await _recognitionController.listen(
+                              localeId: localeId,
+                            );
+                          } catch (e) {
+                            debugPrint('[SaarthiProfile] Error starting voice: $e');
+                          }
+                        } else {
+                          setState(() {
+                            _isRecording = false;
+                          });
+                          try {
+                            await _recognitionController.stop();
+                          } catch (e) {
+                            debugPrint('[SaarthiProfile] Error stopping voice: $e');
+                          }
+                          final currentQuestion = _companionQuestions[_activeQuestionIndex];
+                          setState(() {
+                            _listeningState = 'understood';
+                            if (_userTranscript == 'Listening...' || _userTranscript.isEmpty) {
+                              _userTranscript = currentQuestion.understoodTranscript;
                             }
                           });
-                        });
-                      },
-                      onTapCancel: () async {
-                        try {
-                          await _recognitionController.cancel();
-                        } catch (_) {}
-                        _startSimulatedListening();
+                          _transcriptTimer = Timer(const Duration(milliseconds: 1000), () {
+                            if (!mounted) return;
+                            setState(() {
+                              _listeningState = 'confirm';
+                              String confirmedVal = _voiceSelectionVal ?? currentQuestion.confirmValue;
+                              if (confirmedVal == 'Listening...') {
+                                confirmedVal = currentQuestion.confirmValue;
+                              }
+                              currentQuestion.onSave(confirmedVal, this);
+                              currentQuestion.answeredValue = confirmedVal;
+                              if (currentQuestion.isText && currentQuestion.textController != null) {
+                                currentQuestion.textController!.text = confirmedVal;
+                              }
+                            });
+                          });
+                        }
                       },
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
@@ -1490,22 +1492,22 @@ class _SaarthiProfileSetupScreenState extends State<SaarthiProfileSetupScreen> {
                           Container(
                             width: 40,
                             height: 40,
-                            decoration: const BoxDecoration(
+                            decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: Color(0xFF2563EB),
+                              color: _isRecording ? const Color(0xFFEF4444) : const Color(0xFF2563EB),
                             ),
-                            child: const Icon(
-                              Icons.mic,
+                            child: Icon(
+                              _isRecording ? Icons.stop : Icons.mic,
                               color: Colors.white,
                               size: 20,
                             ),
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            'Hold to speak',
+                            _isRecording ? 'Tap to stop' : 'Tap to speak',
                             style: GoogleFonts.inter(
                               fontSize: 10,
-                              color: const Color(0xFF2563EB),
+                              color: _isRecording ? const Color(0xFFEF4444) : const Color(0xFF2563EB),
                               fontWeight: FontWeight.bold,
                             ),
                           ),
