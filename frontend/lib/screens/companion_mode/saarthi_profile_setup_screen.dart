@@ -1004,40 +1004,46 @@ class _SaarthiProfileSetupScreenState extends State<SaarthiProfileSetupScreen> {
                 padding: const EdgeInsets.only(
                   left: 20.0,
                   right: 20.0,
-                  top: 16.0,
+                  top: 24.0,
                   bottom: 0.0,
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: SizedBox(
-                        width: 130,
-                        height: 130,
-                        child: Image.asset(
-                          'assets/images/saarthi/sarathi.png',
-                          fit: BoxFit.contain,
-                        ),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(height: 8),
+                          Text(
+                            "Let's build your\nMSME profile",
+                            style: GoogleFonts.poppins(
+                              fontSize: 19.0,
+                              fontWeight: FontWeight.bold,
+                              color: kDarkSlate,
+                              height: 1.15,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            "I'll ask a few simple questions using voice conversation.",
+                            style: GoogleFonts.inter(
+                              fontSize: 10.0,
+                              color: kSlate500,
+                              height: 1.35,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      "Let's build your\nMSME profile",
-                      style: GoogleFonts.poppins(
-                        fontSize: 19.0,
-                        fontWeight: FontWeight.bold,
-                        color: kDarkSlate,
-                        height: 1.15,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      "I'll ask a few simple questions using voice conversation.",
-                      style: GoogleFonts.inter(
-                        fontSize: 10.0,
-                        color: kSlate500,
-                        height: 1.35,
+                    const SizedBox(width: 12),
+                    SizedBox(
+                      width: 140,
+                      height: 140,
+                      child: Image.asset(
+                        'assets/images/saarthi/sarathi.png',
+                        fit: BoxFit.contain,
+                        alignment: Alignment.bottomCenter,
                       ),
                     ),
                   ],
@@ -1046,9 +1052,11 @@ class _SaarthiProfileSetupScreenState extends State<SaarthiProfileSetupScreen> {
 
               // 2. Conversation Progress Section (5 steps)
               Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20.0,
-                  vertical: 12.0,
+                padding: const EdgeInsets.only(
+                  left: 20.0,
+                  right: 20.0,
+                  top: 0.0,
+                  bottom: 12.0,
                 ),
                 child: Container(
                   padding: const EdgeInsets.all(14),
