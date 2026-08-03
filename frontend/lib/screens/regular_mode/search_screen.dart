@@ -1509,10 +1509,10 @@ class _ResultSchemeCard extends StatelessWidget {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // Left: Circular Logo Container (Enlarged to 72)
+                  // Left: Circular Logo Container (Enlarged to 84)
                   Container(
-                    width: 72,
-                    height: 72,
+                    width: 84,
+                    height: 84,
                     decoration: BoxDecoration(
                       color: Colors.white,
                       shape: BoxShape.circle,
@@ -1525,7 +1525,7 @@ class _ResultSchemeCard extends StatelessWidget {
                     child: ClipOval(
                       child: _buildSchemeLogo(
                         scheme,
-                        size: 72,
+                        size: 84,
                       ),
                     ),
                   ),

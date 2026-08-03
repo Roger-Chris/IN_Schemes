@@ -258,8 +258,8 @@ class SchemeCard extends StatelessWidget {
               children: [
                 // Left: Circular Logo Container (64x64)
                 Container(
-                  width: 64,
-                  height: 64,
+                  width: 76,
+                  height: 76,
                   decoration: BoxDecoration(
                     color: Colors.white,
                     shape: BoxShape.circle,
@@ -272,7 +272,7 @@ class SchemeCard extends StatelessWidget {
                   child: ClipOval(
                     child: _buildSchemeLogo(
                       scheme,
-                      size: 64,
+                      size: 76,
                     ),
                   ),
                 ),

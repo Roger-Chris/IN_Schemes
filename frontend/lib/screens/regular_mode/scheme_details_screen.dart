@@ -1203,8 +1203,8 @@ class _HeroSection extends StatelessWidget {
                 ),
                 alignment: Alignment.center,
                 child: Container(
-                  width: 72,
-                  height: 72,
+                  width: 96,
+                  height: 96,
                   decoration: BoxDecoration(
                     color: Colors.white,
                     shape: BoxShape.circle,
@@ -1220,7 +1220,7 @@ class _HeroSection extends StatelessWidget {
                   child: ClipOval(
                     child: _buildSchemeLogo(
                       scheme,
-                      size: 72,
+                      size: 96,
                     ),
                   ),
                 ),
