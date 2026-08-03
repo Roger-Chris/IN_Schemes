@@ -1036,7 +1036,7 @@ class AppProvider with ChangeNotifier {
   Future<void> markNotificationRead(String id) async {
     final index = _notificationsList.indexWhere((n) => n['id'] == id);
     if (index != -1) {
-      _notificationsList[index]['is_read'] = true;
+      _notificationsList[index]['read'] = true;
       notifyListeners();
     }
     try {
@@ -1051,7 +1051,7 @@ class AppProvider with ChangeNotifier {
 
   Future<void> markAllNotificationsRead() async {
     for (var n in _notificationsList) {
-      n['is_read'] = true;
+      n['read'] = true;
     }
     notifyListeners();
     final userId = Supabase.instance.client.auth.currentUser?.id;
@@ -1097,7 +1097,7 @@ class AppProvider with ChangeNotifier {
   Future<void> markNotificationsRead(List<String> ids) async {
     for (var n in _notificationsList) {
       if (ids.contains(n['id'])) {
-        n['is_read'] = true;
+        n['read'] = true;
       }
     }
     notifyListeners();
