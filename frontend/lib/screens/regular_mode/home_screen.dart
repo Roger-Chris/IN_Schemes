@@ -1344,30 +1344,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       // Title Row
                       Row(
                         children: [
-                          Container(
-                            width: 30,
-                            height: 30,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.white,
-                              border: Border.all(
-                                color: const Color(0xFFE2E8F0),
-                              ),
-                            ),
-                            alignment: Alignment.center,
-                            child: Text(
-                              (item['logoText'] ?? 'IN') as String,
-                              style: GoogleFonts.poppins(
-                                fontSize: 9.0,
-                                fontWeight: FontWeight.bold,
-                                color:
-                                    (item['logoColor'] ??
-                                            const Color(0xFF2563EB))
-                                        as Color,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
