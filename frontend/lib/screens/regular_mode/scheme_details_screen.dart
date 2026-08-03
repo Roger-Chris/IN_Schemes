@@ -645,55 +645,70 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
         ),
         if (benefitCards.isNotEmpty) ...[
           const SizedBox(height: 14),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            physics: const BouncingScrollPhysics(),
-            child: Row(
-              children: benefitCards.map((card) {
-                return Container(
-                  margin: const EdgeInsets.only(right: 12, bottom: 4),
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: card["bg"] as Color,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        card["icon"] as IconData,
-                        color: card["color"] as Color,
-                        size: 18,
+          Builder(
+            builder: (context) {
+              final screenWidth = MediaQuery.of(context).size.width;
+              final cardWidth = (screenWidth - 32 - 12) / 2;
+              final cardHeight = cardWidth / 2;
+
+              return SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                physics: const BouncingScrollPhysics(),
+                child: Row(
+                  children: benefitCards.map((card) {
+                    return Container(
+                      width: cardWidth,
+                      height: cardHeight,
+                      margin: const EdgeInsets.only(right: 12, bottom: 4),
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: card["bg"] as Color,
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                      const SizedBox(width: 8),
-                      Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      child: Row(
                         children: [
-                          Text(
-                            card["title"] as String,
-                            style: GoogleFonts.inter(
-                              fontSize: 10.5,
-                              fontWeight: FontWeight.bold,
-                              color: const Color(0xFF0F172A),
-                            ),
+                          Icon(
+                            card["icon"] as IconData,
+                            color: card["color"] as Color,
+                            size: 20,
                           ),
-                          const SizedBox(height: 1),
-                          Text(
-                            card["desc"] as String,
-                            style: GoogleFonts.inter(
-                              fontSize: 9.5,
-                              color: const Color(0xFF64748B),
-                              fontWeight: FontWeight.w500,
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  card["title"] as String,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 11.0,
+                                    fontWeight: FontWeight.bold,
+                                    color: const Color(0xFF0F172A),
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  card["desc"] as String,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 9.5,
+                                    color: const Color(0xFF64748B),
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
                             ),
                           ),
                         ],
                       ),
-                    ],
-                  ),
-                );
-              }).toList(),
-            ),
+                    );
+                  }).toList(),
+                ),
+              );
+            },
           ),
         ],
       ],
