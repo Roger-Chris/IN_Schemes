@@ -1004,45 +1004,40 @@ class _SaarthiProfileSetupScreenState extends State<SaarthiProfileSetupScreen> {
                 padding: const EdgeInsets.only(
                   left: 20.0,
                   right: 20.0,
-                  top: 24.0,
-                  bottom: 4.0,
+                  top: 16.0,
+                  bottom: 0.0,
                 ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.end,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const SizedBox(height: 8),
-                          Text(
-                            "Let's build your\nMSME profile",
-                            style: GoogleFonts.poppins(
-                              fontSize: 19.0,
-                              fontWeight: FontWeight.bold,
-                              color: kDarkSlate,
-                              height: 1.15,
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            "I'll ask a few simple questions using voice conversation.",
-                            style: GoogleFonts.inter(
-                              fontSize: 10.0,
-                              color: kSlate500,
-                              height: 1.35,
-                            ),
-                          ),
-                        ],
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: SizedBox(
+                        width: 130,
+                        height: 130,
+                        child: Image.asset(
+                          'assets/images/saarthi/sarathi.png',
+                          fit: BoxFit.contain,
+                        ),
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    SizedBox(
-                      width: 140,
-                      height: 140,
-                      child: Image.asset(
-                        'assets/images/saarthi/sarathi.png',
-                        fit: BoxFit.contain,
+                    const SizedBox(height: 4),
+                    Text(
+                      "Let's build your\nMSME profile",
+                      style: GoogleFonts.poppins(
+                        fontSize: 19.0,
+                        fontWeight: FontWeight.bold,
+                        color: kDarkSlate,
+                        height: 1.15,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      "I'll ask a few simple questions using voice conversation.",
+                      style: GoogleFonts.inter(
+                        fontSize: 10.0,
+                        color: kSlate500,
+                        height: 1.35,
                       ),
                     ),
                   ],
