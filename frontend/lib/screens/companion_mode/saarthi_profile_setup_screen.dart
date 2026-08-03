@@ -778,27 +778,6 @@ class _SaarthiProfileSetupScreenState extends State<SaarthiProfileSetupScreen> {
                   color: isActive ? kBrandBlue : kDarkSlate,
                 ),
               ),
-              const Spacer(),
-              GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _activeQuestionIndex = index;
-                  });
-                  _startSimulatedListening();
-                },
-                child: Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: isActive ? const Color(0xFFEFF6FF) : Colors.transparent,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    Icons.mic,
-                    color: isActive ? kBrandBlue : kSlate500,
-                    size: 16,
-                  ),
-                ),
-              ),
             ],
           ),
           const SizedBox(height: 12),
@@ -1057,8 +1036,8 @@ class _SaarthiProfileSetupScreenState extends State<SaarthiProfileSetupScreen> {
                     ),
                     const SizedBox(width: 12),
                     SizedBox(
-                      width: 80,
-                      height: 80,
+                      width: 110,
+                      height: 110,
                       child: Image.asset(
                         'assets/images/saarthi/sarathi.png',
                         fit: BoxFit.contain,
@@ -1116,90 +1095,110 @@ class _SaarthiProfileSetupScreenState extends State<SaarthiProfileSetupScreen> {
                         ],
                       ),
                       const SizedBox(height: 14),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: List.generate(5, (index) {
-                          final stepNum = index + 1;
-                          final isActive =
-                              stepNum == _activeStepNumber;
-                          final isCompleted =
-                              stepNum < _activeStepNumber;
+                      LayoutBuilder(
+                        builder: (context, constraints) {
+                          final double itemWidth = constraints.maxWidth / 5;
+                          final double startLineX = itemWidth / 2;
+                          final double endLineX = constraints.maxWidth - (itemWidth / 2);
+                          
+                          // Active step progress line end point
+                          final double progressFraction = (_activeStepNumber - 1) / 4;
+                          final double activeLineWidth = (endLineX - startLineX) * progressFraction;
 
-                          return Expanded(
-                            child: Row(
-                              children: [
-                                Container(
-                                  width: 28,
-                                  height: 28,
-                                  alignment: Alignment.center,
-                                  decoration: BoxDecoration(
-                                    color: isActive
-                                        ? kBrandBlue
-                                        : (isCompleted
-                                              ? const Color(0xFFEFF6FF)
-                                              : Colors.white),
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                      color: isActive
-                                          ? kBrandBlue
-                                          : (isCompleted
-                                                ? const Color(0xFFBFDBFE)
-                                                : const Color(0xFFCBD5E1)),
-                                      width: isActive ? 2 : 1.5,
-                                    ),
-                                  ),
-                                  child: Text(
-                                    '$stepNum',
-                                    style: GoogleFonts.inter(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
-                                      color: isActive
-                                          ? Colors.white
-                                          : (isCompleted
-                                                ? kBrandBlue
-                                                : kSlate500),
-                                    ),
-                                  ),
+                          return Stack(
+                            children: [
+                              // 1. Grey background line
+                              Positioned(
+                                top: 14,
+                                left: startLineX,
+                                right: startLineX,
+                                child: Container(
+                                  height: 2,
+                                  color: const Color(0xFFE2E8F0),
                                 ),
-                                if (index < 4)
-                                  Expanded(
-                                    child: Container(
-                                      height: 1.5,
-                                      color: isCompleted
-                                          ? const Color(0xFFBFDBFE)
-                                          : const Color(0xFFE2E8F0),
+                              ),
+                              // 2. Active blue progress line
+                              Positioned(
+                                top: 14,
+                                left: startLineX,
+                                child: Container(
+                                  width: activeLineWidth,
+                                  height: 2,
+                                  color: const Color(0xFF93C5FD), // Light blue active line
+                                ),
+                              ),
+                              // 3. Row of Steps (circle + label)
+                              Row(
+                                children: List.generate(5, (index) {
+                                  final stepNum = index + 1;
+                                  final isActive = stepNum == _activeStepNumber;
+                                  final isCompleted = stepNum < _activeStepNumber;
+
+                                  String labelText = '';
+                                  switch (index) {
+                                    case 0: labelText = 'About You'; break;
+                                    case 1: labelText = 'Location'; break;
+                                    case 2: labelText = 'Your Business'; break;
+                                    case 3: labelText = 'Business Scale'; break;
+                                    case 4: labelText = 'Eligibility'; break;
+                                  }
+
+                                  return Expanded(
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                      children: [
+                                        // Circle
+                                        Container(
+                                          width: 28,
+                                          height: 28,
+                                          alignment: Alignment.center,
+                                          decoration: BoxDecoration(
+                                            color: isActive
+                                                ? kBrandBlue
+                                                : (isCompleted
+                                                    ? const Color(0xFFEFF6FF)
+                                                    : Colors.white),
+                                            shape: BoxShape.circle,
+                                            border: Border.all(
+                                              color: isActive
+                                                  ? kBrandBlue
+                                                  : (isCompleted
+                                                      ? const Color(0xFFBFDBFE)
+                                                      : const Color(0xFFCBD5E1)),
+                                              width: isActive ? 2 : 1.5,
+                                            ),
+                                          ),
+                                          child: Text(
+                                            '$stepNum',
+                                            style: GoogleFonts.inter(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.bold,
+                                              color: isActive
+                                                  ? Colors.white
+                                                  : (isCompleted
+                                                      ? kBrandBlue
+                                                      : kSlate500),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        // Label
+                                        SizedBox(
+                                          height: 24,
+                                          child: _StepLabel(
+                                            text: labelText,
+                                            active: isActive,
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                  ),
-                              ],
-                            ),
+                                  );
+                                }),
+                              ),
+                            ],
                           );
-                        }),
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          _StepLabel(
-                            text: 'About You',
-                            active: _activeStepNumber == 1,
-                          ),
-                          _StepLabel(
-                            text: 'Location',
-                            active: _activeStepNumber == 2,
-                          ),
-                          _StepLabel(
-                            text: 'Your Business',
-                            active: _activeStepNumber == 3,
-                          ),
-                          _StepLabel(
-                            text: 'Business Scale',
-                            active: _activeStepNumber == 4,
-                          ),
-                          _StepLabel(
-                            text: 'Eligibility',
-                            active: _activeStepNumber == 5,
-                          ),
-                        ],
+                        },
                       ),
                     ],
                   ),
@@ -1257,12 +1256,6 @@ class _SaarthiProfileSetupScreenState extends State<SaarthiProfileSetupScreen> {
                                   height: 1.35,
                                 ),
                               ),
-                            ),
-                            const SizedBox(width: 8),
-                            const Icon(
-                              Icons.volume_up_outlined,
-                              color: Color(0xFF2563EB),
-                              size: 20,
                             ),
                           ],
                         ),
@@ -1589,15 +1582,15 @@ class _StepLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: Text(
-        text,
-        textAlign: TextAlign.center,
-        style: GoogleFonts.inter(
-          fontSize: 7.5,
-          fontWeight: active ? FontWeight.bold : FontWeight.w500,
-          color: active ? const Color(0xFF2563EB) : const Color(0xFF64748B),
-        ),
+    return Text(
+      text,
+      textAlign: TextAlign.center,
+      maxLines: 2,
+      overflow: TextOverflow.visible,
+      style: GoogleFonts.inter(
+        fontSize: 9.0,
+        fontWeight: active ? FontWeight.bold : FontWeight.w500,
+        color: active ? const Color(0xFF2563EB) : const Color(0xFF64748B),
       ),
     );
   }
