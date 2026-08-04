@@ -13,6 +13,7 @@ import '../login_screen.dart';
 import '../../widgets/smart_assessment_bottom_sheet.dart';
 import 'discover_results_screen.dart';
 import 'profile_setup_screen.dart';
+import 'msme_module_details_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key, this.onVoiceQuery, this.onFilterPressed});
@@ -214,6 +215,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
                     // Choose Your Journey (2x2 Grid)
                     _buildChooseYourJourney(context, provider),
+
+                    const SizedBox(height: 24),
+
+                    // Explore MSME Support (2x4 Grid)
+                    _buildExploreMSMESupport(context),
 
                     const SizedBox(height: 24),
 
@@ -1718,6 +1724,221 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildExploreMSMESupport(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          "Explore MSME Support",
+          style: GoogleFonts.poppins(
+            fontSize: 16.5,
+            fontWeight: FontWeight.bold,
+            color: const Color(0xFF0F172A),
+          ),
+        ),
+        const SizedBox(height: 14),
+        IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _buildMSMESupportCard(
+                context: context,
+                id: 'schemes',
+                title: 'Schemes',
+                subtitle: 'Subsidies, grants & government schemes',
+                icon: Icons.card_giftcard,
+                iconColor: const Color(0xFF2E7D32),
+                themeColor: Colors.green,
+              ),
+              const SizedBox(width: 12),
+              _buildMSMESupportCard(
+                context: context,
+                id: 'finance',
+                title: 'Finance',
+                subtitle: 'Loans, credit support & funding options',
+                icon: Icons.savings,
+                iconColor: const Color(0xFF1565C0),
+                themeColor: Colors.blue,
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+        IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _buildMSMESupportCard(
+                context: context,
+                id: 'tax_gst',
+                title: 'Tax & GST',
+                subtitle: 'Tax benefits, GST support & compliance',
+                icon: Icons.percent,
+                iconColor: const Color(0xFFEF6C00),
+                themeColor: Colors.orange,
+              ),
+              const SizedBox(width: 12),
+              _buildMSMESupportCard(
+                context: context,
+                id: 'export',
+                title: 'Export',
+                subtitle: 'Export incentives, finance & market support',
+                icon: Icons.language,
+                iconColor: const Color(0xFF6A1B9A),
+                themeColor: Colors.purple,
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+        IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _buildMSMESupportCard(
+                context: context,
+                id: 'treds',
+                title: 'TReDS',
+                subtitle: 'Invoice discounting & working capital solutions',
+                icon: Icons.currency_exchange,
+                iconColor: const Color(0xFFC62828),
+                themeColor: Colors.red,
+              ),
+              const SizedBox(width: 12),
+              _buildMSMESupportCard(
+                context: context,
+                id: 'csr',
+                title: 'CSR Support',
+                subtitle: 'CSR programs, incubators & cluster support',
+                icon: Icons.handshake,
+                iconColor: const Color(0xFF00695C),
+                themeColor: Colors.teal,
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+        IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _buildMSMESupportCard(
+                context: context,
+                id: 'govt',
+                title: 'Govt. Authorities',
+                subtitle: 'Central, State & District government structure',
+                icon: Icons.account_balance,
+                iconColor: const Color(0xFF0277BD),
+                themeColor: Colors.lightBlue,
+              ),
+              const SizedBox(width: 12),
+              _buildMSMESupportCard(
+                context: context,
+                id: 'institutions',
+                title: 'Institutions',
+                subtitle: 'SIDBI, NSIC, DIC, KVIC & more organizations',
+                icon: Icons.business,
+                iconColor: const Color(0xFF4527A0),
+                themeColor: Colors.deepPurple,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMSMESupportCard({
+    required BuildContext context,
+    required String id,
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required Color iconColor,
+    required Color themeColor,
+  }) {
+    return Expanded(
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFF1F5F9), width: 1.5),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.02),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => MSMEModuleDetailsScreen(
+                    moduleId: id,
+                    title: title,
+                    description: subtitle,
+                    icon: icon,
+                    iconColor: iconColor,
+                    themeColor: themeColor,
+                  ),
+                ),
+              );
+            },
+            borderRadius: BorderRadius.circular(16),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 46,
+                    height: 46,
+                    decoration: BoxDecoration(
+                      color: themeColor.withValues(alpha: 0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      icon,
+                      color: iconColor,
+                      size: 22,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    title,
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.poppins(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF0F172A),
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    subtitle,
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.inter(
+                      fontSize: 10.0,
+                      color: const Color(0xFF64748B),
+                      height: 1.3,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }

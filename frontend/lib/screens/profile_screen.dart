@@ -437,21 +437,19 @@ class ProfileScreen extends StatelessWidget {
                                   ),
                                   child: CircleAvatar(
                                     radius: 38,
-                                    backgroundImage:
-                                        provider
-                                                .profile
-                                                .profilePhoto
-                                                .isNotEmpty &&
-                                            File(
-                                              provider.profile.profilePhoto,
-                                            ).existsSync()
-                                        ? FileImage(
-                                            File(provider.profile.profilePhoto),
-                                          )
-                                        : const AssetImage(
-                                                'assets/images/supporting assets/user_avatar.png',
-                                              )
-                                              as ImageProvider,
+                                    backgroundImage: () {
+                                      final photo = provider.profile.profilePhoto;
+                                      if (photo.isEmpty) {
+                                        return const AssetImage('assets/images/supporting assets/user_avatar.png') as ImageProvider;
+                                      }
+                                      if (photo.startsWith('http://') || photo.startsWith('https://')) {
+                                        return NetworkImage(photo) as ImageProvider;
+                                      }
+                                      if (File(photo).existsSync()) {
+                                        return FileImage(File(photo)) as ImageProvider;
+                                      }
+                                      return const AssetImage('assets/images/supporting assets/user_avatar.png') as ImageProvider;
+                                    }(),
                                   ),
                                 ),
                               ),
