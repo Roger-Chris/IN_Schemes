@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -146,19 +147,45 @@ class _SaarthiHomeScreenState extends State<SaarthiHomeScreen> {
                                 radius: 18,
                                 backgroundColor: const Color(0xFFEFF6FF),
                                 child: ClipOval(
-                                  child: Image.asset(
-                                    'assets/images/supporting assets/user_avatar.png',
-                                    width: 36,
-                                    height: 36,
-                                    fit: BoxFit.cover,
-                                    errorBuilder:
-                                        (context, error, stackTrace) =>
-                                            const Icon(
-                                              Icons.person,
-                                              color: kBrandBlue,
-                                              size: 18,
-                                            ),
-                                  ),
+                                  child: () {
+                                    final photo = provider.profile.profilePhoto;
+                                    if (photo.isEmpty) {
+                                      return Image.asset(
+                                        'assets/images/supporting assets/user_avatar.png',
+                                        width: 36,
+                                        height: 36,
+                                        fit: BoxFit.cover,
+                                      );
+                                    }
+                                    if (photo.startsWith('http://') || photo.startsWith('https://')) {
+                                      return Image.network(
+                                        photo,
+                                        width: 36,
+                                        height: 36,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (context, error, stackTrace) => const Icon(
+                                          Icons.person,
+                                          color: kBrandBlue,
+                                          size: 18,
+                                        ),
+                                      );
+                                    }
+                                    final file = File(photo);
+                                    if (file.existsSync()) {
+                                      return Image.file(
+                                        file,
+                                        width: 36,
+                                        height: 36,
+                                        fit: BoxFit.cover,
+                                      );
+                                    }
+                                    return Image.asset(
+                                      'assets/images/supporting assets/user_avatar.png',
+                                      width: 36,
+                                      height: 36,
+                                      fit: BoxFit.cover,
+                                    );
+                                  }(),
                                 ),
                               ),
                             ),
