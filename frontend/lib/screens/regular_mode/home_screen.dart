@@ -1344,30 +1344,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       // Title Row
                       Row(
                         children: [
-                          Container(
-                            width: 30,
-                            height: 30,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.white,
-                              border: Border.all(
-                                color: const Color(0xFFE2E8F0),
-                              ),
-                            ),
-                            alignment: Alignment.center,
-                            child: Text(
-                              (item['logoText'] ?? 'IN') as String,
-                              style: GoogleFonts.poppins(
-                                fontSize: 9.0,
-                                fontWeight: FontWeight.bold,
-                                color:
-                                    (item['logoColor'] ??
-                                            const Color(0xFF2563EB))
-                                        as Color,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1380,7 +1356,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     fontWeight: FontWeight.bold,
                                     color: const Color(0xFF0F172A),
                                   ),
-                                  maxLines: 1,
+                                  maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
                                 ),
                                 if (fullName.isNotEmpty) ...[
@@ -1392,7 +1368,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       fontWeight: FontWeight.w500,
                                       color: const Color(0xFF64748B),
                                     ),
-                                    maxLines: 1,
+                                    maxLines: 2,
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                 ],
@@ -1512,6 +1488,33 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // Latest Updates Card
   Widget _buildLatestUpdates(BuildContext context, AppProvider provider) {
+    final updates = provider.notifications;
+    final latestUpdate = updates.isNotEmpty ? updates.first : null;
+
+    final String tagText;
+    if (latestUpdate != null) {
+      final category = latestUpdate['category'] as String?;
+      if (category == 'new_schemes') {
+        tagText = 'New Scheme';
+      } else if (category == 'updates') {
+        tagText = 'Update';
+      } else if (category == 'reminders') {
+        tagText = 'Reminder';
+      } else {
+        tagText = 'Alert';
+      }
+    } else {
+      tagText = 'New Scheme';
+    }
+
+    final String titleText = latestUpdate != null
+        ? (latestUpdate['title'] as String? ?? '')
+        : 'Fisheries and Aquaculture Infra Development Fund Scheme Launched';
+
+    final String timeText = latestUpdate != null
+        ? (latestUpdate['time'] as String? ?? '')
+        : '2 days ago';
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1557,88 +1560,97 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
         const SizedBox(height: 12),
-        Container(
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFFE2E8F0)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.01),
-                blurRadius: 6,
+        GestureDetector(
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => const NotificationsScreen(),
               ),
-            ],
-          ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 38,
-                height: 38,
-                decoration: const BoxDecoration(
-                  color: Color(0xFFEFF6FF),
-                  shape: BoxShape.circle,
+            );
+          },
+          child: Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.01),
+                  blurRadius: 6,
                 ),
-                alignment: Alignment.center,
-                child: const Icon(
-                  Icons.campaign_outlined,
-                  color: Color(0xFF2563EB),
-                  size: 22,
+              ],
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 38,
+                  height: 38,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFEFF6FF),
+                    shape: BoxShape.circle,
+                  ),
+                  alignment: Alignment.center,
+                  child: const Icon(
+                    Icons.campaign_outlined,
+                    color: Color(0xFF2563EB),
+                    size: 22,
+                  ),
                 ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 2,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        border: Border.all(color: const Color(0xFFBFDBFE)),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        "New Scheme",
-                        style: GoogleFonts.inter(
-                          color: const Color(0xFF2563EB),
-                          fontSize: 9,
-                          fontWeight: FontWeight.bold,
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          border: Border.all(color: const Color(0xFFBFDBFE)),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          tagText,
+                          style: GoogleFonts.inter(
+                            color: const Color(0xFF2563EB),
+                            fontSize: 9,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      "Fisheries and Aquaculture Infra Development Fund Scheme Launched",
-                      style: GoogleFonts.inter(
-                        fontSize: 13,
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xFF1E293B),
-                        height: 1.3,
+                      const SizedBox(height: 6),
+                      Text(
+                        titleText,
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF1E293B),
+                          height: 1.3,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      "2 days ago",
-                      style: GoogleFonts.inter(
-                        fontSize: 10.5,
-                        color: const Color(0xFF94A3B8),
+                      const SizedBox(height: 6),
+                      Text(
+                        timeText,
+                        style: GoogleFonts.inter(
+                          fontSize: 10.5,
+                          color: const Color(0xFF94A3B8),
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              const Icon(
-                Icons.chevron_right,
-                color: Color(0xFF94A3B8),
-                size: 20,
-              ),
-            ],
+                const SizedBox(width: 8),
+                const Icon(
+                  Icons.chevron_right,
+                  color: Color(0xFF94A3B8),
+                  size: 20,
+                ),
+              ],
+            ),
           ),
         ),
       ],

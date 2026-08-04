@@ -24,7 +24,6 @@ class SaarthiProfileSetupScreen extends StatefulWidget {
 class _SaarthiProfileSetupScreenState extends State<SaarthiProfileSetupScreen> {
   // State variables for voice interaction
   int _activeQuestionIndex = 0;
-  String _listeningState = 'listening'; // 'listening', 'understood', 'confirm'
   String _userTranscript = '';
   String? _voiceSelectionVal;
   Timer? _listeningTimer;
@@ -32,6 +31,7 @@ class _SaarthiProfileSetupScreenState extends State<SaarthiProfileSetupScreen> {
   late final List<_CompanionQuestion> _companionQuestions;
   final VoiceRecognitionController _recognitionController = AutomaticVoiceRecognitionController();
   bool _recognitionInitialized = false;
+  bool _isRecording = false;
   final ScrollController _scrollController = ScrollController();
   int _activeStepNumber = 1;
 
@@ -585,7 +585,7 @@ class _SaarthiProfileSetupScreenState extends State<SaarthiProfileSetupScreen> {
     _transcriptTimer?.cancel();
 
     setState(() {
-      _listeningState = 'listening';
+      _isRecording = false;
       _userTranscript = '';
       _voiceSelectionVal = null;
     });
@@ -595,14 +595,12 @@ class _SaarthiProfileSetupScreenState extends State<SaarthiProfileSetupScreen> {
     _listeningTimer = Timer(const Duration(milliseconds: 3000), () {
       if (!mounted) return;
       setState(() {
-        _listeningState = 'understood';
         _userTranscript = currentQuestion.understoodTranscript;
       });
 
       _transcriptTimer = Timer(const Duration(milliseconds: 1800), () {
         if (!mounted) return;
         setState(() {
-          _listeningState = 'confirm';
           if (currentQuestion.isMultiSelect) {
             _voiceSelectionVal = _selectedSpecialCategories.isEmpty ? 'None' : _selectedSpecialCategories.join(', ');
           } else {
@@ -719,13 +717,22 @@ class _SaarthiProfileSetupScreenState extends State<SaarthiProfileSetupScreen> {
   Widget _buildQuestionCard(int index) {
     final q = _companionQuestions[index];
     final bool isActive = _activeQuestionIndex == index;
-    final bool isAnswered = q.answeredValue != null || (q.isText && q.textController != null && q.textController!.text.isNotEmpty);
     
     const Color kBrandBlue = Color(0xFF2563EB);
     const Color kDarkSlate = Color(0xFF0F172A);
     const Color kSlate500 = Color(0xFF64748B);
 
-    return Container(
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () {
+        if (_activeQuestionIndex != index) {
+          setState(() {
+            _activeQuestionIndex = index;
+          });
+          _startSimulatedListening();
+        }
+      },
+      child: Container(
       margin: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -754,47 +761,13 @@ class _SaarthiProfileSetupScreenState extends State<SaarthiProfileSetupScreen> {
         children: [
           Row(
             children: [
-              Container(
-                width: 20,
-                height: 20,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: isAnswered ? const Color(0xFFEFF6FF) : const Color(0xFFF1F5F9),
-                ),
-                child: Icon(
-                  isAnswered ? Icons.check_circle : Icons.circle_outlined,
-                  color: isAnswered ? kBrandBlue : kSlate500,
-                  size: 14,
-                ),
-              ),
-              const SizedBox(width: 8),
+
               Text(
                 q.confirmLabel,
                 style: GoogleFonts.inter(
                   fontSize: 12.5,
                   fontWeight: FontWeight.bold,
                   color: isActive ? kBrandBlue : kDarkSlate,
-                ),
-              ),
-              const Spacer(),
-              GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _activeQuestionIndex = index;
-                  });
-                  _startSimulatedListening();
-                },
-                child: Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: isActive ? const Color(0xFFEFF6FF) : Colors.transparent,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    Icons.mic,
-                    color: isActive ? kBrandBlue : kSlate500,
-                    size: 16,
-                  ),
                 ),
               ),
             ],
@@ -809,7 +782,7 @@ class _SaarthiProfileSetupScreenState extends State<SaarthiProfileSetupScreen> {
                   : TextInputType.text,
               style: GoogleFonts.inter(
                 fontSize: 13.5,
-                fontWeight: FontWeight.bold,
+                fontWeight: FontWeight.normal,
                 color: kDarkSlate,
               ),
               decoration: InputDecoration(
@@ -858,6 +831,7 @@ class _SaarthiProfileSetupScreenState extends State<SaarthiProfileSetupScreen> {
                   selected: isSel,
                   onSelected: (selected) {
                     setState(() {
+                      _activeQuestionIndex = index;
                       if (option == "None") {
                         _selectedSpecialCategories.clear();
                         _selectedSpecialCategories.add("None");
@@ -914,6 +888,7 @@ class _SaarthiProfileSetupScreenState extends State<SaarthiProfileSetupScreen> {
                   onChanged: (newVal) {
                     if (newVal != null) {
                       setState(() {
+                        _activeQuestionIndex = index;
                         q.onSave(newVal, this);
                         q.answeredValue = newVal;
                       });
@@ -942,6 +917,7 @@ class _SaarthiProfileSetupScreenState extends State<SaarthiProfileSetupScreen> {
                   onSelected: (selected) {
                     if (selected) {
                       setState(() {
+                        _activeQuestionIndex = index;
                         q.onSave(option, this);
                         q.answeredValue = option;
                       });
@@ -959,46 +935,11 @@ class _SaarthiProfileSetupScreenState extends State<SaarthiProfileSetupScreen> {
                 );
               }).toList(),
             ),
-
-          if (isActive && _listeningState != 'confirm') ...[
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              decoration: BoxDecoration(
-                color: _listeningState == 'listening' ? const Color(0xFFF0F6FF) : const Color(0xFFF0FDF4),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(
-                  color: _listeningState == 'listening' ? const Color(0xFFBFDBFE) : const Color(0xFFDCFCE7),
-                ),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    _listeningState == 'listening' ? Icons.mic : Icons.check_circle,
-                    color: _listeningState == 'listening' ? kBrandBlue : const Color(0xFF16A34A),
-                    size: 14,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      _listeningState == 'listening' 
-                          ? 'Listening: "$_userTranscript"' 
-                          : 'Understood: "$_userTranscript"',
-                      style: GoogleFonts.inter(
-                        fontSize: 11.5,
-                        fontWeight: FontWeight.bold,
-                        color: _listeningState == 'listening' ? kBrandBlue : const Color(0xFF15803D),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   @override
   Widget build(BuildContext context) {
@@ -1020,46 +961,52 @@ class _SaarthiProfileSetupScreenState extends State<SaarthiProfileSetupScreen> {
             children: [
               // 1. Title section with robot avatar
               Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20.0,
-                  vertical: 12.0,
+                padding: const EdgeInsets.only(
+                  left: 20.0,
+                  right: 20.0,
+                  top: 24.0,
+                  bottom: 0.0,
                 ),
                 child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const SizedBox(height: 8),
-                          Text(
-                            "Let's build your\nMSME profile",
-                            style: GoogleFonts.poppins(
-                              fontSize: 19.0,
-                              fontWeight: FontWeight.bold,
-                              color: kDarkSlate,
-                              height: 1.15,
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 14.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: 8),
+                            Text(
+                              "Let's build your\nMSME profile",
+                              style: GoogleFonts.poppins(
+                                fontSize: 19.0,
+                                fontWeight: FontWeight.bold,
+                                color: kDarkSlate,
+                                height: 1.15,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            "I'll ask a few simple questions using voice conversation.",
-                            style: GoogleFonts.inter(
-                              fontSize: 11.5,
-                              color: kSlate500,
-                              height: 1.35,
+                            const SizedBox(height: 6),
+                            Text(
+                              "I'll ask a few simple questions using voice conversation.",
+                              style: GoogleFonts.inter(
+                                fontSize: 10.0,
+                                color: kSlate500,
+                                height: 1.35,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                     const SizedBox(width: 12),
                     SizedBox(
-                      width: 80,
-                      height: 80,
+                      width: 140,
+                      height: 140,
                       child: Image.asset(
                         'assets/images/saarthi/sarathi.png',
                         fit: BoxFit.contain,
+                        alignment: Alignment.bottomCenter,
                       ),
                     ),
                   ],
@@ -1068,9 +1015,11 @@ class _SaarthiProfileSetupScreenState extends State<SaarthiProfileSetupScreen> {
 
               // 2. Conversation Progress Section (5 steps)
               Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20.0,
-                  vertical: 12.0,
+                padding: const EdgeInsets.only(
+                  left: 20.0,
+                  right: 20.0,
+                  top: 0.0,
+                  bottom: 12.0,
                 ),
                 child: Container(
                   padding: const EdgeInsets.all(14),
@@ -1114,90 +1063,110 @@ class _SaarthiProfileSetupScreenState extends State<SaarthiProfileSetupScreen> {
                         ],
                       ),
                       const SizedBox(height: 14),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: List.generate(5, (index) {
-                          final stepNum = index + 1;
-                          final isActive =
-                              stepNum == _activeStepNumber;
-                          final isCompleted =
-                              stepNum < _activeStepNumber;
+                      LayoutBuilder(
+                        builder: (context, constraints) {
+                          final double itemWidth = constraints.maxWidth / 5;
+                          final double startLineX = itemWidth / 2;
+                          final double endLineX = constraints.maxWidth - (itemWidth / 2);
+                          
+                          // Active step progress line end point
+                          final double progressFraction = (_activeStepNumber - 1) / 4;
+                          final double activeLineWidth = (endLineX - startLineX) * progressFraction;
 
-                          return Expanded(
-                            child: Row(
-                              children: [
-                                Container(
-                                  width: 28,
-                                  height: 28,
-                                  alignment: Alignment.center,
-                                  decoration: BoxDecoration(
-                                    color: isActive
-                                        ? kBrandBlue
-                                        : (isCompleted
-                                              ? const Color(0xFFEFF6FF)
-                                              : Colors.white),
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                      color: isActive
-                                          ? kBrandBlue
-                                          : (isCompleted
-                                                ? const Color(0xFFBFDBFE)
-                                                : const Color(0xFFCBD5E1)),
-                                      width: isActive ? 2 : 1.5,
-                                    ),
-                                  ),
-                                  child: Text(
-                                    '$stepNum',
-                                    style: GoogleFonts.inter(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
-                                      color: isActive
-                                          ? Colors.white
-                                          : (isCompleted
-                                                ? kBrandBlue
-                                                : kSlate500),
-                                    ),
-                                  ),
+                          return Stack(
+                            children: [
+                              // 1. Grey background line
+                              Positioned(
+                                top: 14,
+                                left: startLineX,
+                                right: startLineX,
+                                child: Container(
+                                  height: 2,
+                                  color: const Color(0xFFE2E8F0),
                                 ),
-                                if (index < 4)
-                                  Expanded(
-                                    child: Container(
-                                      height: 1.5,
-                                      color: isCompleted
-                                          ? const Color(0xFFBFDBFE)
-                                          : const Color(0xFFE2E8F0),
+                              ),
+                              // 2. Active blue progress line
+                              Positioned(
+                                top: 14,
+                                left: startLineX,
+                                child: Container(
+                                  width: activeLineWidth,
+                                  height: 2,
+                                  color: const Color(0xFF93C5FD), // Light blue active line
+                                ),
+                              ),
+                              // 3. Row of Steps (circle + label)
+                              Row(
+                                children: List.generate(5, (index) {
+                                  final stepNum = index + 1;
+                                  final isActive = stepNum == _activeStepNumber;
+                                  final isCompleted = stepNum < _activeStepNumber;
+
+                                  String labelText = '';
+                                  switch (index) {
+                                    case 0: labelText = 'About You'; break;
+                                    case 1: labelText = 'Location'; break;
+                                    case 2: labelText = 'Your Business'; break;
+                                    case 3: labelText = 'Business Scale'; break;
+                                    case 4: labelText = 'Eligibility'; break;
+                                  }
+
+                                  return Expanded(
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                      children: [
+                                        // Circle
+                                        Container(
+                                          width: 28,
+                                          height: 28,
+                                          alignment: Alignment.center,
+                                          decoration: BoxDecoration(
+                                            color: isActive
+                                                ? kBrandBlue
+                                                : (isCompleted
+                                                    ? const Color(0xFFEFF6FF)
+                                                    : Colors.white),
+                                            shape: BoxShape.circle,
+                                            border: Border.all(
+                                              color: isActive
+                                                  ? kBrandBlue
+                                                  : (isCompleted
+                                                      ? const Color(0xFFBFDBFE)
+                                                      : const Color(0xFFCBD5E1)),
+                                              width: isActive ? 2 : 1.5,
+                                            ),
+                                          ),
+                                          child: Text(
+                                            '$stepNum',
+                                            style: GoogleFonts.inter(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.bold,
+                                              color: isActive
+                                                  ? Colors.white
+                                                  : (isCompleted
+                                                      ? kBrandBlue
+                                                      : kSlate500),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        // Label
+                                        SizedBox(
+                                          height: 24,
+                                          child: _StepLabel(
+                                            text: labelText,
+                                            active: isActive,
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                  ),
-                              ],
-                            ),
+                                  );
+                                }),
+                              ),
+                            ],
                           );
-                        }),
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          _StepLabel(
-                            text: 'About You',
-                            active: _activeStepNumber == 1,
-                          ),
-                          _StepLabel(
-                            text: 'Location',
-                            active: _activeStepNumber == 2,
-                          ),
-                          _StepLabel(
-                            text: 'Your Business',
-                            active: _activeStepNumber == 3,
-                          ),
-                          _StepLabel(
-                            text: 'Business Scale',
-                            active: _activeStepNumber == 4,
-                          ),
-                          _StepLabel(
-                            text: 'Eligibility',
-                            active: _activeStepNumber == 5,
-                          ),
-                        ],
+                        },
                       ),
                     ],
                   ),
@@ -1255,12 +1224,6 @@ class _SaarthiProfileSetupScreenState extends State<SaarthiProfileSetupScreen> {
                                   height: 1.35,
                                 ),
                               ),
-                            ),
-                            const SizedBox(width: 8),
-                            const Icon(
-                              Icons.volume_up_outlined,
-                              color: Color(0xFF2563EB),
-                              size: 20,
                             ),
                           ],
                         ),
@@ -1411,78 +1374,75 @@ class _SaarthiProfileSetupScreenState extends State<SaarthiProfileSetupScreen> {
                   Expanded(
                     flex: 2,
                     child: GestureDetector(
-                      onTapDown: (_) async {
+                      onTap: () async {
                         _listeningTimer?.cancel();
                         _transcriptTimer?.cancel();
-                        final provider = Provider.of<AppProvider>(context, listen: false);
-                        final localeId = provider.selectedLanguage == 'ta' ? 'ta-IN' : 'en-IN';
-                        setState(() {
-                          _listeningState = 'listening';
-                          _userTranscript = 'Listening...';
-                        });
-                        try {
-                          if (!_recognitionInitialized) {
-                            await _recognitionController.initialize(
-                              onStatus: (status) {
-                                debugPrint('[SaarthiProfile] Voice status: $status');
-                              },
-                              onResult: (result) {
-                                setState(() {
-                                  if (result.transcript.isNotEmpty) {
-                                    _userTranscript = result.transcript;
-                                    _voiceSelectionVal = result.transcript;
-                                  }
-                                });
-                              },
-                              onSoundLevel: (level) {},
-                              onLanguage: (lang) {},
-                              onError: (error) {
-                                debugPrint('[SaarthiProfile] Voice error: ${error.message}');
-                              },
-                            );
-                            _recognitionInitialized = true;
-                          }
-                          await _recognitionController.listen(
-                            localeId: localeId,
-                          );
-                        } catch (e) {
-                          debugPrint('[SaarthiProfile] Error starting voice: $e');
-                        }
-                      },
-                      onTapUp: (_) async {
-                        try {
-                          await _recognitionController.stop();
-                        } catch (e) {
-                          debugPrint('[SaarthiProfile] Error stopping voice: $e');
-                        }
-                        final currentQuestion = _companionQuestions[_activeQuestionIndex];
-                        setState(() {
-                          _listeningState = 'understood';
-                          if (_userTranscript == 'Listening...' || _userTranscript.isEmpty) {
-                            _userTranscript = currentQuestion.understoodTranscript;
-                          }
-                        });
-                        _transcriptTimer = Timer(const Duration(milliseconds: 1000), () {
-                          if (!mounted) return;
+
+                        if (!_isRecording) {
+                          final provider = Provider.of<AppProvider>(context, listen: false);
+                          final localeId = provider.selectedLanguage == 'ta' ? 'ta-IN' : 'en-IN';
                           setState(() {
-                            _listeningState = 'confirm';
-                            String confirmedVal = _voiceSelectionVal ?? currentQuestion.confirmValue;
-                            if (confirmedVal == 'Listening...') {
-                              confirmedVal = currentQuestion.confirmValue;
+                            _isRecording = true;
+                            _userTranscript = 'Listening...';
+                          });
+                          try {
+                            if (!_recognitionInitialized) {
+                              await _recognitionController.initialize(
+                                onStatus: (status) {
+                                  debugPrint('[SaarthiProfile] Voice status: $status');
+                                },
+                                onResult: (result) {
+                                  setState(() {
+                                    if (result.transcript.isNotEmpty) {
+                                      _userTranscript = result.transcript;
+                                      _voiceSelectionVal = result.transcript;
+                                    }
+                                  });
+                                },
+                                onSoundLevel: (level) {},
+                                onLanguage: (lang) {},
+                                onError: (error) {
+                                  debugPrint('[SaarthiProfile] Voice error: ${error.message}');
+                                },
+                              );
+                              _recognitionInitialized = true;
                             }
-                            currentQuestion.onSave(confirmedVal, this);
-                            currentQuestion.answeredValue = confirmedVal;
-                            if (currentQuestion.isText && currentQuestion.textController != null) {
-                              currentQuestion.textController!.text = confirmedVal;
+                            await _recognitionController.listen(
+                              localeId: localeId,
+                            );
+                          } catch (e) {
+                            debugPrint('[SaarthiProfile] Error starting voice: $e');
+                          }
+                        } else {
+                          setState(() {
+                            _isRecording = false;
+                          });
+                          try {
+                            await _recognitionController.stop();
+                          } catch (e) {
+                            debugPrint('[SaarthiProfile] Error stopping voice: $e');
+                          }
+                          final currentQuestion = _companionQuestions[_activeQuestionIndex];
+                          setState(() {
+                            if (_userTranscript == 'Listening...' || _userTranscript.isEmpty) {
+                              _userTranscript = currentQuestion.understoodTranscript;
                             }
                           });
-                        });
-                      },
-                      onTapCancel: () async {
-                        try {
-                          await _recognitionController.cancel();
-                        } catch (_) {}
-                        _startSimulatedListening();
+                          _transcriptTimer = Timer(const Duration(milliseconds: 1000), () {
+                            if (!mounted) return;
+                            setState(() {
+                              String confirmedVal = _voiceSelectionVal ?? currentQuestion.confirmValue;
+                              if (confirmedVal == 'Listening...') {
+                                confirmedVal = currentQuestion.confirmValue;
+                              }
+                              currentQuestion.onSave(confirmedVal, this);
+                              currentQuestion.answeredValue = confirmedVal;
+                              if (currentQuestion.isText && currentQuestion.textController != null) {
+                                currentQuestion.textController!.text = confirmedVal;
+                              }
+                            });
+                          });
+                        }
                       },
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
@@ -1490,22 +1450,22 @@ class _SaarthiProfileSetupScreenState extends State<SaarthiProfileSetupScreen> {
                           Container(
                             width: 40,
                             height: 40,
-                            decoration: const BoxDecoration(
+                            decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: Color(0xFF2563EB),
+                              color: _isRecording ? const Color(0xFFEF4444) : const Color(0xFF2563EB),
                             ),
-                            child: const Icon(
-                              Icons.mic,
+                            child: Icon(
+                              _isRecording ? Icons.stop : Icons.mic,
                               color: Colors.white,
                               size: 20,
                             ),
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            'Hold to speak',
+                            _isRecording ? 'Tap to stop' : 'Tap to speak',
                             style: GoogleFonts.inter(
                               fontSize: 10,
-                              color: const Color(0xFF2563EB),
+                              color: _isRecording ? const Color(0xFFEF4444) : const Color(0xFF2563EB),
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -1587,15 +1547,15 @@ class _StepLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: Text(
-        text,
-        textAlign: TextAlign.center,
-        style: GoogleFonts.inter(
-          fontSize: 7.5,
-          fontWeight: active ? FontWeight.bold : FontWeight.w500,
-          color: active ? const Color(0xFF2563EB) : const Color(0xFF64748B),
-        ),
+    return Text(
+      text,
+      textAlign: TextAlign.center,
+      maxLines: 2,
+      overflow: TextOverflow.visible,
+      style: GoogleFonts.inter(
+        fontSize: 9.0,
+        fontWeight: active ? FontWeight.bold : FontWeight.w500,
+        color: active ? const Color(0xFF2563EB) : const Color(0xFF64748B),
       ),
     );
   }
