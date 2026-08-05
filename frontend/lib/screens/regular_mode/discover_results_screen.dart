@@ -8,7 +8,6 @@ import '../../engine/recommendation_engine.dart';
 import '../../widgets/scheme_card.dart';
 import '../../widgets/filter_panel.dart';
 import 'scheme_details_screen.dart';
-import 'profile_setup_screen.dart';
 import 'search_results_screen.dart';
 
 class DiscoverResultsScreen extends StatefulWidget {
@@ -572,88 +571,8 @@ class _DiscoverResultsScreenState extends State<DiscoverResultsScreen> {
               ),
             ),
 
-          // 6. Want more accurate results? Banner
-          SliverToBoxAdapter(
-            child: Column(
-              children: [
-                const SizedBox(height: 16),
-                Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 16),
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.white.withValues(alpha: 0.25)),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.assignment_outlined,
-                        color: Colors.white,
-                        size: 28,
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              "Want more accurate results?",
-                              style: GoogleFonts.poppins(
-                                fontSize: 12.5,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              "Add a few more details to unlock additional relevant schemes.",
-                              style: GoogleFonts.inter(
-                                fontSize: 10.5,
-                                color: Colors.white.withValues(alpha: 0.8),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Flexible(
-                        child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (_) =>
-                                    const ProfileSetupScreen(),
-                              ),
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            foregroundColor: const Color(0xFF2563EB),
-                            elevation: 0,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 8,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                          child: Text(
-                            "Update Profile",
-                            overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.inter(
-                              fontSize: 10.5,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 32),
-              ],
-            ),
+          const SliverToBoxAdapter(
+            child: SizedBox(height: 32),
           ),
         ],
       ),
