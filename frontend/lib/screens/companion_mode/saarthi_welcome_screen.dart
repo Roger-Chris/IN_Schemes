@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../providers/app_state_provider.dart';
-import 'saarthi_profile_setup_screen.dart';
+import '../../main.dart';
 
 class SaarthiWelcomeScreen extends StatefulWidget {
   const SaarthiWelcomeScreen({super.key});
@@ -354,11 +354,21 @@ class _SaarthiWelcomeScreenState extends State<SaarthiWelcomeScreen> {
                 ),
                 onPressed: () async {
                   final provider = Provider.of<AppProvider>(context, listen: false);
+                  final navigator = Navigator.of(context);
                   provider.changeLanguage(_selectedLang);
-                  Navigator.of(context).push(
+
+                  // Mark the profile as completed to bypass future onboarding redirects
+                  final currentProfile = provider.profile;
+                  final updatedProfile = currentProfile.copyWith(
+                    profileCompleted: true,
+                  );
+                  await provider.updateProfile(updatedProfile);
+
+                  navigator.pushAndRemoveUntil(
                     MaterialPageRoute(
-                      builder: (_) => const SaarthiProfileSetupScreen(),
+                      builder: (_) => const MainTabsContainer(),
                     ),
+                    (route) => false,
                   );
                 },
                 child: Row(
