@@ -103,7 +103,6 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
   String _transcript = '';
   String? _message;
   String? _detectedLanguage;
-  String? _fallbackReason;
   VoiceInputLanguage _fallbackLanguage = VoiceInputLanguage.english;
   VoiceRecognitionCapabilities? _recognitionCapabilities;
   SpeechOutputCapabilities? _speechCapabilities;
@@ -303,10 +302,10 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
         }
       } catch (_) {
         await agent.close();
+        // Cloud voice is unavailable.
         if (mounted) {
           setState(() {
-            _fallbackReason =
-                'Cloud voice is unavailable. Using private on-device voice.';
+            // Unused fallback reason removed
           });
         }
       }
@@ -326,24 +325,6 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
     if (mounted) setState(() {});
   }
 
-  Future<void> _installEdgeAi() async {
-    final engine = _edgeSlmEngine;
-    if (engine == null ||
-        engine.snapshot.phase == EdgeSlmPhase.downloading ||
-        engine.snapshot.phase == EdgeSlmPhase.loading) {
-      return;
-    }
-    await _recognitionController.cancel();
-    if (!mounted) return;
-    _setListeningAnimations(false);
-    setState(() => _voicePhase = _VoiceAssistantPhase.processing);
-    await engine.prepare(downloadIfMissing: true);
-    if (!mounted) return;
-    setState(() {
-      _voicePhase = _VoiceAssistantPhase.ready;
-      _message = engine.snapshot.isReady ? null : engine.snapshot.message;
-    });
-  }
 
   void _handleVoiceAgentChanged() {
     if (!mounted || _voiceAgentController == null) return;
@@ -372,8 +353,7 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
     if (event.type == VoiceAgentEventType.recoverableError ||
         event.type == VoiceAgentEventType.fatalError) {
       setState(() {
-        _fallbackReason =
-            'Cloud voice disconnected. Tap the microphone to use on-device voice.';
+        // Cloud voice disconnected.
       });
       unawaited(_fallBackToLocalVoice());
     }
@@ -385,8 +365,7 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
     await _voiceAgentController?.close();
     if (mounted && !_closing) {
       setState(() {
-        _fallbackReason =
-            'Cloud voice disconnected. Continuing with private on-device voice.';
+        // Cloud voice disconnected.
       });
       await _startListening(preserveTranscript: _transcript.isNotEmpty);
     }
@@ -568,7 +547,6 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
         _voicePhase = _VoiceAssistantPhase.listening;
         _message = null;
         _showFallbackPicker = useFallback;
-        _fallbackReason = useFallback ? capabilities.reason : null;
       });
       _sessionController?.setListening(
         transcript: preserveTranscript ? _transcript : '',
@@ -696,7 +674,6 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
       _voicePhase = _VoiceAssistantPhase.unavailable;
       if (error.automaticUnavailable) {
         _showFallbackPicker = true;
-        _fallbackReason = error.message;
         _message = null;
       } else {
         _message = error.message;
@@ -1220,10 +1197,6 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
                         _buildHeader(),
                         const SizedBox(height: 12),
                         _buildListeningArea(),
-                        if (_edgeSlmEngine != null) ...[
-                          const SizedBox(height: 8),
-                          _buildEdgeAiStatus(),
-                        ],
                         if (_cloudActive) ...[
                           const SizedBox(height: 8),
                           Row(
@@ -1247,17 +1220,6 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
                                 ),
                               ),
                             ],
-                          ),
-                        ],
-                        if (_fallbackReason != null) ...[
-                          const SizedBox(height: 8),
-                          Text(
-                            _fallbackReason!,
-                            textAlign: TextAlign.center,
-                            style: GoogleFonts.inter(
-                              color: const Color(0xFFFBBF24),
-                              fontSize: 10.5,
-                            ),
                           ),
                         ],
                         if (_message != null) ...[
@@ -1358,75 +1320,6 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
     );
   }
 
-  Widget _buildEdgeAiStatus() {
-    final snapshot = _edgeSlmEngine!.snapshot;
-    final downloading =
-        snapshot.phase == EdgeSlmPhase.downloading ||
-        snapshot.phase == EdgeSlmPhase.loading ||
-        snapshot.phase == EdgeSlmPhase.checking;
-    final ready = snapshot.isReady;
-    final color = ready
-        ? const Color(0xFF34D399)
-        : downloading
-        ? const Color(0xFF60A5FA)
-        : const Color(0xFFFBBF24);
-    final label = switch (snapshot.phase) {
-      EdgeSlmPhase.ready => 'Private Edge AI · Offline',
-      EdgeSlmPhase.downloading =>
-        'Downloading Edge AI ${(snapshot.progress * 100).round()}%',
-      EdgeSlmPhase.loading =>
-        snapshot.progress >= 1
-            ? 'Loading private Edge AI…'
-            : 'Verifying private Edge AI…',
-      EdgeSlmPhase.checking => 'Checking private Edge AI…',
-      EdgeSlmPhase.failed => 'Edge AI unavailable · Retry',
-      EdgeSlmPhase.modelMissing => 'Enable private Edge AI · 378 MB',
-    };
-    return Semantics(
-      container: true,
-      label: label,
-      button: !ready && !downloading,
-      child: InkWell(
-        key: const Key('edge-ai-model-status'),
-        borderRadius: BorderRadius.circular(12),
-        onTap: ready || downloading ? null : _installEdgeAi,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.08),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: color.withValues(alpha: 0.24)),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                ready
-                    ? Icons.memory_rounded
-                    : downloading
-                    ? Icons.downloading_rounded
-                    : Icons.download_for_offline_outlined,
-                color: color,
-                size: 15,
-              ),
-              const SizedBox(width: 7),
-              Flexible(
-                child: Text(
-                  label,
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.inter(
-                    color: color,
-                    fontSize: 10.5,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 
   Widget _buildHeader() {
     return Row(

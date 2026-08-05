@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../providers/app_state_provider.dart';
-import '../../services/scheme_catalog_sync_service.dart';
 import '../../utils/constants.dart';
 import 'language_selection_screen.dart';
 import 'profile_setup_screen.dart';
@@ -267,51 +266,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ? 'Companion'
                     : 'Regular',
                 onTap: () => _showNavigationModePopup(context, provider),
-                isLast: true,
-              ),
-            ]),
-
-            // GROUP 2: Scheme data
-            _buildGroupHeader("Scheme Data"),
-            _buildGroupContainer([
-              _buildSettingRow(
-                icon: Icons.cloud_sync_outlined,
-                title: "Scheme Catalog",
-                value: provider.catalogSyncing
-                    ? null
-                    : provider.catalogStatusLabel,
-                widget: provider.catalogSyncing
-                    ? const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : null,
-                onTap: provider.catalogSyncing
-                    ? null
-                    : () async {
-                        final result = await provider.syncSchemeCatalog(
-                          force: true,
-                        );
-                        if (!context.mounted) return;
-                        final message = switch (result.outcome) {
-                          CatalogSyncOutcome.updated =>
-                            'Scheme catalog updated successfully.',
-                          CatalogSyncOutcome.unchanged =>
-                            'Your scheme catalog is already up to date.',
-                          CatalogSyncOutcome.offline =>
-                            'Could not reach Supabase. Using the saved catalog.',
-                          CatalogSyncOutcome.incompatible =>
-                            'A newer app version is required for this catalog.',
-                          CatalogSyncOutcome.rejected =>
-                            'The downloaded catalog failed validation. Your saved catalog was kept.',
-                          CatalogSyncOutcome.throttled =>
-                            'A catalog check is already in progress.',
-                        };
-                        ScaffoldMessenger.of(
-                          context,
-                        ).showSnackBar(SnackBar(content: Text(message)));
-                      },
                 isLast: true,
               ),
             ]),
