@@ -199,7 +199,7 @@ void main() {
     expect(find.text('தமிழ்'), findsOneWidget);
     expect(
       find.text('Automatic language detection requires Android 14 or newer.'),
-      findsOneWidget,
+      findsNothing,
     );
     expect(controller.lastLocaleId, anyOf('en-IN', 'ta-IN'));
   });

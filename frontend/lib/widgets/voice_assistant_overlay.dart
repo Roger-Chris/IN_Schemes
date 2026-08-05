@@ -1220,10 +1220,6 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
                         _buildHeader(),
                         const SizedBox(height: 12),
                         _buildListeningArea(),
-                        if (_edgeSlmEngine != null) ...[
-                          const SizedBox(height: 8),
-                          _buildEdgeAiStatus(),
-                        ],
                         if (_cloudActive) ...[
                           const SizedBox(height: 8),
                           Row(
@@ -1247,17 +1243,6 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
                                 ),
                               ),
                             ],
-                          ),
-                        ],
-                        if (_fallbackReason != null) ...[
-                          const SizedBox(height: 8),
-                          Text(
-                            _fallbackReason!,
-                            textAlign: TextAlign.center,
-                            style: GoogleFonts.inter(
-                              color: const Color(0xFFFBBF24),
-                              fontSize: 10.5,
-                            ),
                           ),
                         ],
                         if (_message != null) ...[
