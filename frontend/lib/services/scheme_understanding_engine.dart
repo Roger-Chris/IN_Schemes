@@ -479,10 +479,20 @@ class LocalSchemeUnderstandingEngine implements SchemeUnderstandingEngine {
       }
     }
     if (knowledgeMatch != null) {
-      final schemesByCode = {
-        for (final scheme in searchable)
-          scheme.schemeCode.toUpperCase(): scheme,
-      };
+      final schemesByCode = <String, Scheme>{};
+      for (final scheme in searchable) {
+        schemesByCode[scheme.schemeCode.toUpperCase()] = scheme;
+        schemesByCode[scheme.id.toUpperCase()] = scheme;
+        if (scheme.schemeCode.toUpperCase().startsWith('TN')) {
+          schemesByCode[scheme.schemeCode.toUpperCase().replaceFirst('TN', 'IN')] = scheme;
+        }
+        for (final token in scheme.searchKeywords.split(RegExp(r'\s+'))) {
+          final t = token.toUpperCase().trim();
+          if (t.startsWith('IN') || t.startsWith('TN') || t.startsWith('SCH')) {
+            schemesByCode[t] = scheme;
+          }
+        }
+      }
       for (
         var index = 0;
         index < knowledgeMatch.relatedSchemeCodes.length;

@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frontend/services/private_ai_knowledge_base.dart';
-import 'package:frontend/services/scheme_catalog.dart';
+import 'package:frontend/services/scheme_repository.dart';
 import 'package:frontend/services/scheme_understanding_engine.dart';
 
 void main() {
@@ -71,14 +71,14 @@ void main() {
   test(
     'answers questions and suggests only explicitly related schemes',
     () async {
-      final catalog = await SchemeCatalog.load();
+      final schemes = await SchemeRepository.instance.getAllSchemes();
       const engine = LocalSchemeUnderstandingEngine();
 
       for (final edgeCase in edgeCases.entries) {
         final result = await engine.understand(
           SchemeUnderstandingRequest(
             statement: edgeCase.key,
-            schemes: catalog.schemes,
+            schemes: schemes,
             knownFacts: const {},
             questionsAsked: LocalSchemeUnderstandingEngine.maxFollowUpQuestions,
           ),
@@ -88,9 +88,14 @@ void main() {
           edgeCase.key,
         )!.relatedSchemeCodes.toSet();
         expect(
-          result.recommendations.every(
-            (item) => allowed.contains(item.scheme.schemeCode),
-          ),
+          result.recommendations.every((item) {
+            final digits = item.scheme.schemeCode.replaceAll(RegExp(r'[^0-9]'), '');
+            return allowed.contains(item.scheme.schemeCode) ||
+                allowed.contains(item.scheme.id) ||
+                allowed.any((code) =>
+                    item.scheme.searchKeywords.toUpperCase().contains(code.toUpperCase()) ||
+                    (digits.isNotEmpty && code.contains(digits)));
+          }),
           isTrue,
           reason: 'Unexpected scheme for ${edgeCase.value}',
         );

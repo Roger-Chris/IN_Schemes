@@ -49,6 +49,7 @@ dependencies:
   confetti: ^0.8.0
   http: ^1.5.0
   crypto: ^3.0.7
+  archive: ^3.6.1
   llama_flutter_android: 0.2.6
 
 dev_dependencies:
@@ -74,7 +75,6 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/data/government_schemes.json
     - assets/images/Logo/Logo.png
     - assets/images/Logo/Logo icon.png
     - assets/images/Logo/compoanion bot.png
@@ -96,7 +96,6 @@ flutter:
     - assets/images/saarthi/sarathi.png
     - assets/images/supporting assets/support_agent.png
     - assets/images/supporting assets/user_avatar.png
-    - assets/data/government_schemes.json
     - assets/catalog/
 
 
