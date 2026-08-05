@@ -325,24 +325,6 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
     if (mounted) setState(() {});
   }
 
-  Future<void> _installEdgeAi() async {
-    final engine = _edgeSlmEngine;
-    if (engine == null ||
-        engine.snapshot.phase == EdgeSlmPhase.downloading ||
-        engine.snapshot.phase == EdgeSlmPhase.loading) {
-      return;
-    }
-    await _recognitionController.cancel();
-    if (!mounted) return;
-    _setListeningAnimations(false);
-    setState(() => _voicePhase = _VoiceAssistantPhase.processing);
-    await engine.prepare(downloadIfMissing: true);
-    if (!mounted) return;
-    setState(() {
-      _voicePhase = _VoiceAssistantPhase.ready;
-      _message = engine.snapshot.isReady ? null : engine.snapshot.message;
-    });
-  }
 
   void _handleVoiceAgentChanged() {
     if (!mounted || _voiceAgentController == null) return;
