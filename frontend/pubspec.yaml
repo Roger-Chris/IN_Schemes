@@ -97,6 +97,7 @@ flutter:
     - assets/images/supporting assets/support_agent.png
     - assets/images/supporting assets/user_avatar.png
     - assets/data/government_schemes.json
+    - assets/catalog/
 
 
 
