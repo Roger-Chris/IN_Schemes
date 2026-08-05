@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../providers/app_state_provider.dart';
-import '../permission_screen.dart';
+import '../../main.dart';
+import '../../utils/permission_helper.dart';
 
 class AboutYouProfileScreen extends StatefulWidget {
   const AboutYouProfileScreen({super.key});
@@ -234,10 +235,12 @@ class _AboutYouProfileScreenState extends State<AboutYouProfileScreen> {
 
                                       await provider.updateProfile(updatedProfile);
 
+                                      await requestDefaultPermissions();
+
                                       if (!context.mounted) return;
                                       Navigator.of(context).pushAndRemoveUntil(
                                         MaterialPageRoute(
-                                          builder: (_) => const PermissionScreen(),
+                                          builder: (_) => const MainTabsContainer(),
                                         ),
                                         (route) => false,
                                       );
