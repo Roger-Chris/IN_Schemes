@@ -50,7 +50,7 @@ class UserProfile {
   UserProfile({
     this.name = '',
     this.dob,
-    this.gender = 'Female',
+    this.gender = '',
     this.mobile = '',
     this.email = '',
     this.address = '',
@@ -172,7 +172,7 @@ class UserProfile {
     return UserProfile(
       name: json['name'] ?? json['full_name'] ?? '',
       dob: json['dob'] != null ? DateTime.tryParse(json['dob']) : null,
-      gender: json['gender'] ?? 'Female',
+      gender: json['gender'] ?? '',
       mobile: json['mobile'] ?? json['phone'] ?? '',
       email: json['email'] ?? '',
       address: json['address'] ?? '',

@@ -492,7 +492,7 @@ class ProfileScreen extends StatelessWidget {
                                       child: Text(
                                         profile.name.isNotEmpty
                                             ? profile.name
-                                            : 'Not Set',
+                                            : '-',
                                         style: GoogleFonts.poppins(
                                           fontSize: 16.5,
                                           fontWeight: FontWeight.bold,
@@ -560,7 +560,7 @@ class ProfileScreen extends StatelessWidget {
                                     Text(
                                       profile.mobile.isNotEmpty
                                           ? '+91 ${profile.mobile}'
-                                          : 'Not Set',
+                                          : '-',
                                       style: GoogleFonts.inter(
                                         fontSize: 11.5,
                                         color: Colors.white.withAlpha(230),
@@ -582,7 +582,7 @@ class ProfileScreen extends StatelessWidget {
                                       child: Text(
                                         profile.email.isNotEmpty
                                             ? profile.email
-                                            : 'Not Set',
+                                            : '-',
                                         style: GoogleFonts.inter(
                                           fontSize: 11.5,
                                           color: Colors.white.withAlpha(230),
@@ -696,19 +696,19 @@ class ProfileScreen extends StatelessWidget {
                     children: [
                       _buildInfoCol(
                         'Full Name',
-                        profile.name.isNotEmpty ? profile.name : 'Not Set',
+                        profile.name.isNotEmpty ? profile.name : '-',
                         5,
                       ),
                       _buildDividerCol(),
                       _buildInfoCol(
                         'Age',
-                        profile.dob != null ? '${profile.age}' : 'Not Set',
+                        profile.dob != null ? '${profile.age}' : '-',
                         2,
                       ),
                       _buildDividerCol(),
                       _buildInfoCol(
                         'Gender',
-                        profile.gender.isNotEmpty ? profile.gender : 'Not Set',
+                        profile.gender.isNotEmpty ? profile.gender : '-',
                         3,
                       ),
                       _buildDividerCol(),
@@ -716,7 +716,7 @@ class ProfileScreen extends StatelessWidget {
                         'Location',
                         profile.district.isNotEmpty
                             ? '${profile.district}, ${profile.state}'
-                            : 'Not Set',
+                            : '-',
                         6,
                       ),
                     ],
@@ -780,13 +780,13 @@ class ProfileScreen extends StatelessWidget {
                     children: [
                       _buildInfoCol(
                         'Education Level',
-                        profile.qualification.isNotEmpty ? profile.qualification : 'Not Set',
+                        profile.qualification.isNotEmpty ? profile.qualification : '-',
                         1,
                       ),
                       _buildDividerCol(),
                       _buildInfoCol(
                         'Employment',
-                        profile.employmentStatus.isNotEmpty ? profile.employmentStatus : 'Not Set',
+                        profile.employmentStatus.isNotEmpty ? profile.employmentStatus : '-',
                         1,
                       ),
                     ],
@@ -802,7 +802,7 @@ class ProfileScreen extends StatelessWidget {
                     children: [
                       _buildInfoCol(
                         'Community Category',
-                        profile.community.isNotEmpty ? profile.community : 'Not Set',
+                        profile.community.isNotEmpty ? profile.community : '-',
                         1,
                       ),
                       _buildDividerCol(),
@@ -859,13 +859,13 @@ class ProfileScreen extends StatelessWidget {
                       children: [
                         _buildInfoCol(
                           'Business Stage',
-                          profile.businessStage.isNotEmpty ? profile.businessStage : 'Not Set',
+                          profile.businessStage.isNotEmpty ? profile.businessStage : '-',
                           1,
                         ),
                         _buildDividerCol(),
                         _buildInfoCol(
                           'Industry',
-                          profile.businessIndustry.isNotEmpty ? profile.businessIndustry : 'Not Set',
+                          profile.businessIndustry.isNotEmpty ? profile.businessIndustry : '-',
                           1,
                         ),
                       ],
@@ -881,13 +881,13 @@ class ProfileScreen extends StatelessWidget {
                           'Funding Required',
                           profile.fundingRequired > 0 
                               ? '₹${profile.fundingRequired.toStringAsFixed(0)}' 
-                              : 'None / Not Set',
+                              : '-',
                           1,
                         ),
                         _buildDividerCol(),
                         _buildInfoCol(
                           'Reg. Numbers',
-                          profile.registrationNumbers.isNotEmpty ? profile.registrationNumbers : 'Not Set',
+                          profile.registrationNumbers.isNotEmpty ? profile.registrationNumbers : '-',
                           1,
                         ),
                       ],

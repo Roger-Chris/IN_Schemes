@@ -1741,9 +1741,12 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
         const SizedBox(height: 14),
-        IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+        SizedBox(
+          height: 170,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.symmetric(vertical: 2),
             children: [
               _buildMSMESupportCard(
                 context: context,
@@ -1754,7 +1757,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 iconColor: const Color(0xFF2E7D32),
                 themeColor: Colors.green,
               ),
-              const SizedBox(width: 12),
               _buildMSMESupportCard(
                 context: context,
                 id: 'finance',
@@ -1764,14 +1766,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 iconColor: const Color(0xFF1565C0),
                 themeColor: Colors.blue,
               ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 12),
-        IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
               _buildMSMESupportCard(
                 context: context,
                 id: 'tax_gst',
@@ -1781,7 +1775,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 iconColor: const Color(0xFFEF6C00),
                 themeColor: Colors.orange,
               ),
-              const SizedBox(width: 12),
               _buildMSMESupportCard(
                 context: context,
                 id: 'export',
@@ -1791,14 +1784,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 iconColor: const Color(0xFF6A1B9A),
                 themeColor: Colors.purple,
               ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 12),
-        IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
               _buildMSMESupportCard(
                 context: context,
                 id: 'treds',
@@ -1808,7 +1793,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 iconColor: const Color(0xFFC62828),
                 themeColor: Colors.red,
               ),
-              const SizedBox(width: 12),
               _buildMSMESupportCard(
                 context: context,
                 id: 'csr',
@@ -1818,14 +1802,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 iconColor: const Color(0xFF00695C),
                 themeColor: Colors.teal,
               ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 12),
-        IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
               _buildMSMESupportCard(
                 context: context,
                 id: 'govt',
@@ -1835,7 +1811,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 iconColor: const Color(0xFF0277BD),
                 themeColor: Colors.lightBlue,
               ),
-              const SizedBox(width: 12),
               _buildMSMESupportCard(
                 context: context,
                 id: 'institutions',
@@ -1861,81 +1836,83 @@ class _HomeScreenState extends State<HomeScreen> {
     required Color iconColor,
     required Color themeColor,
   }) {
-    return Expanded(
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
+    return Container(
+      width: 150,
+      margin: const EdgeInsets.only(right: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFF1F5F9), width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => MSMEModuleDetailsScreen(
+                  moduleId: id,
+                  title: title,
+                  description: subtitle,
+                  icon: icon,
+                  iconColor: iconColor,
+                  themeColor: themeColor,
+                ),
+              ),
+            );
+          },
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFFF1F5F9), width: 1.5),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.02),
-              blurRadius: 8,
-              offset: const Offset(0, 3),
-            ),
-          ],
-        ),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => MSMEModuleDetailsScreen(
-                    moduleId: id,
-                    title: title,
-                    description: subtitle,
-                    icon: icon,
-                    iconColor: iconColor,
-                    themeColor: themeColor,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  width: 46,
+                  height: 46,
+                  decoration: BoxDecoration(
+                    color: themeColor.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    icon,
+                    color: iconColor,
+                    size: 22,
                   ),
                 ),
-              );
-            },
-            borderRadius: BorderRadius.circular(16),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    width: 46,
-                    height: 46,
-                    decoration: BoxDecoration(
-                      color: themeColor.withValues(alpha: 0.1),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      icon,
-                      color: iconColor,
-                      size: 22,
-                    ),
+                const SizedBox(height: 8),
+                Text(
+                  title,
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.poppins(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF0F172A),
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    title,
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.poppins(
-                      fontSize: 12.5,
-                      fontWeight: FontWeight.bold,
-                      color: const Color(0xFF0F172A),
-                    ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  subtitle,
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.inter(
+                    fontSize: 10.0,
+                    color: const Color(0xFF64748B),
+                    height: 1.3,
+                    fontWeight: FontWeight.w500,
                   ),
-                  const SizedBox(height: 3),
-                  Text(
-                    subtitle,
-                    textAlign: TextAlign.center,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.inter(
-                      fontSize: 10.0,
-                      color: const Color(0xFF64748B),
-                      height: 1.3,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),

@@ -3,9 +3,10 @@ import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../providers/app_state_provider.dart';
 import '../../utils/constants.dart';
-import '../permission_screen.dart';
+import '../../main.dart';
+import '../../utils/permission_helper.dart';
 import 'eligibility_results_screen.dart';
-import '../companion_mode/saarthi_profile_setup_screen.dart';
+
 
 class ProfileSetupScreen extends StatefulWidget {
   final bool fromEligibilityCheck;
@@ -47,7 +48,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   final _longitudeController = TextEditingController();
 
   DateTime? _selectedDob;
-  String? _selectedGender = 'Female';
+  String? _selectedGender;
   String? _selectedState = 'Tamil Nadu';
   String? _selectedDistrict = 'Chennai';
   String? _selectedCity = 'Chennai';
@@ -428,7 +429,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
           ? provider.profile.mobile
           : provider.mobileNumber,
       dob: _selectedDob,
-      gender: _selectedGender ?? 'Female',
+      gender: _selectedGender ?? '',
       house: _houseController.text.trim(),
       street: _streetController.text.trim(),
       area: _areaController.text.trim(),
@@ -469,12 +470,15 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
           ),
         );
       } else {
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(
-            builder: (_) => const PermissionScreen(),
-          ),
-          (route) => false,
-        );
+        await requestDefaultPermissions();
+        if (mounted) {
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(
+              builder: (_) => const MainTabsContainer(),
+            ),
+            (route) => false,
+          );
+        }
       }
     }
   }
@@ -544,13 +548,6 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<AppProvider>(context);
-    final isCompanion = provider.navigationMode == 'companion';
-
-    if (isCompanion) {
-      return SaarthiProfileSetupScreen(
-        fromEligibilityCheck: widget.fromEligibilityCheck,
-      );
-    }
 
     final size = MediaQuery.of(context).size;
 
