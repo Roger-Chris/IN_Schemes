@@ -160,6 +160,13 @@ class LocalVoiceAgentController extends ChangeNotifier
     } else {
       await session.start(value);
     }
+    final reply = session.state.reply?.displayText ?? '';
+    if (reply.isNotEmpty) {
+      _setState(_state.copyWith(outputTranscript: reply));
+      _events.add(
+        VoiceAgentEvent(VoiceAgentEventType.outputTranscriptDone, text: reply),
+      );
+    }
   }
 
   @override

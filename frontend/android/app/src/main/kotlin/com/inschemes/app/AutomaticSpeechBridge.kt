@@ -155,7 +155,7 @@ class AutomaticSpeechBridge(
             putExtra(RecognizerIntent.EXTRA_ENABLE_LANGUAGE_DETECTION, true)
             putExtra(
                 RecognizerIntent.EXTRA_ENABLE_LANGUAGE_SWITCH,
-                RecognizerIntent.LANGUAGE_SWITCH_QUICK_RESPONSE,
+                RecognizerIntent.LANGUAGE_SWITCH_BALANCED,
             )
             putStringArrayListExtra(
                 RecognizerIntent.EXTRA_LANGUAGE_DETECTION_ALLOWED_LANGUAGES,
@@ -243,7 +243,8 @@ class AutomaticSpeechBridge(
         private val sessionId: Int,
         initialLanguage: String,
     ) : RecognitionListener {
-        private var detectedLanguage: String? = initialLanguage
+        private var detectedLanguage: String? = null
+        private val initialLanguage = initialLanguage
 
         override fun onReadyForSpeech(params: Bundle?) {
             emit(sessionId, "status", mapOf("status" to "listening"))
@@ -313,15 +314,31 @@ class AutomaticSpeechBridge(
         }
 
         private fun selectTranscript(transcripts: List<String>): String {
-            if (detectedLanguage?.startsWith("ta", ignoreCase = true) == true) {
-                // Some recognizers retain an English-biased first hypothesis
-                // after switching. Prefer an available Tamil-script candidate.
-                transcripts.firstOrNull { candidate ->
-                    candidate.any { character -> character.code in 0x0B80..0x0BFF }
-                }?.let { return it }
+            val tamilCandidate = transcripts.firstOrNull(::containsTamilScript)
+            if (tamilCandidate != null &&
+                (detectedLanguage == null ||
+                    detectedLanguage?.startsWith("ta", ignoreCase = true) == true)
+            ) {
+                if (detectedLanguage == null) {
+                    detectedLanguage = "ta-IN"
+                    emit(sessionId, "language", mapOf("language" to "ta-IN"))
+                }
+                return tamilCandidate
             }
-            return transcripts.firstOrNull().orEmpty()
+            val selected = transcripts.firstOrNull().orEmpty()
+            if (detectedLanguage == null && selected.isNotEmpty()) {
+                detectedLanguage = if (containsTamilScript(selected)) "ta-IN" else initialLanguage
+                emit(
+                    sessionId,
+                    "language",
+                    mapOf("language" to detectedLanguage),
+                )
+            }
+            return selected
         }
+
+        private fun containsTamilScript(value: String): Boolean =
+            value.any { character -> character.code in 0x0B80..0x0BFF }
     }
 
     private fun errorCode(error: Int): String = when (error) {

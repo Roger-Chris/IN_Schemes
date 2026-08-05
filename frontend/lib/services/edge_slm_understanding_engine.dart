@@ -247,6 +247,7 @@ Parse an Indian government-scheme request in English, Tamil, Tanglish, or mixed 
         recommendations: result.recommendations,
         excludedUncertainCount: result.excludedUncertainCount,
         elapsed: stopwatch.elapsed,
+        reply: result.reply,
         followUpQuestion: result.followUpQuestion,
         noConfidentMatch: result.noConfidentMatch,
       );
