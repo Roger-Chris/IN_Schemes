@@ -804,6 +804,11 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
   }
 
   String _getStateMapAsset(String stateName) {
+    final rawPath = _getStateMapAssetRaw(stateName);
+    return rawPath.replaceAll('assets/images/States and UTs/', 'assets/images/States assets/');
+  }
+
+  String _getStateMapAssetRaw(String stateName) {
     switch (stateName.toLowerCase().trim()) {
       case 'tamil nadu':
         return 'assets/images/States and UTs/States/Tamil nadu.png';

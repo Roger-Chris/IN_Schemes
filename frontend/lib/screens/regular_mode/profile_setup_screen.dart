@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -5,6 +6,7 @@ import '../../providers/app_state_provider.dart';
 import '../../utils/constants.dart';
 import '../../main.dart';
 import '../../utils/permission_helper.dart';
+import 'package:geolocator/geolocator.dart';
 import 'eligibility_results_screen.dart';
 
 
@@ -36,6 +38,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
 
   // Controllers
   final _nameController = TextEditingController();
+  final _phoneController = TextEditingController();
   final _houseController = TextEditingController();
   final _streetController = TextEditingController();
   final _areaController = TextEditingController();
@@ -137,19 +140,93 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     ),
   ];
 
+  Timer? _syncDebounce;
+  bool _isInitializing = false;
+
+  void _onFieldChanged() {
+    if (_isInitializing) return;
+    _syncDebounce?.cancel();
+    _syncDebounce = Timer(const Duration(milliseconds: 1000), () {
+      if (mounted) {
+        _syncProfileRealTime();
+      }
+    });
+  }
+
+  void _syncProfileRealTime() {
+    if (_isInitializing) return;
+    final provider = Provider.of<AppProvider>(context, listen: false);
+    final income = _mapRangeToIncome(_selectedIncomeRange ?? 'Under ₹1.5 Lakhs');
+
+    final phoneInput = _phoneController.text.trim();
+    final mobileToSave = provider.mobileNumber.isNotEmpty
+        ? provider.mobileNumber
+        : (phoneInput.isNotEmpty
+            ? (phoneInput.startsWith('+91') ? phoneInput : '+91 $phoneInput')
+            : '');
+
+    final updatedProfile = provider.profile.copyWith(
+      name: _nameController.text.trim(),
+      mobile: mobileToSave,
+      dob: _selectedDob,
+      gender: _selectedGender ?? '',
+      house: _houseController.text.trim(),
+      street: _streetController.text.trim(),
+      area: _areaController.text.trim(),
+      village: _villageController.text.trim(),
+      address: '${_houseController.text.trim()}, ${_streetController.text.trim()}, ${_areaController.text.trim()}',
+      state: _selectedState ?? 'Tamil Nadu',
+      district: _selectedDistrict ?? '',
+      city: _selectedCity ?? '',
+      pinCode: _pinController.text.trim(),
+      community: _selectedCommunity,
+      employmentStatus: _selectedEmployment,
+      annualIncome: income,
+      veteran: _isVeteran,
+      disability: _hasDisability ? _disabilityController.text.trim() : 'None',
+      qualification: _selectedQualification,
+      existingBusiness: _existingBusiness,
+      businessStage: _selectedBusinessStage,
+      businessIndustry: _selectedBusinessIndustry,
+      fundingRequired: double.tryParse(_fundingController.text.trim()) ?? 0.0,
+      registrationNumbers: _regNumbersController.text.trim(),
+    );
+
+    provider.updateProfile(updatedProfile);
+  }
+
   @override
   void initState() {
     super.initState();
+    _nameController.addListener(_onFieldChanged);
+    _phoneController.addListener(_onFieldChanged);
+    _houseController.addListener(_onFieldChanged);
+    _streetController.addListener(_onFieldChanged);
+    _areaController.addListener(_onFieldChanged);
+    _villageController.addListener(_onFieldChanged);
+    _pinController.addListener(_onFieldChanged);
+    _disabilityController.addListener(_onFieldChanged);
+    _fundingController.addListener(_onFieldChanged);
+    _regNumbersController.addListener(_onFieldChanged);
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadProfileData();
     });
   }
 
   void _loadProfileData() {
+    _isInitializing = true;
     final provider = Provider.of<AppProvider>(context, listen: false);
     final profile = provider.profile;
 
     _nameController.text = profile.name;
+    String mobileText = profile.mobile;
+    if (mobileText.startsWith('+91')) {
+      mobileText = mobileText.substring(3).trim();
+    } else if (mobileText.startsWith('91') && mobileText.length > 10) {
+      mobileText = mobileText.substring(2).trim();
+    }
+    _phoneController.text = mobileText;
     _houseController.text = profile.house;
     _streetController.text = profile.street;
     _areaController.text = profile.area;
@@ -202,11 +279,28 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
 
       _selectedIncomeRange = _mapIncomeToRange(profile.annualIncome);
     });
+
+    Future.microtask(() {
+      _isInitializing = false;
+    });
   }
 
   @override
   void dispose() {
+    _syncDebounce?.cancel();
+    _nameController.removeListener(_onFieldChanged);
+    _phoneController.removeListener(_onFieldChanged);
+    _houseController.removeListener(_onFieldChanged);
+    _streetController.removeListener(_onFieldChanged);
+    _areaController.removeListener(_onFieldChanged);
+    _villageController.removeListener(_onFieldChanged);
+    _pinController.removeListener(_onFieldChanged);
+    _disabilityController.removeListener(_onFieldChanged);
+    _fundingController.removeListener(_onFieldChanged);
+    _regNumbersController.removeListener(_onFieldChanged);
+
     _nameController.dispose();
+    _phoneController.dispose();
     _houseController.dispose();
     _streetController.dispose();
     _areaController.dispose();
@@ -269,76 +363,73 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
       setState(() {
         _selectedDob = picked;
       });
+      _syncProfileRealTime();
     }
   }
 
   Future<void> _useCurrentLocation() async {
     final provider = Provider.of<AppProvider>(context, listen: false);
-    final hasUserEnteredText = _houseController.text.isNotEmpty ||
-        _streetController.text.isNotEmpty ||
-        _areaController.text.isNotEmpty ||
-        _villageController.text.isNotEmpty ||
-        _pinController.text.isNotEmpty ||
-        (_selectedState != null && _selectedState != 'Tamil Nadu') ||
-        (_selectedDistrict != null && _selectedDistrict != 'Chennai') ||
-        (_selectedCity != null && _selectedCity != 'Chennai');
-
-    if (hasUserEnteredText) {
-      final shouldOverwrite = await showDialog<bool>(
-        context: context,
-        builder: (context) => AlertDialog(
-          backgroundColor: AppConstants.surfaceColor,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-            side: const BorderSide(color: AppConstants.cardBorderColor),
-          ),
-          title: Text(
-            'Overwrite details?',
-            style: GoogleFonts.poppins(
-              fontWeight: FontWeight.bold,
-              color: const Color(0xFF0F172A),
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      if (mounted) {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => AlertDialog(
+            backgroundColor: AppConstants.surfaceColor,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+              side: const BorderSide(color: AppConstants.cardBorderColor),
             ),
-          ),
-          content: Text(
-            'You have already entered some address details. Do you want to overwrite them with your current location?',
-            style: GoogleFonts.inter(
-              color: const Color(0xFF64748B),
-              fontSize: 13,
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: Text(
-                'Cancel',
-                style: GoogleFonts.inter(
-                  color: const Color(0xFF64748B),
-                  fontWeight: FontWeight.bold,
-                ),
+            title: Text(
+              'Location Services Off',
+              style: GoogleFonts.poppins(
+                fontWeight: FontWeight.bold,
+                color: const Color(0xFF0F172A),
               ),
             ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF2563EB),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              onPressed: () => Navigator.pop(context, true),
-              child: Text(
-                'Overwrite',
-                style: GoogleFonts.inter(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
+            content: Text(
+              'Location services are turned off. Please turn them on in your system settings to fetch your current location.',
+              style: GoogleFonts.inter(
+                color: const Color(0xFF64748B),
+                fontSize: 13,
               ),
             ),
-          ],
-        ),
-      );
-      if (shouldOverwrite != true) {
-        return;
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(
+                  'Cancel',
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF64748B),
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF2563EB),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                onPressed: () async {
+                  Navigator.pop(context);
+                  await Geolocator.openLocationSettings();
+                },
+                child: Text(
+                  'Turn On',
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
       }
+      return;
     }
 
     setState(() {
@@ -349,10 +440,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
       final locData = await provider.fetchLocationAndPopulate();
 
       if (locData != null) {
-        _houseController.text = locData['house'] ?? '';
-        _streetController.text = locData['street'] ?? '';
         _areaController.text = locData['area'] ?? '';
-        _villageController.text = locData['village'] ?? '';
         _pinController.text = locData['pinCode'] ?? '';
         _latitudeController.text = (locData['latitude'] ?? '').toString();
         _longitudeController.text = (locData['longitude'] ?? '').toString();
@@ -382,6 +470,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
             }
           }
         });
+        _syncProfileRealTime();
 
         if (mounted) {
           final isFallback = locData['isFallback'] == true;
@@ -416,6 +505,16 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   }
 
   void _saveProfile() async {
+    if (_selectedDob == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please select your Date of Birth'),
+          backgroundColor: AppConstants.errorColor,
+        ),
+      );
+      return;
+    }
+
     if (!_formKey.currentState!.validate()) {
       return;
     }
@@ -423,11 +522,16 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     final provider = Provider.of<AppProvider>(context, listen: false);
     final income = _mapRangeToIncome(_selectedIncomeRange ?? 'Under ₹1.5 Lakhs');
 
+    final phoneInput = _phoneController.text.trim();
+    final mobileToSave = provider.mobileNumber.isNotEmpty
+        ? provider.mobileNumber
+        : (phoneInput.isNotEmpty
+            ? (phoneInput.startsWith('+91') ? phoneInput : '+91 $phoneInput')
+            : '');
+
     final updatedProfile = provider.profile.copyWith(
       name: _nameController.text.trim(),
-      mobile: provider.profile.mobile.isNotEmpty
-          ? provider.profile.mobile
-          : provider.mobileNumber,
+      mobile: mobileToSave,
       dob: _selectedDob,
       gender: _selectedGender ?? '',
       house: _houseController.text.trim(),
@@ -470,7 +574,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
           ),
         );
       } else {
-        await requestDefaultPermissions();
+        await requestDefaultPermissions(context);
         if (mounted) {
           Navigator.of(context).pushAndRemoveUntil(
             MaterialPageRoute(
@@ -775,13 +879,17 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                                         initialValue: _selectedGender,
                                         style: GoogleFonts.inter(fontSize: 14, color: const Color(0xFF1E293B)),
                                         decoration: _getInputDecoration('Select gender'),
+                                        validator: (val) => val == null || val.isEmpty ? 'Required' : null,
                                         items: const [
                                           DropdownMenuItem(value: 'Female', child: Text('Female')),
                                           DropdownMenuItem(value: 'Male', child: Text('Male')),
                                           DropdownMenuItem(value: 'Transgender', child: Text('Transgender')),
                                         ],
                                         onChanged: (val) {
-                                          if (val != null) setState(() => _selectedGender = val);
+                                          if (val != null) {
+                                            setState(() => _selectedGender = val);
+                                            _syncProfileRealTime();
+                                          }
                                         },
                                       ),
                                     ],
@@ -795,32 +903,56 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                               children: [
                                 _buildInputLabel('Mobile Number'),
                                 const SizedBox(height: 6),
-                                Container(
-                                  width: double.infinity,
-                                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFF1F5F9),
-                                    borderRadius: BorderRadius.circular(10),
-                                    border: Border.all(color: const Color(0xFFE2E8F0)),
-                                  ),
-                                  child: Text(
-                                    provider.profile.mobile.isNotEmpty
-                                        ? (provider.profile.mobile.startsWith('+91')
-                                            ? provider.profile.mobile
-                                            : '+91 ${provider.profile.mobile}')
-                                        : (provider.mobileNumber.isNotEmpty
-                                            ? (provider.mobileNumber.startsWith('+91')
-                                                ? provider.mobileNumber
-                                                : '+91 ${provider.mobileNumber}')
-                                            : '+91 98765 43210'),
-                                    style: GoogleFonts.inter(
-                                      fontSize: 14,
-                                      color: const Color(0xFF64748B),
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
+                                provider.mobileNumber.isNotEmpty
+                                    ? Container(
+                                        width: double.infinity,
+                                        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFFF1F5F9),
+                                          borderRadius: BorderRadius.circular(10),
+                                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                                        ),
+                                        child: Text(
+                                          provider.mobileNumber.startsWith('+91')
+                                              ? provider.mobileNumber
+                                              : '+91 ${provider.mobileNumber}',
+                                          style: GoogleFonts.inter(
+                                            fontSize: 14,
+                                            color: const Color(0xFF64748B),
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      )
+                                    : TextFormField(
+                                        controller: _phoneController,
+                                        keyboardType: TextInputType.phone,
+                                        maxLength: 10,
+                                        style: GoogleFonts.inter(
+                                          fontSize: 14,
+                                          color: const Color(0xFF0F172A),
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                        decoration: _getInputDecoration('Enter 10-digit mobile number').copyWith(
+                                          prefixText: '+91 ',
+                                          prefixStyle: GoogleFonts.inter(
+                                            fontSize: 14,
+                                            color: const Color(0xFF0F172A),
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                          counterText: '',
+                                        ),
+                                        validator: (val) {
+                                          if (val == null || val.trim().isEmpty) {
+                                            return 'Mobile number is required';
+                                          }
+                                          final cleanVal = val.trim();
+                                          if (cleanVal.length != 10 || double.tryParse(cleanVal) == null) {
+                                            return 'Please enter a valid 10-digit mobile number';
+                                          }
+                                          return null;
+                                        },
+                                      ),
                               ],
                             ),
                             const SizedBox(height: 24),
@@ -866,6 +998,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                                         controller: _houseController,
                                         style: GoogleFonts.inter(fontSize: 14, color: const Color(0xFF1E293B)),
                                         decoration: _getInputDecoration('E.g. 42-A'),
+                                        validator: (val) => val == null || val.trim().isEmpty ? 'Required' : null,
                                       ),
                                     ],
                                   ),
@@ -881,6 +1014,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                                         controller: _streetController,
                                         style: GoogleFonts.inter(fontSize: 14, color: const Color(0xFF1E293B)),
                                         decoration: _getInputDecoration('E.g. Park Street'),
+                                        validator: (val) => val == null || val.trim().isEmpty ? 'Required' : null,
                                       ),
                                     ],
                                   ),
@@ -900,6 +1034,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                                         controller: _areaController,
                                         style: GoogleFonts.inter(fontSize: 14, color: const Color(0xFF1E293B)),
                                         decoration: _getInputDecoration('E.g. T. Nagar'),
+                                        validator: (val) => val == null || val.trim().isEmpty ? 'Required' : null,
                                       ),
                                     ],
                                   ),
@@ -915,6 +1050,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                                         controller: _villageController,
                                         style: GoogleFonts.inter(fontSize: 14, color: const Color(0xFF1E293B)),
                                         decoration: _getInputDecoration('Enter village'),
+                                        validator: (val) => val == null || val.trim().isEmpty ? 'Required' : null,
                                       ),
                                     ],
                                   ),
@@ -936,6 +1072,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                                         initialValue: _selectedState,
                                         style: GoogleFonts.inter(fontSize: 14, color: const Color(0xFF1E293B)),
                                         decoration: _getInputDecoration('Select state'),
+                                        validator: (val) => val == null || val.isEmpty ? 'Required' : null,
                                         items: _districtsByState.keys.map((s) {
                                           return DropdownMenuItem(value: s, child: Text(s));
                                         }).toList(),
@@ -946,6 +1083,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                                               _selectedDistrict = _districtsByState[val]!.first;
                                               _selectedCity = _districtsByState[val]!.first;
                                             });
+                                            _syncProfileRealTime();
                                           }
                                         },
                                       ),
@@ -965,6 +1103,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                                         initialValue: _selectedDistrict,
                                         style: GoogleFonts.inter(fontSize: 14, color: const Color(0xFF1E293B)),
                                         decoration: _getInputDecoration('Select district'),
+                                        validator: (val) => val == null || val.isEmpty ? 'Required' : null,
                                         items: (_districtsByState[_selectedState] ?? []).map((d) {
                                           return DropdownMenuItem(value: d, child: Text(d));
                                         }).toList(),
@@ -974,6 +1113,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                                               _selectedDistrict = val;
                                               _selectedCity = val;
                                             });
+                                            _syncProfileRealTime();
                                           }
                                         },
                                       ),
@@ -997,11 +1137,15 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                                         initialValue: _selectedCity,
                                         style: GoogleFonts.inter(fontSize: 14, color: const Color(0xFF1E293B)),
                                         decoration: _getInputDecoration('Select city'),
+                                        validator: (val) => val == null || val.isEmpty ? 'Required' : null,
                                         items: (_districtsByState[_selectedState] ?? []).map((c) {
                                           return DropdownMenuItem(value: c, child: Text(c));
                                         }).toList(),
                                         onChanged: (val) {
-                                          if (val != null) setState(() => _selectedCity = val);
+                                          if (val != null) {
+                                            setState(() => _selectedCity = val);
+                                            _syncProfileRealTime();
+                                          }
                                         },
                                       ),
                                     ],
@@ -1045,11 +1189,15 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                               initialValue: _selectedCommunity,
                               style: GoogleFonts.inter(fontSize: 14, color: const Color(0xFF1E293B)),
                               decoration: _getInputDecoration('Select category'),
+                              validator: (val) => val == null || val.isEmpty ? 'Required' : null,
                               items: _communityOptions.map((opt) {
                                 return DropdownMenuItem(value: opt, child: Text(opt));
                               }).toList(),
                               onChanged: (val) {
-                                if (val != null) setState(() => _selectedCommunity = val);
+                                if (val != null) {
+                                  setState(() => _selectedCommunity = val);
+                                  _syncProfileRealTime();
+                                }
                               },
                             ),
                             const SizedBox(height: 16),
@@ -1062,7 +1210,10 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                                     title: Text('Veteran Status', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600)),
                                     value: _isVeteran,
                                     onChanged: (val) {
-                                      if (val != null) setState(() => _isVeteran = val);
+                                      if (val != null) {
+                                        setState(() => _isVeteran = val);
+                                        _syncProfileRealTime();
+                                      }
                                     },
                                     controlAffinity: ListTileControlAffinity.leading,
                                   ),
@@ -1078,6 +1229,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                                           _hasDisability = val;
                                           if (!val) _disabilityController.clear();
                                         });
+                                        _syncProfileRealTime();
                                       }
                                     },
                                     controlAffinity: ListTileControlAffinity.leading,
@@ -1093,6 +1245,12 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                                 controller: _disabilityController,
                                 style: GoogleFonts.inter(fontSize: 14, color: const Color(0xFF1E293B)),
                                 decoration: _getInputDecoration('Enter details (e.g. Visual 40%)'),
+                                validator: (val) {
+                                  if (_hasDisability && (val == null || val.trim().isEmpty)) {
+                                    return 'Required when Disability is checked';
+                                  }
+                                  return null;
+                                },
                               ),
                             ],
                             const SizedBox(height: 24),
@@ -1115,6 +1273,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                                         initialValue: _selectedQualification,
                                         style: GoogleFonts.inter(fontSize: 14, color: const Color(0xFF1E293B)),
                                         decoration: _getInputDecoration('Select qualification'),
+                                        validator: (val) => val == null || val.isEmpty ? 'Required' : null,
                                         items: const [
                                           DropdownMenuItem(value: 'School', child: Text('School')),
                                           DropdownMenuItem(value: 'Diploma', child: Text('Diploma')),
@@ -1123,7 +1282,10 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                                           DropdownMenuItem(value: 'Ph.D.', child: Text('Ph.D.')),
                                         ],
                                         onChanged: (val) {
-                                          if (val != null) setState(() => _selectedQualification = val);
+                                          if (val != null) {
+                                            setState(() => _selectedQualification = val);
+                                            _syncProfileRealTime();
+                                          }
                                         },
                                       ),
                                     ],
@@ -1141,6 +1303,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                                         initialValue: _selectedEmployment,
                                         style: GoogleFonts.inter(fontSize: 14, color: const Color(0xFF1E293B)),
                                         decoration: _getInputDecoration('Select employment'),
+                                        validator: (val) => val == null || val.isEmpty ? 'Required' : null,
                                         items: _employmentOptions.map((opt) {
                                           return DropdownMenuItem<String>(
                                             value: opt.title,
@@ -1148,7 +1311,10 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                                           );
                                         }).toList(),
                                         onChanged: (val) {
-                                          if (val != null) setState(() => _selectedEmployment = val);
+                                          if (val != null) {
+                                            setState(() => _selectedEmployment = val);
+                                            _syncProfileRealTime();
+                                          }
                                         },
                                       ),
                                     ],
@@ -1169,6 +1335,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                               value: _existingBusiness,
                               onChanged: (val) {
                                 setState(() => _existingBusiness = val);
+                                _syncProfileRealTime();
                               },
                               activeThumbColor: const Color(0xFF2563EB),
                             ),
@@ -1193,6 +1360,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                                                     initialValue: _selectedBusinessStage,
                                                     style: GoogleFonts.inter(fontSize: 14, color: const Color(0xFF1E293B)),
                                                     decoration: _getInputDecoration('Select stage'),
+                                                    validator: (val) => _existingBusiness && (val == null || val.isEmpty) ? 'Required' : null,
                                                     items: const [
                                                       DropdownMenuItem(value: 'Idea', child: Text('Idea')),
                                                       DropdownMenuItem(value: 'Prototype', child: Text('Prototype')),
@@ -1201,7 +1369,10 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                                                       DropdownMenuItem(value: 'Expansion', child: Text('Expansion')),
                                                     ],
                                                     onChanged: (val) {
-                                                      if (val != null) setState(() => _selectedBusinessStage = val);
+                                                      if (val != null) {
+                                                        setState(() => _selectedBusinessStage = val);
+                                                        _syncProfileRealTime();
+                                                      }
                                                     },
                                                   ),
                                                 ],
@@ -1219,6 +1390,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                                                     initialValue: _selectedBusinessIndustry,
                                                     style: GoogleFonts.inter(fontSize: 14, color: const Color(0xFF1E293B)),
                                                     decoration: _getInputDecoration('Select industry'),
+                                                    validator: (val) => _existingBusiness && (val == null || val.isEmpty) ? 'Required' : null,
                                                     items: const [
                                                       DropdownMenuItem(value: 'Technology', child: Text('Technology')),
                                                       DropdownMenuItem(value: 'Agriculture', child: Text('Agriculture')),
@@ -1227,7 +1399,10 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                                                       DropdownMenuItem(value: 'Retail / Services', child: Text('Retail / Services')),
                                                     ],
                                                     onChanged: (val) {
-                                                      if (val != null) setState(() => _selectedBusinessIndustry = val);
+                                                      if (val != null) {
+                                                        setState(() => _selectedBusinessIndustry = val);
+                                                        _syncProfileRealTime();
+                                                      }
                                                     },
                                                   ),
                                                 ],
@@ -1246,6 +1421,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                                               keyboardType: TextInputType.number,
                                               style: GoogleFonts.inter(fontSize: 14, color: const Color(0xFF1E293B)),
                                               decoration: _getInputDecoration('Enter funding required'),
+                                              validator: (val) => _existingBusiness && (val == null || val.trim().isEmpty) ? 'Required' : null,
                                             ),
                                           ],
                                         ),
@@ -1260,6 +1436,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                                               initialValue: _selectedIncomeRange,
                                               style: GoogleFonts.inter(fontSize: 13.5, color: const Color(0xFF1E293B)),
                                               decoration: _getInputDecoration('Select income range'),
+                                              validator: (val) => _existingBusiness && (val == null || val.isEmpty) ? 'Required' : null,
                                               items: const [
                                                 DropdownMenuItem(value: 'Under ₹1.5 Lakhs', child: Text('Below ₹1.5 Lakh')),
                                                 DropdownMenuItem(value: '₹1.5 Lakhs - ₹3 Lakhs', child: Text('₹1.5 Lakh - ₹3 Lakh')),
@@ -1268,7 +1445,10 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                                                 DropdownMenuItem(value: 'Above ₹8 Lakhs', child: Text('Above ₹8 Lakh')),
                                               ],
                                               onChanged: (val) {
-                                                if (val != null) setState(() => _selectedIncomeRange = val);
+                                                if (val != null) {
+                                                  setState(() => _selectedIncomeRange = val);
+                                                  _syncProfileRealTime();
+                                                }
                                               },
                                             ),
                                           ],
@@ -1283,6 +1463,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                                               controller: _regNumbersController,
                                               style: GoogleFonts.inter(fontSize: 14, color: const Color(0xFF1E293B)),
                                               decoration: _getInputDecoration('E.g. GSTIN / UDYAM Reg No.'),
+                                              validator: (val) => _existingBusiness && (val == null || val.trim().isEmpty) ? 'Required' : null,
                                             ),
                                           ],
                                         ),
