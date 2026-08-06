@@ -493,7 +493,9 @@ class AppProvider with ChangeNotifier, WidgetsBindingObserver {
     notifyListeners();
 
     try {
-      _allSchemes = await SchemeRepository.instance.getAllSchemes();
+      _allSchemes = await SchemeRepository.instance.getAllSchemes(
+        langCode: _selectedLanguage,
+      );
       _recommendedSchemes = RecommendationEngine.getRecommendations(
         _profile,
         _allSchemes,
@@ -679,6 +681,7 @@ class AppProvider with ChangeNotifier, WidgetsBindingObserver {
   void changeLanguage(String lang) async {
     _selectedLanguage = lang;
     _profile = _profile.copyWith(language: lang, updatedAt: DateTime.now());
+    await loadSchemes(forceRefresh: true);
     notifyListeners();
     await SessionCacheService.instance.saveLanguage(lang);
     await _saveProfile();
