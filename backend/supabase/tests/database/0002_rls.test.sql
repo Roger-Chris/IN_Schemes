@@ -112,7 +112,7 @@ select throws_ok(
 );
 
 select lives_ok(
-  $$select id from catalog.scheme limit 1$$,
+  $$select id from public.schemes limit 1$$,
   'the administration migration preserves anonymous scheme discovery'
 );
 reset role;
