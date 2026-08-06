@@ -50,6 +50,7 @@ dependencies:
   http: ^1.5.0
   crypto: ^3.0.7
   livekit_client: ^2.8.0
+  archive: ^3.6.1
   llama_flutter_android: 0.2.6
 
 dev_dependencies:
@@ -75,7 +76,6 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/data/government_schemes.json
     - assets/images/Logo/Logo.png
     - assets/images/Logo/Logo icon.png
     - assets/images/Logo/compoanion bot.png
@@ -92,12 +92,12 @@ flutter:
     - assets/images/Background/Home_screen_bg.webp
     - assets/images/Background/Login_bg.webp
     - assets/images/Background/onboarding_bg.png
-    - assets/images/States and UTs/States/
-    - assets/images/States and UTs/States emblem/
+    - assets/images/States assets/States/
+    - assets/images/States assets/State Emblem/
     - assets/images/saarthi/sarathi.png
     - assets/images/supporting assets/support_agent.png
     - assets/images/supporting assets/user_avatar.png
-    - assets/data/government_schemes.json
+    - assets/catalog/
 
 
 

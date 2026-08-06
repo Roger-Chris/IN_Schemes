@@ -3,7 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'companion_mode/saarthi_welcome_screen.dart';
 import 'regular_mode/language_selection_screen.dart';
-import 'regular_mode/basic_profile_screen.dart';
+import 'regular_mode/profile_setup_screen.dart';
 import '../providers/app_state_provider.dart';
 import '../main.dart';
 
@@ -49,181 +49,191 @@ class _NavigationModeScreenState extends State<NavigationModeScreen> {
             ),
           ),
 
-          // 2. Foreground Layer
+          // 2. Foreground Layer (Responsive scroll layout)
           Positioned.fill(
             child: SafeArea(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // Back Button (Top Left)
-                  Align(
-                    alignment: Alignment.topLeft,
-                    child: Padding(
-                      padding: const EdgeInsets.only(left: 12.0, top: 8.0),
-                      child: IconButton(
-                        icon: const Icon(Icons.arrow_back, color: kSlate800, size: 24),
-                        onPressed: () {
-                          Navigator.of(context).pushReplacement(
-                            MaterialPageRoute(
-                              builder: (_) => const LanguageSelectionScreen(),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  return SingleChildScrollView(
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        minHeight: constraints.maxHeight,
+                      ),
+                      child: IntrinsicHeight(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            // Back Button (Top Left)
+                            Align(
+                              alignment: Alignment.topLeft,
+                              child: Padding(
+                                padding: const EdgeInsets.only(left: 12.0, top: 8.0),
+                                child: IconButton(
+                                  icon: const Icon(Icons.arrow_back, color: kSlate800, size: 24),
+                                  onPressed: () {
+                                    Navigator.of(context).pushReplacement(
+                                      MaterialPageRoute(
+                                        builder: (_) => const LanguageSelectionScreen(),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
                             ),
-                          );
-                        },
-                      ),
-                    ),
-                  ),
 
-                  // Middle Content (Flexibly fits the remaining height, strictly no scrolling)
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: kPaddingSide),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween, // Tighter distribution
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          // App Logo (Maintained at height 80 as in language selection screen)
-                          Image.asset(
-                            'assets/images/Logo/Logo.png',
-                            height: 80,
-                            fit: BoxFit.contain,
-                          ),
-
-                          // Header Text Group
-                          Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              RichText(
-                                textAlign: TextAlign.center,
-                                text: TextSpan(
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 22, // Slightly reduced
-                                    fontWeight: FontWeight.bold,
-                                    color: kSlate800,
+                            // Middle Content
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: kPaddingSide),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  // App Logo
+                                  Image.asset(
+                                    'assets/images/Logo/Logo.png',
+                                    height: 80,
+                                    fit: BoxFit.contain,
                                   ),
-                                  children: const [
-                                    TextSpan(text: 'Choose Your '),
-                                    TextSpan(
-                                      text: 'Experience',
-                                      style: TextStyle(color: kPrimaryBlue),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                'Select the navigation style that best suits you.',
-                                textAlign: TextAlign.center,
-                                style: GoogleFonts.inter(
-                                  fontSize: 13.5, // Slightly reduced
-                                  color: kSlate500,
-                                ),
-                              ),
-                            ],
-                          ),
+                                  const SizedBox(height: 12),
 
-                          // Option Cards Group (Tightly clustered together)
-                          Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              // Option Card 1: Regular Navigation
-                              NavigationOptionCard(
-                                mode: NavigationMode.regular,
-                                isSelected: _selectedMode == NavigationMode.regular,
-                                title: 'Regular Navigation',
-                                subtitle: 'Browse and explore the app independently.',
-                                icon: Icons.explore_rounded,
-                                iconColor: kPrimaryBlue,
-                                iconBgColor: const Color(0xFFEFF6FF),
-                                chips: const [
-                                  ChipInfo(Icons.bolt, 'Fast & Simple'),
-                                  ChipInfo(Icons.phone_android, 'Traditional UI'),
-                                  ChipInfo(Icons.touch_app, 'Self-paced browsing'), // 4th balancing chip
-                                  ChipInfo(Icons.auto_awesome, 'AI available anytime'),
+                                  // Header Text Group
+                                  Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      RichText(
+                                        textAlign: TextAlign.center,
+                                        text: TextSpan(
+                                          style: GoogleFonts.poppins(
+                                            fontSize: 22,
+                                            fontWeight: FontWeight.bold,
+                                            color: kSlate800,
+                                          ),
+                                          children: const [
+                                            TextSpan(text: 'Choose Your '),
+                                            TextSpan(
+                                              text: 'Experience',
+                                              style: TextStyle(color: kPrimaryBlue),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        'Select the navigation style that best suits you.',
+                                        textAlign: TextAlign.center,
+                                        style: GoogleFonts.inter(
+                                          fontSize: 13.5,
+                                          color: kSlate500,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 12),
+
+                                  // Option Cards Group
+                                  Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      NavigationOptionCard(
+                                        mode: NavigationMode.regular,
+                                        isSelected: _selectedMode == NavigationMode.regular,
+                                        title: 'Regular Navigation',
+                                        subtitle: 'Browse and explore the app independently.',
+                                        icon: Icons.explore_rounded,
+                                        iconColor: kPrimaryBlue,
+                                        iconBgColor: const Color(0xFFEFF6FF),
+                                        chips: const [
+                                          ChipInfo(Icons.bolt, 'Fast & Simple'),
+                                          ChipInfo(Icons.phone_android, 'Traditional UI'),
+                                          ChipInfo(Icons.touch_app, 'Self-paced browsing'),
+                                          ChipInfo(Icons.auto_awesome, 'AI available anytime'),
+                                        ],
+                                        onTap: () {
+                                          setState(() {
+                                            _selectedMode = NavigationMode.regular;
+                                          });
+                                        },
+                                      ),
+                                      const SizedBox(height: 8),
+                                      NavigationOptionCard(
+                                        mode: NavigationMode.companion,
+                                        isSelected: _selectedMode == NavigationMode.companion,
+                                        title: 'AI Companion',
+                                        subtitle: 'Let your AI guide you step by step.',
+                                        icon: Icons.support_agent_rounded,
+                                        iconColor: const Color(0xFF2563EB),
+                                        iconBgColor: const Color(0xFFEFF6FF),
+                                        chips: const [
+                                          ChipInfo(Icons.mic, 'Voice-first experience'),
+                                          ChipInfo(Icons.person, 'Personalized guidance'),
+                                          ChipInfo(Icons.lightbulb_outline, 'Smart recommendations'),
+                                          ChipInfo(Icons.co_present, 'Explains every screen'),
+                                        ],
+                                        onTap: () {
+                                          setState(() {
+                                            _selectedMode = NavigationMode.companion;
+                                          });
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 12),
+
+                                  // Info Card
+                                  const InfoCard(
+                                    title: 'Switch Anytime',
+                                    description: 'You can change your navigation mode later from Settings.',
+                                  ),
                                 ],
-                                onTap: () {
-                                  setState(() {
-                                    _selectedMode = NavigationMode.regular;
-                                  });
+                              ),
+                            ),
+
+                            const Spacer(),
+
+                            // Bottom Navigation Bar Area for Sticky Button
+                            Container(
+                              color: Colors.transparent,
+                              padding: const EdgeInsets.only(bottom: 16.0, top: 10.0),
+                              alignment: Alignment.center,
+                              child: PrimaryButton(
+                                width: screenWidth * 0.78,
+                                onPressed: () {
+                                  final provider = Provider.of<AppProvider>(context, listen: false);
+                                  provider.changeNavigationMode(
+                                    _selectedMode == NavigationMode.companion ? 'companion' : 'regular',
+                                  );
+
+                                  if (widget.onContinue != null) {
+                                    widget.onContinue!(_selectedMode);
+                                  } else {
+                                    if (provider.profile.profileCompleted) {
+                                      Navigator.of(context).pushReplacement(
+                                        MaterialPageRoute(
+                                          builder: (_) => const MainTabsContainer(),
+                                        ),
+                                      );
+                                    } else if (_selectedMode == NavigationMode.companion) {
+                                      Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                          builder: (_) => const SaarthiWelcomeScreen(),
+                                        ),
+                                      );
+                                    } else {
+                                      Navigator.of(context).pushReplacement(
+                                        MaterialPageRoute(
+                                          builder: (_) => const ProfileSetupScreen(),
+                                        ),
+                                      );
+                                    }
+                                  }
                                 },
                               ),
-                              
-                              const SizedBox(height: 8), // Closer spacing between cards
-
-                              // Option Card 2: AI Companion
-                              NavigationOptionCard(
-                                mode: NavigationMode.companion,
-                                isSelected: _selectedMode == NavigationMode.companion,
-                                title: 'AI Companion',
-                                subtitle: 'Let your AI guide you step by step.',
-                                icon: Icons.support_agent_rounded,
-                                iconColor: const Color(0xFF2563EB),
-                                iconBgColor: const Color(0xFFEFF6FF),
-                                chips: const [
-                                  ChipInfo(Icons.mic, 'Voice-first experience'),
-                                  ChipInfo(Icons.person, 'Personalized guidance'),
-                                  ChipInfo(Icons.lightbulb_outline, 'Smart recommendations'),
-                                  ChipInfo(Icons.co_present, 'Explains every screen'),
-                                ],
-                                onTap: () {
-                                  setState(() {
-                                    _selectedMode = NavigationMode.companion;
-                                  });
-                                },
-                              ),
-                            ],
-                          ),
-
-                          // Info Card (Compact padding/height)
-                          const InfoCard(
-                            title: 'Switch Anytime',
-                            description: 'You can change your navigation mode later from Settings.',
-                          ),
-                        ],
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-
-                  // Bottom Navigation Bar Area for Sticky Button
-                  Container(
-                    color: Colors.transparent, // Background waves must remain visible
-                    padding: const EdgeInsets.only(bottom: 16.0, top: 10.0),
-                    alignment: Alignment.center,
-                    child: PrimaryButton(
-                      width: screenWidth * 0.78, // Width is ~78% of screen width
-                      onPressed: () {
-                        final provider = Provider.of<AppProvider>(context, listen: false);
-                        provider.changeNavigationMode(
-                          _selectedMode == NavigationMode.companion ? 'companion' : 'regular',
-                        );
-
-                        if (widget.onContinue != null) {
-                          widget.onContinue!(_selectedMode);
-                        } else {
-                          // Default UI transition flow
-                          if (provider.profile.profileCompleted) {
-                            Navigator.of(context).pushReplacement(
-                              MaterialPageRoute(
-                                builder: (_) => const MainTabsContainer(),
-                              ),
-                            );
-                          } else if (_selectedMode == NavigationMode.companion) {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (_) => const SaarthiWelcomeScreen(),
-                              ),
-                            );
-                          } else {
-                            Navigator.of(context).pushReplacement(
-                              MaterialPageRoute(
-                                builder: (_) => const BasicProfileScreen(),
-                              ),
-                            );
-                          }
-                        }
-                      },
-                    ),
-                  ),
-                ],
+                  );
+                }
               ),
             ),
           ),

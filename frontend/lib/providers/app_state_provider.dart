@@ -28,7 +28,7 @@ class AppProvider with ChangeNotifier, WidgetsBindingObserver {
   bool _isLoggedIn = false;
   bool _isLoggingOut = false;
   String _mobileNumber = '';
-  String _selectedLanguage = 'en'; // 'en', 'hi'
+  String _selectedLanguage = 'en'; // 'en', 'ta'
   String _navigationMode = 'regular'; // 'regular', 'companion'
   int _currentTabIndex =
       0; // Bottom Navigation: 0: Home, 1: Search, 2: Categories, 3: Saved Schemes, 4: Profile
@@ -856,21 +856,28 @@ class AppProvider with ChangeNotifier, WidgetsBindingObserver {
     _isLoggingOut = true;
     notifyListeners();
 
-    // 1. Delete profile from Supabase first while session is active
+    // 1. Delete user account from Supabase Auth (cascades to profiles)
     if (_isLoggedIn) {
       final user = Supabase.instance.client.auth.currentUser;
       if (user != null) {
         try {
           debugPrint(
-            '[AppProvider] Deleting profile data from Supabase for user: ${user.id}',
+            '[AppProvider] Calling delete_user RPC for user: ${user.id}',
           );
-          await Supabase.instance.client
-              .from('profiles')
-              .delete()
-              .eq('id', user.id);
-          debugPrint('[AppProvider] Supabase profile data deleted.');
+          await Supabase.instance.client.rpc('delete_user');
+          debugPrint('[AppProvider] Supabase user account deleted successfully.');
         } catch (e) {
-          debugPrint('[AppProvider] Error deleting profile from database: $e');
+          debugPrint('[AppProvider] Error calling delete_user RPC: $e');
+          // Fallback: delete profile row directly if RPC fails
+          try {
+            await Supabase.instance.client
+                .from('profiles')
+                .delete()
+                .eq('id', user.id);
+            debugPrint('[AppProvider] Supabase profile data deleted directly.');
+          } catch (dbError) {
+            debugPrint('[AppProvider] Error deleting profile from database directly: $dbError');
+          }
         }
       }
     }
@@ -1272,10 +1279,7 @@ class AppProvider with ChangeNotifier, WidgetsBindingObserver {
     };
 
     _profile = _profile.copyWith(
-      house: locData['house'] as String,
-      street: locData['street'] as String,
       area: locData['area'] as String,
-      village: locData['village'] as String,
       state: locData['state'] as String,
       district: locData['district'] as String,
       city: locData['city'] as String,
@@ -1311,10 +1315,26 @@ class AppProvider with ChangeNotifier, WidgetsBindingObserver {
         return await _getFallbackLocation();
       }
 
-      final position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-        timeLimit: const Duration(seconds: 5),
-      );
+      Position? position;
+      try {
+        // Try getting current position with medium accuracy (faster, works indoors)
+        position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.medium,
+          timeLimit: const Duration(seconds: 7),
+        );
+      } catch (e) {
+        debugPrint('getCurrentPosition failed: $e. Trying getLastKnownPosition as fallback...');
+        try {
+          position = await Geolocator.getLastKnownPosition();
+        } catch (err) {
+          debugPrint('getLastKnownPosition failed: $err');
+        }
+      }
+
+      if (position == null) {
+        debugPrint('No position found. Using Chennai fallback.');
+        return await _getFallbackLocation();
+      }
 
       final placemarks = await placemarkFromCoordinates(
         position.latitude,
@@ -1348,10 +1368,7 @@ class AppProvider with ChangeNotifier, WidgetsBindingObserver {
         };
 
         _profile = _profile.copyWith(
-          house: locData['house'] as String,
-          street: locData['street'] as String,
           area: locData['area'] as String,
-          village: locData['village'] as String,
           state: locData['state'] as String,
           district: locData['district'] as String,
           city: locData['city'] as String,

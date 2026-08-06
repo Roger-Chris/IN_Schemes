@@ -112,6 +112,7 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
   bool _speaking = false;
   bool _closing = false;
   bool _fallingBackToLocal = false;
+  bool _isKeyboardMode = false;
   List<SchemeSearchMatch> _legacyMatches = const [];
   bool _legacySearching = false;
   int _operationGeneration = 0;
@@ -570,9 +571,13 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
       }
 
       final useFallback = !capabilities.automaticLanguageDetection;
+      final isUnavailableReason =
+          capabilities.reason?.contains('unavailable') == true;
       setState(() {
         _voicePhase = _VoiceAssistantPhase.listening;
-        _message = null;
+        _message = (useFallback && isUnavailableReason)
+            ? capabilities.reason
+            : null;
         _showFallbackPicker = useFallback;
       });
       _sessionController?.setListening(
@@ -701,10 +706,8 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
       _voicePhase = _VoiceAssistantPhase.unavailable;
       if (error.automaticUnavailable) {
         _showFallbackPicker = true;
-        _message = error.message;
-      } else {
-        _message = error.message;
       }
+      _message = error.message;
     });
   }
 
@@ -901,58 +904,6 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
       setState(() => _transcript = value);
       await _processFinalTranscript(value);
     }
-  }
-
-  Future<void> _showTypedInputDialog() async {
-    final controller = TextEditingController();
-    final value = await showDialog<String>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-          side: const BorderSide(color: Color(0xFFE2E8F0)),
-        ),
-        title: Text(
-          _isCompanion ? 'Type to Saarthi' : 'Type to Ask IN AI',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
-        ),
-        content: TextField(
-          key: const Key('voice-typed-dialog-input'),
-          controller: controller,
-          autofocus: true,
-          textInputAction: TextInputAction.send,
-          onSubmitted: (value) => Navigator.of(dialogContext).pop(value),
-          decoration: const InputDecoration(
-            hintText: 'Tell me your situation naturally...',
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            style: TextButton.styleFrom(
-              foregroundColor: const Color(0xFF64748B),
-            ),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(dialogContext).pop(controller.text),
-            style: FilledButton.styleFrom(
-              backgroundColor: const Color(0xFF2563EB),
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-            child: const Text('Send'),
-          ),
-        ],
-      ),
-    );
-    controller.dispose();
-    if (value == null || value.trim().isEmpty || !mounted) return;
-    _typedController.text = value;
-    await _sendTypedInput();
   }
 
   Future<void> _editFact(EligibilityFact fact) async {
@@ -1493,10 +1444,20 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
                       ? IconButton(
                           key: const Key('voice-open-typed-input'),
                           tooltip: 'Type instead',
-                          onPressed: _showTypedInputDialog,
-                          icon: const Icon(
+                          onPressed: () {
+                            setState(() {
+                              _isKeyboardMode = !_isKeyboardMode;
+                              if (_isKeyboardMode) {
+                                _voicePhase = _VoiceAssistantPhase.ready;
+                                unawaited(_recognitionController.cancel());
+                              }
+                            });
+                          },
+                          icon: Icon(
                             Icons.keyboard_alt_outlined,
-                            color: Color(0xFF94A3B8),
+                            color: _isKeyboardMode
+                                ? _accent
+                                : const Color(0xFF94A3B8),
                           ),
                         )
                       : const SizedBox(),
@@ -1535,7 +1496,7 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
               ),
             ],
           ),
-          if (_isCompanion) ...[
+          if (_isCompanion || _isKeyboardMode) ...[
             const SizedBox(height: 10),
             Row(
               children: [

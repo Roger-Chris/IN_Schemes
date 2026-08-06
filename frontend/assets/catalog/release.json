@@ -1,0 +1,24 @@
+{
+  "releaseTag": "1.33.0-alpha",
+  "schemaVersion": "1.0.0",
+  "releasedAt": "2026-08-04T00:00:00Z",
+  "bundleAsset": "assets/catalog/catalog_bundle.json.gz",
+  "bundleBytes": 632296,
+  "bundleSha256": "32d647183d61081f7400aba3a8679d5e9fd77915e28863c9fc72365d6fe0f0bc",
+  "uncompressedBytes": 9145232,
+  "entityCount": 969,
+  "searchIndexCount": 969,
+  "recordCounts": {
+    "authority_catalog.json": 124,
+    "common_catalog.json": 344,
+    "csr_catalog.json": 16,
+    "export_catalog.json": 13,
+    "finance_catalog.json": 115,
+    "institution_catalog.json": 83,
+    "knowledge_catalog.json": 28,
+    "scheme_catalog.json": 217,
+    "search_index.json": 969,
+    "tax_catalog.json": 13,
+    "treds_catalog.json": 16
+  }
+}

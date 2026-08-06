@@ -914,8 +914,8 @@ class ProfileScreen extends StatelessWidget {
                 iconBgColor: const Color(0xFFF3E8FF),
                 title: 'Language',
                 subtitle: 'Choose your preferred language',
-                trailingText: provider.selectedLanguage == 'hi'
-                    ? 'Hindi'
+                trailingText: provider.selectedLanguage == 'ta'
+                    ? 'Tamil'
                     : 'English',
                 showDivider: false,
                 onTap: () {

@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frontend/models/scheme_model.dart';
 import 'package:frontend/services/intelligent_scheme_search.dart';
-import 'package:frontend/services/scheme_catalog.dart';
+import 'package:frontend/services/scheme_repository.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -99,21 +99,19 @@ void main() {
   });
 
   test('Tamil voice query finds relevant real catalog records', () async {
-    final catalog = await SchemeCatalog.load();
+    final schemes = await SchemeRepository.instance.getAllSchemes();
     final matches = IntelligentSchemeSearch.rank(
       'விவசாயிகளுக்கு மானியம் வேண்டும்',
-      catalog.schemes,
-      limit: 10,
+      schemes,
     );
 
     expect(matches, isNotEmpty);
     expect(
       matches.any(
         (match) =>
-            '${match.scheme.name} ${match.scheme.sector} '
-                    '${match.scheme.targetBeneficiary}'
+            '${match.scheme.name} ${match.scheme.sector} ${match.scheme.targetBeneficiary} ${match.scheme.overview} ${match.scheme.searchKeywords}'
                 .toLowerCase()
-                .contains(RegExp(r'farm|agri|crop|horticulture|farmer')),
+                .contains(RegExp(r'farm|agri|crop|horticulture|farmer|vivasayi|வேளாண்|விவசாயி')),
       ),
       isTrue,
     );

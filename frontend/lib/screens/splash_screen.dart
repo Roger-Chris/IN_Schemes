@@ -8,6 +8,7 @@ import 'login_screen.dart';
 import '../providers/app_state_provider.dart';
 import '../services/session_cache_service.dart';
 import '../utils/constants.dart';
+import '../utils/permission_helper.dart';
 import '../main.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -26,6 +27,11 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        requestDefaultPermissions(context);
+      }
+    });
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1600),
@@ -59,7 +65,27 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
       final profile = await cache.loadProfile();
       
       // Validate Supabase session (instant offline check)
-      final session = Supabase.instance.client.auth.currentSession;
+      var session = Supabase.instance.client.auth.currentSession;
+      
+      if (session != null) {
+        try {
+          // Perform a server-side validation to check if the user was deleted/disabled
+          final userResponse = await Supabase.instance.client.auth.getUser();
+          if (userResponse.user == null) {
+            session = null;
+          }
+        } on AuthException catch (authErr) {
+          debugPrint('[SplashScreen] Auth exception during session validation: $authErr');
+          final statusStr = authErr.statusCode ?? '';
+          if (statusStr == '400' || statusStr == '403' || statusStr == '404' || 
+              authErr.message.toLowerCase().contains('user') || 
+              authErr.message.toLowerCase().contains('invalid')) {
+            session = null;
+          }
+        } catch (e) {
+          debugPrint('[SplashScreen] Non-auth exception during session validation: $e');
+        }
+      }
       
       if (!mounted) return;
       
@@ -72,6 +98,9 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
       } else {
         // Session invalid or profile incomplete - clean auth cache
         await cache.clearSession();
+        try {
+          await Supabase.instance.client.auth.signOut();
+        } catch (_) {}
         
         if (!mounted) return;
         if (lang == null) {
