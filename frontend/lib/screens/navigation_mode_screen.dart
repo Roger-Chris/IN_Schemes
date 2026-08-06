@@ -3,7 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'companion_mode/saarthi_welcome_screen.dart';
 import 'regular_mode/language_selection_screen.dart';
-import 'regular_mode/basic_profile_screen.dart';
+import 'regular_mode/profile_setup_screen.dart';
 import '../providers/app_state_provider.dart';
 import '../main.dart';
 
@@ -215,7 +215,7 @@ class _NavigationModeScreenState extends State<NavigationModeScreen> {
                           } else {
                             Navigator.of(context).pushReplacement(
                               MaterialPageRoute(
-                                builder: (_) => const BasicProfileScreen(),
+                                builder: (_) => const ProfileSetupScreen(),
                               ),
                             );
                           }

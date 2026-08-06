@@ -235,7 +235,8 @@ class _AboutYouProfileScreenState extends State<AboutYouProfileScreen> {
 
                                       await provider.updateProfile(updatedProfile);
 
-                                      await requestDefaultPermissions();
+                                      if (!context.mounted) return;
+                                      await requestDefaultPermissions(context);
 
                                       if (!context.mounted) return;
                                       Navigator.of(context).pushAndRemoveUntil(
