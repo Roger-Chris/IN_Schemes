@@ -30,6 +30,35 @@ drop table if exists public.promo_alerts cascade;
 drop table if exists public.admin_users cascade;
 drop table if exists public.query_cache cascade;
 
+-- Drop catalog and admin schema tables to ensure clean recreate
+drop table if exists catalog.relationships cascade;
+drop table if exists catalog.search_index cascade;
+drop table if exists catalog.finance cascade;
+drop table if exists catalog.tax cascade;
+drop table if exists catalog.export cascade;
+drop table if exists catalog.csr cascade;
+drop table if exists catalog.treds cascade;
+drop table if exists catalog.knowledge cascade;
+drop table if exists catalog.scheme cascade;
+drop table if exists catalog.institution cascade;
+drop table if exists catalog.authority cascade;
+drop table if exists catalog.common cascade;
+drop table if exists catalog.entity_registry cascade;
+drop table if exists catalog.ai_metadata cascade;
+
+drop table if exists admin.catalog_files cascade;
+drop table if exists admin.catalog_release_history cascade;
+drop table if exists admin.catalog_publish_jobs cascade;
+drop table if exists admin.catalog_change_log cascade;
+drop table if exists admin.catalog_validation_runs cascade;
+drop table if exists admin.import_batches cascade;
+drop table if exists admin.catalog_releases cascade;
+drop table if exists admin.record_locks cascade;
+drop table if exists admin.job_queue cascade;
+drop table if exists admin.event_log cascade;
+drop table if exists admin.translation_jobs cascade;
+drop table if exists admin.translation_memory cascade;
+
 -- ============================================================================
 -- 3. Create Custom Target Schemas
 -- ============================================================================
@@ -277,6 +306,10 @@ create table if not exists catalog.entity_registry (
   catalog_name text not null,
   current_version text not null,
   status text not null default 'DRAFT' check (status in ('DRAFT', 'READY_FOR_REVIEW', 'REVIEWED', 'APPROVED', 'PUBLISHED', 'ARCHIVED')),
+  validation_status text not null default 'NOT_VALIDATED' check (validation_status in ('PASSED', 'FAILED', 'WARNING', 'NOT_VALIDATED')),
+  is_deleted boolean not null default false,
+  deleted_at timestamptz,
+  deleted_reason text,
   checksum text not null,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
@@ -302,7 +335,7 @@ create table if not exists catalog.authority (
   record_json jsonb not null,
   
   -- hybrid relational columns
-  code text unique not null,
+  code text,
   name_en text not null,
   name_ta text
 );
@@ -317,7 +350,7 @@ create table if not exists catalog.institution (
   record_json jsonb not null,
   
   -- hybrid relational columns
-  code text unique not null,
+  code text,
   name_en text not null,
   name_ta text,
   authority_id text references catalog.authority(id) on delete set null
@@ -333,14 +366,17 @@ create table if not exists catalog.scheme (
   record_json jsonb not null,
   
   -- hybrid relational columns
-  scheme_code text unique not null,
+  scheme_code text unique,
   name_en text not null,
   name_ta text,
-  government_level text not null,
+  government_level text,
   scheme_type text,
   state text default 'All India',
-  primary_authority_id text references catalog.authority(id) on delete set null,
-  primary_institution_id text references catalog.institution(id) on delete set null,
+  ministry text,
+  department text,
+  search_keywords text,
+  primary_authority_id text,
+  primary_institution_id text,
   minimum_funding_amount numeric(15,2),
   maximum_funding_amount numeric(15,2),
   is_active boolean default true
@@ -356,7 +392,7 @@ create table if not exists catalog.finance (
   record_json jsonb not null,
   
   -- hybrid relational columns (Deferred constraint for import order compatibility)
-  scheme_id text not null references catalog.scheme(id) on delete cascade deferrable initially deferred,
+  scheme_id text references catalog.scheme(id) on delete cascade deferrable initially deferred,
   interest_subvention_rate numeric(5,2),
   max_loan_amount numeric(15,2)
 );
@@ -371,7 +407,7 @@ create table if not exists catalog.tax (
   record_json jsonb not null,
   
   -- hybrid relational columns (Deferred constraint for import order compatibility)
-  scheme_id text not null references catalog.scheme(id) on delete cascade deferrable initially deferred,
+  scheme_id text references catalog.scheme(id) on delete cascade deferrable initially deferred,
   exemption_percentage numeric(5,2)
 );
 
@@ -385,7 +421,7 @@ create table if not exists catalog.export (
   record_json jsonb not null,
   
   -- hybrid relational columns (Deferred constraint for import order compatibility)
-  scheme_id text not null references catalog.scheme(id) on delete cascade deferrable initially deferred,
+  scheme_id text references catalog.scheme(id) on delete cascade deferrable initially deferred,
   target_countries text[]
 );
 
@@ -399,7 +435,7 @@ create table if not exists catalog.csr (
   record_json jsonb not null,
   
   -- hybrid relational columns (Deferred constraint for import order compatibility)
-  scheme_id text not null references catalog.scheme(id) on delete cascade deferrable initially deferred,
+  scheme_id text references catalog.scheme(id) on delete cascade deferrable initially deferred,
   focus_areas text[]
 );
 
@@ -413,8 +449,23 @@ create table if not exists catalog.treds (
   record_json jsonb not null,
   
   -- hybrid relational columns (Deferred constraint for import order compatibility)
-  scheme_id text not null references catalog.scheme(id) on delete cascade deferrable initially deferred,
+  scheme_id text references catalog.scheme(id) on delete cascade deferrable initially deferred,
   interest_rate_range text
+);
+
+create table if not exists catalog.knowledge (
+  id text primary key,
+  version text not null,
+  status text not null default 'DRAFT' check (status in ('DRAFT', 'READY_FOR_REVIEW', 'REVIEWED', 'APPROVED', 'PUBLISHED', 'ARCHIVED')),
+  checksum text not null,
+  updated_at timestamptz not null default now(),
+  published_at timestamptz,
+  record_json jsonb not null,
+  
+  -- hybrid relational columns
+  title text not null,
+  item_type text,
+  category text
 );
 
 create table if not exists catalog.search_index (
@@ -427,9 +478,9 @@ create table if not exists catalog.search_index (
   record_json jsonb not null,
   
   -- hybrid relational columns (Deferred constraint for import order compatibility)
-  scheme_id text unique not null references catalog.scheme(id) on delete cascade deferrable initially deferred,
+  scheme_id text references catalog.scheme(id) on delete cascade deferrable initially deferred,
   content text not null,
-  embedding extensions.vector(1536)
+  embedding public.vector(1536)
 );
 
 create table if not exists catalog.relationships (
@@ -574,11 +625,21 @@ create index if not exists admin_catalog_releases_one_current_idx on admin.catal
 
 create index if not exists catalog_search_index_vector_idx on catalog.search_index using hnsw(embedding vector_cosine_ops);
 
--- ============================================================================
--- 10. Row Level Security (RLS) & Security Policies
--- ============================================================================
+-- Enable RLS everywhere (Drop existing policies to prevent conflicts)
+do $$
+declare
+    pol record;
+begin
+    for pol in (
+        select policyname, tablename, schemaname 
+        from pg_policies 
+        where schemaname in ('public', 'catalog', 'admin', 'storage')
+    ) loop
+        execute format('drop policy if exists %I on %I.%I', pol.policyname, pol.schemaname, pol.tablename);
+    end loop;
+end;
+$$;
 
--- Enable RLS everywhere
 alter table catalog.entity_registry enable row level security;
 alter table catalog.common enable row level security;
 alter table catalog.authority enable row level security;
@@ -589,6 +650,7 @@ alter table catalog.tax enable row level security;
 alter table catalog.export enable row level security;
 alter table catalog.csr enable row level security;
 alter table catalog.treds enable row level security;
+alter table catalog.knowledge enable row level security;
 alter table catalog.search_index enable row level security;
 alter table catalog.relationships enable row level security;
 alter table catalog.ai_metadata enable row level security;
@@ -634,6 +696,7 @@ create policy "Anon/Public read tax" on catalog.tax for select to anon, authenti
 create policy "Anon/Public read export" on catalog.export for select to anon, authenticated using (status = 'PUBLISHED');
 create policy "Anon/Public read csr" on catalog.csr for select to anon, authenticated using (status = 'PUBLISHED');
 create policy "Anon/Public read treds" on catalog.treds for select to anon, authenticated using (status = 'PUBLISHED');
+create policy "Anon/Public read knowledge" on catalog.knowledge for select to anon, authenticated using (status = 'PUBLISHED');
 create policy "Anon/Public read search_index" on catalog.search_index for select to anon, authenticated using (status = 'PUBLISHED');
 create policy "Anon/Public read relationships" on catalog.relationships for select to anon, authenticated using (true);
 create policy "Anon/Public read ai_metadata" on catalog.ai_metadata for select to anon, authenticated using (approved = true);
@@ -649,6 +712,7 @@ create policy "Admins/Editors manage tax" on catalog.tax for all to authenticate
 create policy "Admins/Editors manage export" on catalog.export for all to authenticated using (private.has_admin_role(auth.uid(), array['administrator', 'content_editor'])) with check (private.has_admin_role(auth.uid(), array['administrator', 'content_editor']));
 create policy "Admins/Editors manage csr" on catalog.csr for all to authenticated using (private.has_admin_role(auth.uid(), array['administrator', 'content_editor'])) with check (private.has_admin_role(auth.uid(), array['administrator', 'content_editor']));
 create policy "Admins/Editors manage treds" on catalog.treds for all to authenticated using (private.has_admin_role(auth.uid(), array['administrator', 'content_editor'])) with check (private.has_admin_role(auth.uid(), array['administrator', 'content_editor']));
+create policy "Admins/Editors manage knowledge" on catalog.knowledge for all to authenticated using (private.has_admin_role(auth.uid(), array['administrator', 'content_editor'])) with check (private.has_admin_role(auth.uid(), array['administrator', 'content_editor']));
 create policy "Admins/Editors manage search_index" on catalog.search_index for all to authenticated using (private.has_admin_role(auth.uid(), array['administrator', 'content_editor'])) with check (private.has_admin_role(auth.uid(), array['administrator', 'content_editor']));
 create policy "Admins/Editors manage relationships" on catalog.relationships for all to authenticated using (private.has_admin_role(auth.uid(), array['administrator', 'content_editor'])) with check (private.has_admin_role(auth.uid(), array['administrator', 'content_editor']));
 create policy "Admins/Editors manage ai_metadata" on catalog.ai_metadata for all to authenticated using (private.has_admin_role(auth.uid(), array['administrator', 'content_editor'])) with check (private.has_admin_role(auth.uid(), array['administrator', 'content_editor']));
