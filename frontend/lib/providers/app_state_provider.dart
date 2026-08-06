@@ -93,7 +93,8 @@ class AppProvider with ChangeNotifier, WidgetsBindingObserver {
   List<Map<String, dynamic>> _notificationsList = [
     {
       'id': 'latest_fisheries_update',
-      'title': 'Fisheries and Aquaculture Infra Development Fund Scheme Launched',
+      'title':
+          'Fisheries and Aquaculture Infra Development Fund Scheme Launched',
       'body':
           'Government has launched the Fisheries and Aquaculture Infrastructure Development Fund to provide concessionary finance.',
       'time': '2d ago',
@@ -209,7 +210,9 @@ class AppProvider with ChangeNotifier, WidgetsBindingObserver {
       return true;
     }).toList();
 
-    final basePromos = filteredPromos.isNotEmpty ? filteredPromos : _defaultPromoAlerts;
+    final basePromos = filteredPromos.isNotEmpty
+        ? filteredPromos
+        : _defaultPromoAlerts;
     return [...basePromos, ..._draftSessions];
   }
 
@@ -249,7 +252,7 @@ class AppProvider with ChangeNotifier, WidgetsBindingObserver {
       'badge_bg_color': '#F5F3FF',
       'target_route': 'discover_results',
       'bg_image': 'assets/images/Background/suggestion banner.png',
-    }
+    },
   ];
 
   void _subscribeToProfile(String userId) {
@@ -258,44 +261,57 @@ class AppProvider with ChangeNotifier, WidgetsBindingObserver {
         .from('profiles')
         .stream(primaryKey: ['id'])
         .eq('id', userId)
-        .listen((data) async {
-          if (data.isNotEmpty) {
-            final dbProfile = UserProfile.fromJson(data.first);
-            
-            final remoteUpdated = dbProfile.updatedAt ?? DateTime.fromMillisecondsSinceEpoch(0);
-            final localUpdated = _profile.updatedAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+        .listen(
+          (data) async {
+            if (data.isNotEmpty) {
+              final dbProfile = UserProfile.fromJson(data.first);
 
-            if (remoteUpdated.isAfter(localUpdated) || 
-                dbProfile.name != _profile.name || 
-                dbProfile.language != _profile.language || 
-                dbProfile.navigationMode != _profile.navigationMode || 
-                dbProfile.state != _profile.state || 
-                dbProfile.district != _profile.district || 
-                dbProfile.pinCode != _profile.pinCode || 
-                dbProfile.gender != _profile.gender || 
-                dbProfile.employmentStatus != _profile.employmentStatus || 
-                dbProfile.profileCompleted != _profile.profileCompleted) {
-              
-              _profile = dbProfile;
-              _selectedLanguage = dbProfile.language;
-              _navigationMode = dbProfile.navigationMode;
-              _filters['state'] = _profile.state;
-              _filters['community'] = _profile.community;
-              _filters['gender'] = _profile.gender;
-              
-              _recommendedSchemes = RecommendationEngine.getRecommendations(_profile, _allSchemes);
-              fetchPromoAlerts();
-              fetchDraftSessions();
-              notifyListeners();
+              final remoteUpdated =
+                  dbProfile.updatedAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+              final localUpdated =
+                  _profile.updatedAt ?? DateTime.fromMillisecondsSinceEpoch(0);
 
-              await SessionCacheService.instance.saveProfile(_profile);
-              await SessionCacheService.instance.saveLanguage(_selectedLanguage);
-              await SessionCacheService.instance.saveNavigationMode(_navigationMode);
+              if (remoteUpdated.isAfter(localUpdated) ||
+                  dbProfile.name != _profile.name ||
+                  dbProfile.language != _profile.language ||
+                  dbProfile.navigationMode != _profile.navigationMode ||
+                  dbProfile.state != _profile.state ||
+                  dbProfile.district != _profile.district ||
+                  dbProfile.pinCode != _profile.pinCode ||
+                  dbProfile.gender != _profile.gender ||
+                  dbProfile.employmentStatus != _profile.employmentStatus ||
+                  dbProfile.profileCompleted != _profile.profileCompleted) {
+                _profile = dbProfile;
+                _selectedLanguage = dbProfile.language;
+                _navigationMode = dbProfile.navigationMode;
+                _filters['state'] = _profile.state;
+                _filters['community'] = _profile.community;
+                _filters['gender'] = _profile.gender;
+
+                _recommendedSchemes = RecommendationEngine.getRecommendations(
+                  _profile,
+                  _allSchemes,
+                );
+                fetchPromoAlerts();
+                fetchDraftSessions();
+                notifyListeners();
+
+                await SessionCacheService.instance.saveProfile(_profile);
+                await SessionCacheService.instance.saveLanguage(
+                  _selectedLanguage,
+                );
+                await SessionCacheService.instance.saveNavigationMode(
+                  _navigationMode,
+                );
+              }
             }
-          }
-        }, onError: (err) {
-          debugPrint('[AppProvider] Real-time profile subscription error: $err');
-        });
+          },
+          onError: (err) {
+            debugPrint(
+              '[AppProvider] Real-time profile subscription error: $err',
+            );
+          },
+        );
   }
 
   void _unsubscribeFromProfile() {
@@ -309,63 +325,81 @@ class AppProvider with ChangeNotifier, WidgetsBindingObserver {
         .from('notifications')
         .stream(primaryKey: ['id'])
         .eq('user_id', userId)
-        .listen((data) async {
-          if (data.isEmpty) {
-            _notificationsList = [];
+        .listen(
+          (data) async {
+            if (data.isEmpty) {
+              _notificationsList = [];
+              notifyListeners();
+              return;
+            }
+
+            final sortedData = List<Map<String, dynamic>>.from(data);
+            sortedData.sort((a, b) {
+              final aTime =
+                  DateTime.tryParse(a['created_at'] ?? '') ??
+                  DateTime.fromMillisecondsSinceEpoch(0);
+              final bTime =
+                  DateTime.tryParse(b['created_at'] ?? '') ??
+                  DateTime.fromMillisecondsSinceEpoch(0);
+              return bTime.compareTo(aTime);
+            });
+
+            _notificationsList = sortedData.map((n) {
+              final createdAt =
+                  DateTime.tryParse(n['created_at'] ?? '') ?? DateTime.now();
+              final difference = DateTime.now().difference(createdAt);
+              String timeStr = 'Just now';
+              if (difference.inDays > 0) {
+                timeStr = '${difference.inDays}d ago';
+              } else if (difference.inHours > 0) {
+                timeStr = '${difference.inHours}h ago';
+              } else if (difference.inMinutes > 0) {
+                timeStr = '${difference.inMinutes}m ago';
+              }
+
+              final type = n['notification_type'] ?? 'updates';
+
+              final Map<String, dynamic> mapped = {
+                'id': n['id'].toString(),
+                'title': n['title'] ?? '',
+                'body': n['message'] ?? '',
+                'time': timeStr,
+                'read': n['is_read'] ?? false,
+                'category': type,
+                'created_at': n['created_at'],
+              };
+
+              if (type == 'new_schemes') {
+                mapped['tag'] = n['title'].toString().contains('Vidyalaxmi')
+                    ? 'Education'
+                    : 'Skill Development';
+                mapped['isNew'] = true;
+              } else if (type == 'reminders') {
+                mapped['deadline'] = n['title'].toString().contains('Matric')
+                    ? '31 May 2026'
+                    : '15 Jun 2026';
+                mapped['daysLeft'] = n['title'].toString().contains('Matric')
+                    ? '5 days left'
+                    : '20 days left';
+              } else if (type == 'updates') {
+                mapped['iconType'] = n['title'].toString().contains('Ayushman')
+                    ? 'emblem'
+                    : 'bank';
+              } else if (type == 'profile') {
+                mapped['progress'] = 70;
+              }
+
+              return mapped;
+            }).toList();
+
             notifyListeners();
-            return;
-          }
-
-          final sortedData = List<Map<String, dynamic>>.from(data);
-          sortedData.sort((a, b) {
-            final aTime = DateTime.tryParse(a['created_at'] ?? '') ?? DateTime.fromMillisecondsSinceEpoch(0);
-            final bTime = DateTime.tryParse(b['created_at'] ?? '') ?? DateTime.fromMillisecondsSinceEpoch(0);
-            return bTime.compareTo(aTime);
-          });
-
-          _notificationsList = sortedData.map((n) {
-            final createdAt = DateTime.tryParse(n['created_at'] ?? '') ?? DateTime.now();
-            final difference = DateTime.now().difference(createdAt);
-            String timeStr = 'Just now';
-            if (difference.inDays > 0) {
-              timeStr = '${difference.inDays}d ago';
-            } else if (difference.inHours > 0) {
-              timeStr = '${difference.inHours}h ago';
-            } else if (difference.inMinutes > 0) {
-              timeStr = '${difference.inMinutes}m ago';
-            }
-
-            final type = n['notification_type'] ?? 'updates';
-            
-            final Map<String, dynamic> mapped = {
-              'id': n['id'].toString(),
-              'title': n['title'] ?? '',
-              'body': n['message'] ?? '',
-              'time': timeStr,
-              'read': n['is_read'] ?? false,
-              'category': type,
-              'created_at': n['created_at'],
-            };
-
-            if (type == 'new_schemes') {
-              mapped['tag'] = n['title'].toString().contains('Vidyalaxmi') ? 'Education' : 'Skill Development';
-              mapped['isNew'] = true;
-            } else if (type == 'reminders') {
-              mapped['deadline'] = n['title'].toString().contains('Matric') ? '31 May 2026' : '15 Jun 2026';
-              mapped['daysLeft'] = n['title'].toString().contains('Matric') ? '5 days left' : '20 days left';
-            } else if (type == 'updates') {
-              mapped['iconType'] = n['title'].toString().contains('Ayushman') ? 'emblem' : 'bank';
-            } else if (type == 'profile') {
-              mapped['progress'] = 70;
-            }
-
-            return mapped;
-          }).toList();
-
-          notifyListeners();
-        }, onError: (err) {
-          debugPrint('[AppProvider] Real-time notifications subscription error: $err');
-        });
+          },
+          onError: (err) {
+            debugPrint(
+              '[AppProvider] Real-time notifications subscription error: $err',
+            );
+          },
+        );
   }
 
   void _unsubscribeFromNotifications() {
@@ -498,18 +532,21 @@ class AppProvider with ChangeNotifier, WidgetsBindingObserver {
         _profile,
         _allSchemes,
       );
-      
+
       // Update announcements dynamically based on latest central/state schemes
       if (_allSchemes.isNotEmpty) {
         final recent = List<Scheme>.from(_allSchemes)
           ..sort((a, b) => b.id.compareTo(a.id));
         _announcementsList = recent.take(3).map((s) {
           final isCentral = s.governmentLevel.toLowerCase() == 'central';
-          final sponsor = s.sponsoringBody.isNotEmpty ? s.sponsoringBody : (isCentral ? 'Govt of India' : s.state);
+          final sponsor = s.sponsoringBody.isNotEmpty
+              ? s.sponsoringBody
+              : (isCentral ? 'Govt of India' : s.state);
           return {
             'title': 'Updated: ${s.name}',
             'date': 'Realtime Live Feed',
-            'content': '${s.overview.length > 120 ? "${s.overview.substring(0, 117)}..." : s.overview} (Source: $sponsor)',
+            'content':
+                '${s.overview.length > 120 ? "${s.overview.substring(0, 117)}..." : s.overview} (Source: $sponsor)',
           };
         }).toList();
       }
@@ -569,13 +606,13 @@ class AppProvider with ChangeNotifier, WidgetsBindingObserver {
         _profile = cachedProfile;
         _navigationMode = _profile.navigationMode;
       }
-      final cachedNavMode = await SessionCacheService.instance.getNavigationMode();
+      final cachedNavMode = await SessionCacheService.instance
+          .getNavigationMode();
       if (cachedNavMode != null && cachedNavMode.isNotEmpty) {
         _navigationMode = cachedNavMode;
       }
 
-      _bookmarkedIds =
-          await SessionCacheService.instance.getBookmarks() ?? [];
+      _bookmarkedIds = await SessionCacheService.instance.getBookmarks() ?? [];
       _recentlyViewedIds =
           await SessionCacheService.instance.getRecentlyViewed() ?? [];
 
@@ -627,7 +664,9 @@ class AppProvider with ChangeNotifier, WidgetsBindingObserver {
   }
 
   // Sync profile to Supabase in the background (asynchronous, non-blocking)
-  Future<void> _syncProfileToSupabaseInBackground(UserProfile profileToSync) async {
+  Future<void> _syncProfileToSupabaseInBackground(
+    UserProfile profileToSync,
+  ) async {
     if (!_isLoggedIn) return;
     final user = Supabase.instance.client.auth.currentUser;
     if (user == null) return;
@@ -688,7 +727,10 @@ class AppProvider with ChangeNotifier, WidgetsBindingObserver {
 
   void changeNavigationMode(String mode) async {
     _navigationMode = mode;
-    _profile = _profile.copyWith(navigationMode: mode, updatedAt: DateTime.now());
+    _profile = _profile.copyWith(
+      navigationMode: mode,
+      updatedAt: DateTime.now(),
+    );
     notifyListeners();
     await SessionCacheService.instance.saveNavigationMode(mode);
     await SessionCacheService.instance.saveProfile(_profile);
@@ -709,61 +751,11 @@ class AppProvider with ChangeNotifier, WidgetsBindingObserver {
 
   Future<bool> loginWithGoogle() async {
     try {
-      debugPrint('[AppProvider] Starting loginWithGoogle flow...');
-      final response = await AuthService.signInWithGoogle();
-      if (response.user != null) {
-        final user = response.user!;
-        _isLoggedIn = true;
-        _mobileNumber = user.phone ?? '';
-
-        final dbProfile = await SchemeRepository.instance.getProfile(user.id);
-        if (dbProfile != null) {
-          _profile = dbProfile;
-          _selectedLanguage = dbProfile.language;
-          _navigationMode = dbProfile.navigationMode;
-
-          await SchemeRepository.instance.updateLastLogin(user.id);
-
-          await SessionCacheService.instance.saveProfile(_profile);
-          await SessionCacheService.instance.saveLanguage(_selectedLanguage);
-          await SessionCacheService.instance.saveNavigationMode(
-            _navigationMode,
-          );
-
-          _currentTabIndex = 0;
-          await SessionCacheService.instance.saveCurrentTabIndex(0);
-
-          notifyListeners();
-          debugPrint(
-            '[AppProvider] loginWithGoogle returning user: ${user.id}, isComplete: ${dbProfile.profileCompleted}',
-          );
-          return dbProfile.profileCompleted;
-        } else {
-          _profile = UserProfile(
-            googleUserId: user.id,
-            name:
-                user.userMetadata?['full_name'] ??
-                user.userMetadata?['name'] ??
-                '',
-            email: user.email ?? '',
-            mobile: user.phone ?? '',
-            profilePhoto: user.userMetadata?['avatar_url'] ?? '',
-            language: _selectedLanguage,
-            navigationMode: _navigationMode,
-            profileCompleted: false,
-          );
-
-          await _saveProfile();
-          notifyListeners();
-          debugPrint('[AppProvider] loginWithGoogle new user: ${user.id}');
-          return false; // Profile does not exist yet
-        }
-      }
+      return await AuthService.signInWithGoogle();
     } catch (e) {
       debugPrint('[AppProvider] Error signing in with Google: $e');
       rethrow;
     }
-    return false;
   }
 
   Future<bool> checkSessionAndFetchProfile() async {
@@ -865,7 +857,9 @@ class AppProvider with ChangeNotifier, WidgetsBindingObserver {
             '[AppProvider] Calling delete_user RPC for user: ${user.id}',
           );
           await Supabase.instance.client.rpc('delete_user');
-          debugPrint('[AppProvider] Supabase user account deleted successfully.');
+          debugPrint(
+            '[AppProvider] Supabase user account deleted successfully.',
+          );
         } catch (e) {
           debugPrint('[AppProvider] Error calling delete_user RPC: $e');
           // Fallback: delete profile row directly if RPC fails
@@ -876,7 +870,9 @@ class AppProvider with ChangeNotifier, WidgetsBindingObserver {
                 .eq('id', user.id);
             debugPrint('[AppProvider] Supabase profile data deleted directly.');
           } catch (dbError) {
-            debugPrint('[AppProvider] Error deleting profile from database directly: $dbError');
+            debugPrint(
+              '[AppProvider] Error deleting profile from database directly: $dbError',
+            );
           }
         }
       }
@@ -1242,7 +1238,7 @@ class AppProvider with ChangeNotifier, WidgetsBindingObserver {
     _filters['state'] = _profile.state;
     _filters['community'] = _profile.community;
     _filters['gender'] = _profile.gender;
-    
+
     // Recalculate recommendations based on updated profile
     _recommendedSchemes = RecommendationEngine.getRecommendations(
       _profile,
@@ -1305,13 +1301,17 @@ class AppProvider with ChangeNotifier, WidgetsBindingObserver {
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
         if (permission == LocationPermission.denied) {
-          debugPrint('Location permissions are denied. Using Chennai fallback.');
+          debugPrint(
+            'Location permissions are denied. Using Chennai fallback.',
+          );
           return await _getFallbackLocation();
         }
       }
 
       if (permission == LocationPermission.deniedForever) {
-        debugPrint('Location permissions are permanently denied. Using Chennai fallback.');
+        debugPrint(
+          'Location permissions are permanently denied. Using Chennai fallback.',
+        );
         return await _getFallbackLocation();
       }
 
@@ -1323,7 +1323,9 @@ class AppProvider with ChangeNotifier, WidgetsBindingObserver {
           timeLimit: const Duration(seconds: 7),
         );
       } catch (e) {
-        debugPrint('getCurrentPosition failed: $e. Trying getLastKnownPosition as fallback...');
+        debugPrint(
+          'getCurrentPosition failed: $e. Trying getLastKnownPosition as fallback...',
+        );
         try {
           position = await Geolocator.getLastKnownPosition();
         } catch (err) {
@@ -1433,10 +1435,8 @@ class AppProvider with ChangeNotifier, WidgetsBindingObserver {
 
   Future<void> fetchPromoAlerts() async {
     try {
-      final res = await Supabase.instance.client
-          .from('promo_alerts')
-          .select();
-      
+      final res = await Supabase.instance.client.from('promo_alerts').select();
+
       _promoAlerts = List<Map<String, dynamic>>.from(res);
       notifyListeners();
     } catch (e) {
@@ -1452,10 +1452,12 @@ class AppProvider with ChangeNotifier, WidgetsBindingObserver {
         notifyListeners();
         return;
       }
-      
+
       final res = await Supabase.instance.client
           .from('questionnaire_sessions')
-          .select('id, completed_percentage, status, startup_profiles!inner(user_id, profile_name)')
+          .select(
+            'id, completed_percentage, status, startup_profiles!inner(user_id, profile_name)',
+          )
           .eq('status', 'IN_PROGRESS')
           .eq('startup_profiles.user_id', userId);
 

@@ -16,13 +16,13 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _phoneController = TextEditingController();
   bool _isLoading = false;
+  bool _navigationScheduled = false;
   String? _phoneError;
 
   @override
   void initState() {
     super.initState();
   }
-
 
   @override
   void dispose() {
@@ -53,7 +53,7 @@ class _LoginScreenState extends State<LoginScreen> {
         setState(() {
           _isLoading = false;
         });
-        
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('OTP sent to +91 $phone (Use 123456 to test)'),
@@ -63,9 +63,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
         // Direct user to separate OTP Screen
         Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (_) => OtpScreen(phoneNumber: phone),
-          ),
+          MaterialPageRoute(builder: (_) => OtpScreen(phoneNumber: phone)),
         );
       }
     });
@@ -73,6 +71,19 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isLoggedIn = context.select<AppProvider, bool>(
+      (provider) => provider.isLoggedIn,
+    );
+    if (isLoggedIn && !_navigationScheduled) {
+      _navigationScheduled = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const NavigationModeScreen()),
+        );
+      });
+    }
+
     return Scaffold(
       resizeToAvoidBottomInset: true,
       body: Stack(
@@ -84,7 +95,7 @@ class _LoginScreenState extends State<LoginScreen> {
               fit: BoxFit.cover,
             ),
           ),
-          
+
           // 2. Content (Fit to page, scrollable only when keyboard is visible to prevent overflow)
           Positioned.fill(
             child: SafeArea(
@@ -97,11 +108,14 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       child: IntrinsicHeight(
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 10,
+                          ),
                           child: Column(
                             children: [
                               const Spacer(flex: 1),
-                              
+
                               // Brand Logo
                               Image.asset(
                                 'assets/images/Logo/Logo.png',
@@ -109,7 +123,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 fit: BoxFit.contain,
                               ),
                               const SizedBox(height: 12),
-                              
+
                               // Title
                               Text(
                                 'Welcome!',
@@ -120,7 +134,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                               ),
                               const SizedBox(height: 4),
-                              
+
                               // Subtitle
                               Text(
                                 'Login or sign up to discover and explore government schemes that empower you.',
@@ -129,18 +143,20 @@ class _LoginScreenState extends State<LoginScreen> {
                                   fontSize: 9.5,
                                   color: const Color(0xFF64748B), // Slate 500
                                   height: 1.3,
-                                  ),
+                                ),
                               ),
-                              
+
                               const Spacer(flex: 1),
-                              
+
                               // Main Card
                               Container(
                                 padding: const EdgeInsets.all(20),
                                 decoration: BoxDecoration(
                                   color: Colors.white,
                                   borderRadius: BorderRadius.circular(20),
-                                  border: Border.all(color: const Color(0xFFE2E8F0)), // Slate 200
+                                  border: Border.all(
+                                    color: const Color(0xFFE2E8F0),
+                                  ), // Slate 200
                                   boxShadow: [
                                     const BoxShadow(
                                       color: Color(0x08000000), // 3% opacity
@@ -151,12 +167,12 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                                 child: _buildLoginForm(),
                               ),
-                              
+
                               const Spacer(flex: 2),
-                              
+
                               // Bottom Privacy Policy & Terms Section
                               _buildPrivacySection(),
-                              
+
                               const SizedBox(height: 8),
                             ],
                           ),
@@ -164,7 +180,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                   );
-                }
+                },
               ),
             ),
           ),
@@ -195,7 +211,7 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ),
         const SizedBox(height: 16),
-        
+
         // Form Label
         Text(
           'Mobile Number',
@@ -206,7 +222,7 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ),
         const SizedBox(height: 6),
-        
+
         // Input Box Row with Country Code & Text Field
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -246,7 +262,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
             const SizedBox(width: 10),
-            
+
             // Phone number text field
             Expanded(
               child: TextFormField(
@@ -267,22 +283,33 @@ class _LoginScreenState extends State<LoginScreen> {
                   counterText: '',
                   errorText: _phoneError,
                   errorStyle: const TextStyle(color: AppConstants.errorColor),
-                  contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+                  contentPadding: const EdgeInsets.symmetric(
+                    vertical: 14,
+                    horizontal: 16,
+                  ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xFFCBD5E1)), // Slate 300
+                    borderSide: const BorderSide(
+                      color: Color(0xFFCBD5E1),
+                    ), // Slate 300
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xFF2563EB)), // Royal Blue
+                    borderSide: const BorderSide(
+                      color: Color(0xFF2563EB),
+                    ), // Royal Blue
                   ),
                   errorBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: AppConstants.errorColor),
+                    borderSide: const BorderSide(
+                      color: AppConstants.errorColor,
+                    ),
                   ),
                   focusedErrorBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: AppConstants.errorColor),
+                    borderSide: const BorderSide(
+                      color: AppConstants.errorColor,
+                    ),
                   ),
                 ),
               ),
@@ -290,7 +317,7 @@ class _LoginScreenState extends State<LoginScreen> {
           ],
         ),
         const SizedBox(height: 18),
-        
+
         // Send OTP Button
         SizedBox(
           width: double.infinity,
@@ -304,38 +331,38 @@ class _LoginScreenState extends State<LoginScreen> {
               elevation: 0,
             ),
             onPressed: _sendOtp,
-            child: _isLoading 
-              ? const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2.5,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                  ),
-                )
-              : Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'Send OTP',
-                      style: GoogleFonts.inter(
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+            child: _isLoading
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.5,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    ),
+                  )
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Send OTP',
+                        style: GoogleFonts.inter(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    const Icon(
-                      Icons.arrow_forward,
-                      color: Colors.white,
-                      size: 18,
-                    ),
-                  ],
-                ),
+                      const SizedBox(width: 8),
+                      const Icon(
+                        Icons.arrow_forward,
+                        color: Colors.white,
+                        size: 18,
+                      ),
+                    ],
+                  ),
           ),
         ),
         const SizedBox(height: 16),
-        
+
         // OR Divider
         Row(
           children: [
@@ -355,7 +382,7 @@ class _LoginScreenState extends State<LoginScreen> {
           ],
         ),
         const SizedBox(height: 16),
-        
+
         // Social Media Buttons
         Row(
           children: [
@@ -376,13 +403,14 @@ class _LoginScreenState extends State<LoginScreen> {
                           _isLoading = true;
                         });
                         try {
-                          final provider = Provider.of<AppProvider>(context, listen: false);
-                          await provider.loginWithGoogle();
-                          if (mounted) {
-                            Navigator.of(context).pushReplacement(
-                              MaterialPageRoute(
-                                builder: (_) => const NavigationModeScreen(),
-                              ),
+                          final provider = Provider.of<AppProvider>(
+                            context,
+                            listen: false,
+                          );
+                          final launched = await provider.loginWithGoogle();
+                          if (!launched && mounted) {
+                            throw StateError(
+                              'Unable to open Google authentication.',
                             );
                           }
                         } catch (e) {
@@ -420,7 +448,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
             const SizedBox(width: 12),
-            
+
             // Apple Button
             Expanded(
               child: OutlinedButton(
@@ -435,11 +463,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(
-                      Icons.apple,
-                      color: Colors.black87,
-                      size: 20,
-                    ),
+                    const Icon(Icons.apple, color: Colors.black87, size: 20),
                     const SizedBox(width: 8),
                     Text(
                       'Apple',
@@ -500,10 +524,7 @@ class GoogleIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomPaint(
-      size: Size(size, size),
-      painter: _GoogleIconPainter(),
-    );
+    return CustomPaint(size: Size(size, size), painter: _GoogleIconPainter());
   }
 }
 
@@ -562,9 +583,23 @@ class _GoogleIconPainter extends CustomPainter {
       ..lineTo(12.0 * s, 9.87 * s)
       ..lineTo(12.0 * s, 14.41 * s)
       ..lineTo(18.44 * s, 14.41 * s)
-      ..cubicTo(18.16 * s, 15.88 * s, 17.33 * s, 17.12 * s, 16.08 * s, 17.96 * s)
+      ..cubicTo(
+        18.16 * s,
+        15.88 * s,
+        17.33 * s,
+        17.12 * s,
+        16.08 * s,
+        17.96 * s,
+      )
       ..lineTo(20.09 * s, 21.07 * s)
-      ..cubicTo(22.43 * s, 18.91 * s, 23.49 * s, 15.73 * s, 23.49 * s, 12.27 * s)
+      ..cubicTo(
+        22.43 * s,
+        18.91 * s,
+        23.49 * s,
+        15.73 * s,
+        23.49 * s,
+        12.27 * s,
+      )
       ..close();
     canvas.drawPath(bluePath, paint);
   }
