@@ -250,7 +250,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               _buildSettingRow(
                 icon: Icons.language,
                 title: "Language",
-                value: provider.selectedLanguage == 'hi' ? 'हिन्दी' : 'English',
+                value: provider.selectedLanguage == 'ta' ? 'தமிழ்' : 'English',
                 onTap: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(

@@ -46,7 +46,7 @@ class AppConstants {
     'Price Quotation of machinery/equipment or items to be purchased': 'https://www.nsic.co.in/',
   };
 
-  // UI Translation Map for English & Hindi
+  // UI Translation Map for English & Tamil
   static const Map<String, Map<String, String>> translations = {
     'en': {
       'app_name': 'MSS',
@@ -72,30 +72,6 @@ class AppConstants {
       'settings': 'Settings',
       'help_support': 'Help & Support',
     },
-    'hi': {
-      'app_name': 'एमएसएस',
-      'tagline': 'भारत में हर सरकारी योजना की खोज करें',
-      'launch_info': 'राष्ट्रीय उद्यमी दिवस विशेष संस्करण',
-      'continue': 'आगे बढ़ें',
-      'login_title': 'अपना मोबाइल नंबर सत्यापित करें',
-      'login_subtitle': 'योजना पात्रता की जांच के लिए अपना नंबर दर्ज करें',
-      'mobile_label': 'मोबाइल नंबर',
-      'otp_label': '6-अंकीय ओटीपी दर्ज करें',
-      'login_btn': 'लॉगिन करें और आगे बढ़ें',
-      'guest_btn': 'अतिथि के रूप में जारी रखें',
-      'welcome_back': 'स्वागत है,',
-      'recent_searches': 'हाल की खोजें',
-      'popular_searches': 'लोकप्रिय खोजें',
-      'recommended': 'आपके लिए अनुशंसित',
-      'categories': 'योजना श्रेणियां',
-      'search_placeholder': 'योजनाओं, मंत्रालयों या कीवर्ड खोजें...',
-      'check_eligibility': 'पात्रता की जांच करें',
-      'saved_schemes': 'सहेजी गई योजनाएं',
-      'notifications': 'सूचनाएं',
-      'profile': 'मेरी प्रोफाइल',
-      'settings': 'सेटिंग्स',
-      'help_support': 'सहायता और समर्थन',
-    }
   };
 
   static String get(String key, String lang) {

@@ -50,14 +50,6 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
       circleBgColor: Color(0xFFECFDF5), // Emerald 50
       circleTextColor: Color(0xFF047857), // Emerald 700
     ),
-    LanguageOption(
-      code: 'hi',
-      nativeTitle: 'हिंदी',
-      englishTitle: 'Hindi',
-      circleText: 'हिंदी',
-      circleBgColor: Color(0xFFF5F3FF), // Purple 50
-      circleTextColor: Color(0xFF6D28D9), // Purple 700
-    ),
   ];
 
   @override
@@ -145,7 +137,7 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
 
                     const Spacer(flex: 2),
 
-                    // 5. Restricted Language List (English, Tamil, Hindi)
+                    // 5. Restricted Language List (English, Tamil)
                     Column(
                       children: _languages.map((option) {
                         final isSelected = _selectedLang == option.code;
