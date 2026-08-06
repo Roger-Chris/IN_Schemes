@@ -877,6 +877,13 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
   }
 
   Future<void> _showTypedInputDialog() async {
+    await _recognitionController.cancel();
+    if (mounted) {
+      setState(() {
+        _voicePhase = _VoiceAssistantPhase.ready;
+      });
+    }
+
     final controller = TextEditingController();
     final value = await showDialog<String>(
       context: context,
@@ -920,6 +927,11 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
     );
     controller.dispose();
     if (value == null || value.trim().isEmpty || !mounted) return;
+
+    // Wait for the dialog pop transition to fully complete to avoid Navigator assertion conflicts
+    await Future.delayed(const Duration(milliseconds: 250));
+    if (!mounted) return;
+
     _typedController.text = value;
     await _sendTypedInput();
   }
