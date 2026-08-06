@@ -49,6 +49,7 @@ dependencies:
   confetti: ^0.8.0
   http: ^1.5.0
   crypto: ^3.0.7
+  livekit_client: ^2.8.0
   llama_flutter_android: 0.2.6
 
 dev_dependencies:

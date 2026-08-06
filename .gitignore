@@ -10,3 +10,9 @@ training-output/
 frontend/android/build/
 __pycache__/
 *.pyc
+
+# Local developer tooling and secrets
+.tools/
+.env
+.env.*
+!.env.example

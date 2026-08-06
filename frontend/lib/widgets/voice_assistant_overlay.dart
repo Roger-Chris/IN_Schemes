@@ -12,6 +12,7 @@ import '../models/user_profile.dart';
 import '../services/assistant_session_controller.dart';
 import '../services/edge_slm_understanding_engine.dart';
 import '../services/intelligent_scheme_search.dart';
+import '../services/livekit_voice_agent_controller.dart';
 import '../services/official_grounded_search.dart';
 import '../services/private_ai_knowledge_base.dart';
 import '../services/scheme_understanding_engine.dart';
@@ -87,7 +88,7 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
   bool _ownsUnderstandingEngine = false;
   EdgeSlmUnderstandingEngine? _edgeSlmEngine;
   VoiceAgentController? _voiceAgentController;
-  final bool _ownsVoiceAgentController = false;
+  bool _ownsVoiceAgentController = false;
   StreamSubscription<VoiceAgentEvent>? _voiceAgentEvents;
   AssistantSessionController? _sessionController;
   late final AnimationController _edgeController;
@@ -227,6 +228,15 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
       );
     }
     _sessionController?.addListener(_handleSessionChanged);
+    if (widget.voiceAgentController != null) {
+      _voiceAgentController = widget.voiceAgentController;
+    } else if (_sessionController != null) {
+      _voiceAgentController = LiveKitVoiceAgentController.tryFromSupabase(
+        session: _sessionController!,
+        profile: widget.profile ?? UserProfile(),
+      );
+      _ownsVoiceAgentController = _voiceAgentController != null;
+    }
     _ownsGroundedSearch = widget.groundedSearch == null;
     _groundedSearch = widget.groundedSearch ?? HttpOfficialGroundedSearch();
 
@@ -283,9 +293,6 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
 
   Future<void> _initializeVoiceAgent() async {
     if (!mounted) return;
-    if (widget.voiceAgentController != null) {
-      _voiceAgentController = widget.voiceAgentController;
-    }
     final agent = _voiceAgentController;
     if (agent != null) {
       agent.addListener(_handleVoiceAgentChanged);
@@ -325,7 +332,6 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
     if (mounted) setState(() {});
   }
 
-
   void _handleVoiceAgentChanged() {
     if (!mounted || _voiceAgentController == null) return;
     final state = _voiceAgentController!.state;
@@ -350,6 +356,27 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
 
   void _handleVoiceAgentEvent(VoiceAgentEvent event) {
     if (!mounted) return;
+    if (event.type == VoiceAgentEventType.schemeResults) {
+      final raw = event.data?['results'];
+      final results = raw is List<CloudSchemeResult>
+          ? raw
+          : const <CloudSchemeResult>[];
+      final schemes = matchCloudSchemeResultsToCatalog(results, widget.schemes);
+      setState(() {
+        _legacyMatches = schemes
+            .map(
+              (scheme) => SchemeSearchMatch(
+                scheme: scheme,
+                score: 1,
+                reasons: const [
+                  'Recommended by Saarthi from the verified catalog',
+                ],
+              ),
+            )
+            .toList(growable: false);
+      });
+      return;
+    }
     if (event.type == VoiceAgentEventType.recoverableError ||
         event.type == VoiceAgentEventType.fatalError) {
       setState(() {
@@ -674,7 +701,7 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
       _voicePhase = _VoiceAssistantPhase.unavailable;
       if (error.automaticUnavailable) {
         _showFallbackPicker = true;
-        _message = null;
+        _message = error.message;
       } else {
         _message = error.message;
       }
@@ -903,7 +930,9 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(),
-            style: TextButton.styleFrom(foregroundColor: const Color(0xFF64748B)),
+            style: TextButton.styleFrom(
+              foregroundColor: const Color(0xFF64748B),
+            ),
             child: const Text('Cancel'),
           ),
           FilledButton(
@@ -911,7 +940,9 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
             style: FilledButton.styleFrom(
               backgroundColor: const Color(0xFF2563EB),
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
             ),
             child: const Text('Send'),
           ),
@@ -948,7 +979,9 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            style: TextButton.styleFrom(foregroundColor: const Color(0xFF64748B)),
+            style: TextButton.styleFrom(
+              foregroundColor: const Color(0xFF64748B),
+            ),
             child: const Text('Cancel'),
           ),
           FilledButton(
@@ -956,7 +989,9 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
             style: FilledButton.styleFrom(
               backgroundColor: const Color(0xFF2563EB),
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
             ),
             child: const Text('Use value'),
           ),
@@ -1021,7 +1056,9 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            style: TextButton.styleFrom(foregroundColor: const Color(0xFF64748B)),
+            style: TextButton.styleFrom(
+              foregroundColor: const Color(0xFF64748B),
+            ),
             child: const Text('Keep session only'),
           ),
           FilledButton(
@@ -1029,7 +1066,9 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
             style: FilledButton.styleFrom(
               backgroundColor: const Color(0xFF2563EB),
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
             ),
             child: const Text('Save confirmed'),
           ),
@@ -1211,7 +1250,7 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
                               const SizedBox(width: 5),
                               Flexible(
                                 child: Text(
-                                  'Live audio is sent to OpenAI. This app does not save audio or raw transcripts.',
+                                  'Live audio is processed securely. This app does not save audio or raw transcripts.',
                                   textAlign: TextAlign.center,
                                   style: GoogleFonts.inter(
                                     color: const Color(0xFFCBD5E1),
@@ -1319,7 +1358,6 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
       ),
     );
   }
-
 
   Widget _buildHeader() {
     return Row(
