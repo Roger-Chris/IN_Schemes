@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../providers/app_state_provider.dart';
 import '../utils/constants.dart';
-import 'otp_screen.dart';
 import 'navigation_mode_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -14,60 +13,8 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _phoneController = TextEditingController();
   bool _isLoading = false;
   bool _navigationScheduled = false;
-  String? _phoneError;
-
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    _phoneController.dispose();
-    super.dispose();
-  }
-
-  void _sendOtp() {
-    setState(() {
-      _phoneError = null;
-    });
-
-    final phone = _phoneController.text.trim();
-    if (phone.length != 10 || double.tryParse(phone) == null) {
-      setState(() {
-        _phoneError = 'Please enter a valid 10-digit mobile number';
-      });
-      return;
-    }
-
-    setState(() {
-      _isLoading = true;
-    });
-
-    // Simulate network latency
-    Future.delayed(const Duration(milliseconds: 1000), () {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('OTP sent to +91 $phone (Use 123456 to test)'),
-            backgroundColor: AppConstants.successColor,
-          ),
-        );
-
-        // Direct user to separate OTP Screen
-        Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => OtpScreen(phoneNumber: phone)),
-        );
-      }
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -191,11 +138,12 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Widget _buildLoginForm() {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
-          'Login with Mobile Number',
+          'Continue securely',
+          textAlign: TextAlign.center,
           style: GoogleFonts.poppins(
             fontSize: 15,
             fontWeight: FontWeight.bold,
@@ -204,280 +152,84 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
         const SizedBox(height: 4),
         Text(
-          'We\'ll send a 6-digit OTP to verify your identity.',
-          style: GoogleFonts.inter(
-            fontSize: 10,
-            color: const Color(0xFF64748B), // Slate 500
-          ),
-        ),
-        const SizedBox(height: 16),
-
-        // Form Label
-        Text(
-          'Mobile Number',
+          'Use your Google account to sign in or create your MSS account.',
+          textAlign: TextAlign.center,
           style: GoogleFonts.inter(
             fontSize: 11,
-            fontWeight: FontWeight.bold,
-            color: const Color(0xFF1E293B), // Slate 800
+            color: const Color(0xFF64748B), // Slate 500
+            height: 1.4,
           ),
         ),
-        const SizedBox(height: 6),
-
-        // Input Box Row with Country Code & Text Field
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Country Code +91 box
-            Container(
-              height: 52,
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF8FAFC), // Slate 50
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFFCBD5E1)), // Slate 300
-              ),
-              child: Row(
-                children: [
-                  Text(
-                    '+91',
-                    style: GoogleFonts.inter(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: const Color(0xFF1E293B),
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                  const Icon(
-                    Icons.keyboard_arrow_down,
-                    color: Color(0xFF64748B),
-                    size: 16,
-                  ),
-                  const SizedBox(width: 8),
-                  Container(
-                    width: 1,
-                    height: 20,
-                    color: const Color(0xFFCBD5E1), // Vertical Divider
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 10),
-
-            // Phone number text field
-            Expanded(
-              child: TextFormField(
-                controller: _phoneController,
-                keyboardType: TextInputType.phone,
-                maxLength: 10,
-                style: GoogleFonts.inter(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: const Color(0xFF1E293B),
-                ),
-                decoration: InputDecoration(
-                  hintText: 'Enter 10-digit number',
-                  hintStyle: GoogleFonts.inter(
-                    fontSize: 14,
-                    color: const Color(0xFF94A3B8), // Slate 400
-                  ),
-                  counterText: '',
-                  errorText: _phoneError,
-                  errorStyle: const TextStyle(color: AppConstants.errorColor),
-                  contentPadding: const EdgeInsets.symmetric(
-                    vertical: 14,
-                    horizontal: 16,
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(
-                      color: Color(0xFFCBD5E1),
-                    ), // Slate 300
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(
-                      color: Color(0xFF2563EB),
-                    ), // Royal Blue
-                  ),
-                  errorBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(
-                      color: AppConstants.errorColor,
-                    ),
-                  ),
-                  focusedErrorBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(
-                      color: AppConstants.errorColor,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 18),
-
-        // Send OTP Button
+        const SizedBox(height: 20),
         SizedBox(
           width: double.infinity,
           height: 52,
-          child: ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF2563EB), // Royal Blue
+          child: OutlinedButton(
+            style: OutlinedButton.styleFrom(
+              side: const BorderSide(color: Color(0xFFE2E8F0)),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
-              elevation: 0,
             ),
-            onPressed: _sendOtp,
-            child: _isLoading
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2.5,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                    ),
-                  )
-                : Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Send OTP',
-                        style: GoogleFonts.inter(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      const Icon(
-                        Icons.arrow_forward,
-                        color: Colors.white,
-                        size: 18,
-                      ),
-                    ],
+            onPressed: _isLoading
+                ? null
+                : () async {
+                    setState(() {
+                      _isLoading = true;
+                    });
+                    try {
+                      final provider = Provider.of<AppProvider>(
+                        context,
+                        listen: false,
+                      );
+                      final launched = await provider.loginWithGoogle();
+                      if (!launched && mounted) {
+                        throw StateError(
+                          'Unable to open Google authentication.',
+                        );
+                      }
+                    } catch (e) {
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Error: $e'),
+                            backgroundColor: AppConstants.errorColor,
+                          ),
+                        );
+                      }
+                    } finally {
+                      if (mounted) {
+                        setState(() {
+                          _isLoading = false;
+                        });
+                      }
+                    }
+                  },
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const GoogleIcon(size: 18),
+                const SizedBox(width: 10),
+                Text(
+                  'Continue with Google',
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF475569), // Slate 600
                   ),
+                ),
+              ],
+            ),
           ),
         ),
-        const SizedBox(height: 16),
-
-        // OR Divider
-        Row(
-          children: [
-            const Expanded(child: Divider(color: Color(0xFFE2E8F0))),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Text(
-                'OR',
-                style: GoogleFonts.inter(
-                  color: const Color(0xFF94A3B8),
-                  fontSize: 11,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            const Expanded(child: Divider(color: Color(0xFFE2E8F0))),
-          ],
-        ),
-        const SizedBox(height: 16),
-
-        // Social Media Buttons
-        Row(
-          children: [
-            // Google Button
-            Expanded(
-              child: OutlinedButton(
-                style: OutlinedButton.styleFrom(
-                  fixedSize: const Size.fromHeight(48),
-                  side: const BorderSide(color: Color(0xFFE2E8F0)),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                onPressed: _isLoading
-                    ? null
-                    : () async {
-                        setState(() {
-                          _isLoading = true;
-                        });
-                        try {
-                          final provider = Provider.of<AppProvider>(
-                            context,
-                            listen: false,
-                          );
-                          final launched = await provider.loginWithGoogle();
-                          if (!launched && mounted) {
-                            throw StateError(
-                              'Unable to open Google authentication.',
-                            );
-                          }
-                        } catch (e) {
-                          if (mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Error: $e'),
-                                backgroundColor: AppConstants.errorColor,
-                              ),
-                            );
-                          }
-                        } finally {
-                          if (mounted) {
-                            setState(() {
-                              _isLoading = false;
-                            });
-                          }
-                        }
-                      },
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const GoogleIcon(size: 18),
-                    const SizedBox(width: 10),
-                    Text(
-                      'Google',
-                      style: GoogleFonts.inter(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF475569), // Slate 600
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
-
-            // Apple Button
-            Expanded(
-              child: OutlinedButton(
-                style: OutlinedButton.styleFrom(
-                  fixedSize: const Size.fromHeight(48),
-                  side: const BorderSide(color: Color(0xFFE2E8F0)),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                onPressed: () {},
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.apple, color: Colors.black87, size: 20),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Apple',
-                      style: GoogleFonts.inter(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF475569), // Slate 600
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
+        const SizedBox(height: 12),
+        Text(
+          'A secure browser window will open for authentication.',
+          textAlign: TextAlign.center,
+          style: GoogleFonts.inter(
+            fontSize: 10,
+            color: const Color(0xFF64748B),
+          ),
         ),
       ],
     );

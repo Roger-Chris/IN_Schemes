@@ -738,17 +738,6 @@ class AppProvider with ChangeNotifier, WidgetsBindingObserver {
     _syncProfileToSupabaseInBackground(_profile);
   }
 
-  void login(String mobile) async {
-    _isLoggedIn = true;
-    _mobileNumber = mobile;
-    _currentTabIndex = 0;
-    // Default initial profile
-    _profile = UserProfile(mobile: mobile);
-    notifyListeners();
-    await _saveProfile();
-    await SessionCacheService.instance.saveCurrentTabIndex(0);
-  }
-
   Future<bool> loginWithGoogle() async {
     try {
       return await AuthService.signInWithGoogle();
