@@ -28,7 +28,7 @@ class AppProvider with ChangeNotifier, WidgetsBindingObserver {
   bool _isLoggedIn = false;
   bool _isLoggingOut = false;
   String _mobileNumber = '';
-  String _selectedLanguage = 'en'; // 'en', 'hi'
+  String _selectedLanguage = 'en'; // 'en', 'ta'
   String _navigationMode = 'regular'; // 'regular', 'companion'
   int _currentTabIndex =
       0; // Bottom Navigation: 0: Home, 1: Search, 2: Categories, 3: Saved Schemes, 4: Profile
