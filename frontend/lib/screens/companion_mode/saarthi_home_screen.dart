@@ -194,6 +194,16 @@ class _SaarthiHomeScreenState extends State<SaarthiHomeScreen> with TickerProvid
     });
   }
 
+  void _startKeyboardConversationMode() {
+    _initializeControllers();
+
+    setState(() {
+      _isConversationActive = true;
+      _isKeyboardMode = true;
+      _voiceState = SaarthiVoiceState.idle;
+    });
+  }
+
   Future<void> _startListening({bool preserveTranscript = false}) async {
     if (!mounted || _startingRecognition || _speaking) return;
     _startingRecognition = true;
@@ -1377,34 +1387,37 @@ class _SaarthiHomeScreenState extends State<SaarthiHomeScreen> with TickerProvid
                       ),
                     ),
                     const SizedBox(height: 12),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 10,
-                      ),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF8FAFC),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: const Color(0xFFE2E8F0),
+                    GestureDetector(
+                      onTap: _startKeyboardConversationMode,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 10,
                         ),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Type your question...',
-                            style: GoogleFonts.inter(
-                              fontSize: 11,
-                              color: kSlate500,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF8FAFC),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: const Color(0xFFE2E8F0),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Type your question...',
+                              style: GoogleFonts.inter(
+                                fontSize: 11,
+                                color: kSlate500,
+                              ),
                             ),
-                          ),
-                          Icon(
-                            Icons.keyboard,
-                            color: kBrandBlue,
-                            size: 18,
-                          ),
-                        ],
+                            Icon(
+                              Icons.keyboard,
+                              color: kBrandBlue,
+                              size: 18,
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ],
@@ -1633,13 +1646,13 @@ class _SaarthiHomeScreenState extends State<SaarthiHomeScreen> with TickerProvid
                       IconButton(
                         onPressed: _endConversation,
                         icon: const Icon(
-                          Icons.delete_sweep_outlined,
+                          Icons.delete_outline,
                           color: Color(0xFF64748B),
                           size: 28,
                         ),
                       ),
                       Text(
-                        'Clear Chat 🧹',
+                        'Clear Chat',
                         style: GoogleFonts.inter(fontSize: 10, color: const Color(0xFF64748B)),
                       ),
                     ],
