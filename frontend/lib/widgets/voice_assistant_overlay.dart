@@ -544,9 +544,10 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
       }
 
       final useFallback = !capabilities.automaticLanguageDetection;
+      final isUnavailableReason = capabilities.reason?.contains('unavailable') == true;
       setState(() {
         _voicePhase = _VoiceAssistantPhase.listening;
-        _message = null;
+        _message = (useFallback && isUnavailableReason) ? capabilities.reason : null;
         _showFallbackPicker = useFallback;
       });
       _sessionController?.setListening(
@@ -675,10 +676,8 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
       _voicePhase = _VoiceAssistantPhase.unavailable;
       if (error.automaticUnavailable) {
         _showFallbackPicker = true;
-        _message = null;
-      } else {
-        _message = error.message;
       }
+      _message = error.message;
     });
   }
 
