@@ -32,6 +32,15 @@ android {
         versionName = flutter.versionName
     }
 
+    signingConfigs.getByName("debug") {
+        // This certificate is registered with the Android Google OAuth client.
+        // The keystore itself is ignored by Git (android/.gitignore).
+        storeFile = file("debug.keystore")
+        storePassword = "android"
+        keyAlias = "androiddebugkey"
+        keyPassword = "android"
+    }
+
     buildTypes {
         release {
             // TODO: Add your own signing config for the release build.

@@ -28,6 +28,7 @@ enum VoiceAgentEventType {
   audioLevel,
   toolStarted,
   toolFinished,
+  schemeResults,
   rateLimits,
   recoverableError,
   fatalError,

@@ -7,6 +7,7 @@ import 'package:frontend/models/scheme_model.dart';
 import 'package:frontend/models/user_profile.dart';
 import 'package:frontend/services/assistant_session_controller.dart';
 import 'package:frontend/services/intelligent_scheme_search.dart';
+import 'package:frontend/services/livekit_voice_agent_controller.dart';
 import 'package:frontend/services/official_grounded_search.dart';
 import 'package:frontend/services/scheme_understanding_engine.dart';
 import 'package:frontend/services/speech_output_controller.dart';
@@ -15,6 +16,54 @@ import 'package:frontend/services/voice_agent_controller.dart';
 import 'package:frontend/widgets/voice_assistant_overlay.dart';
 
 void main() {
+  testWidgets('cloud agent scheme results appear as tappable cards', (
+    tester,
+  ) async {
+    const scheme = Scheme(
+      id: 'IN001',
+      schemeCode: 'IN001',
+      name: 'Capital Subsidy',
+    );
+    final session = AssistantSessionController(
+      engine: const LocalSchemeUnderstandingEngine(),
+      schemes: const [scheme],
+      profile: UserProfile(),
+    );
+    final cloud = _FakeCloudVoiceAgentController(session);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: VoiceAssistantOverlay(
+          autoStart: false,
+          schemes: const [scheme],
+          sessionController: session,
+          voiceAgentController: cloud,
+          recognitionController: _FakeVoiceRecognitionController(),
+          speechOutputController: _FakeSpeechOutputController(),
+          onClose: () {},
+          onSubmit: (_) {},
+        ),
+      ),
+    );
+    await tester.pump();
+
+    cloud.emitSchemeResults(
+      const CloudSchemeResult(
+        id: 'SCH000001',
+        code: 'TN001',
+        name: 'Capital Subsidy',
+      ),
+    );
+    await tester.pump();
+
+    expect(find.byKey(const Key('voice-result-IN001')), findsOneWidget);
+    expect(find.text('Capital Subsidy'), findsOneWidget);
+
+    await tester.pumpWidget(const SizedBox());
+    await cloud.dispose();
+    session.dispose();
+  });
+
   testWidgets(
     'voice assistant presents its panel and full-screen edge outline',
     (tester) async {
@@ -706,6 +755,65 @@ class _FakeVoiceRecognitionController implements VoiceRecognitionController {
   @override
   Future<void> dispose() async {
     _isListening = false;
+  }
+}
+
+class _FakeCloudVoiceAgentController extends ChangeNotifier
+    implements VoiceAgentController {
+  _FakeCloudVoiceAgentController(this.session);
+
+  final StreamController<VoiceAgentEvent> _events =
+      StreamController<VoiceAgentEvent>.broadcast();
+
+  @override
+  final AssistantSessionController session;
+
+  @override
+  VoiceAgentState state = const VoiceAgentState(
+    phase: VoiceAgentConnectionPhase.connected,
+    usingCloud: true,
+    isListening: true,
+  );
+
+  @override
+  Stream<VoiceAgentEvent> get events => _events.stream;
+
+  void emitSchemeResults(CloudSchemeResult result) {
+    _events.add(
+      VoiceAgentEvent(
+        VoiceAgentEventType.schemeResults,
+        data: {
+          'results': <CloudSchemeResult>[result],
+        },
+      ),
+    );
+  }
+
+  @override
+  Future<void> initialize() async {}
+
+  @override
+  Future<void> connect() async {}
+
+  @override
+  Future<void> sendText(String text) async {}
+
+  @override
+  Future<void> setMuted(bool muted) async {}
+
+  @override
+  Future<void> interrupt() async {}
+
+  @override
+  Future<void> retry() async {}
+
+  @override
+  Future<void> close() async {}
+
+  @override
+  Future<void> dispose() async {
+    await _events.close();
+    super.dispose();
   }
 }
 
