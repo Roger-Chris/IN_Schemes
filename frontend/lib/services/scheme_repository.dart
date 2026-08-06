@@ -20,12 +20,14 @@ class SchemeRepository {
   // ── In-memory cache ──────────────────────────────────────────────────
   List<Scheme>? _cachedSchemes;
   Map<String, Scheme>? _schemeByIdMap;
+  String? _cachedLanguage;
   Future<MssCatalogBundle>? _bundleFuture;
   Map<String, int>? _cachedCategoryCounts;
 
   void clearCache() {
     _cachedSchemes = null;
     _schemeByIdMap = null;
+    _cachedLanguage = null;
     _bundleFuture = null;
     _cachedCategoryCounts = null;
   }
@@ -95,9 +97,11 @@ class SchemeRepository {
       _bundleFuture ??= MssCatalogBundle.load();
 
   // ── 1. getAllSchemes() ────────────────────────────────────────────────
-  /// Returns the complete curated catalog of schemes (217 records).
-  Future<List<Scheme>> getAllSchemes() async {
-    if (_cachedSchemes != null) return _cachedSchemes!;
+  /// Returns the complete curated catalog of schemes (217 records) for [langCode].
+  Future<List<Scheme>> getAllSchemes({String langCode = 'en'}) async {
+    if (_cachedSchemes != null && _cachedLanguage == langCode) {
+      return _cachedSchemes!;
+    }
 
     try {
       final bundle = await _loadBundle();
@@ -107,7 +111,7 @@ class SchemeRepository {
       final byIdMap = <String, Scheme>{};
 
       for (final entity in schemeEntities) {
-        final scheme = MssSchemeAdapter.toScheme(entity, bundle);
+        final scheme = MssSchemeAdapter.toScheme(entity, bundle, langCode: langCode);
         schemes.add(scheme);
         byIdMap[scheme.id.toLowerCase()] = scheme;
         if (scheme.schemeCode.isNotEmpty) {
@@ -115,6 +119,7 @@ class SchemeRepository {
         }
       }
 
+      _cachedLanguage = langCode;
       _cachedSchemes = List.unmodifiable(schemes);
       _schemeByIdMap = Map.unmodifiable(byIdMap);
       return _cachedSchemes!;
@@ -126,9 +131,9 @@ class SchemeRepository {
 
   // ── 2. searchSchemes(query) ────────────────────────────────────────────
   /// Intelligently ranks natural-language English, Tamil, and Tanglish queries.
-  Future<List<Scheme>> searchSchemes(String query) async {
-    if (query.trim().isEmpty) return getAllSchemes();
-    final matches = await searchSchemeMatches(query);
+  Future<List<Scheme>> searchSchemes(String query, {String langCode = 'en'}) async {
+    if (query.trim().isEmpty) return getAllSchemes(langCode: langCode);
+    final matches = await searchSchemeMatches(query, langCode: langCode);
     return matches.map((match) => match.scheme).toList(growable: false);
   }
 
@@ -136,18 +141,19 @@ class SchemeRepository {
   Future<List<SchemeSearchMatch>> searchSchemeMatches(
     String query, {
     int? limit,
+    String langCode = 'en',
   }) async {
-    final all = await getAllSchemes();
+    final all = await getAllSchemes(langCode: langCode);
     return IntelligentSchemeSearch.rank(query, all, limit: limit);
   }
 
   // ── 3. getSchemesByCategory(category) ─────────────────────────────────
   /// Returns schemes matching a specific category key with exact metadata filtering.
-  Future<List<Scheme>> getSchemesByCategory(String category) async {
-    if (category.trim().isEmpty) return getAllSchemes();
+  Future<List<Scheme>> getSchemesByCategory(String category, {String langCode = 'en'}) async {
+    if (category.trim().isEmpty) return getAllSchemes(langCode: langCode);
 
     final q = category.toLowerCase().trim();
-    final all = await getAllSchemes();
+    final all = await getAllSchemes(langCode: langCode);
 
     return all.where((s) {
       final cat = s.category.toLowerCase();
@@ -230,9 +236,9 @@ class SchemeRepository {
 
   // ── 4. getSchemeById(id) ───────────────────────────────────────────────
   /// Loads a Scheme by ID or Code in O(1) time.
-  Future<Scheme?> getSchemeById(String id) async {
+  Future<Scheme?> getSchemeById(String id, {String langCode = 'en'}) async {
     if (id.trim().isEmpty) return null;
-    await getAllSchemes();
+    await getAllSchemes(langCode: langCode);
     final key = id.trim().toLowerCase();
     final cached = _schemeByIdMap?[key];
     if (cached != null) return cached;
@@ -242,7 +248,7 @@ class SchemeRepository {
       final bundle = await _loadBundle();
       final entity = bundle.getEntity(id);
       if (entity != null && entity.entityType == 'scheme') {
-        return MssSchemeAdapter.toScheme(entity, bundle);
+        return MssSchemeAdapter.toScheme(entity, bundle, langCode: langCode);
       }
     } catch (e) {
       debugPrint('[SchemeRepository] getSchemeById error: $e');

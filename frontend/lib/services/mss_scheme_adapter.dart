@@ -35,8 +35,39 @@ class MssSchemeAdapter {
     return (defaultStr, '');
   }
 
+  /// Extracts localized text from a map, list, or string with strict fallback:
+  /// `preferred locale (langCode) → alternate locale (en/ta) → default text`
+  static String _getLocalizedText(dynamic val, [String preferredLang = 'en']) {
+    if (val == null) return '';
+    if (val is Map) {
+      final preferred = val[preferredLang]?.toString();
+      if (preferred != null && preferred.trim().isNotEmpty) {
+        return preferred.trim();
+      }
+      final altLang = preferredLang == 'ta' ? 'en' : 'ta';
+      final alt = val[altLang]?.toString();
+      if (alt != null && alt.trim().isNotEmpty) {
+        return alt.trim();
+      }
+      final desc = val['description'] ?? val['summary'] ?? val['text'] ?? val['name'];
+      if (desc != null) return _getLocalizedText(desc, preferredLang);
+    } else if (val is List) {
+      final items = val.map((e) => _getLocalizedText(e, preferredLang)).where((s) => s.isNotEmpty);
+      return items.join('\n• ');
+    } else if (val is String) {
+      return val.trim();
+    }
+    return '';
+  }
+
+
+
   /// Convert a scheme entity to a Scheme model object using in-memory catalog graph references.
-  static Scheme toScheme(MssEntity entity, MssCatalogBundle bundle) {
+  static Scheme toScheme(
+    MssEntity entity,
+    MssCatalogBundle bundle, {
+    String langCode = 'en',
+  }) {
     assert(
       entity.entityType == 'scheme',
       'MssSchemeAdapter requires an entity of type scheme',
@@ -65,32 +96,30 @@ class MssSchemeAdapter {
     final nameEn = entity.getLocalizedName('en');
     final nameTa = entity.getLocalizedName('ta');
     final name = nameEn.isNotEmpty ? nameEn : (nameTa.isNotEmpty ? nameTa : entity.code);
-    final shortName = (entity.identity['shortName'] as String?) ??
-        (entity.identity['short_name'] as String?) ??
-        (classification['shortName'] as String?) ??
-        '';
-    final fullSchemeName = (entity.identity['fullName'] as String?) ?? name;
+    final shortName = _getLocalizedText(entity.identity['shortName'] ?? classification['shortName'], langCode);
+    final fullSchemeName = _getLocalizedText(entity.identity['fullName'], langCode);
+    final finalFullName = fullSchemeName.isNotEmpty ? fullSchemeName : name;
 
     // ── 2. Graph Relationship Resolution (Authorities & Institutions) ───
     final resolvedAuthorities = bundle.getAuthoritiesForScheme(entity);
     final resolvedInstitutions = bundle.getInstitutionsForScheme(entity);
 
-    String ministry = (gov['ministryText'] as String?) ?? '';
-    String department = (gov['departmentText'] as String?) ?? '';
-    String implementingAgency = (gov['implementingAgencyText'] as String?) ?? '';
+    String ministry = _getLocalizedText(gov['ministryText'], langCode);
+    String department = _getLocalizedText(gov['departmentText'], langCode);
+    String implementingAgency = _getLocalizedText(gov['implementingAgencyText'], langCode);
 
     if (ministry.isEmpty && resolvedAuthorities.isNotEmpty) {
-      ministry = resolvedAuthorities.first.getLocalizedName('en');
+      ministry = resolvedAuthorities.first.getLocalizedName(langCode);
     }
     if (department.isEmpty) {
       if (resolvedAuthorities.length > 1) {
-        department = resolvedAuthorities[1].getLocalizedName('en');
+        department = resolvedAuthorities[1].getLocalizedName(langCode);
       } else if (ministry.isNotEmpty) {
         department = ministry;
       }
     }
     if (implementingAgency.isEmpty && resolvedInstitutions.isNotEmpty) {
-      implementingAgency = resolvedInstitutions.first.getLocalizedName('en');
+      implementingAgency = resolvedInstitutions.first.getLocalizedName(langCode);
     }
 
     final sponsoringBody = ministry.isNotEmpty ? ministry : (department.isNotEmpty ? department : 'Government of India');
@@ -133,24 +162,16 @@ class MssSchemeAdapter {
       overviewEn = summaryRaw;
     }
 
-    String objectivesEn = '';
-    final objectivesRaw = content['objectives'] ?? overviewObj['objective'];
-    if (objectivesRaw is Map<String, dynamic>) {
-      final en = objectivesRaw['en'] as String? ?? '';
-      final ta = objectivesRaw['ta'] as String? ?? '';
-      objectivesEn = '$en $ta'.trim();
-    } else if (objectivesRaw is List) {
-      objectivesEn = objectivesRaw.whereType<String>().join('\n• ');
-      if (objectivesEn.isNotEmpty) objectivesEn = '• $objectivesEn';
-    } else if (objectivesRaw is String) {
-      objectivesEn = objectivesRaw;
-    }
+    final objectivesEn = _getLocalizedText(
+      content['objectives'] ?? overviewObj['objective'],
+      langCode,
+    );
 
     // ── 4. Target Beneficiaries & At-a-Glance Chips ────────────────────
-    final beneficiaryDesc = (targetBeneficiariesObj['description'] as String?) ??
-        (classification['targetBeneficiariesText'] as String?) ??
-        _asList(classification['targetBeneficiaries'])?.join(', ') ??
-        '';
+    final beneficiaryDesc = _getLocalizedText(
+      targetBeneficiariesObj['description'] ?? classification['targetBeneficiariesText'] ?? classification['targetBeneficiaries'],
+      langCode,
+    );
     final targetBeneficiary = beneficiaryDesc.isNotEmpty ? beneficiaryDesc : 'Eligible MSMEs & Enterprises';
 
     if (overviewEn.isEmpty) {
@@ -230,10 +251,10 @@ class MssSchemeAdapter {
     }
 
     final benefitTypesList = _asList(benefitsObj['benefitTypes'])?.map((e) => e.toString()).toList() ?? [];
-    final capitalSubsidyDetails = capSubsidy != null ? (capSubsidy['description'] ?? capSubsidy['maxText'] ?? '').toString() : '';
-    final interestSubventionDetails = intSubvention != null ? (intSubvention['description'] ?? intSubvention['text'] ?? '').toString() : '';
-    final marginMoneyDetails = marginMoney != null ? (marginMoney['description'] ?? marginMoney['text'] ?? '').toString() : '';
-    final loanGuaranteeDetails = loanGuarantee != null ? (loanGuarantee['description'] ?? loanGuarantee['text'] ?? '').toString() : '';
+    final capitalSubsidyDetails = capSubsidy != null ? _getLocalizedText(capSubsidy['description'] ?? capSubsidy['maxText'], langCode) : '';
+    final interestSubventionDetails = intSubvention != null ? _getLocalizedText(intSubvention['description'] ?? intSubvention['text'], langCode) : '';
+    final marginMoneyDetails = marginMoney != null ? _getLocalizedText(marginMoney['description'] ?? marginMoney['text'], langCode) : '';
+    final loanGuaranteeDetails = loanGuarantee != null ? _getLocalizedText(loanGuarantee['description'] ?? loanGuarantee['text'], langCode) : '';
 
     final rawBenefitsDisplayText = benefitsText.isNotEmpty ? benefitsText : overviewEn;
 
@@ -243,32 +264,28 @@ class MssSchemeAdapter {
     final narrativeEl = eligibilityObj['narrative'] as Map<String, dynamic>?;
 
     // A. Narrative Summary & Bullets
-    if (narrativeEl != null && narrativeEl['summary'] != null && (narrativeEl['summary'] as String).isNotEmpty) {
-      elCriteriaList.add(narrativeEl['summary'] as String);
-    }
-    final narrativeBullets = _asList(narrativeEl?['bulletPoints']);
-    if (narrativeBullets != null) {
-      for (final b in narrativeBullets) {
-        if (b is String && b.isNotEmpty && !elCriteriaList.contains(b)) {
-          elCriteriaList.add(b);
+    if (narrativeEl != null) {
+      final nSum = _getLocalizedText(narrativeEl['summary'], langCode);
+      if (nSum.isNotEmpty) elCriteriaList.add(nSum);
+
+      final nBullets = _asList(narrativeEl['bulletPoints']);
+      if (nBullets != null) {
+        for (final b in nBullets) {
+          final s = _getLocalizedText(b, langCode);
+          if (s.isNotEmpty && !elCriteriaList.contains(s)) elCriteriaList.add(s);
         }
       }
     }
 
     // B. Direct Eligibility Text / Rules
-    if (eligibilityTextObj['summary'] != null && (eligibilityTextObj['summary'] as String).isNotEmpty) {
-      final s = eligibilityTextObj['summary'] as String;
-      if (!elCriteriaList.contains(s)) elCriteriaList.add(s);
-    }
+    final elSum = _getLocalizedText(eligibilityTextObj['summary'], langCode);
+    if (elSum.isNotEmpty && !elCriteriaList.contains(elSum)) elCriteriaList.add(elSum);
+
     final elRules = _asList(content['eligibilityRules']);
     if (elRules != null) {
       for (final rule in elRules) {
-        if (rule is Map<String, dynamic>) {
-          final desc = rule['description'] as String?;
-          if (desc != null && desc.isNotEmpty && !elCriteriaList.contains(desc)) {
-            elCriteriaList.add(desc);
-          }
-        }
+        final rText = _getLocalizedText(rule, langCode);
+        if (rText.isNotEmpty && !elCriteriaList.contains(rText)) elCriteriaList.add(rText);
       }
     }
 
@@ -310,7 +327,7 @@ class MssSchemeAdapter {
         elCriteriaList.add('Eligible Business Types: ${allowedBusinessTypes.join(', ')}');
       }
 
-      educationRequirements = (structuredEl['education'] as String?) ?? '';
+      educationRequirements = _getLocalizedText(structuredEl['education'], langCode);
       if (educationRequirements.isNotEmpty) {
         elCriteriaList.add('Educational Qualification: $educationRequirements');
       }
@@ -318,36 +335,39 @@ class MssSchemeAdapter {
       final mConds = _asList(structuredEl['mandatoryConditions']);
       if (mConds != null) {
         for (final mc in mConds) {
-          final s = mc.toString();
-          mandatoryConditions.add(s);
-          if (!elCriteriaList.contains(s)) elCriteriaList.add(s);
+          final s = _getLocalizedText(mc, langCode);
+          if (s.isNotEmpty) {
+            mandatoryConditions.add(s);
+            if (!elCriteriaList.contains(s)) elCriteriaList.add(s);
+          }
         }
       }
 
       final oConds = _asList(structuredEl['optionalConditions']);
       if (oConds != null) {
         for (final oc in oConds) {
-          final s = oc.toString();
-          optionalConditions.add(s);
-          if (!elCriteriaList.contains(s)) elCriteriaList.add(s);
+          final s = _getLocalizedText(oc, langCode);
+          if (s.isNotEmpty) {
+            optionalConditions.add(s);
+            if (!elCriteriaList.contains(s)) elCriteriaList.add(s);
+          }
         }
       }
 
       final sCats = _asList(structuredEl['specialCategories']);
       if (sCats != null) {
         for (final sc in sCats) {
-          final s = sc.toString();
-          specialCategories.add(s);
+          final s = _getLocalizedText(sc, langCode);
+          if (s.isNotEmpty) specialCategories.add(s);
         }
       }
 
-      final locReq = structuredEl['locationRequirement'] as String?;
-      if (locReq != null && locReq.isNotEmpty && !elCriteriaList.contains('Location: $locReq')) {
+      final locReq = _getLocalizedText(structuredEl['locationRequirement'], langCode);
+      if (locReq.isNotEmpty && !elCriteriaList.contains('Location: $locReq')) {
         elCriteriaList.add('Location: $locReq');
       }
     }
 
-    // Fallback: If criteria list is still empty, include target beneficiary statement
     if (elCriteriaList.isEmpty && targetBeneficiary.isNotEmpty) {
       elCriteriaList.add('Target Beneficiaries: $targetBeneficiary');
     }
@@ -420,7 +440,6 @@ class MssSchemeAdapter {
       }
     }
 
-    // Fallback: Construct application process steps if raw array is unpopulated
     if (stepsList.isEmpty) {
       final mode = (appProc['modeText'] as String?) ?? (appProc['mode'] as String?) ?? 'Online';
       stepsList.add('Step 1: Register and fill $mode application via $sponsoringBody portal');
@@ -469,7 +488,6 @@ class MssSchemeAdapter {
       }
     }
 
-    // Always ensure institutional service entries exist
     if (serviceList.isEmpty) {
       serviceList.add(SchemeService(
         name: '$issuingBody Application & Verification Service',
@@ -488,7 +506,7 @@ class MssSchemeAdapter {
 
     // ── 9. Graph Linking: Finance, Tax, Knowledge, Contacts ───────────
     final financeProducts = bundle.getFinanceProductsForScheme(entity);
-    final financeProductsSummary = financeProducts.map((f) => '${f.getLocalizedName('en')} - ${f.content['summary'] ?? f.code}').toList();
+    final financeProductsSummary = financeProducts.map((f) => '${f.getLocalizedName(langCode)} - ${f.content['summary'] ?? f.code}').toList();
 
     for (final fin in financeProducts) {
       final amountObj = fin.content['amount'] as Map<String, dynamic>?;
@@ -506,19 +524,19 @@ class MssSchemeAdapter {
     }
 
     final taxProvisions = bundle.getTaxProvisionsForScheme(entity);
-    final taxExemptionsSummary = taxProvisions.map((t) => '${t.getLocalizedName('en')} (${t.code})').toList();
+    final taxExemptionsSummary = taxProvisions.map((t) => '${t.getLocalizedName(langCode)} (${t.code})').toList();
     final applicableTaxesList = taxProvisions.map((t) => (t.content['taxType'] as String?) ?? 'Income Tax').toSet().toList();
 
     final knowledgeItems = bundle.getKnowledgeItemsForScheme(entity);
-    final knowledgeGuidanceList = knowledgeItems.map((k) => '${k.getLocalizedName('en')}: ${k.content['summary'] ?? ""}').toList();
+    final knowledgeGuidanceList = knowledgeItems.map((k) => '${k.getLocalizedName(langCode)}: ${k.content['summary'] ?? ""}').toList();
 
     final faqList = <Map<String, String>>[];
     final rawFaqs = _asList(content['faqs']);
     if (rawFaqs != null) {
       for (final f in rawFaqs) {
         if (f is Map<String, dynamic>) {
-          final q = (f['question'] as String?) ?? '';
-          final a = (f['answer'] as String?) ?? '';
+          final q = _getLocalizedText(f['question'], langCode);
+          final a = _getLocalizedText(f['answer'], langCode);
           if (q.isNotEmpty && a.isNotEmpty) {
             faqList.add({'question': q, 'answer': a, 'category': (f['category'] as String?) ?? ''});
           }
@@ -575,7 +593,7 @@ class MssSchemeAdapter {
       }
     }
 
-    final searchKeywords = '$name $shortName $fullSchemeName $sponsoringBody $issuingBody $sector ${glanceChips.join(" ")}'.trim();
+    final searchKeywords = '$name $shortName $finalFullName $sponsoringBody $issuingBody $sector ${glanceChips.join(" ")}'.trim();
 
     return Scheme(
       id: entity.id,
@@ -583,7 +601,7 @@ class MssSchemeAdapter {
       name: name,
       nameTa: nameTa,
       shortName: shortName,
-      fullSchemeName: fullSchemeName,
+      fullSchemeName: finalFullName,
       ministry: ministry,
       department: department,
       implementingAgency: implementingAgency,
