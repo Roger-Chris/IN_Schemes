@@ -18,23 +18,6 @@ class MssSchemeAdapter {
     return null;
   }
 
-  static List<String> _extractLegacyCodes(Map<String, dynamic> identity) {
-    final codes = <String>[];
-    final rawLegacy = identity['legacyCodes'] ?? identity['legacy_codes'];
-    if (rawLegacy is List) {
-      for (final item in rawLegacy) {
-        if (item is Map) {
-          final c = item['code'] as String?;
-          if (c != null && c.isNotEmpty) codes.add(c);
-        } else if (item is String && item.isNotEmpty) {
-          codes.add(item);
-        }
-      }
-    } else if (rawLegacy is String && rawLegacy.isNotEmpty) {
-      codes.add(rawLegacy);
-    }
-    return codes;
-  }
 
   /// Convert a scheme entity to a Scheme model object using in-memory catalog graph references.
   static Scheme toScheme(MssEntity entity, MssCatalogBundle bundle) {
@@ -49,7 +32,7 @@ class MssSchemeAdapter {
     final resources = (content['resources'] as Map<String, dynamic>?) ?? {};
     final appProc = (content['applicationProcess'] as Map<String, dynamic>?) ?? {};
     final appTimeline = (content['applicationTimeline'] as Map<String, dynamic>?) ?? {};
-    final search = entity.search;
+
     final metadata = entity.metadata;
     final overviewObj = (content['overview'] as Map<String, dynamic>?) ?? {};
     final targetBeneficiariesObj = (content['targetBeneficiaries'] as Map<String, dynamic>?) ?? {};
