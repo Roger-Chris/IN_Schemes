@@ -1633,13 +1633,13 @@ class _SaarthiHomeScreenState extends State<SaarthiHomeScreen> with TickerProvid
                       IconButton(
                         onPressed: _endConversation,
                         icon: const Icon(
-                          Icons.stop_circle,
-                          color: Colors.red,
+                          Icons.delete_sweep_outlined,
+                          color: Color(0xFF64748B),
                           size: 28,
                         ),
                       ),
                       Text(
-                        'End',
+                        'Clear Chat 🧹',
                         style: GoogleFonts.inter(fontSize: 10, color: const Color(0xFF64748B)),
                       ),
                     ],
