@@ -57,9 +57,13 @@ class EligibilityResultsScreen extends StatelessWidget {
                 ),
                 onPressed: () {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Sharing eligibility results...'),
-                      duration: Duration(seconds: 1),
+                    SnackBar(
+                      content: Text(
+                        provider.selectedLanguage == 'ta'
+                            ? 'தகுதி முடிவுகள் பகிரப்படுகின்றன...'
+                            : 'Sharing eligibility results...',
+                      ),
+                      duration: const Duration(seconds: 1),
                     ),
                   );
                 },

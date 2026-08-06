@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../models/scheme_model.dart';
+import '../models/localized_scheme.dart';
 import '../engine/recommendation_engine.dart';
 import '../providers/app_state_provider.dart';
 
@@ -25,7 +26,7 @@ class SchemeCard extends StatelessWidget {
     this.showMatchPercentage = true,
   });
 
-  List<String> get _otherTags {
+  List<String> _getOtherTags(LocalizedScheme locScheme) {
     final List<String> list = [];
 
     void addSplit(String value) {
@@ -43,32 +44,31 @@ class SchemeCard extends StatelessWidget {
       }
     }
 
-    addSplit(scheme.category);
-    addSplit(scheme.schemeType);
-    addSplit(scheme.sector);
+    addSplit(locScheme.category);
+    addSplit(locScheme.schemeType);
+    addSplit(locScheme.sector);
+    if (list.isEmpty) list.addAll(locScheme.glanceChips);
 
     final Set<String> seen = {};
     final List<String> uniqueList = [];
 
-    final sponsoringLower = scheme.sponsoringBody.toLowerCase();
-    final govLevelLower = scheme.governmentLevel.toLowerCase();
-    final stateLower = scheme.state.toLowerCase();
+    final sponsoringLower = locScheme.sponsoringBody.toLowerCase();
+    final govLevelLower = locScheme.governmentLevel.toLowerCase();
+    final stateLower = locScheme.state.toLowerCase();
 
     for (final tag in list) {
       final lower = tag.toLowerCase();
       final isSubtitleTerm =
           sponsoringLower.contains(lower) ||
           govLevelLower.contains(lower) ||
-          stateLower.contains(lower) ||
-          lower == 'central' ||
-          lower == 'state';
+          stateLower.contains(lower);
       if (!seen.contains(lower) && !isSubtitleTerm) {
         seen.add(lower);
         uniqueList.add(tag);
       }
     }
 
-    return uniqueList.take(3).toList(); // limit to 3 tags to avoid overflow
+    return uniqueList.take(3).toList();
   }
 
   String? _getLocalStateEmblem(Scheme scheme) {
@@ -385,18 +385,17 @@ class SchemeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tags = List<String>.from(_otherTags)
-      ..sort((a, b) => a.length.compareTo(b.length));
     final provider = Provider.of<AppProvider>(context);
+    final locScheme = scheme.toLocalized(provider.selectedLanguage);
+    final tags = List<String>.from(_getOtherTags(locScheme))
+      ..sort((a, b) => a.length.compareTo(b.length));
 
-
-
-    final department = scheme.sponsoringBody.isNotEmpty
-        ? scheme.sponsoringBody
-        : scheme.issuingBody;
-    final level = scheme.state.isNotEmpty && scheme.state != 'All India'
-        ? scheme.state
-        : scheme.governmentLevel;
+    final department = locScheme.sponsoringBody.isNotEmpty
+        ? locScheme.sponsoringBody
+        : locScheme.issuingBody;
+    final level = locScheme.state.isNotEmpty && locScheme.state != 'All India'
+        ? locScheme.state
+        : locScheme.governmentLevel;
     final subtitleText = [
       if (department.isNotEmpty) department,
       if (level.isNotEmpty) level,
@@ -459,11 +458,12 @@ class SchemeCard extends StatelessWidget {
                         children: [
                           Expanded(
                             child: Text(
-                              scheme.name,
+                              locScheme.name,
                               style: GoogleFonts.poppins(
-                                fontSize: 13,
+                                fontSize: provider.selectedLanguage == 'ta' ? 12.0 : 13.0,
                                 fontWeight: FontWeight.bold,
                                 color: const Color(0xFF0F172A),
+                                height: provider.selectedLanguage == 'ta' ? 1.35 : 1.2,
                               ),
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
@@ -477,11 +477,11 @@ class SchemeCard extends StatelessWidget {
                                 vertical: 2,
                               ),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFE8F5E9),
+                                color: const Color(0xFFE8F5E8),
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(
-                                "${RecommendationEngine.evaluate(provider.profile, scheme).percentage}% Match",
+                                "${RecommendationEngine.evaluate(provider.profile, scheme).percentage}% ${provider.selectedLanguage == 'ta' ? 'பொருத்தம்' : 'Match'}",
                                 style: GoogleFonts.inter(
                                   color: const Color(0xFF2E7D32),
                                   fontSize: 8,
@@ -565,7 +565,11 @@ class SchemeCard extends StatelessWidget {
                         onTap: () {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text('Sharing "${scheme.name}"...'),
+                              content: Text(
+                                provider.selectedLanguage == 'ta'
+                                    ? '"${locScheme.name}" பகிரப்படுகிறது...'
+                                    : 'Sharing "${scheme.name}"...',
+                              ),
                               duration: const Duration(seconds: 1),
                             ),
                           );

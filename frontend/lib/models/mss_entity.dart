@@ -59,6 +59,26 @@ class MssEntity {
     return '';
   }
 
+  /// Multilingual attribute resolution for any field (e.g. 'summary', 'overview', 'description', 'benefits').
+  String getLocalizedAttribute(String key, [String preferredLang = 'en']) {
+    final loc = raw['localization'] as Map<String, dynamic>?;
+    if (loc != null) {
+      final preferred = loc[preferredLang] as Map<String, dynamic>?;
+      if (preferred != null && (preferred[key] as String?)?.isNotEmpty == true) {
+        return preferred[key] as String;
+      }
+      final ta = loc['ta'] as Map<String, dynamic>?;
+      if (ta != null && (ta[key] as String?)?.isNotEmpty == true) {
+        return ta[key] as String;
+      }
+      final en = loc['en'] as Map<String, dynamic>?;
+      if (en != null && (en[key] as String?)?.isNotEmpty == true) {
+        return en[key] as String;
+      }
+    }
+    return '';
+  }
+
   /// Accessors for nested entity sections
   Map<String, dynamic> get content =>
       (raw['content'] as Map<String, dynamic>?) ?? const {};

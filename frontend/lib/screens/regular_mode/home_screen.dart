@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../providers/app_state_provider.dart';
+import '../../l10n/l10n.dart';
 import '../../models/scheme_model.dart';
+import '../../models/localized_scheme.dart';
 import '../../services/scheme_repository.dart';
 import '../../widgets/voice_assistant_overlay.dart';
 
@@ -30,6 +32,53 @@ class _HomeScreenState extends State<HomeScreen> {
   final ScrollController _recommendedScrollController = ScrollController();
   int _activeCarouselIndex = 0;
   Timer? _carouselTimer;
+
+  double _scaledFontSize(double baseSize) {
+    final provider = Provider.of<AppProvider>(context, listen: false);
+    return provider.selectedLanguage == 'ta' ? baseSize * 0.88 : baseSize;
+  }
+
+  double _scaledLineHeight([double defaultHeight = 1.28]) {
+    final provider = Provider.of<AppProvider>(context, listen: false);
+    return provider.selectedLanguage == 'ta' ? defaultHeight * 1.06 : defaultHeight;
+  }
+
+  FontWeight _scaledFontWeight(FontWeight baseWeight) {
+    final provider = Provider.of<AppProvider>(context, listen: false);
+    if (provider.selectedLanguage == 'ta') {
+      if (baseWeight == FontWeight.bold || baseWeight == FontWeight.w700) {
+        return FontWeight.w600;
+      }
+      if (baseWeight == FontWeight.w600) {
+        return FontWeight.w500;
+      }
+    }
+    return baseWeight;
+  }
+
+  String _getCarouselBadgeText(String raw) {
+    if (raw == 'Alert') return context.l10n.carouselBadgeAlert;
+    if (raw == 'New Scheme') return context.l10n.carouselBadgeNewScheme;
+    if (raw == 'Notify') return context.l10n.carouselBadgeNotify;
+    if (raw == 'Featured') return context.l10n.featured;
+    return raw;
+  }
+
+  String _getCarouselTitle(String raw) {
+    if (raw == 'Applications Closing Soon') return context.l10n.carouselTitleApplicationsClosingSoon;
+    if (raw == 'New Scheme') return context.l10n.carouselTitleNewScheme;
+    if (raw == 'Important Update') return context.l10n.carouselTitleImportantUpdate;
+    if (raw == 'For Women Entrepreneurs') return context.l10n.forWomenEntrepreneurs;
+    return raw;
+  }
+
+  String _getCarouselSubtitle(String raw) {
+    if (raw == 'PMEGP · 2 days left') return context.l10n.carouselSubPmegpDaysLeft;
+    if (raw == 'TN Export Promotion Scheme') return context.l10n.carouselSubTnExport;
+    if (raw == 'UDYAM registration process updated') return context.l10n.carouselSubUdyamProcess;
+    if (raw == 'Explore special funding schemes') return context.l10n.exploreSpecialFundingSchemes;
+    return raw;
+  }
 
   @override
   void initState() {
@@ -136,7 +185,15 @@ class _HomeScreenState extends State<HomeScreen> {
     if (!provider.isLoggedIn) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
-    final recommended = provider.allSchemes.take(4).toList();
+    final recommendedScored = provider.recommendedSchemes
+        .where((entry) => entry.value.score > 0)
+        .toList();
+    final recommended = (recommendedScored.isNotEmpty
+            ? recommendedScored
+            : provider.recommendedSchemes)
+        .take(5)
+        .map((entry) => entry.key)
+        .toList();
 
     return Scaffold(
       backgroundColor: const Color(
@@ -267,7 +324,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Row(
               children: [
                 Text(
-                  "Good Morning,",
+                  context.l10n.goodMorning,
                   style: GoogleFonts.inter(
                     fontSize: 14,
                     color: const Color(0xFF64748B),
@@ -280,13 +337,18 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             const SizedBox(height: 2),
             Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  displayName,
-                  style: GoogleFonts.poppins(
-                    fontSize: provider.isGuest ? 20.0 : 28.0,
-                    fontWeight: FontWeight.bold,
-                    color: const Color(0xFF0F172A),
+                Flexible(
+                  child: Text(
+                    displayName,
+                    style: GoogleFonts.poppins(
+                      fontSize: provider.isGuest ? 18.0 : 24.0,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF0F172A),
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
                 if (!provider.isGuest) ...[
@@ -294,7 +356,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   const Icon(
                     Icons.verified,
                     color: Color(0xFF2563EB),
-                    size: 22,
+                    size: 20,
                   ),
                 ],
               ],
@@ -384,7 +446,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 provider.updateTabIndex(1);
               },
               child: Text(
-                "Search schemes, benefits or ask anything...",
+                context.l10n.searchPlaceholder,
                 style: GoogleFonts.inter(
                   color: const Color(0xFF94A3B8),
                   fontSize: 13.5,
@@ -421,7 +483,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(width: 4),
                   Text(
-                    "Filter",
+                    context.l10n.filter,
                     style: GoogleFonts.inter(
                       fontSize: 12.5,
                       fontWeight: FontWeight.w600,
@@ -440,11 +502,11 @@ class _HomeScreenState extends State<HomeScreen> {
   // Quick Horizontal Pills
   Widget _buildQuickPills(BuildContext context, AppProvider provider) {
     final pills = [
-      "Search PMEGP",
-      "Search Startup India",
-      "Search MSME Loans",
-      "Search Women Entrepreneur Schemes",
-      "Search ASCEND Workshops",
+      context.l10n.quickPillPmegp,
+      context.l10n.quickPillStartup,
+      context.l10n.quickPillLoans,
+      context.l10n.quickPillWomen,
+      context.l10n.quickPillAscend,
     ];
 
     return SizedBox(
@@ -457,7 +519,7 @@ class _HomeScreenState extends State<HomeScreen> {
           final text = pills[index];
           return GestureDetector(
             onTap: () {
-              final query = text.replaceAll("Search ", "");
+              final query = text.replaceAll("Search ", "").replaceAll("தேடுக", "").trim();
               if (widget.onVoiceQuery != null) {
                 widget.onVoiceQuery!(query);
               } else {
@@ -570,7 +632,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      "Complete Your Profile",
+                      context.l10n.completeYourProfile,
                       style: GoogleFonts.poppins(
                         fontSize: 14.0,
                         fontWeight: FontWeight.bold,
@@ -579,7 +641,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     const SizedBox(height: 3),
                     Text(
-                      "Unlock personalized scheme recommendations.",
+                      context.l10n.unlockPersonalizedSchemeRecommendations,
                       style: GoogleFonts.inter(
                         fontSize: 10.5,
                         color: const Color(0xFF334155),
@@ -614,7 +676,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Column(
       children: [
         SizedBox(
-          height: 148,
+          height: 154,
           child: PageView.builder(
             controller: _carouselPageController,
             onPageChanged: (index) {
@@ -650,11 +712,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: _buildCarouselCard(
                     bgGradient: LinearGradient(colors: gradientColors),
                     borderColor: _parseHexColor(item['badge_bg_color'] ?? '#E2E8F0'),
-                    badgeText: item['badge_text'] ?? '',
+                    badgeText: _getCarouselBadgeText(item['badge_text'] ?? ''),
                     badgeTextColor: _parseHexColor(item['badge_text_color'] ?? '#0F172A'),
                     badgeBgColor: _parseHexColor(item['badge_bg_color'] ?? '#F1F5F9'),
-                    title: item['title'] ?? '',
-                    subtitle: item['subtitle'] ?? '',
+                    title: _getCarouselTitle(item['title'] ?? ''),
+                    subtitle: _getCarouselSubtitle(item['subtitle'] ?? ''),
                     titleColor: const Color(0xFF1E293B),
                     onTap: () {
                       _handleCarouselTap(context, item);
@@ -832,25 +894,27 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 4),
                     Text(
                       displayTitle,
                       style: GoogleFonts.poppins(
-                        fontSize: 13.5,
-                        fontWeight: FontWeight.bold,
+                        fontSize: _scaledFontSize(13.0),
+                        fontWeight: _scaledFontWeight(FontWeight.bold),
                         color: titleColor,
-                        height: 1.25,
+                        height: 1.2,
                       ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
                     if (displaySubtitle.isNotEmpty) ...[
-                      const Spacer(),
+                      const SizedBox(height: 4),
                       Text(
                         displaySubtitle,
                         style: GoogleFonts.inter(
-                          fontSize: 10.0,
+                          fontSize: _scaledFontSize(9.5),
                           color: const Color(0xFF475569),
-                          fontWeight: FontWeight.w600,
-                          height: 1.3,
+                          fontWeight: _scaledFontWeight(FontWeight.w600),
+                          height: 1.25,
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
@@ -977,7 +1041,7 @@ class _HomeScreenState extends State<HomeScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          "What would you like to do today?",
+          context.l10n.whatWouldYouLikeToDoToday,
           style: GoogleFonts.poppins(
             fontSize: 16.5,
             fontWeight: FontWeight.bold,
@@ -992,31 +1056,31 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               _buildJourneyActionCard(
                 context: context,
-                title: 'Export Support',
+                title: context.l10n.exportSupport,
                 icon: Icons.public_rounded,
                 categoryName: 'Business & MSME',
               ),
               _buildJourneyActionCard(
                 context: context,
-                title: 'Grow Business',
+                title: context.l10n.growBusiness,
                 icon: Icons.trending_up_rounded,
                 categoryName: 'Business & MSME',
               ),
               _buildJourneyActionCard(
                 context: context,
-                title: 'Register UDYAM',
+                title: context.l10n.registerUdyam,
                 icon: Icons.app_registration_rounded,
                 categoryName: 'Business & MSME',
               ),
               _buildJourneyActionCard(
                 context: context,
-                title: 'Find Funding',
+                title: context.l10n.findFunding,
                 icon: Icons.currency_rupee_rounded,
                 categoryName: 'Business & MSME',
               ),
               _buildJourneyActionCard(
                 context: context,
-                title: 'Start a Business',
+                title: context.l10n.startABusiness,
                 icon: Icons.rocket_launch_rounded,
                 categoryName: 'Business & MSME',
               ),
@@ -1034,29 +1098,30 @@ class _HomeScreenState extends State<HomeScreen> {
     required String categoryName,
   }) {
     String formattedTitle = title;
-    if (title == "Start a Business") {
-      formattedTitle = "Start a\nBusiness";
-    } else {
+    if (title.contains(' ')) {
       formattedTitle = title.replaceFirst(' ', '\n');
     }
 
     return GestureDetector(
-      onTap: () {
+      onTap: () async {
+        final schemes = await SchemeRepository.instance.getSchemesByCategory(title);
+        if (!context.mounted) return;
         Navigator.of(context).push(
           MaterialPageRoute(
             builder: (_) => DiscoverResultsScreen(
               title: title,
               type: 'category',
+              initialSchemes: schemes,
               isAssessmentCompleted: false,
             ),
           ),
         );
       },
       child: Container(
-        width: 86,
-        height: 104,
+        width: 88,
+        height: 112,
         margin: const EdgeInsets.only(right: 12),
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
@@ -1070,20 +1135,27 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Icon(
               icon,
               color: const Color(0xFF2563EB),
-              size: 26,
+              size: 24,
             ),
-            Text(
-              formattedTitle,
-              textAlign: TextAlign.center,
-              style: GoogleFonts.inter(
-                fontSize: 10.5,
-                fontWeight: FontWeight.bold,
-                color: const Color(0xFF0F172A),
+            const SizedBox(height: 6),
+            Expanded(
+              child: Center(
+                child: Text(
+                  formattedTitle,
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.inter(
+                    fontSize: 9.5,
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF0F172A),
+                    height: 1.2,
+                  ),
+                ),
               ),
             ),
           ],
@@ -1102,42 +1174,21 @@ class _HomeScreenState extends State<HomeScreen> {
 
     if (schemes.isNotEmpty) {
       for (int i = 0; i < schemes.length; i++) {
-        final s = schemes[i];
+        final sRaw = schemes[i];
+        final s = sRaw.toLocalized(provider.selectedLanguage);
         final match = 95 - (i * 3);
         items.add({
-          'id': s.id,
+          'id': sRaw.id,
           'title': s.name,
           'subtitle': s.overview.isNotEmpty ? s.overview : s.objectives,
-          'match': "$match% Match",
+          'match': "$match% ${provider.selectedLanguage == 'ta' ? 'பொருத்தம்' : 'Match'}",
           'isBookmarked':
-              provider.bookmarkedIds.contains(s.id) ||
-              provider.bookmarkedIds.contains(s.schemeCode),
-          'schemeCode': s.schemeCode,
-          'chips':
-              (s.id.toLowerCase() == 'in009' ||
-                  s.schemeCode.toLowerCase() == 'in009')
-              ? ['Central Scheme', 'Startup India', 'Capacity Building']
-              : [
-                      if (s.sponsoringBody.isNotEmpty)
-                        ...s.sponsoringBody
-                            .split(',')
-                            .map((x) => x.trim())
-                            .where((x) => x.isNotEmpty),
-                      s.governmentLevel.isNotEmpty
-                          ? s.governmentLevel
-                          : 'Central',
-                      s.schemeType.isNotEmpty ? s.schemeType : 'Loan',
-                    ]
-                    .map((x) => x.trim())
-                    .where(
-                      (x) =>
-                          x.isNotEmpty &&
-                          x.toLowerCase() != 'pending official verification',
-                    )
-                    .take(3)
-                    .toList(),
+              provider.bookmarkedIds.contains(sRaw.id) ||
+              provider.bookmarkedIds.contains(sRaw.schemeCode),
+          'schemeCode': sRaw.schemeCode,
+          'chips': s.glanceChips.take(3).toList(),
           'location': s.state.isNotEmpty ? s.state : 'All India',
-          'scheme': s,
+          'scheme': sRaw,
         });
       }
     } else {
@@ -1200,45 +1251,17 @@ class _HomeScreenState extends State<HomeScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              "Recommended For You",
-              style: GoogleFonts.poppins(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: const Color(0xFF0F172A),
-              ),
-            ),
-            GestureDetector(
-              onTap: () {
-                provider.updateTabIndex(1);
-              },
-              child: Row(
-                children: [
-                  Text(
-                    "View All",
-                    style: GoogleFonts.inter(
-                      fontSize: 12.5,
-                      fontWeight: FontWeight.bold,
-                      color: const Color(0xFF2563EB),
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                  const Icon(
-                    Icons.chevron_right,
-                    size: 14,
-                    color: Color(0xFF2563EB),
-                  ),
-                ],
-              ),
-            ),
-          ],
+        Text(
+          context.l10n.recommendedForYou,
+          style: GoogleFonts.poppins(
+            fontSize: 16.5,
+            fontWeight: FontWeight.bold,
+            color: const Color(0xFF0F172A),
+          ),
         ),
         const SizedBox(height: 14),
         SizedBox(
-          height: 215,
+          height: 225,
           child: ListView.builder(
             controller: _recommendedScrollController,
             scrollDirection: Axis.horizontal,
@@ -1259,8 +1282,8 @@ class _HomeScreenState extends State<HomeScreen> {
               String shortForm = title;
               String fullName = '';
 
-              if (matchObj != null) {
-                final bracketText = matchObj.group(1)!.trim();
+              final bracketText = matchObj?.group(1)?.trim() ?? '';
+              if (bracketText.isNotEmpty) {
                 final outsideText = title
                     .replaceAll(regex, '')
                     .replaceAll(RegExp(r'\s+'), ' ')
@@ -1358,7 +1381,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 Text(
                                   shortForm,
                                   style: GoogleFonts.poppins(
-                                    fontSize: 13,
+                                    fontSize: 12,
                                     fontWeight: FontWeight.bold,
                                     color: const Color(0xFF0F172A),
                                   ),
@@ -1458,35 +1481,41 @@ class _HomeScreenState extends State<HomeScreen> {
                     const Icon(
                       Icons.lightbulb,
                       color: Color(0xFFF59E0B),
-                      size: 22,
+                      size: 18,
                     ),
                     const SizedBox(width: 6),
-                    Text(
-                      "Tip of the Day",
-                      style: GoogleFonts.poppins(
-                        fontSize: 14.5,
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xFF0F172A),
+                    Expanded(
+                      child: Text(
+                        context.l10n.tipOfTheDay,
+                        style: GoogleFonts.poppins(
+                          fontSize: 13.0,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF0F172A),
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 6),
                 Text(
-                  "Women Entrepreneurs may receive additional subsidy under PMEGP.",
+                  context.l10n.tipOfTheDayContent,
                   style: GoogleFonts.inter(
-                    fontSize: 11.0,
+                    fontSize: _scaledFontSize(10.0),
                     color: const Color(0xFF475569),
                     fontWeight: FontWeight.w600,
-                    height: 1.4,
+                    height: _scaledLineHeight(1.3),
                   ),
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
           ),
           const SizedBox(width: 8),
           // Reserved right spacer to prevent text from overlapping the built-in image graphic
-          const SizedBox(width: 80),
+          const SizedBox(width: 60),
         ],
       ),
     );
@@ -1501,69 +1530,36 @@ class _HomeScreenState extends State<HomeScreen> {
     if (latestUpdate != null) {
       final category = latestUpdate['category'] as String?;
       if (category == 'new_schemes') {
-        tagText = 'New Scheme';
+        tagText = context.l10n.tagNewScheme;
       } else if (category == 'updates') {
-        tagText = 'Update';
+        tagText = context.l10n.tagUpdate;
       } else if (category == 'reminders') {
-        tagText = 'Reminder';
+        tagText = context.l10n.tagReminder;
       } else {
-        tagText = 'Alert';
+        tagText = context.l10n.tagAlert;
       }
     } else {
-      tagText = 'New Scheme';
+      tagText = context.l10n.tagNewScheme;
     }
 
     final String titleText = latestUpdate != null
         ? (latestUpdate['title'] as String? ?? '')
-        : 'Fisheries and Aquaculture Infra Development Fund Scheme Launched';
+        : context.l10n.fallbackLatestUpdateTitle;
 
     final String timeText = latestUpdate != null
         ? (latestUpdate['time'] as String? ?? '')
-        : '2 days ago';
+        : context.l10n.time2DaysAgo;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              "Latest Updates",
-              style: GoogleFonts.poppins(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: const Color(0xFF0F172A),
-              ),
-            ),
-            GestureDetector(
-              onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) =>
-                        const NotificationsScreen(initialFilter: 'updates'),
-                  ),
-                );
-              },
-              child: Row(
-                children: [
-                  Text(
-                    "View All",
-                    style: GoogleFonts.inter(
-                      fontSize: 12.5,
-                      fontWeight: FontWeight.bold,
-                      color: const Color(0xFF2563EB),
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                  const Icon(
-                    Icons.arrow_forward,
-                    size: 13,
-                    color: Color(0xFF2563EB),
-                  ),
-                ],
-              ),
-            ),
-          ],
+        Text(
+          context.l10n.latestUpdates,
+          style: GoogleFonts.poppins(
+            fontSize: 16.5,
+            fontWeight: FontWeight.bold,
+            color: const Color(0xFF0F172A),
+          ),
         ),
         const SizedBox(height: 12),
         GestureDetector(
@@ -1632,11 +1628,13 @@ class _HomeScreenState extends State<HomeScreen> {
                       Text(
                         titleText,
                         style: GoogleFonts.inter(
-                          fontSize: 13,
+                          fontSize: 12.0,
                           fontWeight: FontWeight.bold,
                           color: const Color(0xFF1E293B),
                           height: 1.3,
                         ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 6),
                       Text(
@@ -1716,7 +1714,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           const SizedBox(height: 4),
           Text(
-            "Ask AI",
+            context.l10n.askAi,
             style: GoogleFonts.inter(
               color: const Color(0xFF2563EB),
               fontSize: 10.5,
@@ -1733,7 +1731,7 @@ class _HomeScreenState extends State<HomeScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          "Explore MSME Support",
+          context.l10n.exploreMsmeSupport,
           style: GoogleFonts.poppins(
             fontSize: 16.5,
             fontWeight: FontWeight.bold,
@@ -1742,7 +1740,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         const SizedBox(height: 14),
         SizedBox(
-          height: 170,
+          height: 178,
           child: ListView(
             scrollDirection: Axis.horizontal,
             physics: const BouncingScrollPhysics(),
@@ -1751,8 +1749,8 @@ class _HomeScreenState extends State<HomeScreen> {
               _buildMSMESupportCard(
                 context: context,
                 id: 'schemes',
-                title: 'Schemes',
-                subtitle: 'Subsidies, grants & government schemes',
+                title: context.l10n.schemes,
+                subtitle: context.l10n.subsidiesGrantsGovtSchemes,
                 icon: Icons.card_giftcard,
                 iconColor: const Color(0xFF2E7D32),
                 themeColor: Colors.green,
@@ -1760,8 +1758,8 @@ class _HomeScreenState extends State<HomeScreen> {
               _buildMSMESupportCard(
                 context: context,
                 id: 'finance',
-                title: 'Finance',
-                subtitle: 'Loans, credit support & funding options',
+                title: context.l10n.finance,
+                subtitle: context.l10n.loansCreditSupportFundingOptions,
                 icon: Icons.savings,
                 iconColor: const Color(0xFF1565C0),
                 themeColor: Colors.blue,
@@ -1769,8 +1767,8 @@ class _HomeScreenState extends State<HomeScreen> {
               _buildMSMESupportCard(
                 context: context,
                 id: 'tax_gst',
-                title: 'Tax & GST',
-                subtitle: 'Tax benefits, GST support & compliance',
+                title: context.l10n.taxGst,
+                subtitle: context.l10n.taxBenefitsGstSupportCompliance,
                 icon: Icons.percent,
                 iconColor: const Color(0xFFEF6C00),
                 themeColor: Colors.orange,
@@ -1778,8 +1776,8 @@ class _HomeScreenState extends State<HomeScreen> {
               _buildMSMESupportCard(
                 context: context,
                 id: 'export',
-                title: 'Export',
-                subtitle: 'Export incentives, finance & market support',
+                title: context.l10n.export,
+                subtitle: context.l10n.exportIncentivesFinanceMarketSupport,
                 icon: Icons.language,
                 iconColor: const Color(0xFF6A1B9A),
                 themeColor: Colors.purple,
@@ -1787,8 +1785,8 @@ class _HomeScreenState extends State<HomeScreen> {
               _buildMSMESupportCard(
                 context: context,
                 id: 'treds',
-                title: 'TReDS',
-                subtitle: 'Invoice discounting & working capital solutions',
+                title: context.l10n.treds,
+                subtitle: context.l10n.invoiceDiscountingWorkingCapital,
                 icon: Icons.currency_exchange,
                 iconColor: const Color(0xFFC62828),
                 themeColor: Colors.red,
@@ -1796,8 +1794,8 @@ class _HomeScreenState extends State<HomeScreen> {
               _buildMSMESupportCard(
                 context: context,
                 id: 'csr',
-                title: 'CSR Support',
-                subtitle: 'CSR programs, incubators & cluster support',
+                title: context.l10n.csrSupport,
+                subtitle: context.l10n.csrProgramsIncubatorsClusterSupport,
                 icon: Icons.handshake,
                 iconColor: const Color(0xFF00695C),
                 themeColor: Colors.teal,
@@ -1805,8 +1803,8 @@ class _HomeScreenState extends State<HomeScreen> {
               _buildMSMESupportCard(
                 context: context,
                 id: 'govt',
-                title: 'Govt. Authorities',
-                subtitle: 'Central, State & District government structure',
+                title: context.l10n.govtAuthorities,
+                subtitle: context.l10n.centralStateDistrictGovtStructure,
                 icon: Icons.account_balance,
                 iconColor: const Color(0xFF0277BD),
                 themeColor: Colors.lightBlue,
@@ -1814,8 +1812,8 @@ class _HomeScreenState extends State<HomeScreen> {
               _buildMSMESupportCard(
                 context: context,
                 id: 'institutions',
-                title: 'Institutions',
-                subtitle: 'SIDBI, NSIC, DIC, KVIC & more organizations',
+                title: context.l10n.institutions,
+                subtitle: context.l10n.sidbiNsicDicKvicMoreOrganizations,
                 icon: Icons.business,
                 iconColor: const Color(0xFF4527A0),
                 themeColor: Colors.deepPurple,
@@ -1894,7 +1892,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: GoogleFonts.poppins(
-                    fontSize: 12.5,
+                    fontSize: 11.5,
                     fontWeight: FontWeight.bold,
                     color: const Color(0xFF0F172A),
                   ),
@@ -1906,7 +1904,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: GoogleFonts.inter(
-                    fontSize: 10.0,
+                    fontSize: 9.5,
                     color: const Color(0xFF64748B),
                     height: 1.3,
                     fontWeight: FontWeight.w500,

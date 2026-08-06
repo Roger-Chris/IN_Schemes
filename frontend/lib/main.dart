@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'l10n/app_localizations.dart';
 import 'providers/app_state_provider.dart';
 import 'screens/splash_screen.dart';
 import 'screens/regular_mode/home_screen.dart';
@@ -58,6 +59,9 @@ class InSchemesApp extends StatelessWidget {
         return MaterialApp(
           title: 'MSS',
           debugShowCheckedModeBanner: false,
+          locale: Locale(provider.selectedLanguage),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           builder: (context, child) {
             final mediaQueryData = MediaQuery.of(context);
             return MediaQuery(

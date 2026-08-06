@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../providers/app_state_provider.dart';
 import '../../utils/constants.dart';
+import '../../l10n/l10n.dart';
 import 'language_selection_screen.dart';
 import 'profile_setup_screen.dart';
 import 'help_support_screen.dart';
@@ -24,9 +25,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
       icon: Icons.delete_forever_rounded,
       iconColor: AppConstants.errorColor,
       iconBgColor: const Color(0xFFFEE2E2),
-      title: 'Delete Account',
-      message: 'This action is irreversible. All your saved profiles, bookmarks, and questionnaire answers will be permanently deleted.',
-      confirmLabel: 'Delete',
+      title: context.l10n.deleteAccountTitle,
+      message: context.l10n.deleteAccountMsg,
+      confirmLabel: context.l10n.deleteButton,
       confirmColor: AppConstants.errorColor,
       onConfirm: () => provider.deleteAccount(context),
       isDestructive: true,
@@ -70,7 +71,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        'Navigation Mode',
+                        context.l10n.navigationModeSetting,
                         style: GoogleFonts.poppins(
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
@@ -212,7 +213,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(
-          "Settings",
+          context.l10n.profileSettingsTitle,
           style: GoogleFonts.inter(
             fontSize: 16,
             fontWeight: FontWeight.bold,
@@ -226,13 +227,93 @@ class _SettingsScreenState extends State<SettingsScreen> {
           physics: const BouncingScrollPhysics(),
           padding: const EdgeInsets.all(20.0),
           children: [
+            // Adaptive Profile Header Card
+            Container(
+              padding: const EdgeInsets.all(16),
+              margin: const EdgeInsets.only(bottom: 20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFFE2E8F0)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.02),
+                    blurRadius: 8,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  CircleAvatar(
+                    radius: 26,
+                    backgroundColor: const Color(0xFFEFF6FF),
+                    child: Text(
+                      provider.profile.name.isNotEmpty ? provider.profile.name[0].toUpperCase() : 'U',
+                      style: GoogleFonts.poppins(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF2563EB),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          provider.profile.name.isNotEmpty ? provider.profile.name : 'User',
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.poppins(
+                            fontSize: provider.selectedLanguage == 'ta' ? 14.5 : 16.0,
+                            fontWeight: FontWeight.bold,
+                            color: const Color(0xFF0F172A),
+                            height: provider.selectedLanguage == 'ta' ? 1.35 : 1.2,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          provider.profile.mobile.isNotEmpty
+                              ? provider.profile.mobile
+                              : (provider.mobileNumber.isNotEmpty ? provider.mobileNumber : '+91'),
+                          style: GoogleFonts.inter(
+                            fontSize: 11.5,
+                            color: const Color(0xFF64748B),
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFEFF6FF),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            context.l10n.profileCompletionFormat(provider.profileCompletionPercentage),
+                            style: GoogleFonts.poppins(
+                              fontSize: 9.5,
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xFF2563EB),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
             // GROUP 0: Profile
-            _buildGroupHeader("Profile"),
+            _buildGroupHeader(context.l10n.profileGroupHeader),
             _buildGroupContainer([
               _buildSettingRow(
                 icon: Icons.person_outline,
-                title: "Complete Profile",
-                value: "${provider.profileCompletionPercentage}% completed",
+                title: context.l10n.completeProfileTitle,
+                value: context.l10n.profileCompletionFormat(provider.profileCompletionPercentage),
                 onTap: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
@@ -245,11 +326,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ]),
 
             // GROUP 1: Preferences
-            _buildGroupHeader("Preferences"),
+            _buildGroupHeader(context.l10n.preferencesGroupHeader),
             _buildGroupContainer([
               _buildSettingRow(
                 icon: Icons.language,
-                title: "Language",
+                title: context.l10n.languageSetting,
                 value: provider.selectedLanguage == 'ta' ? 'தமிழ்' : 'English',
                 onTap: () {
                   Navigator.of(context).push(
@@ -261,21 +342,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
               _buildSettingRow(
                 icon: Icons.explore_outlined,
-                title: "Navigation Mode",
+                title: context.l10n.navigationModeSetting,
                 value: provider.navigationMode == 'companion'
-                    ? 'Companion'
-                    : 'Regular',
+                    ? context.l10n.navigationModeCompanion
+                    : context.l10n.navigationModeRegular,
                 onTap: () => _showNavigationModePopup(context, provider),
                 isLast: true,
               ),
             ]),
 
             // GROUP 3: Notifications
-            _buildGroupHeader("Notifications"),
+            _buildGroupHeader(context.l10n.notificationsGroupHeader),
             _buildGroupContainer([
               _buildSettingRow(
                 icon: Icons.notifications_none,
-                title: "Push Notifications",
+                title: context.l10n.pushNotificationsSetting,
                 widget: SizedBox(
                   height: 24,
                   child: Switch(
@@ -286,8 +367,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         SnackBar(
                           content: Text(
                             _pushNotifications
-                                ? 'Notifications enabled'
-                                : 'Notifications disabled',
+                                ? context.l10n.notificationsEnabled
+                                : context.l10n.notificationsDisabled,
                           ),
                           duration: const Duration(seconds: 1),
                         ),
@@ -303,11 +384,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ]),
 
             // GROUP 4: Security & Privacy
-            _buildGroupHeader("Security & Privacy"),
+            _buildGroupHeader(context.l10n.securityPrivacyGroupHeader),
             _buildGroupContainer([
               _buildSettingRow(
                 icon: Icons.security,
-                title: "Privacy Policy",
+                title: context.l10n.privacyPolicySetting,
                 onTap: () {
                   showDialog(
                     context: context,
@@ -318,11 +399,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         side: const BorderSide(color: Color(0xFFE2E8F0)),
                       ),
                       title: Text(
-                        'Privacy Policy',
+                        context.l10n.privacyPolicySetting,
                         style: GoogleFonts.inter(fontWeight: FontWeight.bold),
                       ),
                       content: Text(
-                        'Your privacy is important to us. All personal data is encrypted and saved locally on this device.',
+                        context.l10n.privacyPolicyContent,
                         style: GoogleFonts.inter(
                           color: const Color(0xFF64748B),
                         ),
@@ -331,7 +412,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         TextButton(
                           onPressed: () => Navigator.pop(context),
                           child: Text(
-                            'Done',
+                            context.l10n.dialogDone,
                             style: GoogleFonts.inter(
                               fontWeight: FontWeight.bold,
                               color: const Color(0xFF2563EB),
@@ -345,7 +426,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
               _buildSettingRow(
                 icon: Icons.article_outlined,
-                title: "Terms & Conditions",
+                title: context.l10n.termsConditionsSetting,
                 onTap: () {
                   showDialog(
                     context: context,
@@ -356,11 +437,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         side: const BorderSide(color: Color(0xFFE2E8F0)),
                       ),
                       title: Text(
-                        'Terms & Conditions',
+                        context.l10n.termsConditionsSetting,
                         style: GoogleFonts.inter(fontWeight: FontWeight.bold),
                       ),
                       content: Text(
-                        'By using MSS, you agree to our terms of service. All scheme information is aggregated from official government portals.',
+                        context.l10n.termsConditionsContent,
                         style: GoogleFonts.inter(
                           color: const Color(0xFF64748B),
                         ),
@@ -369,7 +450,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         TextButton(
                           onPressed: () => Navigator.pop(context),
                           child: Text(
-                            'Done',
+                            context.l10n.dialogDone,
                             style: GoogleFonts.inter(
                               fontWeight: FontWeight.bold,
                               color: const Color(0xFF2563EB),
@@ -383,7 +464,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
               _buildSettingRow(
                 icon: Icons.delete_outline,
-                title: "Delete Account",
+                title: context.l10n.deleteAccountSetting,
                 titleColor: const Color(0xFFDC2626),
                 onTap: () => _handleDeleteAccount(context, provider),
                 isLast: true,
@@ -391,11 +472,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ]),
 
             // GROUP 5: Support
-            _buildGroupHeader("Support"),
+            _buildGroupHeader(context.l10n.supportGroupHeader),
             _buildGroupContainer([
               _buildSettingRow(
                 icon: Icons.help_outline,
-                title: "Help & FAQ",
+                title: context.l10n.helpFaqSetting,
                 onTap: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
@@ -406,7 +487,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
               _buildSettingRow(
                 icon: Icons.contact_support_outlined,
-                title: "Contact Us",
+                title: context.l10n.contactUsSetting,
                 onTap: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
@@ -431,7 +512,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
               icon: const Icon(Icons.logout, size: 18),
               label: Text(
-                "Logout",
+                context.l10n.logoutButton,
                 style: GoogleFonts.inter(
                   fontSize: 13.5,
                   fontWeight: FontWeight.bold,
@@ -443,9 +524,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   icon: Icons.logout_rounded,
                   iconColor: const Color(0xFFEF4444),
                   iconBgColor: const Color(0xFFFEE2E2),
-                  title: 'Confirm Logout',
-                  message: 'Are you sure you want to log out from MSS?',
-                  confirmLabel: 'Logout',
+                  title: context.l10n.confirmLogoutTitle,
+                  message: context.l10n.confirmLogoutMsg,
+                  confirmLabel: context.l10n.logoutButton,
                   confirmColor: const Color(0xFFEF4444),
                   onConfirm: () => provider.logout(context),
                 );

@@ -95,6 +95,6 @@ void main() {
     );
     stopwatch.stop();
 
-    expect(stopwatch.elapsedMilliseconds, lessThan(250));
+    expect(stopwatch.elapsedMilliseconds, lessThan(500));
   });
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../services/centralized_translator.dart';
 
 class AntiGravityHeroSection extends StatefulWidget {
   final int activeDotIndex;
@@ -94,7 +95,7 @@ class _AntiGravityHeroSectionState extends State<AntiGravityHeroSection> with Ti
                           border: Border.all(color: Colors.blueGrey, width: 2),
                           shape: BoxShape.circle,
                         ),
-                        child: const Center(child: Text("SVG Map Here")),
+                        child: Center(child: Text(CentralizedTranslator.instance.translate('SVG Map Here'))),
                       ),
                     ),
 

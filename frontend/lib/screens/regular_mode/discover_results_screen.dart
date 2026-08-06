@@ -5,6 +5,7 @@ import '../../widgets/gradient_scaffold.dart';
 import '../../providers/app_state_provider.dart';
 import '../../models/scheme_model.dart';
 import '../../engine/recommendation_engine.dart';
+import '../../services/scheme_repository.dart';
 import '../../widgets/scheme_card.dart';
 import '../../widgets/filter_panel.dart';
 import 'scheme_details_screen.dart';
@@ -14,12 +15,14 @@ class DiscoverResultsScreen extends StatefulWidget {
   final String title;
   final String type;
   final bool isAssessmentCompleted;
+  final List<Scheme>? initialSchemes;
 
   const DiscoverResultsScreen({
     super.key,
     required this.title,
     required this.type,
     this.isAssessmentCompleted = false,
+    this.initialSchemes,
   });
 
   @override
@@ -32,52 +35,55 @@ class _DiscoverResultsScreenState extends State<DiscoverResultsScreen> {
   String _selectedBenefit = 'All';
   String _selectedMinistry = 'All';
 
+  List<Scheme>? _baseSchemes;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.initialSchemes != null) {
+      _baseSchemes = widget.initialSchemes;
+    } else {
+      _loadBaseSchemes();
+    }
+  }
+
+  Future<void> _loadBaseSchemes() async {
+    List<Scheme> list;
+    if (widget.type == 'ministry') {
+      list = await SchemeRepository.instance.getSchemesByMinistry(widget.title);
+    } else if (widget.type == 'state') {
+      list = await SchemeRepository.instance.getSchemesByState(widget.title);
+    } else {
+      list = await SchemeRepository.instance.getSchemesByCategory(widget.title);
+    }
+    if (mounted) {
+      setState(() {
+        _baseSchemes = list;
+      });
+    }
+  }
+
   // Filter and sort the schemes list based on the criteria
   List<MapEntry<Scheme, RecommendationResult>> _getFilteredSchemes(
     AppProvider provider,
   ) {
-    final searchKeyword = widget.title.toLowerCase().trim();
+    final schemesToFilter = _baseSchemes ?? [];
+    final List<MapEntry<Scheme, RecommendationResult>> filtered = [];
 
-    final filtered = provider.recommendedSchemes.where((entry) {
-      final scheme = entry.key;
+    for (final scheme in schemesToFilter) {
+      final recResult = RecommendationEngine.evaluate(provider.profile, scheme);
 
-      // 1. Filter by category keyword match in searchKeywords, name, category, or sponsoringBody
-      final nameMatch = scheme.name.toLowerCase().contains(searchKeyword);
-      final catMatch = scheme.category.toLowerCase().contains(searchKeyword);
-      final sponsorMatch = scheme.sponsoringBody.toLowerCase().contains(searchKeyword);
-      final stateMatch = scheme.state.toLowerCase().contains(searchKeyword);
-      final keywordMatch = scheme.searchKeywords.toLowerCase().contains(searchKeyword);
-
-      bool titleMatch = nameMatch || catMatch || sponsorMatch || stateMatch || keywordMatch;
-
-      // Split fallback for multi-word titles
-      if (!titleMatch) {
-        final words = searchKeyword.split(RegExp(r'[\s&/,-]+'));
-        for (var word in words) {
-          if (word.length > 2 &&
-              (scheme.name.toLowerCase().contains(word) ||
-                  scheme.category.toLowerCase().contains(word) ||
-                  scheme.searchKeywords.toLowerCase().contains(word))) {
-            titleMatch = true;
-            break;
-          }
-        }
-      }
-      if (!titleMatch) return false;
-
-      // 2. Dropdown Chips Filters: Type (Loan, Subsidy, etc.)
+      // 1. Dropdown Chips Filters: Type (Loan, Subsidy, etc.)
       if (_selectedType != 'All') {
         final typeKeyword = _selectedType.toLowerCase();
         final matchesType = scheme.schemeType.toLowerCase().contains(typeKeyword) ||
             scheme.name.toLowerCase().contains(typeKeyword) ||
             scheme.category.toLowerCase().contains(typeKeyword) ||
             scheme.overview.toLowerCase().contains(typeKeyword);
-        if (!matchesType) {
-          return false;
-        }
+        if (!matchesType) continue;
       }
 
-      // 3. Dropdown Chips Filters: Benefit Type
+      // 2. Dropdown Chips Filters: Benefit Type
       if (_selectedBenefit != 'All') {
         final benefitLower = _selectedBenefit.toLowerCase();
         bool matchesBenefit = false;
@@ -116,25 +122,21 @@ class _DiscoverResultsScreenState extends State<DiscoverResultsScreen> {
           matchesBenefit = scheme.benefits.toLowerCase().contains(benefitLower) ||
               scheme.overview.toLowerCase().contains(benefitLower);
         }
-        if (!matchesBenefit) {
-          return false;
-        }
+        if (!matchesBenefit) continue;
       }
 
-      // 4. Dropdown Chips Filters: Ministry
+      // 3. Dropdown Chips Filters: Ministry
       if (_selectedMinistry != 'All') {
         final ministryLower = _selectedMinistry.toLowerCase();
         final matchesMinistry = scheme.sponsoringBody.toLowerCase().contains(ministryLower) ||
             scheme.issuingBody.toLowerCase().contains(ministryLower) ||
             scheme.category.toLowerCase().contains(ministryLower) ||
             scheme.name.toLowerCase().contains(ministryLower);
-        if (!matchesMinistry) {
-          return false;
-        }
+        if (!matchesMinistry) continue;
       }
 
-      return true;
-    }).toList();
+      filtered.add(MapEntry(scheme, recResult));
+    }
 
     // Sort the list
     if (_sortBy == 'Benefits: High to Low') {
@@ -398,7 +400,9 @@ class _DiscoverResultsScreenState extends State<DiscoverResultsScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "Top Recommended Schemes (${filteredSchemes.length})",
+                        provider.selectedLanguage == 'ta'
+                            ? "பொருந்தும் திட்டங்கள் (${filteredSchemes.length})"
+                            : "Matching Schemes (${filteredSchemes.length})",
                         style: GoogleFonts.poppins(
                           fontSize: 15.5,
                           fontWeight: FontWeight.bold,

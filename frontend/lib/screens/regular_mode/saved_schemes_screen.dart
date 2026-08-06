@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../providers/app_state_provider.dart';
 import '../../models/scheme_model.dart';
+import '../../models/localized_scheme.dart';
+import '../../l10n/l10n.dart';
 import 'scheme_details_screen.dart';
 
 class SavedSchemesScreen extends StatefulWidget {
@@ -56,12 +58,15 @@ class _SavedSchemesScreenState extends State<SavedSchemesScreen> {
   }
 
   Widget _buildTabBar(int savedCount) {
+    final provider = Provider.of<AppProvider>(context, listen: false);
+    final isTa = provider.selectedLanguage == 'ta';
+
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      padding: const EdgeInsets.all(4),
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      padding: const EdgeInsets.all(6),
       decoration: BoxDecoration(
         color: const Color(0xFFF1F5F9),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(14),
       ),
       child: Row(
         children: [
@@ -69,10 +74,10 @@ class _SavedSchemesScreenState extends State<SavedSchemesScreen> {
             child: GestureDetector(
               onTap: () => setState(() => _activeTab = 0),
               child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 10),
+                padding: EdgeInsets.symmetric(vertical: isTa ? 12 : 10, horizontal: 8),
                 decoration: BoxDecoration(
                   color: _activeTab == 0 ? Colors.white : Colors.transparent,
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(10),
                   boxShadow: _activeTab == 0
                       ? [
                           BoxShadow(
@@ -85,9 +90,12 @@ class _SavedSchemesScreenState extends State<SavedSchemesScreen> {
                 ),
                 child: Center(
                   child: Text(
-                    "All Saved ($savedCount)",
+                    context.l10n.allSavedTabFormat(savedCount),
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.inter(
-                      fontSize: 11.5,
+                      fontSize: isTa ? 10.5 : 11.5,
                       fontWeight: FontWeight.bold,
                       color: _activeTab == 0 ? const Color(0xFF2563EB) : const Color(0xFF64748B),
                     ),
@@ -96,14 +104,15 @@ class _SavedSchemesScreenState extends State<SavedSchemesScreen> {
               ),
             ),
           ),
+          const SizedBox(width: 6),
           Expanded(
             child: GestureDetector(
               onTap: () => setState(() => _activeTab = 1),
               child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 10),
+                padding: EdgeInsets.symmetric(vertical: isTa ? 12 : 10, horizontal: 8),
                 decoration: BoxDecoration(
                   color: _activeTab == 1 ? Colors.white : Colors.transparent,
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(10),
                   boxShadow: _activeTab == 1
                       ? [
                           BoxShadow(
@@ -116,9 +125,12 @@ class _SavedSchemesScreenState extends State<SavedSchemesScreen> {
                 ),
                 child: Center(
                   child: Text(
-                    "Recently Added",
+                    context.l10n.recentlyAddedTab,
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.inter(
-                      fontSize: 11.5,
+                      fontSize: isTa ? 10.5 : 11.5,
                       fontWeight: FontWeight.bold,
                       color: _activeTab == 1 ? const Color(0xFF2563EB) : const Color(0xFF64748B),
                     ),
@@ -137,6 +149,7 @@ class _SavedSchemesScreenState extends State<SavedSchemesScreen> {
     Scheme scheme,
     AppProvider provider,
   ) {
+    final locScheme = scheme.toLocalized(provider.selectedLanguage);
     IconData iconData = Icons.rocket_launch_rounded;
     Color iconColor = const Color(0xFF2563EB);
     Color iconBgColor = const Color(0xFFEFF6FF);
@@ -159,13 +172,19 @@ class _SavedSchemesScreenState extends State<SavedSchemesScreen> {
       iconBgColor = const Color(0xFFEFF6FF);
     }
 
-    return Card(
-      elevation: 0,
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      color: Colors.white,
-      shape: RoundedRectangleBorder(
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        side: const BorderSide(color: Color(0xFFE2E8F0)),
+        border: Border.all(color: const Color(0xFFE2E8F0), width: 1.2),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -189,18 +208,19 @@ class _SavedSchemesScreenState extends State<SavedSchemesScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        scheme.name,
+                        locScheme.name,
                         style: GoogleFonts.inter(
-                          fontSize: 13.5,
+                          fontSize: provider.selectedLanguage == 'ta' ? 12.5 : 13.5,
                           fontWeight: FontWeight.bold,
                           color: const Color(0xFF0F172A),
+                          height: provider.selectedLanguage == 'ta' ? 1.35 : 1.2,
                         ),
-                        maxLines: 1,
+                        maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 3),
                       Text(
-                        scheme.category,
+                        locScheme.category,
                         style: GoogleFonts.inter(
                           fontSize: 10.5,
                           color: const Color(0xFF2563EB),
@@ -241,9 +261,9 @@ class _SavedSchemesScreenState extends State<SavedSchemesScreen> {
                               }
                             },
                             itemBuilder: (context) => [
-                              const PopupMenuItem(
+                              PopupMenuItem(
                                 value: 'remove',
-                                child: Text('Remove Saved'),
+                                child: Text(provider.selectedLanguage == 'ta' ? 'சேமிக்கப்பட்டதை நீக்கு' : 'Remove Saved'),
                               ),
                             ],
                           ),
@@ -253,7 +273,7 @@ class _SavedSchemesScreenState extends State<SavedSchemesScreen> {
             ),
             const SizedBox(height: 12),
             Text(
-              scheme.overview,
+              locScheme.overview,
               style: GoogleFonts.inter(
                 fontSize: 11.0,
                 color: const Color(0xFF475569),
@@ -278,7 +298,7 @@ class _SavedSchemesScreenState extends State<SavedSchemesScreen> {
                         color: Color(0xFF64748B),
                       ),
                       Text(
-                        "Saved on 24 May 2025",
+                        locScheme.governmentLevel,
                         style: GoogleFonts.inter(
                           fontSize: 9.5,
                           color: const Color(0xFF64748B),
@@ -299,7 +319,7 @@ class _SavedSchemesScreenState extends State<SavedSchemesScreen> {
                         color: Color(0xFF64748B),
                       ),
                       Text(
-                        "Financing",
+                        locScheme.schemeType.isNotEmpty ? locScheme.schemeType : locScheme.category,
                         style: GoogleFonts.inter(
                           fontSize: 9.5,
                           color: const Color(0xFF64748B),
@@ -332,7 +352,7 @@ class _SavedSchemesScreenState extends State<SavedSchemesScreen> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        "View Details",
+                        provider.selectedLanguage == 'ta' ? 'விவரங்களைப் பார்க்க' : 'View Details',
                         style: GoogleFonts.inter(
                           fontSize: 10.0,
                           color: const Color(0xFF2563EB),
@@ -459,7 +479,7 @@ class _SavedSchemesScreenState extends State<SavedSchemesScreen> {
             ),
             const SizedBox(height: 16),
             Text(
-              "No saved schemes yet",
+              context.l10n.noSavedSchemes,
               style: GoogleFonts.poppins(
                 fontSize: 17,
                 fontWeight: FontWeight.bold,
@@ -468,7 +488,7 @@ class _SavedSchemesScreenState extends State<SavedSchemesScreen> {
             ),
             const SizedBox(height: 6),
             Text(
-              "Explore schemes and tap the bookmark icon to save them here.",
+              context.l10n.noSavedSchemesDesc,
               textAlign: TextAlign.center,
               style: GoogleFonts.inter(
                 fontSize: 13,
@@ -490,7 +510,7 @@ class _SavedSchemesScreenState extends State<SavedSchemesScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               ),
               child: Text(
-                "Explore Schemes",
+                context.l10n.navDiscover,
                 style: GoogleFonts.inter(
                   fontSize: 13.5,
                   color: Colors.white,
@@ -526,7 +546,7 @@ class _SavedSchemesScreenState extends State<SavedSchemesScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Saved Schemes',
+                          context.l10n.savedTitle,
                           style: GoogleFonts.poppins(
                             fontSize: 20.0,
                             fontWeight: FontWeight.bold,
@@ -535,7 +555,7 @@ class _SavedSchemesScreenState extends State<SavedSchemesScreen> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          "Schemes you've saved for future reference.",
+                          context.l10n.noSavedSchemesDesc,
                           style: GoogleFonts.inter(
                             fontSize: 12,
                             color: const Color(0xFF64748B),

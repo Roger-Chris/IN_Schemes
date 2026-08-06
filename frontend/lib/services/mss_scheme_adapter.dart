@@ -18,6 +18,22 @@ class MssSchemeAdapter {
     return null;
   }
 
+  static (String en, String ta) _extractMultilingualStr(dynamic rawObj, [String defaultStr = '']) {
+    if (rawObj is Map<String, dynamic>) {
+      final en = (rawObj['en'] as String? ?? '').trim();
+      final ta = (rawObj['ta'] as String? ?? '').trim();
+      final name = (rawObj['name'] as String? ?? rawObj['title'] as String? ?? rawObj['description'] as String? ?? '').trim();
+      final nameTa = (rawObj['name_ta'] as String? ?? rawObj['title_ta'] as String? ?? rawObj['description_ta'] as String? ?? '').trim();
+      return (
+        en.isNotEmpty ? en : (name.isNotEmpty ? name : defaultStr),
+        ta.isNotEmpty ? ta : nameTa,
+      );
+    }
+    if (rawObj is String && rawObj.trim().isNotEmpty) {
+      return (rawObj.trim(), '');
+    }
+    return (defaultStr, '');
+  }
 
   /// Convert a scheme entity to a Scheme model object using in-memory catalog graph references.
   static Scheme toScheme(MssEntity entity, MssCatalogBundle bundle) {
@@ -103,11 +119,16 @@ class MssSchemeAdapter {
 
     // ── 3. Overview & Objectives ───────────────────────────────────────
     String overviewEn = '';
-    final summaryRaw = overviewObj['summary'] ?? overviewObj['description'] ?? content['summary'] ?? content['description'];
+    String overviewTa = entity.getLocalizedAttribute('summary', 'ta');
+    if (overviewTa.isEmpty) overviewTa = entity.getLocalizedAttribute('overview', 'ta');
+    if (overviewTa.isEmpty) overviewTa = entity.getLocalizedAttribute('description', 'ta');
+
+    final summaryRaw = overviewObj['summary'] ?? overviewObj['description'] ?? content['summary'] ?? content['description'] ?? content['overview'];
     if (summaryRaw is Map<String, dynamic>) {
       final en = summaryRaw['en'] as String? ?? '';
       final ta = summaryRaw['ta'] as String? ?? '';
-      overviewEn = '$en $ta'.trim();
+      overviewEn = en.isNotEmpty ? en : ta;
+      if (overviewTa.isEmpty && ta.isNotEmpty) overviewTa = ta;
     } else if (summaryRaw is String) {
       overviewEn = summaryRaw;
     }
@@ -131,6 +152,17 @@ class MssSchemeAdapter {
         _asList(classification['targetBeneficiaries'])?.join(', ') ??
         '';
     final targetBeneficiary = beneficiaryDesc.isNotEmpty ? beneficiaryDesc : 'Eligible MSMEs & Enterprises';
+
+    if (overviewEn.isEmpty) {
+      final elTextEn = (eligibilityTextObj['summary'] as String?) ?? (content['eligibilityText'] as String?) ?? entity.getLocalizedAttribute('eligibilityText', 'en');
+      final elTextTa = entity.getLocalizedAttribute('eligibilityText', 'ta');
+      if (elTextEn.isNotEmpty) {
+        overviewEn = elTextEn;
+        if (overviewTa.isEmpty && elTextTa.isNotEmpty) overviewTa = elTextTa;
+      } else {
+        overviewEn = 'Government scheme providing financial and institutional support for $targetBeneficiary.';
+      }
+    }
 
     final glanceChips = <String>{};
     if (governmentLevel.isNotEmpty) glanceChips.add(governmentLevel);
@@ -159,7 +191,27 @@ class MssSchemeAdapter {
     double? subsidyPercentage;
     double? interestSubventionRate;
     String subsidyAmountText = '';
-    String benefitsText = (benefitsObj['summary'] as String?) ?? '';
+    String benefitsText = '';
+    String benefitsTa = '';
+    final benefitsRaw = benefitsObj['summary'] ?? benefitsObj['description'] ?? content['benefits'] ?? content['benefitsText'];
+    if (benefitsRaw is Map<String, dynamic>) {
+      final benefitsEn = (benefitsRaw['en'] as String? ?? '').trim();
+      benefitsTa = (benefitsRaw['ta'] as String? ?? '').trim();
+      benefitsText = benefitsEn.isNotEmpty ? benefitsEn : benefitsTa;
+    } else if (benefitsRaw is String) {
+      benefitsText = benefitsRaw;
+    }
+    if (benefitsTa.isEmpty) benefitsTa = entity.getLocalizedAttribute('benefitsText', 'ta');
+    if (benefitsTa.isEmpty) benefitsTa = entity.getLocalizedAttribute('benefits', 'ta');
+
+    if (benefitsText.isEmpty) {
+      final bTextEn = entity.getLocalizedAttribute('benefitsText', 'en');
+      if (bTextEn.isNotEmpty) {
+        benefitsText = bTextEn;
+      } else {
+        benefitsText = 'Provides financial assistance, subsidies, or institutional support for eligible applicants.';
+      }
+    }
 
     final capSubsidy = benefitsObj['capitalSubsidy'] as Map<String, dynamic>?;
     final intSubvention = benefitsObj['interestSubvention'] as Map<String, dynamic>?;
@@ -308,23 +360,33 @@ class MssSchemeAdapter {
     if (rawDocs != null) {
       for (final docItem in rawDocs) {
         if (docItem is Map<String, dynamic>) {
-          final docName = (docItem['name'] as String?) ?? '';
-          if (docName.isNotEmpty) {
-            reqDocNames.add(docName);
-            docList.add(SchemeDocument(
-              name: docName,
-              mandatory: (docItem['mandatoryText'] as String?) ?? (docItem['mandatory'] == 'required' || docItem['mandatory'] == true ? 'Yes' : 'No'),
-              issuingAuthority: (docItem['issuingAuthorityText'] as String?) ?? (docItem['issuingAuthority'] as String?) ?? '',
-              description: (docItem['description'] as String?) ?? '',
-              estimatedCost: (docItem['estimatedCostText'] as String?) ?? (docItem['estimatedCostInr']?.toString() ?? ''),
-              remarks: (docItem['remarks'] as String?) ?? '',
-              sourceUrl: (docItem['sourceUrl'] as String?) ?? '',
-              validityMonths: docItem['validityMonths']?.toString() ?? '',
-              downloadTemplateUrl: (docItem['downloadTemplateUrl'] as String?) ?? '',
-              sampleCopyUrl: (docItem['sampleCopyUrl'] as String?) ?? '',
-              verificationPortalUrl: (docItem['verificationPortalUrl'] as String?) ?? '',
-            ));
-          }
+          final (dNameEn, dNameTa) = _extractMultilingualStr(docItem['name'] ?? docItem['title'] ?? docItem);
+          final (dDescEn, dDescTa) = _extractMultilingualStr(docItem['description'] ?? docItem['summary']);
+          final (dAuthEn, dAuthTa) = _extractMultilingualStr(docItem['issuingAuthorityText'] ?? docItem['issuingAuthority']);
+          final (dCostEn, dCostTa) = _extractMultilingualStr(docItem['estimatedCostText'] ?? docItem['estimatedCostInr']);
+          final (dRemEn, dRemTa) = _extractMultilingualStr(docItem['remarks']);
+
+          final finalDocName = dNameEn.isNotEmpty ? dNameEn : (dNameTa.isNotEmpty ? dNameTa : 'Required Document');
+
+          reqDocNames.add(finalDocName);
+          docList.add(SchemeDocument(
+            name: finalDocName,
+            nameTa: dNameTa,
+            mandatory: (docItem['mandatoryText'] as String?) ?? (docItem['mandatory'] == 'required' || docItem['mandatory'] == true ? 'Yes' : 'No'),
+            issuingAuthority: dAuthEn,
+            issuingAuthorityTa: dAuthTa,
+            description: dDescEn,
+            descriptionTa: dDescTa,
+            estimatedCost: dCostEn,
+            estimatedCostTa: dCostTa,
+            remarks: dRemEn,
+            remarksTa: dRemTa,
+            sourceUrl: (docItem['sourceUrl'] as String?) ?? '',
+            validityMonths: docItem['validityMonths']?.toString() ?? '',
+            downloadTemplateUrl: (docItem['downloadTemplateUrl'] as String?) ?? '',
+            sampleCopyUrl: (docItem['sampleCopyUrl'] as String?) ?? '',
+            verificationPortalUrl: (docItem['verificationPortalUrl'] as String?) ?? '',
+          ));
         }
       }
     }
@@ -336,13 +398,21 @@ class MssSchemeAdapter {
       for (int i = 0; i < rawSteps.length; i++) {
         final step = rawSteps[i];
         if (step is Map<String, dynamic>) {
-          final title = step['title'] as String?;
-          final desc = step['description'] as String?;
+          final (titleEn, titleTa) = _extractMultilingualStr(step['title']);
+          final (descEn, descTa) = _extractMultilingualStr(step['description']);
           final stepNum = step['stepNumber'] ?? (i + 1);
-          if (title != null && title.isNotEmpty) {
-            stepsList.add('Step $stepNum: $title${desc != null && desc.isNotEmpty ? " - $desc" : ""}');
-          } else if (desc != null && desc.isNotEmpty) {
-            stepsList.add('Step $stepNum: $desc');
+
+          final stepEn = titleEn.isNotEmpty
+              ? 'Step $stepNum: $titleEn${descEn.isNotEmpty ? " - $descEn" : ""}'
+              : (descEn.isNotEmpty ? 'Step $stepNum: $descEn' : '');
+          final stepTa = titleTa.isNotEmpty
+              ? 'படி $stepNum: $titleTa${descTa.isNotEmpty ? " - $descTa" : ""}'
+              : (descTa.isNotEmpty ? 'படி $stepNum: $descTa' : '');
+
+          if (stepTa.isNotEmpty) {
+            stepsList.add(stepTa);
+          } else if (stepEn.isNotEmpty) {
+            stepsList.add(stepEn);
           }
         } else if (step is String && step.isNotEmpty) {
           stepsList.add('Step ${i + 1}: $step');
@@ -368,21 +438,33 @@ class MssSchemeAdapter {
     if (rawServices != null && rawServices.isNotEmpty) {
       for (final sItem in rawServices) {
         if (sItem is Map<String, dynamic>) {
-          final sName = sItem['name'] as String?;
-          if (sName != null && sName.isNotEmpty) {
-            serviceList.add(SchemeService(
-              name: sName,
-              category: (sItem['category'] as String?) ?? 'Government Service',
-              mandatory: sItem['mandatory'] == true || sItem['mandatory'] == 'required',
-              description: (sItem['description'] as String?) ?? '',
-              purpose: (sItem['purpose'] as String?) ?? '',
-              department: (sItem['department'] as String?) ?? issuingBody,
-              website: (sItem['website'] as String?) ?? '',
-              contact: (sItem['contact'] as String?) ?? '',
-              status: (sItem['status'] as String?) ?? 'ACTIVE',
-              notes: (sItem['notes'] as String?) ?? '',
-            ));
-          }
+          final (sNameEn, sNameTa) = _extractMultilingualStr(sItem['name'] ?? sItem['title']);
+          final (sCatEn, sCatTa) = _extractMultilingualStr(sItem['category'], 'Government Service');
+          final (sDescEn, sDescTa) = _extractMultilingualStr(sItem['description']);
+          final (sPurpEn, sPurpTa) = _extractMultilingualStr(sItem['purpose']);
+          final (sDeptEn, sDeptTa) = _extractMultilingualStr(sItem['department'], issuingBody);
+          final (sNotesEn, sNotesTa) = _extractMultilingualStr(sItem['notes']);
+
+          final finalServiceName = sNameEn.isNotEmpty ? sNameEn : (sNameTa.isNotEmpty ? sNameTa : 'Government Service');
+
+          serviceList.add(SchemeService(
+            name: finalServiceName,
+            nameTa: sNameTa,
+            category: sCatEn,
+            categoryTa: sCatTa,
+            mandatory: sItem['mandatory'] == true || sItem['mandatory'] == 'required',
+            description: sDescEn,
+            descriptionTa: sDescTa,
+            purpose: sPurpEn,
+            purposeTa: sPurpTa,
+            department: sDeptEn,
+            departmentTa: sDeptTa,
+            website: (sItem['website'] as String?) ?? '',
+            contact: (sItem['contact'] as String?) ?? '',
+            status: (sItem['status'] as String?) ?? 'ACTIVE',
+            notes: sNotesEn,
+            notesTa: sNotesTa,
+          ));
         }
       }
     }
@@ -499,6 +581,7 @@ class MssSchemeAdapter {
       id: entity.id,
       schemeCode: entity.code,
       name: name,
+      nameTa: nameTa,
       shortName: shortName,
       fullSchemeName: fullSchemeName,
       ministry: ministry,
@@ -516,8 +599,10 @@ class MssSchemeAdapter {
       schemeType: schemeType,
       category: category,
       overview: overviewEn,
+      overviewTa: overviewTa,
       objectives: objectivesEn,
       benefits: rawBenefitsDisplayText,
+      benefitsTa: benefitsTa,
       subsidyPercentage: subsidyPercentage,
       maxFunding: maxFunding,
       minFunding: minFunding,

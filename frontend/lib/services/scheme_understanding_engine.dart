@@ -689,7 +689,7 @@ class LocalSchemeUnderstandingEngine implements SchemeUnderstandingEngine {
       caseSensitive: false,
       unicode: true,
     ).firstMatch(input);
-    if (ageMatch != null) add(EligibilityFactKey.age, ageMatch.group(1)!);
+    if (ageMatch != null && ageMatch.group(1) != null) add(EligibilityFactKey.age, ageMatch.group(1)!);
 
     final money = _extractMoney(input);
     if (money != null) {
@@ -1227,17 +1227,17 @@ class LocalSchemeUnderstandingEngine implements SchemeUnderstandingEngine {
     final between = RegExp(
       r'(\d{1,2})\s*(?:-|to|–)\s*(\d{1,2})',
     ).firstMatch(eligibility);
-    if (between != null) {
+    if (between != null && between.group(1) != null && between.group(2) != null) {
       return (int.parse(between.group(1)!), int.parse(between.group(2)!));
     }
     final minimum = RegExp(
       r'(?:above|at least|minimum)\s*(\d{1,2})',
     ).firstMatch(eligibility);
-    if (minimum != null) return (int.parse(minimum.group(1)!), 120);
+    if (minimum != null && minimum.group(1) != null) return (int.parse(minimum.group(1)!), 120);
     final maximum = RegExp(
       r'(?:up to|below|maximum)\s*(\d{1,2})',
     ).firstMatch(eligibility);
-    if (maximum != null) return (0, int.parse(maximum.group(1)!));
+    if (maximum != null && maximum.group(1) != null) return (0, int.parse(maximum.group(1)!));
     return null;
   }
 
@@ -1248,7 +1248,7 @@ class LocalSchemeUnderstandingEngine implements SchemeUnderstandingEngine {
     final match = RegExp(
       r'(?:below|less than|up to|not exceed(?:ing)?)\s*(?:rs\.?|₹)?\s*(\d+(?:\.\d+)?)\s*(lakh|lakhs|crore|thousand)?',
     ).firstMatch(eligibility.replaceAll(',', ''));
-    if (match == null) return null;
+    if (match == null || match.group(1) == null) return null;
     return _scaledMoney(match.group(1)!, match.group(2));
   }
 
@@ -1262,12 +1262,12 @@ class LocalSchemeUnderstandingEngine implements SchemeUnderstandingEngine {
           final suffix = candidate.group(2);
           final prefix = input.substring(0, candidate.start).toLowerCase();
           return suffix != null ||
-              RegExp(r'₹|rs\.?|rupees?').hasMatch(candidate.group(0)!) ||
+              RegExp(r'₹|rs\.?|rupees?').hasMatch(candidate.group(0) ?? '') ||
               RegExp(r'income|salary|loan|fund|வருமானம்|கடன்|நிதி').hasMatch(
                 prefix.split(' ').reversed.take(3).toList().reversed.join(' '),
               );
         }).firstOrNull;
-    if (match == null) return null;
+    if (match == null || match.group(1) == null) return null;
     return _scaledMoney(match.group(1)!, match.group(2));
   }
 

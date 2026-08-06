@@ -5,6 +5,7 @@ import '../../main.dart';
 import '../../providers/app_state_provider.dart';
 import '../../services/voice_agent_preferences.dart';
 import '../../services/voice_agent_preview_service.dart';
+import '../../services/centralized_translator.dart';
 
 class SaarthiWelcomeScreen extends StatefulWidget {
   const SaarthiWelcomeScreen({super.key});
@@ -362,13 +363,13 @@ class _SaarthiWelcomeScreenState extends State<SaarthiWelcomeScreen> {
                                     ),
                                     const SizedBox(width: 10),
                                     ChoiceChip(
-                                      label: const Text('Natural'),
+                                      label: Text(CentralizedTranslator.instance.translate('Natural')),
                                       selected: _selectedVoice == 'natural',
                                       onSelected: (_) => _selectVoice('natural'),
                                     ),
                                     const SizedBox(width: 6),
                                     ChoiceChip(
-                                      label: const Text('Clear'),
+                                      label: Text(CentralizedTranslator.instance.translate('Clear')),
                                       selected: _selectedVoice == 'clear',
                                       onSelected: (_) => _selectVoice('clear'),
                                     ),
@@ -473,10 +474,11 @@ class _SaarthiWelcomeScreenState extends State<SaarthiWelcomeScreen> {
                 ),
               ),
             );
-          }
+          },
         ),
       ),
     );
+
   }
 
   Widget _buildFeatureCard({

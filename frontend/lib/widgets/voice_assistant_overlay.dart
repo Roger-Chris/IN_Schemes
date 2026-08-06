@@ -19,6 +19,7 @@ import '../services/scheme_understanding_engine.dart';
 import '../services/speech_output_controller.dart';
 import '../services/voice_recognition_controller.dart';
 import '../services/voice_agent_controller.dart';
+import '../services/centralized_translator.dart';
 
 enum _VoiceAssistantPhase {
   starting,
@@ -930,10 +931,8 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            style: TextButton.styleFrom(
-              foregroundColor: const Color(0xFF64748B),
-            ),
-            child: const Text('Cancel'),
+            style: TextButton.styleFrom(foregroundColor: const Color(0xFF64748B)),
+            child: Text(CentralizedTranslator.instance.translate('Cancel')),
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(controller.text),
@@ -944,7 +943,7 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
                 borderRadius: BorderRadius.circular(10),
               ),
             ),
-            child: const Text('Use value'),
+            child: Text(CentralizedTranslator.instance.translate('Use value')),
           ),
         ],
       ),
@@ -1007,10 +1006,10 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            style: TextButton.styleFrom(
-              foregroundColor: const Color(0xFF64748B),
-            ),
-            child: const Text('Keep session only'),
+            style: TextButton.styleFrom(foregroundColor: const Color(0xFF64748B)),
+            child: Text(_presentInTamil
+                ? CentralizedTranslator.instance.translate('Keep session only')
+                : 'Keep session only'),
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
@@ -1021,7 +1020,9 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
                 borderRadius: BorderRadius.circular(10),
               ),
             ),
-            child: const Text('Save confirmed'),
+            child: Text(_presentInTamil
+                ? CentralizedTranslator.instance.translate('Save confirmed')
+                : 'Save confirmed'),
           ),
         ],
       ),
@@ -1793,7 +1794,7 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
             TextButton(
               key: const Key('voice-view-all-results'),
               onPressed: () => widget.onSubmit(_session!.statement),
-              child: const Text('View all', style: TextStyle(fontSize: 10.5)),
+              child: Text(CentralizedTranslator.instance.translate('View all'), style: const TextStyle(fontSize: 10.5)),
             ),
           ],
         ),
@@ -1807,7 +1808,7 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
             key: const Key('voice-review-profile'),
             onPressed: _reviewAndSaveFacts,
             icon: const Icon(Icons.person_add_alt_1_outlined, size: 17),
-            label: const Text('Review and save confirmed details'),
+            label: Text(CentralizedTranslator.instance.translate('Review and save confirmed details')),
           ),
         ],
       ],

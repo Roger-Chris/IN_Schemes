@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../providers/app_state_provider.dart';
 import '../utils/constants.dart';
+import '../utils/profile_l10n.dart';
 import 'navigation_mode_screen.dart';
 
 class OtpScreen extends StatefulWidget {
@@ -67,9 +68,10 @@ class _OtpScreenState extends State<OtpScreen> {
 
   void _resendOtp() {
     _startTimer();
+    final isTa = Provider.of<AppProvider>(context, listen: false).selectedLanguage == 'ta';
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('A new OTP has been sent to your number. (Use 123456 to test)'),
+      SnackBar(
+        content: Text(ProfileL10n.t('otp_sent', isTa)),
         backgroundColor: AppConstants.successColor,
       ),
     );
@@ -82,15 +84,17 @@ class _OtpScreenState extends State<OtpScreen> {
 
     final otpStr = _controllers.map((c) => c.text).join();
     if (otpStr.length < 6) {
+      final isTa = Provider.of<AppProvider>(context, listen: false).selectedLanguage == 'ta';
       setState(() {
-        _otpError = 'Please enter the complete 6-digit OTP';
+        _otpError = ProfileL10n.t('invalid_otp', isTa);
       });
       return;
     }
 
     if (otpStr != '123456') {
+      final isTa = Provider.of<AppProvider>(context, listen: false).selectedLanguage == 'ta';
       setState(() {
-        _otpError = 'Invalid OTP. Enter 123456 to continue.';
+        _otpError = ProfileL10n.t('incorrect_otp', isTa);
       });
       return;
     }
@@ -121,6 +125,8 @@ class _OtpScreenState extends State<OtpScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isTa = Provider.of<AppProvider>(context, listen: false).selectedLanguage == 'ta';
+    String l(String key) => ProfileL10n.t(key, isTa);
     return Scaffold(
       resizeToAvoidBottomInset: true,
       body: Stack(
@@ -175,11 +181,11 @@ class _OtpScreenState extends State<OtpScreen> {
                               
                               // Title
                               Text(
-                                'Verify Your Mobile Number',
+                                l('verify_mobile'),
                                 style: GoogleFonts.poppins(
                                   fontSize: 17,
                                   fontWeight: FontWeight.bold,
-                                  color: const Color(0xFF0F172A), // Slate 900
+                                  color: const Color(0xFF0F172A),
                                 ),
                               ),
                               const SizedBox(height: 4),
@@ -189,7 +195,7 @@ class _OtpScreenState extends State<OtpScreen> {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Text(
-                                    'We have sent a 6-digit OTP to ',
+                                    l('enter_otp_sent'),
                                     style: GoogleFonts.inter(
                                       fontSize: 10.5,
                                       color: const Color(0xFF64748B),
@@ -236,7 +242,7 @@ class _OtpScreenState extends State<OtpScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
                                     Text(
-                                      'Enter the 6-digit OTP',
+                                      l('verify_otp'),
                                       style: GoogleFonts.inter(
                                         fontSize: 12,
                                         fontWeight: FontWeight.bold,
@@ -324,7 +330,7 @@ class _OtpScreenState extends State<OtpScreen> {
                                               color: const Color(0xFF64748B),
                                             ),
                                             children: [
-                                              const TextSpan(text: 'OTP expires in '),
+                                              TextSpan(text: isTa ? 'OTP காலாவதியாகும் நேரம் ' : 'OTP expires in '),
                                               TextSpan(
                                                 text: _formatTime(),
                                                 style: const TextStyle(
@@ -357,7 +363,9 @@ class _OtpScreenState extends State<OtpScreen> {
                                           const SizedBox(width: 8),
                                           Expanded(
                                             child: Text(
-                                              'For your security, do not share this OTP with anyone.',
+                                              isTa
+                                                  ? 'உங்கள் பாதுகாப்பிற்காக, இந்த OTP ஐ யாரிடமும் பகிர வேண்டாம்.'
+                                                  : 'For your security, do not share this OTP with anyone.',
                                               style: GoogleFonts.inter(
                                                 fontSize: 10.5,
                                                 color: const Color(0xFF1E293B),
@@ -395,7 +403,7 @@ class _OtpScreenState extends State<OtpScreen> {
                                                 mainAxisAlignment: MainAxisAlignment.center,
                                                 children: [
                                                   Text(
-                                                    'Verify & Continue',
+                                                    l('verify_otp'),
                                                     style: GoogleFonts.inter(
                                                       fontSize: 15,
                                                       fontWeight: FontWeight.bold,
@@ -423,11 +431,11 @@ class _OtpScreenState extends State<OtpScreen> {
                                             fontSize: 12,
                                             color: const Color(0xFF64748B),
                                           ),
-                                          children: const [
-                                            TextSpan(text: 'Didn\'t receive OTP? '),
+                                          children: [
+                                            TextSpan(text: '${l('did_not_receive')} '),
                                             TextSpan(
-                                              text: 'Resend OTP',
-                                              style: TextStyle(
+                                              text: l('resend_otp'),
+                                              style: const TextStyle(
                                                 fontWeight: FontWeight.bold,
                                                 color: Color(0xFF2563EB),
                                               ),
@@ -445,7 +453,7 @@ class _OtpScreenState extends State<OtpScreen> {
                                         Padding(
                                           padding: const EdgeInsets.symmetric(horizontal: 16),
                                           child: Text(
-                                            'OR',
+                                            isTa ? 'அல்லது' : 'OR',
                                             style: GoogleFonts.inter(
                                               color: const Color(0xFF94A3B8),
                                               fontSize: 11,
@@ -479,7 +487,7 @@ class _OtpScreenState extends State<OtpScreen> {
                                             const SizedBox(width: 8),
                                             Expanded(
                                               child: Text(
-                                                'Change Mobile Number',
+                                                isTa ? 'மொபைல் எண் மாற்றுக' : 'Change Mobile Number',
                                                 style: GoogleFonts.inter(
                                                   fontSize: 12,
                                                   fontWeight: FontWeight.bold,
