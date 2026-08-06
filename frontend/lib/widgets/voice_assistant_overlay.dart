@@ -1411,67 +1411,29 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
         borderRadius: BorderRadius.circular(18),
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  _transcript.isEmpty
-                      ? (_presentInTamil
-                            ? 'உங்கள் நிலையை இயல்பாக சொல்லுங்கள்...'
-                            : 'Tell me your situation naturally...')
-                      : _transcript,
-                  key: const Key('voice-transcript'),
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.inter(
-                    color: _transcript.isEmpty
-                        ? const Color(0xFF94A3B8)
-                        : Colors.white,
-                    fontSize: 12,
-                    height: 1.4,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 10),
-              if (!_isCompanion)
-                IconButton(
-                  key: const Key('voice-open-typed-input'),
-                  tooltip: 'Type instead',
-                  onPressed: _showTypedInputDialog,
-                  icon: const Icon(
-                    Icons.keyboard_alt_outlined,
-                    color: Color(0xFF94A3B8),
-                  ),
-                ),
-              VoiceLevelBars(
-                key: const Key('voice-level-bars'),
-                animation: _waveController,
-                level: _soundLevel,
-                active: _isListening,
-              ),
-              const SizedBox(width: 6),
-              Semantics(
-                button: true,
-                label: _isListening ? 'Stop listening' : 'Start listening',
-                child: IconButton.filled(
-                  onPressed: _toggleListening,
-                  style: IconButton.styleFrom(
-                    backgroundColor: _isListening
-                        ? const Color(0xFF10B981)
-                        : _accent,
-                    minimumSize: const Size(48, 48),
-                  ),
-                  icon: Icon(
-                    _isListening ? Icons.mic : Icons.mic_none_rounded,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ],
+          Text(
+            _transcript.isEmpty
+                ? (_presentInTamil
+                      ? 'உங்கள் நிலையை இயல்பாக சொல்லுங்கள்...'
+                      : 'Tell me your situation naturally...')
+                : _transcript,
+            key: const Key('voice-transcript'),
+            maxLines: 4,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
+            style: GoogleFonts.inter(
+              color: _transcript.isEmpty
+                  ? const Color(0xFF94A3B8)
+                  : Colors.white,
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              height: 1.4,
+            ),
           ),
           if (showSuggestions) ...[
-            const SizedBox(height: 8),
+            const SizedBox(height: 14),
             Wrap(
               spacing: 6,
               runSpacing: 6,
@@ -1483,6 +1445,58 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
               ],
             ),
           ],
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: !_isCompanion
+                      ? IconButton(
+                          key: const Key('voice-open-typed-input'),
+                          tooltip: 'Type instead',
+                          onPressed: _showTypedInputDialog,
+                          icon: const Icon(
+                            Icons.keyboard_alt_outlined,
+                            color: Color(0xFF94A3B8),
+                          ),
+                        )
+                      : const SizedBox(),
+                ),
+              ),
+              const SizedBox(width: 24),
+              Semantics(
+                button: true,
+                label: _isListening ? 'Stop listening' : 'Start listening',
+                child: IconButton.filled(
+                  onPressed: _toggleListening,
+                  style: IconButton.styleFrom(
+                    backgroundColor: _isListening
+                        ? const Color(0xFF10B981)
+                        : _accent,
+                    minimumSize: const Size(56, 56),
+                  ),
+                  icon: Icon(
+                    _isListening ? Icons.mic : Icons.mic_none_rounded,
+                    color: Colors.white,
+                    size: 26,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 24),
+              Expanded(
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: VoiceLevelBars(
+                    key: const Key('voice-level-bars'),
+                    animation: _waveController,
+                    level: _soundLevel,
+                    active: _isListening,
+                  ),
+                ),
+              ),
+            ],
+          ),
           if (_isCompanion) ...[
             const SizedBox(height: 10),
             Row(

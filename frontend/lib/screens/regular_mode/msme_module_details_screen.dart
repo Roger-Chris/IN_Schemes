@@ -450,16 +450,9 @@ class _MSMEModuleDetailsScreenState extends State<MSMEModuleDetailsScreen> {
                       provider.updateTabIndex(1); // Navigate to search
                       Navigator.of(context).pop(); // Dismiss detail
                     },
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.search, size: 16),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Search Schemes',
-                          style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold),
-                        ),
-                      ],
+                    child: Text(
+                      'Search Schemes',
+                      style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold),
                     ),
                   ),
                 ),
@@ -580,12 +573,14 @@ class _MSMEModuleDetailsScreenState extends State<MSMEModuleDetailsScreen> {
               children: [
                 Icon(Icons.calculate, color: widget.iconColor, size: 22),
                 const SizedBox(width: 8),
-                Text(
-                  'Delayed Payment Interest Calculator',
-                  style: GoogleFonts.poppins(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                    color: const Color(0xFF0F172A),
+                Expanded(
+                  child: Text(
+                    'Delayed Payment Interest Calculator',
+                    style: GoogleFonts.poppins(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF0F172A),
+                    ),
                   ),
                 ),
               ],
@@ -601,62 +596,61 @@ class _MSMEModuleDetailsScreenState extends State<MSMEModuleDetailsScreen> {
             ),
             const SizedBox(height: 16),
             Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Invoice Amount (₹)',
-                        style: GoogleFonts.inter(
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                          color: const Color(0xFF475569),
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      SizedBox(
-                        height: 42,
-                        child: TextField(
-                          controller: _invoiceController,
-                          keyboardType: TextInputType.number,
-                          decoration: InputDecoration(
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                          ),
-                          onChanged: (_) => _calculateLateInterest(),
-                        ),
-                      ),
-                    ],
+                  child: Text(
+                    'Invoice Amount (₹)',
+                    style: GoogleFonts.inter(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF475569),
+                    ),
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Days Delayed (Post 45d)',
-                        style: GoogleFonts.inter(
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                          color: const Color(0xFF475569),
-                        ),
+                  child: Text(
+                    'Days Delayed (Post 45d)',
+                    style: GoogleFonts.inter(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF475569),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Row(
+              children: [
+                Expanded(
+                  child: SizedBox(
+                    height: 42,
+                    child: TextField(
+                      controller: _invoiceController,
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                       ),
-                      const SizedBox(height: 6),
-                      SizedBox(
-                        height: 42,
-                        child: TextField(
-                          controller: _daysController,
-                          keyboardType: TextInputType.number,
-                          decoration: InputDecoration(
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                          ),
-                          onChanged: (_) => _calculateLateInterest(),
-                        ),
+                      onChanged: (_) => _calculateLateInterest(),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: SizedBox(
+                    height: 42,
+                    child: TextField(
+                      controller: _daysController,
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                       ),
-                    ],
+                      onChanged: (_) => _calculateLateInterest(),
+                    ),
                   ),
                 ),
               ],
