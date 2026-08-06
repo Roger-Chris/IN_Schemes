@@ -878,12 +878,13 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
 
   Future<void> _showTypedInputDialog() async {
     await _recognitionController.cancel();
-    if (mounted) {
-      setState(() {
-        _voicePhase = _VoiceAssistantPhase.ready;
-      });
-    }
+    if (!mounted) return;
 
+    setState(() {
+      _voicePhase = _VoiceAssistantPhase.ready;
+    });
+
+    final isCompanion = _isCompanion;
     final controller = TextEditingController();
     final value = await showDialog<String>(
       context: context,
@@ -894,7 +895,7 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
           side: const BorderSide(color: Color(0xFFE2E8F0)),
         ),
         title: Text(
-          _isCompanion ? 'Type to Saarthi' : 'Type to Ask IN AI',
+          isCompanion ? 'Type to Saarthi' : 'Type to Ask IN AI',
           style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
         ),
         content: TextField(
