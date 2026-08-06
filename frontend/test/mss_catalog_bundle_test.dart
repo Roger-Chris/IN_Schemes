@@ -242,4 +242,34 @@ class MssCatalogBundleProxy implements MssCatalogBundle {
 
   @override
   List<MssEntity> search(String query) => schemes;
+
+  @override
+  List<MssEntity> getLinkedEntities(MssEntity entity, {String? targetType, String? relationType}) => const [];
+
+  @override
+  List<MssEntity> getReverseLinkedEntities(String targetSchemeId, String catalogName) => const [];
+
+  @override
+  List<MssEntity> getAuthoritiesForScheme(MssEntity scheme) => const [];
+
+  @override
+  List<MssEntity> getInstitutionsForScheme(MssEntity scheme) => const [];
+
+  @override
+  List<MssEntity> getFinanceProductsForScheme(MssEntity scheme) => const [];
+
+  @override
+  List<MssEntity> getTaxProvisionsForScheme(MssEntity scheme) => const [];
+
+  @override
+  List<MssEntity> getExportBenefitsForScheme(MssEntity scheme) => const [];
+
+  @override
+  List<MssEntity> getCsrProvisionsForScheme(MssEntity scheme) => const [];
+
+  @override
+  List<MssEntity> getTredsPlatformsForScheme(MssEntity scheme) => const [];
+
+  @override
+  List<MssEntity> getKnowledgeItemsForScheme(MssEntity scheme) => const [];
 }

@@ -6,6 +6,10 @@ class SchemeDocument {
   final String estimatedCost;
   final String remarks;
   final String sourceUrl;
+  final String validityMonths;
+  final String downloadTemplateUrl;
+  final String sampleCopyUrl;
+  final String verificationPortalUrl;
 
   const SchemeDocument({
     required this.name,
@@ -15,9 +19,14 @@ class SchemeDocument {
     this.estimatedCost = '',
     this.remarks = '',
     this.sourceUrl = '',
+    this.validityMonths = '',
+    this.downloadTemplateUrl = '',
+    this.sampleCopyUrl = '',
+    this.verificationPortalUrl = '',
   });
 
-  bool get isMandatory => mandatory.toLowerCase() == 'yes';
+  bool get isMandatory =>
+      mandatory.toLowerCase() == 'yes' || mandatory.toLowerCase() == 'required';
 }
 
 class SchemeService {
@@ -25,12 +34,24 @@ class SchemeService {
   final String category;
   final bool mandatory;
   final String description;
+  final String purpose;
+  final String department;
+  final String website;
+  final String contact;
+  final String status;
+  final String notes;
 
   const SchemeService({
     required this.name,
     this.category = '',
     this.mandatory = false,
     this.description = '',
+    this.purpose = '',
+    this.department = '',
+    this.website = '',
+    this.contact = '',
+    this.status = 'ACTIVE',
+    this.notes = '',
   });
 }
 
@@ -40,6 +61,14 @@ class Scheme {
   final String id; // Stable catalog code or Supabase UUID
   final String schemeCode; // e.g. "IN001"
   final String name;
+  final String shortName;
+  final String fullSchemeName;
+  final String ministry;
+  final String department;
+  final String implementingAgency;
+  final double matchScore;
+  final String logoUrl;
+  final String officialSource;
   final String governmentLevel; // Central / State
   final String sponsoringBody; // issuing_department
   final String issuingBody; // issuing_body (implementing agency)
@@ -69,6 +98,40 @@ class Scheme {
   final String status;
   final bool isActive;
 
+  // Phase 5 At-a-Glance Chips
+  final List<String> glanceChips;
+
+  // Phase 5 Benefits & Funding Breakdown
+  final List<String> benefitTypesList;
+  final String capitalSubsidyDetails;
+  final String interestSubventionDetails;
+  final String marginMoneyDetails;
+  final String loanGuaranteeDetails;
+  final List<String> supportTypes;
+  final String rawBenefitsDisplayText;
+
+  // Phase 5 Detailed Eligibility Breakdown
+  final String eligibilityAgeRange;
+  final String turnoverLimits;
+  final String investmentLimits;
+  final List<String> allowedBusinessTypes;
+  final String educationRequirements;
+  final List<String> mandatoryConditions;
+  final List<String> optionalConditions;
+  final List<String> specialCategories;
+
+  // Phase 5 Application Timeline & Services
+  final String applicationFee;
+  final String processingDurationDays;
+  final String intakeTimelineText;
+
+  // Phase 5 Linked Graph Extensions (Finance, Tax, Knowledge, Helplines)
+  final List<String> financeProductsSummary;
+  final List<String> taxExemptionsSummary;
+  final List<String> applicableTaxesList;
+  final List<String> knowledgeGuidanceList;
+  final Map<String, String> helplineContactsMap;
+
   // Joined / enriched fields (populated on detail load)
   final List<String> eligibilityCriteria;
   final List<String> requiredDocuments;
@@ -81,6 +144,14 @@ class Scheme {
     required this.id,
     this.schemeCode = '',
     required this.name,
+    this.shortName = '',
+    this.fullSchemeName = '',
+    this.ministry = '',
+    this.department = '',
+    this.implementingAgency = '',
+    this.matchScore = 1.0,
+    this.logoUrl = '',
+    this.officialSource = '',
     this.governmentLevel = 'Central',
     this.sponsoringBody = '',
     this.issuingBody = '',
@@ -109,6 +180,30 @@ class Scheme {
     this.searchKeywords = '',
     this.status = 'ACTIVE',
     this.isActive = true,
+    this.glanceChips = const [],
+    this.benefitTypesList = const [],
+    this.capitalSubsidyDetails = '',
+    this.interestSubventionDetails = '',
+    this.marginMoneyDetails = '',
+    this.loanGuaranteeDetails = '',
+    this.supportTypes = const [],
+    this.rawBenefitsDisplayText = '',
+    this.eligibilityAgeRange = '',
+    this.turnoverLimits = '',
+    this.investmentLimits = '',
+    this.allowedBusinessTypes = const [],
+    this.educationRequirements = '',
+    this.mandatoryConditions = const [],
+    this.optionalConditions = const [],
+    this.specialCategories = const [],
+    this.applicationFee = '',
+    this.processingDurationDays = '',
+    this.intakeTimelineText = '',
+    this.financeProductsSummary = const [],
+    this.taxExemptionsSummary = const [],
+    this.applicableTaxesList = const [],
+    this.knowledgeGuidanceList = const [],
+    this.helplineContactsMap = const {},
     this.eligibilityCriteria = const [],
     this.requiredDocuments = const [],
     this.applicationProcess = const [],
@@ -169,11 +264,43 @@ class Scheme {
     List<SchemeDocument>? documents,
     List<SchemeService>? requiredServices,
     List<Map<String, String>>? faqs,
+    List<String>? glanceChips,
+    List<String>? benefitTypesList,
+    String? capitalSubsidyDetails,
+    String? interestSubventionDetails,
+    String? marginMoneyDetails,
+    String? loanGuaranteeDetails,
+    List<String>? supportTypes,
+    String? rawBenefitsDisplayText,
+    String? eligibilityAgeRange,
+    String? turnoverLimits,
+    String? investmentLimits,
+    List<String>? allowedBusinessTypes,
+    String? educationRequirements,
+    List<String>? mandatoryConditions,
+    List<String>? optionalConditions,
+    List<String>? specialCategories,
+    String? applicationFee,
+    String? processingDurationDays,
+    String? intakeTimelineText,
+    List<String>? financeProductsSummary,
+    List<String>? taxExemptionsSummary,
+    List<String>? applicableTaxesList,
+    List<String>? knowledgeGuidanceList,
+    Map<String, String>? helplineContactsMap,
   }) {
     return Scheme(
       id: id,
       schemeCode: schemeCode,
       name: name,
+      shortName: shortName,
+      fullSchemeName: fullSchemeName,
+      ministry: ministry,
+      department: department,
+      implementingAgency: implementingAgency,
+      matchScore: matchScore,
+      logoUrl: logoUrl,
+      officialSource: officialSource,
       governmentLevel: governmentLevel,
       sponsoringBody: sponsoringBody,
       issuingBody: issuingBody,
@@ -202,6 +329,30 @@ class Scheme {
       searchKeywords: searchKeywords,
       status: status,
       isActive: isActive,
+      glanceChips: glanceChips ?? this.glanceChips,
+      benefitTypesList: benefitTypesList ?? this.benefitTypesList,
+      capitalSubsidyDetails: capitalSubsidyDetails ?? this.capitalSubsidyDetails,
+      interestSubventionDetails: interestSubventionDetails ?? this.interestSubventionDetails,
+      marginMoneyDetails: marginMoneyDetails ?? this.marginMoneyDetails,
+      loanGuaranteeDetails: loanGuaranteeDetails ?? this.loanGuaranteeDetails,
+      supportTypes: supportTypes ?? this.supportTypes,
+      rawBenefitsDisplayText: rawBenefitsDisplayText ?? this.rawBenefitsDisplayText,
+      eligibilityAgeRange: eligibilityAgeRange ?? this.eligibilityAgeRange,
+      turnoverLimits: turnoverLimits ?? this.turnoverLimits,
+      investmentLimits: investmentLimits ?? this.investmentLimits,
+      allowedBusinessTypes: allowedBusinessTypes ?? this.allowedBusinessTypes,
+      educationRequirements: educationRequirements ?? this.educationRequirements,
+      mandatoryConditions: mandatoryConditions ?? this.mandatoryConditions,
+      optionalConditions: optionalConditions ?? this.optionalConditions,
+      specialCategories: specialCategories ?? this.specialCategories,
+      applicationFee: applicationFee ?? this.applicationFee,
+      processingDurationDays: processingDurationDays ?? this.processingDurationDays,
+      intakeTimelineText: intakeTimelineText ?? this.intakeTimelineText,
+      financeProductsSummary: financeProductsSummary ?? this.financeProductsSummary,
+      taxExemptionsSummary: taxExemptionsSummary ?? this.taxExemptionsSummary,
+      applicableTaxesList: applicableTaxesList ?? this.applicableTaxesList,
+      knowledgeGuidanceList: knowledgeGuidanceList ?? this.knowledgeGuidanceList,
+      helplineContactsMap: helplineContactsMap ?? this.helplineContactsMap,
       eligibilityCriteria: eligibilityCriteria ?? this.eligibilityCriteria,
       requiredDocuments: requiredDocuments ?? this.requiredDocuments,
       applicationProcess: applicationProcess ?? this.applicationProcess,
@@ -211,3 +362,4 @@ class Scheme {
     );
   }
 }
+

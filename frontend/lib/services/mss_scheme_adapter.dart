@@ -4,9 +4,11 @@ import 'mss_catalog_bundle.dart';
 
 /// MssSchemeAdapter
 /// ─────────────────
-/// Converts an [MssEntity] of type 'scheme' into the existing [Scheme] domain model object.
-/// Resolves linked entities (authority, institution, finance, tax, etc.) strictly in-memory
-/// from [MssCatalogBundle] using `relationships.references` and `byId`.
+/// Canonical translation layer converting an [MssEntity] of type 'scheme'
+/// into the rich [Scheme] domain model object.
+/// Resolves linked entities (authority, institution, finance, tax, CSR, export,
+/// TReDS, knowledge, services, documents) strictly in-memory from [MssCatalogBundle]
+/// using `relationships.references` and `byId` graph resolution.
 class MssSchemeAdapter {
   MssSchemeAdapter._();
 
@@ -34,7 +36,7 @@ class MssSchemeAdapter {
     return codes;
   }
 
-  /// Convert a scheme entity to a Scheme model object using in-memory catalog references.
+  /// Convert a scheme entity to a Scheme model object using in-memory catalog graph references.
   static Scheme toScheme(MssEntity entity, MssCatalogBundle bundle) {
     assert(
       entity.entityType == 'scheme',
@@ -46,21 +48,79 @@ class MssSchemeAdapter {
     final gov = (classification['government'] as Map<String, dynamic>?) ?? {};
     final resources = (content['resources'] as Map<String, dynamic>?) ?? {};
     final appProc = (content['applicationProcess'] as Map<String, dynamic>?) ?? {};
+    final appTimeline = (content['applicationTimeline'] as Map<String, dynamic>?) ?? {};
     final search = entity.search;
     final metadata = entity.metadata;
+    final overviewObj = (content['overview'] as Map<String, dynamic>?) ?? {};
+    final targetBeneficiariesObj = (content['targetBeneficiaries'] as Map<String, dynamic>?) ?? {};
+    final eligibilityObj = (content['eligibility'] as Map<String, dynamic>?) ?? {};
+    final eligibilityTextObj = (content['eligibilityText'] as Map<String, dynamic>?) ?? {};
+    final benefitsObj = (content['benefits'] as Map<String, dynamic>?) ?? {};
+    final contactsObj = (content['contacts'] as Map<String, dynamic>?) ?? {};
 
-    // ── Status Resolution ──────────────────────────────────────────────
+    // ── 1. Status & Header Information ──────────────────────────────────
     final rawStatus = entity.status.toLowerCase().trim();
-    final statusStr = rawStatus.isEmpty ? 'unknown' : rawStatus;
-    final isActive = statusStr != 'closed';
+    final statusStr = rawStatus.isEmpty ? 'ACTIVE' : rawStatus.toUpperCase();
+    final isActive = statusStr != 'CLOSED';
 
-    // ── Localized Names & Text ─────────────────────────────────────────
     final nameEn = entity.getLocalizedName('en');
     final nameTa = entity.getLocalizedName('ta');
     final name = nameEn.isNotEmpty ? nameEn : (nameTa.isNotEmpty ? nameTa : entity.code);
+    final shortName = (entity.identity['shortName'] as String?) ??
+        (entity.identity['short_name'] as String?) ??
+        (classification['shortName'] as String?) ??
+        '';
+    final fullSchemeName = (entity.identity['fullName'] as String?) ?? name;
 
+    // ── 2. Graph Relationship Resolution (Authorities & Institutions) ───
+    final resolvedAuthorities = bundle.getAuthoritiesForScheme(entity);
+    final resolvedInstitutions = bundle.getInstitutionsForScheme(entity);
+
+    String ministry = (gov['ministryText'] as String?) ?? '';
+    String department = (gov['departmentText'] as String?) ?? '';
+    String implementingAgency = (gov['implementingAgencyText'] as String?) ?? '';
+
+    if (ministry.isEmpty && resolvedAuthorities.isNotEmpty) {
+      ministry = resolvedAuthorities.first.getLocalizedName('en');
+    }
+    if (department.isEmpty) {
+      if (resolvedAuthorities.length > 1) {
+        department = resolvedAuthorities[1].getLocalizedName('en');
+      } else if (ministry.isNotEmpty) {
+        department = ministry;
+      }
+    }
+    if (implementingAgency.isEmpty && resolvedInstitutions.isNotEmpty) {
+      implementingAgency = resolvedInstitutions.first.getLocalizedName('en');
+    }
+
+    final sponsoringBody = ministry.isNotEmpty ? ministry : (department.isNotEmpty ? department : 'Government of India');
+    final issuingBody = implementingAgency.isNotEmpty ? implementingAgency : sponsoringBody;
+
+    final govLevelRaw = (gov['levelText'] as String?) ?? (gov['level'] as String?) ?? 'Central';
+    final governmentLevel = govLevelRaw.isNotEmpty ? govLevelRaw : 'Central';
+
+    final stateRaw = (gov['statesText'] as String?);
+    final state = (stateRaw != null && stateRaw.isNotEmpty)
+        ? stateRaw
+        : (governmentLevel.toLowerCase().contains('central') ? 'All India' : 'Tamil Nadu');
+
+    final sector = (classification['sectorsText'] as String?) ??
+        _asList(classification['sectors'])?.join(', ') ??
+        (classification['sector'] as String?) ??
+        (content['sector'] as String?) ??
+        '';
+
+    final schemeType = (classification['schemeTypeText'] as String?) ??
+        _asList(classification['schemeType'])?.join(', ') ??
+        (classification['schemeType'] as String?) ??
+        '';
+
+    final category = schemeType.isNotEmpty ? schemeType : (sector.isNotEmpty ? sector : 'General');
+
+    // ── 3. Overview & Objectives ───────────────────────────────────────
     String overviewEn = '';
-    final summaryRaw = content['summary'] ?? content['description'];
+    final summaryRaw = overviewObj['summary'] ?? overviewObj['description'] ?? content['summary'] ?? content['description'];
     if (summaryRaw is Map<String, dynamic>) {
       final en = summaryRaw['en'] as String? ?? '';
       final ta = summaryRaw['ta'] as String? ?? '';
@@ -70,171 +130,101 @@ class MssSchemeAdapter {
     }
 
     String objectivesEn = '';
-    final objectivesRaw = content['objectives'];
+    final objectivesRaw = content['objectives'] ?? overviewObj['objective'];
     if (objectivesRaw is Map<String, dynamic>) {
       final en = objectivesRaw['en'] as String? ?? '';
       final ta = objectivesRaw['ta'] as String? ?? '';
       objectivesEn = '$en $ta'.trim();
     } else if (objectivesRaw is List) {
-      objectivesEn = objectivesRaw.whereType<String>().join(' ');
+      objectivesEn = objectivesRaw.whereType<String>().join('\n• ');
+      if (objectivesEn.isNotEmpty) objectivesEn = '• $objectivesEn';
     } else if (objectivesRaw is String) {
       objectivesEn = objectivesRaw;
     }
 
-    // ── Government Classification ──────────────────────────────────────
-    final govLevelRaw = (gov['levelText'] as String?) ?? (gov['level'] as String?);
-    final governmentLevel = govLevelRaw ?? '';
-
-    // In-memory Authority / Ministry resolution via content pointers and relationships.references
-    String sponsoringBody = (gov['ministryText'] as String?) ?? (gov['departmentText'] as String?) ?? '';
-    if (sponsoringBody.isEmpty) {
-      final minId = (gov['ministryId'] as String?) ?? (gov['departmentId'] as String?);
-      if (minId != null) {
-        final authEntity = bundle.getEntity(minId);
-        if (authEntity != null) {
-          sponsoringBody = authEntity.getLocalizedName('en');
-        }
-      }
-    }
-
-    // In-memory Institution / Implementing Agency resolution via content pointers and relationships.references
-    String issuingBody = (gov['implementingAgencyText'] as String?) ?? '';
-    if (issuingBody.isEmpty) {
-      final agencyIds = _asList(gov['implementingAgencyIds']);
-      if (agencyIds != null && agencyIds.isNotEmpty) {
-        final agencyId = agencyIds.first?.toString();
-        if (agencyId != null) {
-          final instEntity = bundle.getEntity(agencyId);
-          if (instEntity != null) {
-            issuingBody = instEntity.getLocalizedName('en');
-          }
-        }
-      }
-    }
-
-    // Graph resolution fallback via entity.references (relationships.references)
-    for (final ref in entity.references) {
-      final targetId = ref['targetId'] as String? ?? ref['target_id'] as String?;
-      if (targetId == null || targetId.isEmpty) continue;
-      final targetEntity = bundle.getEntity(targetId);
-      if (targetEntity == null) continue;
-
-      final relType = (ref['relationType'] as String? ?? ref['type'] as String? ?? '').toLowerCase();
-      final targetType = targetEntity.entityType.toLowerCase();
-
-      if (sponsoringBody.isEmpty && (targetType == 'authority' || relType.contains('authority') || relType.contains('ministry'))) {
-        sponsoringBody = targetEntity.getLocalizedName('en');
-      }
-      if (issuingBody.isEmpty && (targetType == 'institution' || relType.contains('agency') || relType.contains('institution'))) {
-        issuingBody = targetEntity.getLocalizedName('en');
-      }
-    }
-
-    final stateRaw = (gov['statesText'] as String?);
-    final state = (stateRaw != null && stateRaw.isNotEmpty)
-        ? stateRaw
-        : (governmentLevel.toLowerCase() == 'central' ? 'All India' : '');
-
-    final sector = (classification['targetSectorsText'] as String?) ??
-        _asList(classification['targetSectors'])?.join(', ') ??
-        (classification['sector'] as String?) ??
-        (content['sector'] as String?) ??
-        (content['category'] as String?) ??
-        '';
-
-    final eligibilityText = (content['eligibilityText'] as Map<String, dynamic>?) ?? {};
-    final elSummary = (eligibilityText['summary'] as String?) ?? '';
-
-    final targetBeneficiary = (classification['targetBeneficiariesText'] as String?) ??
+    // ── 4. Target Beneficiaries & At-a-Glance Chips ────────────────────
+    final beneficiaryDesc = (targetBeneficiariesObj['description'] as String?) ??
+        (classification['targetBeneficiariesText'] as String?) ??
         _asList(classification['targetBeneficiaries'])?.join(', ') ??
-        (classification['targetBeneficiary'] as String?) ??
-        (content['targetBeneficiary'] as String?) ??
-        elSummary;
-
-    final schemeType = (classification['schemeTypeText'] as String?) ??
-        _asList(classification['schemeType'])?.join(', ') ??
-        (classification['schemeType'] as String?) ??
-        (content['schemeType'] as String?) ??
         '';
+    final targetBeneficiary = beneficiaryDesc.isNotEmpty ? beneficiaryDesc : 'Eligible MSMEs & Enterprises';
 
-    // ── In-Memory Linked Finance / Subsidies / Tax / CSR / Export ──────
+    final glanceChips = <String>{};
+    if (governmentLevel.isNotEmpty) glanceChips.add(governmentLevel);
+    if (state.isNotEmpty) glanceChips.add(state);
+    if (sector.isNotEmpty) glanceChips.addAll(sector.split(',').map((s) => s.trim()).where((s) => s.isNotEmpty));
+    if (schemeType.isNotEmpty) glanceChips.add(schemeType);
+
+    final benTypes = _asList(targetBeneficiariesObj['beneficiaryTypes']);
+    if (benTypes != null) glanceChips.addAll(benTypes.map((e) => e.toString()));
+
+    final entTypes = _asList(targetBeneficiariesObj['enterpriseTypes']);
+    if (entTypes != null) glanceChips.addAll(entTypes.map((e) => e.toString()));
+
+    final busStages = _asList(targetBeneficiariesObj['businessStages']);
+    if (busStages != null) glanceChips.addAll(busStages.map((e) => e.toString()));
+
+    final specCats = _asList(targetBeneficiariesObj['specialCategories']);
+    if (specCats != null) glanceChips.addAll(specCats.map((e) => e.toString()));
+
+    final tags = _asList(classification['tags']);
+    if (tags != null) glanceChips.addAll(tags.map((e) => e.toString()));
+
+    // ── 5. Benefits & Funding Breakdown ────────────────────────────────
     double? maxFunding;
     double? minFunding;
     double? subsidyPercentage;
     double? interestSubventionRate;
     String subsidyAmountText = '';
-    String benefitsText = '';
+    String benefitsText = (benefitsObj['summary'] as String?) ?? '';
 
-    // 1. Check direct content funding sub-objects
-    final fundingObj = (content['capitalSubsidy'] as Map<String, dynamic>?) ??
-        (content['interestSubvention'] as Map<String, dynamic>?) ??
-        (content['funding'] as Map<String, dynamic>?);
+    final capSubsidy = benefitsObj['capitalSubsidy'] as Map<String, dynamic>?;
+    final intSubvention = benefitsObj['interestSubvention'] as Map<String, dynamic>?;
+    final marginMoney = benefitsObj['marginMoney'] as Map<String, dynamic>?;
+    final loanGuarantee = benefitsObj['guarantee'] as Map<String, dynamic>?;
 
-    if (fundingObj != null) {
-      if (fundingObj['maxAmountInr'] != null) maxFunding = (fundingObj['maxAmountInr'] as num).toDouble();
-      if (fundingObj['minAmountInr'] != null) minFunding = (fundingObj['minAmountInr'] as num).toDouble();
-      if (fundingObj['amountInr'] != null) {
-        maxFunding ??= (fundingObj['amountInr'] as num).toDouble();
-        minFunding ??= (fundingObj['amountInr'] as num).toDouble();
-      }
-      if (fundingObj['maxText'] != null) subsidyAmountText = fundingObj['maxText'] as String;
-      if (fundingObj['percentage'] != null) subsidyPercentage = (fundingObj['percentage'] as num).toDouble();
+    if (capSubsidy != null) {
+      if (capSubsidy['maxAmountInr'] != null) maxFunding = (capSubsidy['maxAmountInr'] as num).toDouble();
+      if (capSubsidy['minAmountInr'] != null) minFunding = (capSubsidy['minAmountInr'] as num).toDouble();
+      if (capSubsidy['percentage'] != null) subsidyPercentage = (capSubsidy['percentage'] as num).toDouble();
+      if (capSubsidy['maxText'] != null) subsidyAmountText = capSubsidy['maxText'] as String;
+    }
+    if (intSubvention != null) {
+      if (intSubvention['percentage'] != null) interestSubventionRate = (intSubvention['percentage'] as num).toDouble();
+      if (intSubvention['rate'] != null) interestSubventionRate ??= (intSubvention['rate'] as num).toDouble();
     }
 
-    // 2. Resolve linked finance entities from in-memory byCatalog['finance']
-    final financeProducts = bundle.getCatalog('finance');
-    for (final fin in financeProducts) {
-      final finSchemeId = fin.content['schemeId'] as String?;
-      if (finSchemeId == entity.id) {
-        final amountObj = fin.content['amount'] as Map<String, dynamic>?;
-        if (amountObj != null) {
-          if (amountObj['maxInr'] != null) maxFunding ??= (amountObj['maxInr'] as num).toDouble();
-          if (amountObj['minInr'] != null) minFunding ??= (amountObj['minInr'] as num).toDouble();
-          if (subsidyAmountText.isEmpty && amountObj['maxText'] != null) {
-            subsidyAmountText = amountObj['maxText'] as String;
-          }
-        }
-        final intRateObj = fin.content['interestRate'] as Map<String, dynamic>?;
-        if (intRateObj != null && intRateObj['percent'] != null) {
-          interestSubventionRate = (intRateObj['percent'] as num).toDouble();
-        }
-        final prodType = fin.content['productType'] as String?;
-        if (prodType != null && benefitsText.isEmpty) {
-          benefitsText = fin.getLocalizedName('en');
-        }
-      }
-    }
+    final benefitTypesList = _asList(benefitsObj['benefitTypes'])?.map((e) => e.toString()).toList() ?? [];
+    final capitalSubsidyDetails = capSubsidy != null ? (capSubsidy['description'] ?? capSubsidy['maxText'] ?? '').toString() : '';
+    final interestSubventionDetails = intSubvention != null ? (intSubvention['description'] ?? intSubvention['text'] ?? '').toString() : '';
+    final marginMoneyDetails = marginMoney != null ? (marginMoney['description'] ?? marginMoney['text'] ?? '').toString() : '';
+    final loanGuaranteeDetails = loanGuarantee != null ? (loanGuarantee['description'] ?? loanGuarantee['text'] ?? '').toString() : '';
 
-    // 3. Resolve linked tax entities from in-memory byCatalog['tax']
-    final taxIncentives = bundle.getCatalog('tax');
-    for (final tax in taxIncentives) {
-      final schemesList = _asList(tax.content['evidencedInSchemes']);
-      if (schemesList != null && schemesList.contains(entity.id)) {
-        final exObj = tax.content['exemption'] as Map<String, dynamic>?;
-        if (exObj != null && exObj['percentage'] != null) {
-          subsidyPercentage ??= (exObj['percentage'] as num).toDouble();
-        }
-      }
-    }
+    final rawBenefitsDisplayText = benefitsText.isNotEmpty ? benefitsText : overviewEn;
 
-    // ── Application & Resource URLs ─────────────────────────────────────
-    final applicationMode = (appProc['modeText'] as String?) ?? (appProc['mode'] as String?) ?? '';
-    final officialWebsiteRaw = (resources['officialWebsiteUrl'] as String?) ??
-        (resources['applicationPortalUrl'] as String?) ??
-        (resources['schemePortalUrl'] as String?) ??
-        (resources['portalUrl'] as String?);
-    final officialWebsite = (officialWebsiteRaw != null && officialWebsiteRaw.trim().isNotEmpty)
-        ? officialWebsiteRaw.trim()
-        : 'https://tn.gov.in';
-    final applicationUrl = (resources['applicationPortalUrl'] as String?) ?? officialWebsite;
-    final guidelinesUrl = (resources['guidelinesPdfUrl'] as String?) ?? '';
-    final districtApplicable = (gov['districtsText'] as String?) ?? '';
-    final lastUpdated = (metadata['updatedAt'] as String?) ?? '';
-
-    // ── Eligibility Criteria ───────────────────────────────────────────
+    // ── 6. Eligibility Details (Comprehensive Mapping) ─────────────────
     final elCriteriaList = <String>[];
-    if (elSummary.isNotEmpty) elCriteriaList.add(elSummary);
+    final structuredEl = eligibilityObj['structured'] as Map<String, dynamic>?;
+    final narrativeEl = eligibilityObj['narrative'] as Map<String, dynamic>?;
 
+    // A. Narrative Summary & Bullets
+    if (narrativeEl != null && narrativeEl['summary'] != null && (narrativeEl['summary'] as String).isNotEmpty) {
+      elCriteriaList.add(narrativeEl['summary'] as String);
+    }
+    final narrativeBullets = _asList(narrativeEl?['bulletPoints']);
+    if (narrativeBullets != null) {
+      for (final b in narrativeBullets) {
+        if (b is String && b.isNotEmpty && !elCriteriaList.contains(b)) {
+          elCriteriaList.add(b);
+        }
+      }
+    }
+
+    // B. Direct Eligibility Text / Rules
+    if (eligibilityTextObj['summary'] != null && (eligibilityTextObj['summary'] as String).isNotEmpty) {
+      final s = eligibilityTextObj['summary'] as String;
+      if (!elCriteriaList.contains(s)) elCriteriaList.add(s);
+    }
     final elRules = _asList(content['eligibilityRules']);
     if (elRules != null) {
       for (final rule in elRules) {
@@ -247,58 +237,293 @@ class MssSchemeAdapter {
       }
     }
 
-    // Search keywords & legacy code mapping
-    final kwEn = _asList(search['keywords']?['en'])?.join(' ') ?? '';
-    final kwTa = _asList(search['keywords']?['ta'])?.join(' ') ?? '';
-    final extractedLegacyCodes = _extractLegacyCodes(entity.identity).join(' ');
-    final searchKeywords = '$kwEn $kwTa $extractedLegacyCodes $nameTa $nameEn $sponsoringBody $issuingBody ${elCriteriaList.join(" ")} $benefitsText'.trim();
+    // C. Structured Conditions Parsing
+    String ageRange = '';
+    String turnoverLimits = '';
+    String investmentLimits = '';
+    String educationRequirements = '';
+    final allowedBusinessTypes = <String>[];
+    final mandatoryConditions = <String>[];
+    final optionalConditions = <String>[];
+    final specialCategories = <String>[];
 
-    // ── Documents Required ──────────────────────────────────────────────
+    if (structuredEl != null) {
+      final aMin = structuredEl['ageMin'];
+      final aMax = structuredEl['ageMax'];
+      if (aMin != null || aMax != null) {
+        ageRange = '${aMin ?? 18} - ${aMax ?? "No upper limit"} years';
+        elCriteriaList.add('Applicant Age: $ageRange');
+      }
+
+      final tMin = structuredEl['turnoverMinInr'];
+      final tMax = structuredEl['turnoverMaxInr'];
+      if (tMin != null || tMax != null) {
+        turnoverLimits = '₹${tMin ?? 0} to ₹${tMax ?? "No limit"}';
+        elCriteriaList.add('Enterprise Turnover: $turnoverLimits');
+      }
+
+      final iMin = structuredEl['investmentMinInr'];
+      final iMax = structuredEl['investmentMaxInr'];
+      if (iMin != null || iMax != null) {
+        investmentLimits = '₹${iMin ?? 0} to ₹${iMax ?? "No limit"}';
+        elCriteriaList.add('Plant & Machinery Investment: $investmentLimits');
+      }
+
+      final bTypes = _asList(structuredEl['businessTypes']);
+      if (bTypes != null && bTypes.isNotEmpty) {
+        allowedBusinessTypes.addAll(bTypes.map((e) => e.toString()));
+        elCriteriaList.add('Eligible Business Types: ${allowedBusinessTypes.join(', ')}');
+      }
+
+      educationRequirements = (structuredEl['education'] as String?) ?? '';
+      if (educationRequirements.isNotEmpty) {
+        elCriteriaList.add('Educational Qualification: $educationRequirements');
+      }
+
+      final mConds = _asList(structuredEl['mandatoryConditions']);
+      if (mConds != null) {
+        for (final mc in mConds) {
+          final s = mc.toString();
+          mandatoryConditions.add(s);
+          if (!elCriteriaList.contains(s)) elCriteriaList.add(s);
+        }
+      }
+
+      final oConds = _asList(structuredEl['optionalConditions']);
+      if (oConds != null) {
+        for (final oc in oConds) {
+          final s = oc.toString();
+          optionalConditions.add(s);
+          if (!elCriteriaList.contains(s)) elCriteriaList.add(s);
+        }
+      }
+
+      final sCats = _asList(structuredEl['specialCategories']);
+      if (sCats != null) {
+        for (final sc in sCats) {
+          final s = sc.toString();
+          specialCategories.add(s);
+        }
+      }
+
+      final locReq = structuredEl['locationRequirement'] as String?;
+      if (locReq != null && locReq.isNotEmpty && !elCriteriaList.contains('Location: $locReq')) {
+        elCriteriaList.add('Location: $locReq');
+      }
+    }
+
+    // Fallback: If criteria list is still empty, include target beneficiary statement
+    if (elCriteriaList.isEmpty && targetBeneficiary.isNotEmpty) {
+      elCriteriaList.add('Target Beneficiaries: $targetBeneficiary');
+    }
+
+    // ── 7. Required Documents ──────────────────────────────────────────
     final docList = <SchemeDocument>[];
     final reqDocNames = <String>[];
 
-    final docRefs = _asList(content['documents']);
-    if (docRefs != null) {
-      for (final docItem in docRefs) {
+    final rawDocs = _asList(content['requiredDocuments'] ?? content['documents']);
+    if (rawDocs != null) {
+      for (final docItem in rawDocs) {
         if (docItem is Map<String, dynamic>) {
           final docName = (docItem['name'] as String?) ?? '';
           if (docName.isNotEmpty) {
             reqDocNames.add(docName);
             docList.add(SchemeDocument(
               name: docName,
-              mandatory: (docItem['mandatory'] == true) ? 'Yes' : 'No',
-              issuingAuthority: (docItem['issuingAuthority'] as String?) ?? '',
+              mandatory: (docItem['mandatoryText'] as String?) ?? (docItem['mandatory'] == 'required' || docItem['mandatory'] == true ? 'Yes' : 'No'),
+              issuingAuthority: (docItem['issuingAuthorityText'] as String?) ?? (docItem['issuingAuthority'] as String?) ?? '',
               description: (docItem['description'] as String?) ?? '',
+              estimatedCost: (docItem['estimatedCostText'] as String?) ?? (docItem['estimatedCostInr']?.toString() ?? ''),
+              remarks: (docItem['remarks'] as String?) ?? '',
               sourceUrl: (docItem['sourceUrl'] as String?) ?? '',
+              validityMonths: docItem['validityMonths']?.toString() ?? '',
+              downloadTemplateUrl: (docItem['downloadTemplateUrl'] as String?) ?? '',
+              sampleCopyUrl: (docItem['sampleCopyUrl'] as String?) ?? '',
+              verificationPortalUrl: (docItem['verificationPortalUrl'] as String?) ?? '',
             ));
           }
         }
       }
     }
 
-    // ── Application Steps ───────────────────────────────────────────────
+    // ── 8. Application Process & Required Services ────────────────────
     final stepsList = <String>[];
-    final appSteps = _asList(appProc['steps']);
-    if (appSteps != null) {
-      for (final step in appSteps) {
+    final rawSteps = _asList(appProc['steps'] ?? content['process']?['steps'] ?? content['workflow']);
+    if (rawSteps != null && rawSteps.isNotEmpty) {
+      for (int i = 0; i < rawSteps.length; i++) {
+        final step = rawSteps[i];
         if (step is Map<String, dynamic>) {
           final title = step['title'] as String?;
           final desc = step['description'] as String?;
+          final stepNum = step['stepNumber'] ?? (i + 1);
           if (title != null && title.isNotEmpty) {
-            stepsList.add('$title: ${desc ?? ''}');
+            stepsList.add('Step $stepNum: $title${desc != null && desc.isNotEmpty ? " - $desc" : ""}');
           } else if (desc != null && desc.isNotEmpty) {
-            stepsList.add(desc);
+            stepsList.add('Step $stepNum: $desc');
           }
         } else if (step is String && step.isNotEmpty) {
-          stepsList.add(step);
+          stepsList.add('Step ${i + 1}: $step');
         }
       }
     }
+
+    // Fallback: Construct application process steps if raw array is unpopulated
+    if (stepsList.isEmpty) {
+      final mode = (appProc['modeText'] as String?) ?? (appProc['mode'] as String?) ?? 'Online';
+      stepsList.add('Step 1: Register and fill $mode application via $sponsoringBody portal');
+      if (appProc['onlineUrl'] != null && (appProc['onlineUrl'] as String).isNotEmpty) {
+        stepsList.add('Step 2: Upload required documents online at ${appProc['onlineUrl']}');
+      } else {
+        stepsList.add('Step 2: Submit application copy and checklist documents to $issuingBody');
+      }
+      stepsList.add('Step 3: Verification & field inspection by District MSME Officer / Competent Authority');
+      stepsList.add('Step 4: Approval and direct benefit transfer / subsidy credit to bank account');
+    }
+
+    final serviceList = <SchemeService>[];
+    final rawServices = _asList(appProc['services'] ?? content['services'] ?? content['requiredServices']);
+    if (rawServices != null && rawServices.isNotEmpty) {
+      for (final sItem in rawServices) {
+        if (sItem is Map<String, dynamic>) {
+          final sName = sItem['name'] as String?;
+          if (sName != null && sName.isNotEmpty) {
+            serviceList.add(SchemeService(
+              name: sName,
+              category: (sItem['category'] as String?) ?? 'Government Service',
+              mandatory: sItem['mandatory'] == true || sItem['mandatory'] == 'required',
+              description: (sItem['description'] as String?) ?? '',
+              purpose: (sItem['purpose'] as String?) ?? '',
+              department: (sItem['department'] as String?) ?? issuingBody,
+              website: (sItem['website'] as String?) ?? '',
+              contact: (sItem['contact'] as String?) ?? '',
+              status: (sItem['status'] as String?) ?? 'ACTIVE',
+              notes: (sItem['notes'] as String?) ?? '',
+            ));
+          }
+        }
+      }
+    }
+
+    // Always ensure institutional service entries exist
+    if (serviceList.isEmpty) {
+      serviceList.add(SchemeService(
+        name: '$issuingBody Application & Verification Service',
+        category: 'Implementing Agency Service',
+        mandatory: true,
+        description: 'Single-window application submission, document verification, and subsidy processing.',
+        department: issuingBody,
+        website: (appProc['onlineUrl'] as String?) ?? (resources['officialWebsiteUrl'] as String?) ?? '',
+        status: 'ACTIVE',
+      ));
+    }
+
+    final applicationFee = (appProc['applicationFeeText'] as String?) ?? (appProc['applicationFeeInr'] != null ? '₹${appProc['applicationFeeInr']}' : 'Nil');
+    final processingDurationDays = appTimeline['processingDurationDays']?.toString() ?? '30';
+    final intakeTimelineText = (appTimeline['text'] as String?) ?? 'Rolling intake throughout financial year';
+
+    // ── 9. Graph Linking: Finance, Tax, Knowledge, Contacts ───────────
+    final financeProducts = bundle.getFinanceProductsForScheme(entity);
+    final financeProductsSummary = financeProducts.map((f) => '${f.getLocalizedName('en')} - ${f.content['summary'] ?? f.code}').toList();
+
+    for (final fin in financeProducts) {
+      final amountObj = fin.content['amount'] as Map<String, dynamic>?;
+      if (amountObj != null) {
+        if (amountObj['maxInr'] != null) maxFunding ??= (amountObj['maxInr'] as num).toDouble();
+        if (amountObj['minInr'] != null) minFunding ??= (amountObj['minInr'] as num).toDouble();
+        if (subsidyAmountText.isEmpty && amountObj['maxText'] != null) {
+          subsidyAmountText = amountObj['maxText'] as String;
+        }
+      }
+      final intRateObj = fin.content['interestRate'] as Map<String, dynamic>?;
+      if (intRateObj != null && intRateObj['percent'] != null) {
+        interestSubventionRate ??= (intRateObj['percent'] as num).toDouble();
+      }
+    }
+
+    final taxProvisions = bundle.getTaxProvisionsForScheme(entity);
+    final taxExemptionsSummary = taxProvisions.map((t) => '${t.getLocalizedName('en')} (${t.code})').toList();
+    final applicableTaxesList = taxProvisions.map((t) => (t.content['taxType'] as String?) ?? 'Income Tax').toSet().toList();
+
+    final knowledgeItems = bundle.getKnowledgeItemsForScheme(entity);
+    final knowledgeGuidanceList = knowledgeItems.map((k) => '${k.getLocalizedName('en')}: ${k.content['summary'] ?? ""}').toList();
+
+    final faqList = <Map<String, String>>[];
+    final rawFaqs = _asList(content['faqs']);
+    if (rawFaqs != null) {
+      for (final f in rawFaqs) {
+        if (f is Map<String, dynamic>) {
+          final q = (f['question'] as String?) ?? '';
+          final a = (f['answer'] as String?) ?? '';
+          if (q.isNotEmpty && a.isNotEmpty) {
+            faqList.add({'question': q, 'answer': a, 'category': (f['category'] as String?) ?? ''});
+          }
+        }
+      }
+    }
+
+    // ── 10. Official Links & Helplines ───────────────────────────────
+    final sourcesList = _asList(content['sources']);
+    String? officialWebsiteRaw = (resources['officialWebsiteUrl'] as String?) ??
+        (resources['applicationPortalUrl'] as String?) ??
+        (resources['schemePortalUrl'] as String?) ??
+        (resources['portalUrl'] as String?) ??
+        (appProc['onlineUrl'] as String?);
+
+    String? guidelinesUrlRaw = (resources['guidelinesPdfUrl'] as String?);
+
+    if (sourcesList != null) {
+      for (final s in sourcesList) {
+        if (s is Map<String, dynamic>) {
+          final type = (s['sourceType'] as String? ?? '').toLowerCase();
+          final url = s['url'] as String?;
+          if (url != null && url.isNotEmpty) {
+            if (officialWebsiteRaw == null || officialWebsiteRaw.isEmpty) {
+              if (type.contains('website') || type.contains('portal') || s['isPrimary'] == true) {
+                officialWebsiteRaw = url;
+              }
+            }
+            if (guidelinesUrlRaw == null || guidelinesUrlRaw.isEmpty) {
+              if (type.contains('guideline') || type.contains('pdf') || url.endsWith('.pdf')) {
+                guidelinesUrlRaw = url;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    final officialWebsite = (officialWebsiteRaw != null && officialWebsiteRaw.trim().isNotEmpty)
+        ? officialWebsiteRaw.trim()
+        : 'https://tn.gov.in';
+    final applicationUrl = (appProc['onlineUrl'] as String?) ?? (resources['applicationPortalUrl'] as String?) ?? officialWebsite;
+    final guidelinesUrl = guidelinesUrlRaw ?? '';
+    final logoUrl = (resources['logoUrl'] as String?) ?? '';
+
+    final helplineContactsMap = <String, String>{};
+    if (contactsObj['helplines'] is List) {
+      for (final h in contactsObj['helplines']) {
+        if (h is Map) {
+          final title = h['title'] ?? h['name'] ?? 'Helpline';
+          final phone = h['phone'] ?? h['number'] ?? '';
+          if (phone.toString().isNotEmpty) helplineContactsMap[title.toString()] = phone.toString();
+        }
+      }
+    }
+
+    final searchKeywords = '$name $shortName $fullSchemeName $sponsoringBody $issuingBody $sector ${glanceChips.join(" ")}'.trim();
 
     return Scheme(
       id: entity.id,
       schemeCode: entity.code,
       name: name,
+      shortName: shortName,
+      fullSchemeName: fullSchemeName,
+      ministry: ministry,
+      department: department,
+      implementingAgency: implementingAgency,
+      matchScore: 1.0,
+      logoUrl: logoUrl,
+      officialSource: officialWebsite,
       governmentLevel: governmentLevel,
       sponsoringBody: sponsoringBody,
       issuingBody: issuingBody,
@@ -306,33 +531,57 @@ class MssSchemeAdapter {
       sector: sector,
       targetBeneficiary: targetBeneficiary,
       schemeType: schemeType,
-      category: schemeType.isNotEmpty ? schemeType : sector,
+      category: category,
       overview: overviewEn,
       objectives: objectivesEn,
-      benefits: benefitsText.isNotEmpty ? benefitsText : overviewEn,
+      benefits: rawBenefitsDisplayText,
       subsidyPercentage: subsidyPercentage,
       maxFunding: maxFunding,
       minFunding: minFunding,
       interestSubventionRate: interestSubventionRate,
-      applicationMode: applicationMode,
+      applicationMode: (appProc['modeText'] as String?) ?? (appProc['mode'] as String?) ?? 'Online / Offline',
       officialWebsite: officialWebsite,
       applicationUrl: applicationUrl,
       guidelinesUrl: guidelinesUrl,
       sourceUrl: officialWebsite,
-      districtApplicable: districtApplicable,
+      districtApplicable: (gov['districtsText'] as String?) ?? '',
       subsidyAmount: subsidyAmountText,
       verificationStatus: (metadata['verificationStatus'] as String?) ?? 'VERIFIED',
       verificationNotes: (metadata['sourceNotes'] as String?) ?? '',
-      lastUpdated: lastUpdated,
+      lastUpdated: (metadata['updatedAt'] as String?) ?? '',
       searchKeywords: searchKeywords,
       status: statusStr,
       isActive: isActive,
+      glanceChips: glanceChips.toList(),
+      benefitTypesList: benefitTypesList,
+      capitalSubsidyDetails: capitalSubsidyDetails,
+      interestSubventionDetails: interestSubventionDetails,
+      marginMoneyDetails: marginMoneyDetails,
+      loanGuaranteeDetails: loanGuaranteeDetails,
+      supportTypes: const [],
+      rawBenefitsDisplayText: rawBenefitsDisplayText,
+      eligibilityAgeRange: ageRange,
+      turnoverLimits: turnoverLimits,
+      investmentLimits: investmentLimits,
+      allowedBusinessTypes: allowedBusinessTypes,
+      educationRequirements: educationRequirements,
+      mandatoryConditions: mandatoryConditions,
+      optionalConditions: optionalConditions,
+      specialCategories: specialCategories,
+      applicationFee: applicationFee,
+      processingDurationDays: processingDurationDays,
+      intakeTimelineText: intakeTimelineText,
+      financeProductsSummary: financeProductsSummary,
+      taxExemptionsSummary: taxExemptionsSummary,
+      applicableTaxesList: applicableTaxesList,
+      knowledgeGuidanceList: knowledgeGuidanceList,
+      helplineContactsMap: helplineContactsMap,
       eligibilityCriteria: elCriteriaList,
       requiredDocuments: reqDocNames,
       applicationProcess: stepsList,
       documents: docList,
-      requiredServices: const [],
-      faqs: const [],
+      requiredServices: serviceList,
+      faqs: faqList,
     );
   }
 }

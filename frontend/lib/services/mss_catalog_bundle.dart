@@ -274,4 +274,152 @@ class MssCatalogBundle {
 
     return results;
   }
+
+  // ── Graph Relationship Resolution Extensions ───────────────────────
+
+  /// Resolves all forward linked entities declared in [entity.references]
+  /// with optional filtering by [targetType] and [relationType].
+  List<MssEntity> getLinkedEntities(
+    MssEntity entity, {
+    String? targetType,
+    String? relationType,
+  }) {
+    final results = <MssEntity>[];
+    final seenIds = <String>{};
+
+    for (final ref in entity.references) {
+      final tId = (ref['entityId'] ?? ref['targetId'] ?? ref['target_id'] ?? ref['id'])?.toString();
+      if (tId == null || tId.isEmpty || seenIds.contains(tId)) continue;
+
+      final relType = (ref['relationType'] ?? ref['type'] ?? '').toString().toLowerCase();
+      final refType = (ref['entityType'] ?? ref['targetType'] ?? '').toString().toLowerCase();
+
+      if (relationType != null && relationType.isNotEmpty) {
+        if (!relType.contains(relationType.toLowerCase())) continue;
+      }
+
+      final target = getEntity(tId);
+      if (target == null) continue;
+
+      final actualType = target.entityType.toLowerCase();
+      if (targetType != null && targetType.isNotEmpty) {
+        final expectedType = targetType.toLowerCase();
+        if (actualType != expectedType && refType != expectedType) continue;
+      }
+
+      seenIds.add(tId);
+      results.add(target);
+    }
+
+    return results;
+  }
+
+  /// Resolves reverse linked entities in [catalogName] pointing to [targetSchemeId].
+  List<MssEntity> getReverseLinkedEntities(
+    String targetSchemeId,
+    String catalogName,
+  ) {
+    final results = <MssEntity>[];
+    final entities = getCatalog(catalogName);
+
+    for (final e in entities) {
+      bool matches = false;
+      final content = e.content;
+      if (content['schemeId']?.toString() == targetSchemeId) {
+        matches = true;
+      }
+      if (!matches && content['evidencedInSchemes'] is List) {
+        final list = (content['evidencedInSchemes'] as List).map((x) => x.toString());
+        if (list.contains(targetSchemeId)) matches = true;
+      }
+      if (!matches) {
+        for (final ref in e.references) {
+          final tId = (ref['entityId'] ?? ref['targetId'] ?? ref['target_id'] ?? ref['id'])?.toString();
+          if (tId == targetSchemeId) {
+            matches = true;
+            break;
+          }
+        }
+      }
+      if (matches) results.add(e);
+    }
+    return results;
+  }
+
+  /// Resolve authorities administering or linked to a scheme entity.
+  List<MssEntity> getAuthoritiesForScheme(MssEntity scheme) {
+    return getLinkedEntities(scheme, targetType: 'authority');
+  }
+
+  /// Resolve institutions implementing or linked to a scheme entity.
+  List<MssEntity> getInstitutionsForScheme(MssEntity scheme) {
+    return getLinkedEntities(scheme, targetType: 'institution');
+  }
+
+  /// Resolve finance products linked forward or reverse to a scheme entity.
+  List<MssEntity> getFinanceProductsForScheme(MssEntity scheme) {
+    final forward = getLinkedEntities(scheme, targetType: 'finance_product');
+    final reverse = getReverseLinkedEntities(scheme.id, 'finance');
+    final map = <String, MssEntity>{};
+    for (final e in [...forward, ...reverse]) {
+      map[e.id] = e;
+    }
+    return map.values.toList();
+  }
+
+  /// Resolve tax provisions linked forward or reverse to a scheme entity.
+  List<MssEntity> getTaxProvisionsForScheme(MssEntity scheme) {
+    final forward = getLinkedEntities(scheme, targetType: 'tax_provision');
+    final reverse = getReverseLinkedEntities(scheme.id, 'tax');
+    final map = <String, MssEntity>{};
+    for (final e in [...forward, ...reverse]) {
+      map[e.id] = e;
+    }
+    return map.values.toList();
+  }
+
+  /// Resolve export benefits linked forward or reverse to a scheme entity.
+  List<MssEntity> getExportBenefitsForScheme(MssEntity scheme) {
+    final forward = getLinkedEntities(scheme, targetType: 'export_benefit');
+    final reverse = getReverseLinkedEntities(scheme.id, 'export');
+    final map = <String, MssEntity>{};
+    for (final e in [...forward, ...reverse]) {
+      map[e.id] = e;
+    }
+    return map.values.toList();
+  }
+
+  /// Resolve CSR provisions linked forward or reverse to a scheme entity.
+  List<MssEntity> getCsrProvisionsForScheme(MssEntity scheme) {
+    final forward = getLinkedEntities(scheme, targetType: 'csr_provision');
+    final reverse = getReverseLinkedEntities(scheme.id, 'csr');
+    final map = <String, MssEntity>{};
+    for (final e in [...forward, ...reverse]) {
+      map[e.id] = e;
+    }
+    return map.values.toList();
+  }
+
+  /// Resolve TReDS platforms linked forward or reverse to a scheme entity.
+  List<MssEntity> getTredsPlatformsForScheme(MssEntity scheme) {
+    final forward = getLinkedEntities(scheme, targetType: 'treds_platform');
+    final reverse = getReverseLinkedEntities(scheme.id, 'treds');
+    final map = <String, MssEntity>{};
+    for (final e in [...forward, ...reverse]) {
+      map[e.id] = e;
+    }
+    return map.values.toList();
+  }
+
+  /// Resolve knowledge items linked forward or reverse to a scheme entity.
+  List<MssEntity> getKnowledgeItemsForScheme(MssEntity scheme) {
+    final forward = getLinkedEntities(scheme, targetType: 'knowledge_item');
+    final reverse = getReverseLinkedEntities(scheme.id, 'knowledge');
+    final map = <String, MssEntity>{};
+    for (final e in [...forward, ...reverse]) {
+      map[e.id] = e;
+    }
+    return map.values.toList();
+  }
 }
+
