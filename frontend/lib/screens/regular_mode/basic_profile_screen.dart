@@ -247,11 +247,29 @@ class _BasicProfileScreenState extends State<BasicProfileScreen> {
                                 elevation: 0,
                               ),
                               onPressed: () {
+                                final name = _nameController.text.trim();
+                                final email = _emailController.text.trim();
+                                final phone = _phoneController.text.trim();
+
+                                if (name.isEmpty || email.isEmpty || phone.isEmpty || _selectedGender.isEmpty || _selectedDob == null) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        'Please fill in all mandatory fields (Name, Email, Mobile, Gender, Date of Birth).',
+                                        style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+                                      ),
+                                      backgroundColor: const Color(0xFFDC2626),
+                                      behavior: SnackBarBehavior.floating,
+                                    ),
+                                  );
+                                  return;
+                                }
+
                                 final provider = Provider.of<AppProvider>(context, listen: false);
                                 provider.updateProfile(provider.profile.copyWith(
-                                  name: _nameController.text.trim(),
-                                  email: _emailController.text.trim(),
-                                  mobile: _phoneController.text.trim(),
+                                  name: name,
+                                  email: email,
+                                  mobile: phone,
                                   dob: _selectedDob,
                                   gender: _selectedGender,
                                 ));

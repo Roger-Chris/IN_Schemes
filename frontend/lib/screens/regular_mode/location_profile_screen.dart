@@ -384,47 +384,53 @@ class _LocationProfileScreenState extends State<LocationProfileScreen> {
                                     elevation: 0,
                                   ),
                                   onPressed: () {
-                                    final provider = Provider.of<AppProvider>(context, listen: false);
-                                    
-                                    // Parse house & street from _doorStreetController
-                                    final doorStreetParts = _doorStreetController.text.split(',');
-                                    String house = '';
-                                    String street = '';
-                                    if (doorStreetParts.isNotEmpty) {
-                                      house = doorStreetParts[0].trim();
-                                      if (doorStreetParts.length > 1) {
-                                        street = doorStreetParts.sublist(1).join(',').trim();
-                                      }
-                                    }
-                                    
-                                    // Parse city & district from _cityDistrictController
-                                    final cityDistrictParts = _cityDistrictController.text.split(',');
-                                    String city = '';
-                                    String district = '';
-                                    if (cityDistrictParts.isNotEmpty) {
-                                      city = cityDistrictParts[0].trim();
-                                      if (cityDistrictParts.length > 1) {
-                                        district = cityDistrictParts.sublist(1).join(',').trim();
-                                      } else {
-                                        district = city; // fallback
-                                      }
-                                    }
+                                     final doorStreetRaw = _doorStreetController.text.trim();
+                                     final areaRaw = _areaLocalityController.text.trim();
+                                     final cityDistrictRaw = _cityDistrictController.text.trim();
+                                     final stateRaw = _stateController.text.trim();
+                                     final pincodeRaw = _pincodeController.text.trim();
 
-                                    provider.updateProfile(provider.profile.copyWith(
-                                      house: house,
-                                      street: street,
-                                      area: _areaLocalityController.text.trim(),
-                                      city: city,
-                                      district: district,
-                                      state: _stateController.text.trim(),
-                                      pinCode: _pincodeController.text.trim(),
-                                    ));
-                                    Navigator.of(context).push(
-                                      MaterialPageRoute(
-                                        builder: (_) => const AboutYouProfileScreen(),
-                                      ),
-                                    );
-                                  },
+                                     if (doorStreetRaw.isEmpty || areaRaw.isEmpty || cityDistrictRaw.isEmpty || stateRaw.isEmpty || pincodeRaw.isEmpty) {
+                                       ScaffoldMessenger.of(context).showSnackBar(
+                                         SnackBar(
+                                           content: Text(
+                                             'Please fill in all address fields (House/Street, Area, City/District, State, Pincode) to continue.',
+                                             style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+                                           ),
+                                           backgroundColor: const Color(0xFFDC2626),
+                                           behavior: SnackBarBehavior.floating,
+                                         ),
+                                       );
+                                       return;
+                                     }
+
+                                     final provider = Provider.of<AppProvider>(context, listen: false);
+                                     
+                                     // Parse house & street from _doorStreetController
+                                     final doorStreetParts = doorStreetRaw.split(',');
+                                     String house = doorStreetParts[0].trim();
+                                     String street = doorStreetParts.length > 1 ? doorStreetParts.sublist(1).join(',').trim() : house;
+                                     
+                                     // Parse city & district from _cityDistrictController
+                                     final cityDistrictParts = cityDistrictRaw.split(',');
+                                     String city = cityDistrictParts[0].trim();
+                                     String district = cityDistrictParts.length > 1 ? cityDistrictParts.sublist(1).join(',').trim() : city;
+
+                                     provider.updateProfile(provider.profile.copyWith(
+                                       house: house,
+                                       street: street,
+                                       area: areaRaw,
+                                       city: city,
+                                       district: district,
+                                       state: stateRaw,
+                                       pinCode: pincodeRaw,
+                                     ));
+                                     Navigator.of(context).push(
+                                       MaterialPageRoute(
+                                         builder: (_) => const AboutYouProfileScreen(),
+                                       ),
+                                     );
+                                   },
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [

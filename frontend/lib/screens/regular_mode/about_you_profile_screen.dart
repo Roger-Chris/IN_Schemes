@@ -219,28 +219,40 @@ class _AboutYouProfileScreenState extends State<AboutYouProfileScreen> {
                                 minimumSize: const Size.fromHeight(50),
                                 elevation: 0,
                               ),
-                              onPressed: _selectedRole != null
-                                  ? () async {
-                                      final provider = Provider.of<AppProvider>(context, listen: false);
-                                      final selectedRoleModel = _roles.firstWhere((r) => r.id == _selectedRole);
-                                      final roleTitle = selectedRoleModel.title;
+                              onPressed: () async {
+                                if (_selectedRole == null) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        'Please select your role to complete profile setup.',
+                                        style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+                                      ),
+                                      backgroundColor: const Color(0xFFDC2626),
+                                      behavior: SnackBarBehavior.floating,
+                                    ),
+                                  );
+                                  return;
+                                }
 
-                                      final updatedProfile = provider.profile.copyWith(
-                                        employmentStatus: roleTitle,
-                                        profileCompleted: true,
-                                      );
+                                final provider = Provider.of<AppProvider>(context, listen: false);
+                                final selectedRoleModel = _roles.firstWhere((r) => r.id == _selectedRole);
+                                final roleTitle = selectedRoleModel.title;
 
-                                      await provider.updateProfile(updatedProfile);
+                                final updatedProfile = provider.profile.copyWith(
+                                  employmentStatus: roleTitle,
+                                  profileCompleted: true,
+                                );
 
-                                      if (!context.mounted) return;
-                                      Navigator.of(context).pushAndRemoveUntil(
-                                        MaterialPageRoute(
-                                          builder: (_) => const MainTabsContainer(),
-                                        ),
-                                        (route) => false,
-                                      );
-                                    }
-                                  : null,
+                                await provider.updateProfile(updatedProfile);
+
+                                if (!context.mounted) return;
+                                Navigator.of(context).pushAndRemoveUntil(
+                                  MaterialPageRoute(
+                                    builder: (_) => const MainTabsContainer(),
+                                  ),
+                                  (route) => false,
+                                );
+                              },
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
