@@ -130,6 +130,50 @@ void main() {
     session.dispose();
   });
 
+  testWidgets('mic controls LiveKit during pre-connect instead of local STT', (
+    tester,
+  ) async {
+    final recognition = _FakeVoiceRecognitionController();
+    final session = AssistantSessionController(
+      engine: const LocalSchemeUnderstandingEngine(),
+      schemes: const [],
+      profile: UserProfile(),
+    );
+    final cloud = _FakeCloudVoiceAgentController(
+      session,
+      initialState: const VoiceAgentState(
+        phase: VoiceAgentConnectionPhase.connecting,
+        usingCloud: true,
+        isListening: true,
+      ),
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: VoiceAssistantOverlay(
+          autoStart: false,
+          sessionController: session,
+          voiceAgentController: cloud,
+          recognitionController: recognition,
+          speechOutputController: _FakeSpeechOutputController(),
+          onClose: () {},
+          onSubmit: (_) {},
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('voice-primary-control')));
+    await tester.pump();
+
+    expect(cloud.muteRequests, [true]);
+    expect(recognition.stopCount, 0);
+    expect(recognition.listenCount, 0);
+
+    await tester.pumpWidget(const SizedBox());
+    await cloud.dispose();
+    session.dispose();
+  });
+
   testWidgets('cloud agent scheme results appear as tappable cards', (
     tester,
   ) async {
@@ -874,7 +918,14 @@ class _FakeVoiceRecognitionController implements VoiceRecognitionController {
 
 class _FakeCloudVoiceAgentController extends ChangeNotifier
     implements VoiceAgentController {
-  _FakeCloudVoiceAgentController(this.session);
+  _FakeCloudVoiceAgentController(this.session, {VoiceAgentState? initialState})
+    : state =
+          initialState ??
+          const VoiceAgentState(
+            phase: VoiceAgentConnectionPhase.connected,
+            usingCloud: true,
+            isListening: true,
+          );
 
   final StreamController<VoiceAgentEvent> _events =
       StreamController<VoiceAgentEvent>.broadcast();
@@ -883,11 +934,8 @@ class _FakeCloudVoiceAgentController extends ChangeNotifier
   final AssistantSessionController session;
 
   @override
-  VoiceAgentState state = const VoiceAgentState(
-    phase: VoiceAgentConnectionPhase.connected,
-    usingCloud: true,
-    isListening: true,
-  );
+  VoiceAgentState state;
+  final List<bool> muteRequests = [];
 
   @override
   Stream<VoiceAgentEvent> get events => _events.stream;
@@ -921,7 +969,11 @@ class _FakeCloudVoiceAgentController extends ChangeNotifier
   Future<void> sendText(String text) async {}
 
   @override
-  Future<void> setMuted(bool muted) async {}
+  Future<void> setMuted(bool muted) async {
+    muteRequests.add(muted);
+    state = state.copyWith(isMuted: muted, isListening: !muted);
+    notifyListeners();
+  }
 
   @override
   Future<void> interrupt() async {}

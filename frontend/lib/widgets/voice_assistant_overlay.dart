@@ -149,9 +149,18 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
   int _fallbackTranscriptId = 0;
 
   bool get _isListening => _voicePhase == _VoiceAssistantPhase.listening;
-  bool get _cloudActive =>
-      _voiceAgentController?.state.usingCloud == true &&
-      _voiceAgentController?.state.phase == VoiceAgentConnectionPhase.connected;
+  bool get _cloudSessionInUse {
+    final state = _voiceAgentController?.state;
+    if (state?.usingCloud != true) return false;
+    return switch (state!.phase) {
+      VoiceAgentConnectionPhase.initializing ||
+      VoiceAgentConnectionPhase.connecting ||
+      VoiceAgentConnectionPhase.connected ||
+      VoiceAgentConnectionPhase.reconnecting => true,
+      _ => false,
+    };
+  }
+
   bool get _isCompanion => widget.surface == VoiceAgentSurface.companion;
   Color get _accent =>
       _isCompanion ? const Color(0xFFEA580C) : const Color(0xFF2563EB);
@@ -357,7 +366,7 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
   void _handleVoiceAgentChanged() {
     if (!mounted || _voiceAgentController == null) return;
     final state = _voiceAgentController!.state;
-    if (!state.usingCloud && !_cloudActive) return;
+    if (!state.usingCloud) return;
     final level = state.audioLevel.clamp(0.0, 1.0);
     _soundLevel.value = level;
     _edgeIntensity.value = math.max(0.18, level);
@@ -526,7 +535,7 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
         state.reply != null) {
       _startOnlineGrounding(state);
     }
-    if (_cloudActive) return;
+    if (_cloudSessionInUse) return;
     final reply = state.reply;
     final question = state.question;
     final turnKey = [
@@ -619,7 +628,7 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
 
   Future<void> _startListening({bool preserveTranscript = false}) async {
     if (!mounted || _startingRecognition || _speaking) return;
-    if (_cloudActive) {
+    if (_cloudSessionInUse) {
       await _voiceAgentController!.setMuted(false);
       return;
     }
@@ -838,7 +847,7 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
 
   Future<void> _stopListening() async {
     _operationGeneration++;
-    if (_cloudActive) {
+    if (_cloudSessionInUse) {
       await _voiceAgentController!.setMuted(true);
       if (!mounted) return;
       _edgeIntensity.value = 0.12;
@@ -856,7 +865,7 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
   }
 
   Future<void> _toggleListening() async {
-    if (_cloudActive && _speaking) {
+    if (_cloudSessionInUse && _speaking) {
       await _voiceAgentController!.interrupt();
       await _voiceAgentController!.setMuted(false);
       return;
@@ -885,7 +894,7 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
   }
 
   Future<void> _speakQuestionAndListen() async {
-    if (_cloudActive) return;
+    if (_cloudSessionInUse) return;
     final state = _session;
     final question = state?.question;
     if (state == null || question == null || _speaking) return;
@@ -921,7 +930,9 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
   }
 
   Future<void> _speakReply(GroundedAssistantReply reply) async {
-    if (_cloudActive || _speaking || reply.spokenText.trim().isEmpty) return;
+    if (_cloudSessionInUse || _speaking || reply.spokenText.trim().isEmpty) {
+      return;
+    }
     await _recognitionController.cancel();
     if (!mounted) return;
     final supported = _speechCapabilities?.supports(reply.languageTag) ?? false;
@@ -1001,7 +1012,7 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
       ),
       _VoiceTranscriptSpeaker.user,
     );
-    if (_cloudActive) {
+    if (_cloudSessionInUse) {
       await _voiceAgentController!.sendText(query);
     } else {
       await _processFinalTranscript(query);
@@ -1013,7 +1024,7 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
     if (value.isEmpty) return;
     _typedController.clear();
     await _recognitionController.cancel();
-    if (_cloudActive) {
+    if (_cloudSessionInUse) {
       await _voiceAgentController!.sendText(value);
     } else {
       setState(() => _transcript = value);
@@ -1326,7 +1337,7 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
                           const SizedBox(height: 12),
                           _buildConversationTranscript(),
                         ],
-                        if (_cloudActive) ...[
+                        if (_cloudSessionInUse) ...[
                           const SizedBox(height: 8),
                           Row(
                             key: const Key('voice-cloud-disclosure'),
@@ -1514,7 +1525,7 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
           ),
         ),
         _buildLanguageSelector(),
-        if (_cloudActive)
+        if (_cloudSessionInUse)
           IconButton(
             key: const Key('voice-mute-button'),
             tooltip: _voiceAgentController!.state.isMuted ? 'Unmute' : 'Mute',
@@ -1600,7 +1611,7 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
               Expanded(
                 child: Align(
                   alignment: Alignment.centerRight,
-                  child: _cloudActive
+                  child: _cloudSessionInUse
                       ? Semantics(
                           label: 'Server noise filtering is active',
                           child: const Icon(
@@ -1668,7 +1679,7 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
               fontWeight: FontWeight.w700,
             ),
           ),
-          if (_cloudActive) ...[
+          if (_cloudSessionInUse) ...[
             const SizedBox(height: 6),
             Semantics(
               label: 'Server noise filtering is on',

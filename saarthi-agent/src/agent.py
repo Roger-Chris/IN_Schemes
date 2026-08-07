@@ -103,8 +103,8 @@ class VoiceTurnConfig:
     interrupt_min_speech_frames: int = 8
     pre_speech_pad_frames: int = 9
     num_initial_ignored_frames: int = 3
-    endpoint_min_delay: float = 0.25
-    endpoint_max_delay: float = 0.85
+    endpoint_min_delay: float = 0.2
+    endpoint_max_delay: float = 0.65
     interruption_min_duration: float = 0.5
     interruption_min_words: int = 1
     false_interruption_timeout: float = 0.8
