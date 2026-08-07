@@ -1285,12 +1285,12 @@ class _HeroSection extends StatelessWidget {
     if (localStateEmblem != null) {
       return Image.asset(
         localStateEmblem,
-        fit: BoxFit.cover,
+        fit: BoxFit.contain,
         width: size,
         height: size,
         errorBuilder: (context, error, stackTrace) {
           return Image.asset(
-            'assets/images/Logo/Logo icon.png',
+            'assets/images/States assets/Indian emblem.png',
             fit: BoxFit.contain,
             width: size,
             height: size,
@@ -1299,17 +1299,8 @@ class _HeroSection extends StatelessWidget {
       );
     }
     
-    final code = scheme.schemeCode.toUpperCase();
-    String logoUrl = 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Emblem_of_India.svg/358px-Emblem_of_India.svg.png';
-    
-    if (code.contains('MUDRA') || code.contains('PMMY')) {
-      logoUrl = 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Logo_of_the_Pradhan_Mantri_Mudra_Yojana.svg/450px-Logo_of_the_Pradhan_Mantri_Mudra_Yojana.svg.png';
-    } else if (code.contains('MSME') || code.contains('CGTMSE') || code.contains('PMEGP')) {
-      logoUrl = 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/00/MSME_logo_%28colour%29.svg/330px-MSME_logo_%28colour%29.svg.png';
-    }
-
-    return Image.network(
-      logoUrl,
+    return Image.asset(
+      'assets/images/States assets/Indian emblem.png',
       fit: BoxFit.contain,
       width: size,
       height: size,
@@ -1319,23 +1310,6 @@ class _HeroSection extends StatelessWidget {
           fit: BoxFit.contain,
           width: size,
           height: size,
-        );
-      },
-      loadingBuilder: (context, child, loadingProgress) {
-        if (loadingProgress == null) return child;
-        return SizedBox(
-          width: size,
-          height: size,
-          child: const Center(
-            child: SizedBox(
-              width: 16,
-              height: 16,
-              child: CircularProgressIndicator(
-                strokeWidth: 1.5,
-                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2563EB)),
-              ),
-            ),
-          ),
         );
       },
     );
