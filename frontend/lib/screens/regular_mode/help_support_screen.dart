@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../utils/constants.dart';
+import '../../services/centralized_translator.dart';
 
 class HelpSupportScreen extends StatefulWidget {
   final String initialMode; // 'faq', 'contact', 'both'
@@ -357,24 +358,17 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                         borderSide: const BorderSide(color: Color(0xFF2563EB)),
                       ),
                     ),
-                    items: const [
-                      DropdownMenuItem(
-                        value: 'General Inquiry',
-                        child: Text('General Inquiry'),
-                      ),
-                      DropdownMenuItem(
-                        value: 'Eligibility Matcher Bug',
-                        child: Text('Eligibility Matcher Bug'),
-                      ),
-                      DropdownMenuItem(
-                        value: 'Wrong Scheme Details',
-                        child: Text('Wrong Scheme Details'),
-                      ),
-                      DropdownMenuItem(
-                        value: 'Feature Request',
-                        child: Text('Feature Request'),
-                      ),
-                    ],
+                    items: [
+                      'General Inquiry',
+                      'Eligibility Matcher Bug',
+                      'Wrong Scheme Details',
+                      'Feature Request',
+                    ].map((cat) {
+                      return DropdownMenuItem(
+                        value: cat,
+                        child: Text(CentralizedTranslator.instance.translate(cat)),
+                      );
+                    }).toList(),
                     onChanged: (val) {
                       if (val != null) {
                         setModalState(() => _issueCategory = val);
@@ -446,8 +440,8 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                               final text = _feedbackController.text.trim();
                               if (text.isEmpty) {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Please describe the issue.'),
+                                  SnackBar(
+                                    content: Text(CentralizedTranslator.instance.translate('Please describe the issue.')),
                                   ),
                                 );
                                 return;

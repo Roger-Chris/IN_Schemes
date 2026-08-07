@@ -17,6 +17,7 @@ import '../../services/voice_agent_controller.dart';
 import '../profile_screen.dart';
 import '../notifications_screen.dart';
 import '../regular_mode/scheme_details_screen.dart';
+import '../../services/centralized_translator.dart';
 
 enum SaarthiVoiceState { idle, listening, processing, speaking, ended }
 
@@ -1365,15 +1366,8 @@ class _SaarthiHomeScreenState extends State<SaarthiHomeScreen>
             child: Center(
               child: ElevatedButton.icon(
                 onPressed: _scrollToLatest,
-                icon: const Icon(
-                  Icons.arrow_downward,
-                  size: 16,
-                  color: Colors.white,
-                ),
-                label: const Text(
-                  'Latest',
-                  style: TextStyle(color: Colors.white),
-                ),
+                icon: const Icon(Icons.arrow_downward, size: 16, color: Colors.white),
+                label: Text(CentralizedTranslator.instance.translate('Latest'), style: const TextStyle(color: Colors.white)),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF2563EB),
                   padding: const EdgeInsets.symmetric(

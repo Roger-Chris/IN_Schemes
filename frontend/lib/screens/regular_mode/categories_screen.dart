@@ -3,12 +3,48 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../providers/app_state_provider.dart';
+import '../../services/scheme_repository.dart';
+import '../../l10n/l10n.dart';
+import '../../services/centralized_translator.dart';
 
 import '../../widgets/filter_panel.dart';
 
 import '../../widgets/smart_assessment_bottom_sheet.dart';
 import 'discover_results_screen.dart';
 import 'search_results_screen.dart';
+
+String _getLocalizedCategoryOrMinistry(String text, String langCode) {
+  if (langCode != 'ta') return text;
+
+  final lower = text.toLowerCase().trim();
+  if (lower.contains('msme')) return 'MSME (குறு, சிறு & நடுத்தர தொழில்கள்)';
+  if (lower.contains('startup')) return 'ஸ்டார்ட்அப் & உறைவிடங்கள்';
+  if (lower.contains('loans & credit') || lower.contains('finance') || lower.contains('credit')) return 'கடன்கள் & கடன் ஆதரவு';
+  if (lower.contains('women')) return 'பெண் தொழில்முனைவோருக்கு';
+  if (lower.contains('skill')) return 'திறன் மேம்பாடு';
+  if (lower.contains('artisan')) return 'கைவினைஞர்கள்';
+  if (lower.contains('digital')) return 'டிஜிட்டல் இந்தியா';
+  if (lower.contains('student')) return 'மாணவர் ஸ்டார்ட்அப்கள்';
+  if (lower.contains('ministry of msme')) return 'MSME அமைச்சகம்';
+  if (lower.contains('ministry of finance')) return 'நிதி அமைச்சகம்';
+  if (lower.contains('ministry of rural')) return 'ஊரக வளர்ச்சி அமைச்சகம்';
+  if (lower.contains('tamil nadu')) return 'தமிழ்நாடு';
+  if (lower.contains('maharashtra')) return 'மகாராஷ்டிரா';
+  if (lower.contains('uttar pradesh')) return 'உத்தரப் பிரதேசம்';
+  if (lower.contains('karnataka')) return 'கர்நாடகா';
+  if (lower.contains('gujarat')) return 'குஜராத்';
+  if (lower == 'by category') return 'பிரிவுகள் வாரியாக';
+  if (lower == 'by ministry') return 'அமைச்சகங்கள் வாரியாக';
+  if (lower == 'by state') return 'மாநிலங்கள் வாரியாக';
+  if (lower == 'all categories') return 'அனைத்து பிரிவுகளும்';
+  if (lower == 'all ministries') return 'அனைத்து அமைச்சகங்களும்';
+  if (lower == 'all states') return 'அனைத்து மாநிலங்களும்';
+  if (lower == 'by stage') return 'வளர்ச்சி நிலை வாரியாக';
+  if (lower == 'popular') return 'பிரபலமானவை';
+  if (lower == 'newly added') return 'சமீபத்தில் சேர்க்கப்பட்டவை';
+
+  return text;
+}
 
 class CategoryItem {
   final String title;
@@ -46,6 +82,72 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
   final GlobalKey _categorySectionKey = GlobalKey();
   final GlobalKey _ministrySectionKey = GlobalKey();
   final GlobalKey _stateSectionKey = GlobalKey();
+
+  Map<String, int> _dynamicCategoryCounts = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _loadDynamicCounts();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _loadDynamicCounts();
+  }
+
+  Future<void> _loadDynamicCounts() async {
+    try {
+      final repo = SchemeRepository.instance;
+      final Map<String, int> counts = {};
+
+      for (final cat in [
+        'Business & MSME',
+        'Startup',
+        'Finance',
+        'Skill Development',
+        'Artisan',
+        'Digital India',
+        'Women Entrepreneurs',
+        'Student Startups',
+        'Startup & Incubation',
+        'Loans & Credit Support',
+        'Women Entrepreneurship',
+      ]) {
+        final list = await repo.getSchemesByCategory(cat);
+        counts[cat] = list.length;
+      }
+
+      for (final min in [
+        'Ministry of MSME',
+        'Ministry of Finance',
+        'Ministry of Rural Development',
+      ]) {
+        final list = await repo.getSchemesByMinistry(min);
+        counts[min] = list.length;
+      }
+
+      for (final st in [
+        'Tamil Nadu',
+        'Maharashtra',
+        'Uttar Pradesh',
+        'Karnataka',
+        'Gujarat',
+      ]) {
+        final list = await repo.getSchemesByState(st);
+        counts[st] = list.length;
+      }
+
+      if (mounted) {
+        setState(() {
+          _dynamicCategoryCounts = counts;
+        });
+      }
+    } catch (e) {
+      debugPrint('[CategoriesScreen] error loading dynamic counts: $e');
+    }
+  }
 
   @override
   void dispose() {
@@ -171,17 +273,6 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     {'title': 'Gujarat', 'count': '126 Schemes'},
   ];
 
-  void _scrollToSection(GlobalKey key) {
-    final context = key.currentContext;
-    if (context != null) {
-      Scrollable.ensureVisible(
-        context,
-        duration: const Duration(milliseconds: 500),
-        curve: Curves.easeInOut,
-      );
-    }
-  }
-
   void _openFilterPanel() {
     showModalBottomSheet(
       context: context,
@@ -202,33 +293,51 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
   }
 
   void _onCategorySelected(String categoryName, AppProvider provider) {
-    SmartAssessmentBottomSheet.show(context, categoryName, 'category', () {
+    SmartAssessmentBottomSheet.show(context, categoryName, 'category', () async {
+      final schemes = await SchemeRepository.instance.getSchemesByCategory(categoryName);
+      if (!mounted) return;
       Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (_) =>
-              DiscoverResultsScreen(title: categoryName, type: 'category', isAssessmentCompleted: true),
+          builder: (_) => DiscoverResultsScreen(
+            title: categoryName,
+            type: 'category',
+            initialSchemes: schemes,
+            isAssessmentCompleted: true,
+          ),
         ),
       );
     });
   }
 
   void _onMinistrySelected(String ministryName, AppProvider provider) {
-    SmartAssessmentBottomSheet.show(context, ministryName, 'ministry', () {
+    SmartAssessmentBottomSheet.show(context, ministryName, 'ministry', () async {
+      final schemes = await SchemeRepository.instance.getSchemesByMinistry(ministryName);
+      if (!mounted) return;
       Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (_) =>
-              DiscoverResultsScreen(title: ministryName, type: 'ministry', isAssessmentCompleted: true),
+          builder: (_) => DiscoverResultsScreen(
+            title: ministryName,
+            type: 'ministry',
+            initialSchemes: schemes,
+            isAssessmentCompleted: true,
+          ),
         ),
       );
     });
   }
 
   void _onStateSelected(String stateName, AppProvider provider) {
-    SmartAssessmentBottomSheet.show(context, stateName, 'state', () {
+    SmartAssessmentBottomSheet.show(context, stateName, 'state', () async {
+      final schemes = await SchemeRepository.instance.getSchemesByState(stateName);
+      if (!mounted) return;
       Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (_) =>
-              DiscoverResultsScreen(title: stateName, type: 'state', isAssessmentCompleted: true),
+          builder: (_) => DiscoverResultsScreen(
+            title: stateName,
+            type: 'state',
+            initialSchemes: schemes,
+            isAssessmentCompleted: true,
+          ),
         ),
       );
     });
@@ -330,7 +439,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Discover',
+                    context.l10n.discoverTitle,
                     style: GoogleFonts.poppins(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
@@ -338,7 +447,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                     ),
                   ),
                   Text(
-                    'Explore government schemes and opportunities',
+                    context.l10n.exploreTopCuratedCollections,
                     style: GoogleFonts.inter(
                       fontSize: 12,
                       color: const Color(0xFF64748B),
@@ -382,7 +491,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                       color: Color(0xFF64748B),
                       size: 20,
                     ),
-                    hintText: 'Search schemes, benefits, departments...',
+                    hintText: context.l10n.searchPlaceholder,
                     hintStyle: GoogleFonts.inter(
                       color: const Color(0xFF94A3B8),
                       fontSize: 13.5,
@@ -403,7 +512,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                           color: Color(0xFF2563EB),
                         ),
                         label: Text(
-                          "Filter",
+                          context.l10n.filter,
                           style: GoogleFonts.inter(
                             fontSize: 11.5,
                             fontWeight: FontWeight.bold,
@@ -439,8 +548,6 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                     _buildSectionHeader(
                       key: _categorySectionKey,
                       title: 'By Category',
-                      onViewAll: () =>
-                          _showAllCategoriesBottomSheet(context, provider),
                     ),
                     _buildCategoryHorizontalList(provider),
                     const SizedBox(height: 16),
@@ -449,8 +556,6 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                     _buildSectionHeader(
                       key: _ministrySectionKey,
                       title: 'By Ministry',
-                      onViewAll: () =>
-                          _showAllMinistriesBottomSheet(context, provider),
                     ),
                     _buildMinistryHorizontalList(provider),
                     const SizedBox(height: 16),
@@ -459,8 +564,6 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                     _buildSectionHeader(
                       key: _stateSectionKey,
                       title: 'By State',
-                      onViewAll: () =>
-                          _showAllStatesBottomSheet(context, provider),
                     ),
                     _buildStateHorizontalList(provider),
                     const SizedBox(height: 16),
@@ -481,17 +584,17 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
       {
         'title': 'All Categories',
         'icon': Icons.grid_view_rounded,
-        'action': () => _scrollToSection(_categorySectionKey),
+        'action': () => _showAllCategoriesBottomSheet(context, provider),
       },
       {
         'title': 'All Ministries',
         'icon': Icons.account_balance_rounded,
-        'action': () => _scrollToSection(_ministrySectionKey),
+        'action': () => _showAllMinistriesBottomSheet(context, provider),
       },
       {
         'title': 'All States',
         'icon': Icons.location_on_rounded,
-        'action': () => _scrollToSection(_stateSectionKey),
+        'action': () => _showAllStatesBottomSheet(context, provider),
       },
       {
         'title': 'By Stage',
@@ -515,7 +618,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     ];
 
     return SizedBox(
-      height: 78,
+      height: provider.selectedLanguage == 'ta' ? 84 : 78,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         physics: const BouncingScrollPhysics(),
@@ -523,10 +626,11 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
         itemCount: items.length,
         itemBuilder: (context, index) {
           final item = items[index];
+          final localizedTitle = _getLocalizedCategoryOrMinistry(item['title'] as String, provider.selectedLanguage);
           return GestureDetector(
             onTap: item['action'] as VoidCallback,
             child: Container(
-              width: 80,
+              width: 88,
               margin: const EdgeInsets.symmetric(horizontal: 4),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -559,12 +663,12 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    item['title'] as String,
+                    localizedTitle,
                     textAlign: TextAlign.center,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.inter(
-                      fontSize: 9.5,
+                      fontSize: provider.selectedLanguage == 'ta' ? 8.5 : 9.5,
                       fontWeight: FontWeight.w600,
                       color: const Color(0xFF0F172A),
                     ),
@@ -581,51 +685,30 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
   Widget _buildSectionHeader({
     required GlobalKey key,
     required String title,
-    required VoidCallback onViewAll,
   }) {
+    final provider = Provider.of<AppProvider>(context, listen: false);
+    final localizedTitle = _getLocalizedCategoryOrMinistry(title, provider.selectedLanguage);
+
     return Padding(
       key: key,
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            title,
-            style: GoogleFonts.poppins(
-              fontSize: 16.5,
-              fontWeight: FontWeight.bold,
-              color: const Color(0xFF0F172A),
-            ),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Text(
+          localizedTitle,
+          style: GoogleFonts.poppins(
+            fontSize: provider.selectedLanguage == 'ta' ? 15.0 : 16.5,
+            fontWeight: FontWeight.bold,
+            color: const Color(0xFF0F172A),
           ),
-          InkWell(
-            onTap: onViewAll,
-            child: Row(
-              children: [
-                Text(
-                  'View All',
-                  style: GoogleFonts.inter(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: const Color(0xFF2563EB),
-                  ),
-                ),
-                const SizedBox(width: 4),
-                const Icon(
-                  Icons.arrow_forward_rounded,
-                  size: 13,
-                  color: Color(0xFF2563EB),
-                ),
-              ],
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
 
   Widget _buildCategoryHorizontalList(AppProvider provider) {
     return SizedBox(
-      height: 124,
+      height: provider.selectedLanguage == 'ta' ? 138 : 126,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         physics: const BouncingScrollPhysics(),
@@ -634,11 +717,13 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
         itemBuilder: (context, index) {
           final item = _displayCategories[index];
           final String title = item['title'] as String;
-          final String count = item['count'] as String;
+          final int cnt = _dynamicCategoryCounts[title] ?? 0;
+          final String countStr = cnt > 0 ? context.l10n.schemeCountFormat(cnt) : item['count'] as String;
+          final String localizedTitle = _getLocalizedCategoryOrMinistry(title, provider.selectedLanguage);
           final IconData icon = item['icon'] as IconData;
 
           return Container(
-            width: 128,
+            width: 134,
             margin: const EdgeInsets.symmetric(horizontal: 4.0),
             decoration: BoxDecoration(
               color: Colors.white,
@@ -674,18 +759,19 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                     ),
                     const Spacer(),
                     Text(
-                      title,
+                      localizedTitle,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.poppins(
-                        fontSize: 10.5,
+                        fontSize: provider.selectedLanguage == 'ta' ? 10.0 : 10.5,
                         fontWeight: FontWeight.bold,
                         color: const Color(0xFF0F172A),
+                        height: provider.selectedLanguage == 'ta' ? 1.3 : 1.2,
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      count,
+                      countStr,
                       style: GoogleFonts.inter(
                         fontSize: 9.5,
                         fontWeight: FontWeight.w600,
@@ -704,7 +790,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
 
   Widget _buildMinistryHorizontalList(AppProvider provider) {
     return SizedBox(
-      height: 124,
+      height: provider.selectedLanguage == 'ta' ? 138 : 126,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         physics: const BouncingScrollPhysics(),
@@ -713,10 +799,12 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
         itemBuilder: (context, index) {
           final item = _displayMinistries[index];
           final String title = item['title'] as String;
-          final String count = item['count'] as String;
+          final int cnt = _dynamicCategoryCounts[title] ?? 0;
+          final String countStr = cnt > 0 ? context.l10n.schemeCountFormat(cnt) : item['count'] as String;
+          final String localizedTitle = _getLocalizedCategoryOrMinistry(title, provider.selectedLanguage);
 
           return Container(
-            width: 128,
+            width: 134,
             margin: const EdgeInsets.symmetric(horizontal: 4.0),
             decoration: BoxDecoration(
               color: Colors.white,
@@ -775,18 +863,19 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                     ),
                     const Spacer(),
                     Text(
-                      title,
+                      localizedTitle,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.poppins(
-                        fontSize: 10.5,
+                        fontSize: provider.selectedLanguage == 'ta' ? 10.0 : 10.5,
                         fontWeight: FontWeight.bold,
                         color: const Color(0xFF0F172A),
+                        height: provider.selectedLanguage == 'ta' ? 1.3 : 1.2,
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      count,
+                      countStr,
                       style: GoogleFonts.inter(
                         fontSize: 9.5,
                         fontWeight: FontWeight.w600,
@@ -874,7 +963,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
 
   Widget _buildStateHorizontalList(AppProvider provider) {
     return SizedBox(
-      height: 124,
+      height: provider.selectedLanguage == 'ta' ? 138 : 126,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         physics: const BouncingScrollPhysics(),
@@ -883,10 +972,12 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
         itemBuilder: (context, index) {
           final item = _displayStates[index];
           final String title = item['title'] as String;
-          final String count = item['count'] as String;
+          final int cnt = _dynamicCategoryCounts[title] ?? 0;
+          final String countStr = cnt > 0 ? context.l10n.schemeCountFormat(cnt) : item['count'] as String;
+          final String localizedTitle = _getLocalizedCategoryOrMinistry(title, provider.selectedLanguage);
 
           return Container(
-            width: 128,
+            width: 134,
             margin: const EdgeInsets.symmetric(horizontal: 4.0),
             decoration: BoxDecoration(
               color: Colors.white,
@@ -923,18 +1014,18 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                     ),
                     const Spacer(),
                     Text(
-                      title,
+                      localizedTitle,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.poppins(
-                        fontSize: 10.5,
+                        fontSize: provider.selectedLanguage == 'ta' ? 10.0 : 10.5,
                         fontWeight: FontWeight.bold,
                         color: const Color(0xFF0F172A),
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      count,
+                      countStr,
                       style: GoogleFonts.inter(
                         fontSize: 9.5,
                         fontWeight: FontWeight.w600,
@@ -1962,7 +2053,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text('Base Price', style: GoogleFonts.inter(fontSize: 11.5, color: const Color(0xFF475569))),
+                              Text(CentralizedTranslator.instance.translate('Base Price'), style: GoogleFonts.inter(fontSize: 11.5, color: const Color(0xFF475569))),
                               Text('₹ ${baseVal.toStringAsFixed(2)}', style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A))),
                             ],
                           ),
@@ -1992,7 +2083,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text('Total Invoice', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.bold, color: const Color(0xFF1E293B))),
+                              Text(CentralizedTranslator.instance.translate('Total Invoice'), style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.bold, color: const Color(0xFF1E293B))),
                               Text('₹ ${totalVal.toStringAsFixed(2)}', style: GoogleFonts.poppins(fontSize: 13.5, fontWeight: FontWeight.bold, color: const Color(0xFF2563EB))),
                             ],
                           ),
@@ -2260,7 +2351,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text('Monthly EMI', style: GoogleFonts.inter(fontSize: 11.5, fontWeight: FontWeight.bold, color: const Color(0xFF1E293B))),
+                              Text(CentralizedTranslator.instance.translate('Monthly EMI'), style: GoogleFonts.inter(fontSize: 11.5, fontWeight: FontWeight.bold, color: const Color(0xFF1E293B))),
                               Text('₹ ${emiVal.toStringAsFixed(2)}', style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.bold, color: const Color(0xFF2563EB))),
                             ],
                           ),
@@ -2271,7 +2362,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text('Principal Amount', style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF475569))),
+                              Text(CentralizedTranslator.instance.translate('Principal Amount'), style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF475569))),
                               Text('₹ ${principalVal.toStringAsFixed(2)}', style: GoogleFonts.poppins(fontSize: 11.5, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A))),
                             ],
                           ),
@@ -2279,7 +2370,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text('Total Interest Payable', style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF475569))),
+                              Text(CentralizedTranslator.instance.translate('Total Interest Payable'), style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF475569))),
                               Text('₹ ${interestVal.toStringAsFixed(2)}', style: GoogleFonts.poppins(fontSize: 11.5, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A))),
                             ],
                           ),
@@ -2290,7 +2381,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text('Total Amount (Principal + Int)', style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF475569))),
+                              Text(CentralizedTranslator.instance.translate('Total Amount (Principal + Int)'), style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF475569))),
                               Text('₹ ${totalVal.toStringAsFixed(2)}', style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.bold, color: const Color(0xFF0F172A))),
                             ],
                           ),
@@ -2439,8 +2530,8 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                     child: Column(
                       children: [
                         CheckboxListTile(
-                          title: const Text('Registered as Pvt Ltd / LLP / Partnership', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600)),
-                          subtitle: const Text('Must be registered in India', style: TextStyle(fontSize: 9.5)),
+                          title: Text(CentralizedTranslator.instance.translate('Registered as Pvt Ltd / LLP / Partnership'), style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600)),
+                          subtitle: Text(CentralizedTranslator.instance.translate('Must be registered in India'), style: const TextStyle(fontSize: 9.5)),
                           value: isPvtLtdOrLlp,
                           activeColor: const Color(0xFF2563EB),
                           onChanged: (val) => setModalState(() => isPvtLtdOrLlp = val ?? false),
@@ -2449,8 +2540,8 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                         ),
                         const Divider(height: 1, color: Color(0xFFE2E8F0)),
                         CheckboxListTile(
-                          title: const Text('Incorporation age is under 10 years', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600)),
-                          subtitle: const Text('From incorporation date', style: TextStyle(fontSize: 9.5)),
+                          title: Text(CentralizedTranslator.instance.translate('Incorporation age is under 10 years'), style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600)),
+                          subtitle: Text(CentralizedTranslator.instance.translate('From incorporation date'), style: const TextStyle(fontSize: 9.5)),
                           value: isUnder10Years,
                           activeColor: const Color(0xFF2563EB),
                           onChanged: (val) => setModalState(() => isUnder10Years = val ?? false),
@@ -2458,8 +2549,8 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                         ),
                         const Divider(height: 1, color: Color(0xFFE2E8F0)),
                         CheckboxListTile(
-                          title: const Text('Annual turnover has never exceeded ₹100 Cr', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600)),
-                          subtitle: const Text('For any financial year', style: TextStyle(fontSize: 9.5)),
+                          title: Text(CentralizedTranslator.instance.translate('Annual turnover has never exceeded ₹100 Cr'), style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600)),
+                          subtitle: Text(CentralizedTranslator.instance.translate('For any financial year'), style: const TextStyle(fontSize: 9.5)),
                           value: turnoverUnder100Cr,
                           activeColor: const Color(0xFF2563EB),
                           onChanged: (val) => setModalState(() => turnoverUnder100Cr = val ?? false),
@@ -2467,8 +2558,8 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                         ),
                         const Divider(height: 1, color: Color(0xFFE2E8F0)),
                         CheckboxListTile(
-                          title: const Text('Working towards innovation/scaling', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600)),
-                          subtitle: const Text('Developing new products/processes', style: TextStyle(fontSize: 9.5)),
+                          title: Text(CentralizedTranslator.instance.translate('Working towards innovation/scaling'), style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600)),
+                          subtitle: Text(CentralizedTranslator.instance.translate('Developing new products/processes'), style: const TextStyle(fontSize: 9.5)),
                           value: isInnovative,
                           activeColor: const Color(0xFF2563EB),
                           onChanged: (val) => setModalState(() => isInnovative = val ?? false),
@@ -2767,7 +2858,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text('Valuation Range', style: GoogleFonts.inter(fontSize: 11.5, fontWeight: FontWeight.bold, color: const Color(0xFF1E293B))),
+                              Text(CentralizedTranslator.instance.translate('Valuation Range'), style: GoogleFonts.inter(fontSize: 11.5, fontWeight: FontWeight.bold, color: const Color(0xFF1E293B))),
                               Text('${formatVal(lowEstimate)} - ${formatVal(highEstimate)}', style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.bold, color: const Color(0xFF2563EB))),
                             ],
                           ),
@@ -2778,7 +2869,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text('Calculated ARR', style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF475569))),
+                              Text(CentralizedTranslator.instance.translate('Calculated ARR'), style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF475569))),
                               Text('₹ ${(arrVal / 100000).toStringAsFixed(1)} Lakhs', style: GoogleFonts.poppins(fontSize: 11.5, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A))),
                             ],
                           ),
@@ -2786,7 +2877,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text('Applied ARR Multiple', style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF475569))),
+                              Text(CentralizedTranslator.instance.translate('Applied ARR Multiple'), style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF475569))),
                               Text('${appliedMultiple.toStringAsFixed(1)}x', style: GoogleFonts.poppins(fontSize: 11.5, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A))),
                             ],
                           ),
@@ -3228,7 +3319,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text('Original Project Cost', style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF475569))),
+                              Text(CentralizedTranslator.instance.translate('Original Project Cost'), style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF475569))),
                               Text('₹ ${costVal.toStringAsFixed(2)} Lakhs', style: GoogleFonts.poppins(fontSize: 11.5, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A))),
                             ],
                           ),
@@ -3236,7 +3327,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text('Expected Subsidy (${subsidyPercentVal.toStringAsFixed(1)}%)', style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF475569))),
+                              Text('${CentralizedTranslator.instance.translate('Expected Subsidy')} (${subsidyPercentVal.toStringAsFixed(1)}%)', style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF475569))),
                               Text('₹ ${subsidyAmountVal.toStringAsFixed(2)} Lakhs', style: GoogleFonts.poppins(fontSize: 11.5, fontWeight: FontWeight.bold, color: const Color(0xFF0D9488))),
                             ],
                           ),
@@ -3247,7 +3338,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text('Net Cost to Business', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.bold, color: const Color(0xFF1E293B))),
+                              Text(CentralizedTranslator.instance.translate('Net Cost to Business'), style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.bold, color: const Color(0xFF1E293B))),
                               Text('₹ ${netCostVal.toStringAsFixed(2)} Lakhs', style: GoogleFonts.poppins(fontSize: 13.5, fontWeight: FontWeight.bold, color: const Color(0xFF2563EB))),
                             ],
                           ),

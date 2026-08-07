@@ -4,8 +4,9 @@ import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
-import '../../providers/app_state_provider.dart';
-import '../../utils/constants.dart';
+import '../providers/app_state_provider.dart';
+import '../utils/constants.dart';
+import '../l10n/l10n.dart';
 import 'regular_mode/profile_setup_screen.dart';
 import 'regular_mode/language_selection_screen.dart';
 import 'regular_mode/settings_screen.dart';
@@ -22,25 +23,51 @@ class ProfileScreen extends StatelessWidget {
       icon: Icons.logout_rounded,
       iconColor: const Color(0xFFEF4444),
       iconBgColor: const Color(0xFFFEE2E2),
-      title: 'Confirm Logout',
-      message: 'Are you sure you want to log out from MSS?',
-      confirmLabel: 'Logout',
+      title: context.l10n.confirmLogoutTitle,
+      message: context.l10n.confirmLogoutMsg,
+      confirmLabel: context.l10n.logoutButton,
       confirmColor: const Color(0xFFEF4444),
       onConfirm: () => provider.logout(context),
     );
   }
 
-  String _mapIncomeToRange(double income) {
-    if (income <= 0) return 'Under ₹1.5 Lakhs';
-    if (income <= 150000) return 'Under ₹1.5 Lakhs';
-    if (income <= 300000) return '₹1.5 Lakhs - ₹3 Lakhs';
-    if (income <= 500000) return '₹3 Lakhs - ₹5 Lakhs';
-    if (income <= 800000) return '₹5 Lakhs - ₹8 Lakhs';
-    return 'Above ₹8 Lakhs';
+  String _getLocalizedIncomeRange(double income, BuildContext context) {
+    if (income <= 150000) return context.l10n.incUnder1_5;
+    if (income <= 300000) return context.l10n.inc1_5To3;
+    if (income <= 500000) return context.l10n.inc3To5;
+    if (income <= 800000) return context.l10n.inc5To8;
+    return context.l10n.incAbove8;
+  }
+
+  String _getLocalizedProfileValue(String val, BuildContext context) {
+    final lower = val.trim().toLowerCase();
+    if (lower == 'male') return context.l10n.genderMale;
+    if (lower == 'female') return context.l10n.genderFemale;
+    if (lower == 'other' || lower == 'others') return context.l10n.genderOther;
+
+    if (lower == 'student') return context.l10n.empStudent;
+    if (lower == 'farmer') return context.l10n.empFarmer;
+    if (lower == 'salaried') return context.l10n.empSalaried;
+    if (lower == 'self-employed' || lower == 'self employed') return context.l10n.empSelfEmployed;
+    if (lower == 'unemployed') return context.l10n.empUnemployed;
+    if (lower == 'retired') return context.l10n.empRetired;
+
+    if (lower == 'general') return context.l10n.commGeneral;
+    if (lower == 'obc') return context.l10n.commObc;
+    if (lower == 'ews') return context.l10n.commEws;
+    if (lower == 'sc') return context.l10n.commSc;
+    if (lower == 'st') return context.l10n.commSt;
+
+    if (lower == 'yes') return context.l10n.valYes;
+    if (lower == 'no' || lower == 'none') return context.l10n.valNo;
+    if (lower == 'tamil' || lower == 'ta') return 'தமிழ்';
+    if (lower == 'english' || lower == 'en') return 'English';
+
+    return val;
   }
 
   // Info Column Helper for the Grid
-  Widget _buildInfoCol(String label, String value, int flex) {
+  Widget _buildInfoCol(String label, String value, int flex, {bool isTamil = false}) {
     return Expanded(
       flex: flex,
       child: Column(
@@ -49,20 +76,24 @@ class ProfileScreen extends StatelessWidget {
           Text(
             label,
             style: GoogleFonts.inter(
-              fontSize: 10.5,
+              fontSize: isTamil ? 10.0 : 10.5,
               color: const Color(0xFF94A3B8),
               fontWeight: FontWeight.w500,
+              height: isTamil ? 1.35 : 1.2,
             ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 4),
           Text(
             value,
             style: GoogleFonts.inter(
-              fontSize: 11.5,
+              fontSize: isTamil ? 11.0 : 11.5,
               color: const Color(0xFF0F172A),
               fontWeight: FontWeight.bold,
+              height: isTamil ? 1.35 : 1.2,
             ),
-            maxLines: 1,
+            maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
         ],
@@ -200,7 +231,7 @@ class ProfileScreen extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 20.0),
                 child: Text(
-                  'Profile Photo',
+                  context.l10n.profilePhotoTitle,
                   style: GoogleFonts.poppins(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -214,7 +245,7 @@ class ProfileScreen extends StatelessWidget {
                   color: Color(0xFF2563EB),
                 ),
                 title: Text(
-                  'Choose from Gallery',
+                  context.l10n.chooseFromGallery,
                   style: GoogleFonts.inter(fontWeight: FontWeight.w600),
                 ),
                 onTap: () async {
@@ -235,7 +266,7 @@ class ProfileScreen extends StatelessWidget {
                   color: Color(0xFF2563EB),
                 ),
                 title: Text(
-                  'Take Photo',
+                  context.l10n.takePhoto,
                   style: GoogleFonts.inter(fontWeight: FontWeight.w600),
                 ),
                 onTap: () async {
@@ -257,7 +288,7 @@ class ProfileScreen extends StatelessWidget {
                     color: Color(0xFFEF4444),
                   ),
                   title: Text(
-                    'Remove Photo',
+                    context.l10n.removePhoto,
                     style: GoogleFonts.inter(
                       color: const Color(0xFFEF4444),
                       fontWeight: FontWeight.w600,
@@ -298,11 +329,13 @@ class ProfileScreen extends StatelessWidget {
     final profile = provider.profile;
     final unreadCount = provider.notifications.where((n) => !n['read']).length;
 
+    final isTa = provider.selectedLanguage == 'ta';
+
     return Scaffold(
       backgroundColor: AppConstants.backgroundColor,
       appBar: AppBar(
         title: Text(
-          'Profile',
+          context.l10n.profileTitle,
           style: GoogleFonts.poppins(
             color: const Color(0xFF0F172A),
             fontWeight: FontWeight.bold,
@@ -486,23 +519,22 @@ class ProfileScreen extends StatelessWidget {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Row(
+                                Wrap(
+                                  crossAxisAlignment: WrapCrossAlignment.center,
+                                  spacing: 6,
+                                  runSpacing: 4,
                                   children: [
-                                    Expanded(
-                                      child: Text(
-                                        profile.name.isNotEmpty
-                                            ? profile.name
-                                            : '-',
-                                        style: GoogleFonts.poppins(
-                                          fontSize: 16.5,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.white,
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
+                                    Text(
+                                      profile.name.isNotEmpty ? profile.name : '-',
+                                      style: GoogleFonts.poppins(
+                                        fontSize: provider.selectedLanguage == 'ta' ? 15.0 : 16.5,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                        height: provider.selectedLanguage == 'ta' ? 1.35 : 1.2,
                                       ),
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
                                     ),
-                                    const SizedBox(width: 6),
                                     Container(
                                       padding: const EdgeInsets.symmetric(
                                         horizontal: 6,
@@ -533,8 +565,8 @@ class ProfileScreen extends StatelessWidget {
                                           const SizedBox(width: 3),
                                           Text(
                                             profile.profileCompleted
-                                                ? 'Profile Verified'
-                                                : 'Incomplete',
+                                                ? context.l10n.profileVerified
+                                                : context.l10n.profileIncomplete,
                                             style: GoogleFonts.inter(
                                               fontSize: 8.5,
                                               color: profile.profileCompleted
@@ -641,15 +673,19 @@ class ProfileScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 10),
-                      Text(
-                        'User Information',
-                        style: GoogleFonts.inter(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color: const Color(0xFF0F172A),
+                      Expanded(
+                        child: Text(
+                          context.l10n.userInformation,
+                          style: GoogleFonts.inter(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: const Color(0xFF0F172A),
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      const Spacer(),
+                      const SizedBox(width: 8),
                       TextButton.icon(
                         onPressed: () {
                           Navigator.of(context).push(
@@ -664,9 +700,9 @@ class ProfileScreen extends StatelessWidget {
                           size: 13,
                         ),
                         label: Text(
-                          'Edit Profile',
+                          context.l10n.editProfile,
                           style: GoogleFonts.inter(
-                            fontSize: 10.5,
+                            fontSize: isTa ? 9.5 : 10.5,
                             color: const Color(0xFF2563EB),
                             fontWeight: FontWeight.bold,
                           ),
@@ -674,8 +710,8 @@ class ProfileScreen extends StatelessWidget {
                         style: TextButton.styleFrom(
                           backgroundColor: const Color(0xFFEFF6FF),
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 6,
+                            horizontal: 8,
+                            vertical: 5,
                           ),
                           minimumSize: Size.zero,
                           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -693,31 +729,44 @@ class ProfileScreen extends StatelessWidget {
                   const SizedBox(height: 16),
                   // Information Details Grid
                   Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _buildInfoCol(
-                        'Full Name',
+                        context.l10n.labelFullName,
                         profile.name.isNotEmpty ? profile.name : '-',
                         5,
+                        isTamil: isTa,
                       ),
                       _buildDividerCol(),
                       _buildInfoCol(
-                        'Age',
+                        context.l10n.labelAge,
                         profile.dob != null ? '${profile.age}' : '-',
                         2,
+                        isTamil: isTa,
+                      ),
+                    ],
+                  ),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 10.0),
+                    child: Divider(color: Color(0xFFF1F5F9), height: 1),
+                  ),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildInfoCol(
+                        context.l10n.labelGender,
+                        profile.gender.isNotEmpty ? _getLocalizedProfileValue(profile.gender, context) : '-',
+                        5,
+                        isTamil: isTa,
                       ),
                       _buildDividerCol(),
                       _buildInfoCol(
-                        'Gender',
-                        profile.gender.isNotEmpty ? profile.gender : '-',
-                        3,
-                      ),
-                      _buildDividerCol(),
-                      _buildInfoCol(
-                        'Location',
+                        context.l10n.labelLocation,
                         profile.district.isNotEmpty
                             ? '${profile.district}, ${profile.state}'
                             : '-',
-                        6,
+                        5,
+                        isTamil: isTa,
                       ),
                     ],
                   ),
@@ -762,12 +811,16 @@ class ProfileScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 10),
-                      Text(
-                        'Eligibility & Professional Details',
-                        style: GoogleFonts.inter(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color: const Color(0xFF0F172A),
+                      Expanded(
+                        child: Text(
+                          context.l10n.eligibilityProfessionalDetails,
+                          style: GoogleFonts.inter(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: const Color(0xFF0F172A),
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ],
@@ -779,14 +832,14 @@ class ProfileScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _buildInfoCol(
-                        'Education Level',
-                        profile.qualification.isNotEmpty ? profile.qualification : '-',
+                        context.l10n.labelEducationLevel,
+                        profile.qualification.isNotEmpty ? _getLocalizedProfileValue(profile.qualification, context) : '-',
                         1,
                       ),
                       _buildDividerCol(),
                       _buildInfoCol(
-                        'Employment',
-                        profile.employmentStatus.isNotEmpty ? profile.employmentStatus : '-',
+                        context.l10n.labelEmployment,
+                        profile.employmentStatus.isNotEmpty ? _getLocalizedProfileValue(profile.employmentStatus, context) : '-',
                         1,
                       ),
                     ],
@@ -801,14 +854,14 @@ class ProfileScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _buildInfoCol(
-                        'Community Category',
-                        profile.community.isNotEmpty ? profile.community : '-',
+                        context.l10n.labelCommunityCategory,
+                        profile.community.isNotEmpty ? _getLocalizedProfileValue(profile.community, context) : '-',
                         1,
                       ),
                       _buildDividerCol(),
                       _buildInfoCol(
-                        'Annual Income',
-                        _mapIncomeToRange(profile.annualIncome),
+                        context.l10n.labelAnnualIncome,
+                        _getLocalizedIncomeRange(profile.annualIncome, context),
                         1,
                       ),
                     ],
@@ -823,16 +876,16 @@ class ProfileScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _buildInfoCol(
-                        'Differently Abled',
+                        context.l10n.labelDifferentlyAbled,
                         profile.disability.isNotEmpty && profile.disability != 'None'
-                            ? profile.disability
-                            : 'No',
+                            ? _getLocalizedProfileValue(profile.disability, context)
+                            : context.l10n.valNo,
                         1,
                       ),
                       _buildDividerCol(),
                       _buildInfoCol(
-                        'Ex-Serviceman / Veteran',
-                        profile.veteran ? 'Yes' : 'No',
+                        context.l10n.labelExServiceman,
+                        profile.veteran ? context.l10n.valYes : context.l10n.valNo,
                         1,
                       ),
                     ],
@@ -846,7 +899,7 @@ class ProfileScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Business Information',
+                      context.l10n.businessInformation,
                       style: GoogleFonts.inter(
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
@@ -858,14 +911,14 @@ class ProfileScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         _buildInfoCol(
-                          'Business Stage',
-                          profile.businessStage.isNotEmpty ? profile.businessStage : '-',
+                          context.l10n.labelBusinessStage,
+                          profile.businessStage.isNotEmpty ? _getLocalizedProfileValue(profile.businessStage, context) : '-',
                           1,
                         ),
                         _buildDividerCol(),
                         _buildInfoCol(
-                          'Industry',
-                          profile.businessIndustry.isNotEmpty ? profile.businessIndustry : '-',
+                          context.l10n.labelIndustry,
+                          profile.businessIndustry.isNotEmpty ? _getLocalizedProfileValue(profile.businessIndustry, context) : '-',
                           1,
                         ),
                       ],
@@ -878,7 +931,7 @@ class ProfileScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         _buildInfoCol(
-                          'Funding Required',
+                          context.l10n.labelFundingRequired,
                           profile.fundingRequired > 0 
                               ? '₹${profile.fundingRequired.toStringAsFixed(0)}' 
                               : '-',
@@ -886,7 +939,7 @@ class ProfileScreen extends StatelessWidget {
                         ),
                         _buildDividerCol(),
                         _buildInfoCol(
-                          'Reg. Numbers',
+                          context.l10n.labelRegNumbers,
                           profile.registrationNumbers.isNotEmpty ? profile.registrationNumbers : '-',
                           1,
                         ),
@@ -902,8 +955,8 @@ class ProfileScreen extends StatelessWidget {
                 icon: Icons.bookmark_border_outlined,
                 iconColor: const Color(0xFFEA580C),
                 iconBgColor: const Color(0xFFFFF3E0),
-                title: 'Saved Schemes',
-                subtitle: 'View your bookmarked schemes',
+                title: context.l10n.navSaved,
+                subtitle: context.l10n.subSavedSchemes,
                 onTap: () {
                   provider.updateTabIndex(3);
                 },
@@ -912,10 +965,10 @@ class ProfileScreen extends StatelessWidget {
                 icon: Icons.language_outlined,
                 iconColor: const Color(0xFF7C3AED),
                 iconBgColor: const Color(0xFFF3E8FF),
-                title: 'Language',
-                subtitle: 'Choose your preferred language',
+                title: context.l10n.languageSetting,
+                subtitle: context.l10n.subLanguage,
                 trailingText: provider.selectedLanguage == 'ta'
-                    ? 'Tamil'
+                    ? 'தமிழ்'
                     : 'English',
                 showDivider: false,
                 onTap: () {
@@ -934,8 +987,8 @@ class ProfileScreen extends StatelessWidget {
                 icon: Icons.settings_outlined,
                 iconColor: const Color(0xFF2563EB),
                 iconBgColor: const Color(0xFFEFF6FF),
-                title: 'Settings',
-                subtitle: 'Manage app preferences',
+                title: context.l10n.profileSettingsTitle,
+                subtitle: context.l10n.subSettings,
                 onTap: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(builder: (_) => const SettingsScreen()),
@@ -946,20 +999,20 @@ class ProfileScreen extends StatelessWidget {
                 icon: Icons.lock_outline,
                 iconColor: const Color(0xFF0D9488),
                 iconBgColor: const Color(0xFFCCFBF1),
-                title: 'Privacy',
-                subtitle: 'Privacy policy and data settings',
+                title: context.l10n.privacyPolicySetting,
+                subtitle: context.l10n.subPrivacy,
                 onTap: () {
                   showDialog(
                     context: context,
                     builder: (context) => AlertDialog(
-                      title: const Text('Privacy Policy'),
-                      content: const Text(
-                        'Your privacy is important to us. All personal data is encrypted and saved locally on this device.',
+                      title: Text(context.l10n.privacyPolicySetting),
+                      content: Text(
+                        context.l10n.privacyPolicyContent,
                       ),
                       actions: [
                         TextButton(
                           onPressed: () => Navigator.pop(context),
-                          child: const Text('Done'),
+                          child: Text(context.l10n.dialogDone),
                         ),
                       ],
                     ),
@@ -970,8 +1023,8 @@ class ProfileScreen extends StatelessWidget {
                 icon: Icons.chat_bubble_outline,
                 iconColor: const Color(0xFFDB2777),
                 iconBgColor: const Color(0xFFFCE7F3),
-                title: 'Help & Support',
-                subtitle: 'Get help and contact support',
+                title: context.l10n.helpFaqSetting,
+                subtitle: context.l10n.subHelpSupport,
                 onTap: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
@@ -984,8 +1037,8 @@ class ProfileScreen extends StatelessWidget {
                 icon: Icons.info_outline,
                 iconColor: const Color(0xFFCA8A04),
                 iconBgColor: const Color(0xFFFEF9C3),
-                title: 'About',
-                subtitle: 'About MSS app',
+                title: context.l10n.aboutTitle,
+                subtitle: context.l10n.subAbout,
                 showDivider: false,
                 onTap: () {
                   showAboutDialog(
@@ -997,8 +1050,8 @@ class ProfileScreen extends StatelessWidget {
                       color: Color(0xFF2563EB),
                     ),
                     children: [
-                      const Text(
-                        'Empowering citizens with real-time tracking, eligibility scanning and downloads for all state and central Government schemes in India.',
+                      Text(
+                        context.l10n.aboutAppDescription,
                       ),
                     ],
                   );
@@ -1012,8 +1065,8 @@ class ProfileScreen extends StatelessWidget {
                 icon: Icons.logout_outlined,
                 iconColor: const Color(0xFFDC2626),
                 iconBgColor: const Color(0xFFFEE2E2),
-                title: 'Logout',
-                subtitle: 'Logout from your account',
+                title: context.l10n.logoutButton,
+                subtitle: context.l10n.subLogout,
                 textColor: const Color(0xFFDC2626),
                 showDivider: false,
                 onTap: () => _handleLogout(context, provider),

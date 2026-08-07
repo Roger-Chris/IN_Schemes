@@ -5,6 +5,7 @@ import '../models/user_profile.dart';
 import 'intelligent_scheme_search.dart';
 import 'mss_catalog_bundle.dart';
 import 'mss_scheme_adapter.dart';
+import '../engine/recommendation_engine.dart';
 
 /// SchemeRepository
 /// ─────────────────
@@ -19,21 +20,88 @@ class SchemeRepository {
   // ── In-memory cache ──────────────────────────────────────────────────
   List<Scheme>? _cachedSchemes;
   Map<String, Scheme>? _schemeByIdMap;
+  String? _cachedLanguage;
   Future<MssCatalogBundle>? _bundleFuture;
+  Map<String, int>? _cachedCategoryCounts;
 
   void clearCache() {
     _cachedSchemes = null;
     _schemeByIdMap = null;
+    _cachedLanguage = null;
     _bundleFuture = null;
+    _cachedCategoryCounts = null;
+  }
+
+  /// Returns total number of schemes dynamically loaded from catalog.
+  Future<int> getTotalSchemeCount() async {
+    final schemes = await getAllSchemes();
+    return schemes.length;
+  }
+
+  /// Returns top [limit] recommended schemes for user profile sorted by relevance score.
+  Future<List<Scheme>> getTopRecommendedSchemes(
+    UserProfile profile, {
+    int limit = 5,
+  }) async {
+    final all = await getAllSchemes();
+    final recommendations = RecommendationEngine.getRecommendations(profile, all);
+    return recommendations
+        .where((e) => e.value.score > 0)
+        .map((e) => e.key)
+        .take(limit)
+        .toList();
+  }
+
+  /// Computes dynamic category scheme counts once and caches results.
+  Future<Map<String, int>> getCategoryCounts(
+    UserProfile profile, {
+    String activeFilter = 'All',
+  }) async {
+    if (_cachedCategoryCounts != null && activeFilter == 'All') {
+      return _cachedCategoryCounts!;
+    }
+
+    final Map<String, int> counts = {};
+    final categoriesToQuery = [
+      "MSME",
+      "Startup",
+      "Women Entrepreneurs",
+      "Business Loans & Credit",
+      "SHG & Artisan",
+      "Technology",
+      "Manufacturing",
+      "Export & Trade Promotion",
+    ];
+
+    for (final cat in categoriesToQuery) {
+      final matches = await getSchemesByCategory(cat);
+      counts[cat] = matches.length;
+    }
+
+    if (activeFilter == 'All') {
+      _cachedCategoryCounts = Map.unmodifiable(counts);
+    }
+    return counts;
+  }
+
+  /// Returns dynamic search hint prompt from loaded catalog entries.
+  Future<String> getDynamicSearchHint([String langCode = 'en']) async {
+    final all = await getAllSchemes();
+    if (all.isEmpty) return 'PMEGP, Startup India, MSME loans...';
+    final sample = (List<Scheme>.from(all)..shuffle()).first;
+    final name = sample.getName(langCode);
+    return name.isNotEmpty ? name : (sample.shortName.isNotEmpty ? sample.shortName : sample.name);
   }
 
   Future<MssCatalogBundle> _loadBundle() =>
       _bundleFuture ??= MssCatalogBundle.load();
 
   // ── 1. getAllSchemes() ────────────────────────────────────────────────
-  /// Returns the complete curated catalog of schemes (217 records).
-  Future<List<Scheme>> getAllSchemes() async {
-    if (_cachedSchemes != null) return _cachedSchemes!;
+  /// Returns the complete curated catalog of schemes (217 records) for [langCode].
+  Future<List<Scheme>> getAllSchemes({String langCode = 'en'}) async {
+    if (_cachedSchemes != null && _cachedLanguage == langCode) {
+      return _cachedSchemes!;
+    }
 
     try {
       final bundle = await _loadBundle();
@@ -43,7 +111,7 @@ class SchemeRepository {
       final byIdMap = <String, Scheme>{};
 
       for (final entity in schemeEntities) {
-        final scheme = MssSchemeAdapter.toScheme(entity, bundle);
+        final scheme = MssSchemeAdapter.toScheme(entity, bundle, langCode: langCode);
         schemes.add(scheme);
         byIdMap[scheme.id.toLowerCase()] = scheme;
         if (scheme.schemeCode.isNotEmpty) {
@@ -51,6 +119,7 @@ class SchemeRepository {
         }
       }
 
+      _cachedLanguage = langCode;
       _cachedSchemes = List.unmodifiable(schemes);
       _schemeByIdMap = Map.unmodifiable(byIdMap);
       return _cachedSchemes!;
@@ -62,9 +131,9 @@ class SchemeRepository {
 
   // ── 2. searchSchemes(query) ────────────────────────────────────────────
   /// Intelligently ranks natural-language English, Tamil, and Tanglish queries.
-  Future<List<Scheme>> searchSchemes(String query) async {
-    if (query.trim().isEmpty) return getAllSchemes();
-    final matches = await searchSchemeMatches(query);
+  Future<List<Scheme>> searchSchemes(String query, {String langCode = 'en'}) async {
+    if (query.trim().isEmpty) return getAllSchemes(langCode: langCode);
+    final matches = await searchSchemeMatches(query, langCode: langCode);
     return matches.map((match) => match.scheme).toList(growable: false);
   }
 
@@ -72,32 +141,104 @@ class SchemeRepository {
   Future<List<SchemeSearchMatch>> searchSchemeMatches(
     String query, {
     int? limit,
+    String langCode = 'en',
   }) async {
-    final all = await getAllSchemes();
+    final all = await getAllSchemes(langCode: langCode);
     return IntelligentSchemeSearch.rank(query, all, limit: limit);
   }
 
   // ── 3. getSchemesByCategory(category) ─────────────────────────────────
-  /// Returns schemes matching a broad category keyword.
-  Future<List<Scheme>> getSchemesByCategory(String category) async {
-    if (category.trim().isEmpty) return getAllSchemes();
+  /// Returns schemes matching a specific category key with exact metadata filtering.
+  Future<List<Scheme>> getSchemesByCategory(String category, {String langCode = 'en'}) async {
+    if (category.trim().isEmpty) return getAllSchemes(langCode: langCode);
 
     final q = category.toLowerCase().trim();
+    final all = await getAllSchemes(langCode: langCode);
+
+    return all.where((s) {
+      final cat = s.category.toLowerCase();
+      final type = s.schemeType.toLowerCase();
+      final target = s.targetBeneficiary.toLowerCase();
+      final kw = s.searchKeywords.toLowerCase();
+      final sector = s.sector.toLowerCase();
+      final fullText = '${s.name} ${s.shortName} ${s.schemeType} ${s.category} ${s.sector} ${s.searchKeywords} ${s.overview}'.toLowerCase();
+
+      if (q == 'msme') {
+        return cat.contains('msme') || sector.contains('msme') || target.contains('msme') || fullText.contains('micro') || fullText.contains('udyam');
+      } else if (q == 'startup') {
+        return cat.contains('startup') || kw.contains('startup') || kw.contains('dpiit') || fullText.contains('incubator') || fullText.contains('seed fund');
+      } else if (q == 'women entrepreneurs' || q == 'women') {
+        return target.contains('women') || kw.contains('women') || target.contains('female') || fullText.contains('mahila') || fullText.contains('stree');
+      } else if (q == 'business loans & credit' || q == 'loans' || q.contains('loan') || q.contains('credit')) {
+        return type.contains('loan') ||
+            cat.contains('loan') ||
+            cat.contains('credit') ||
+            fullText.contains('loan') ||
+            fullText.contains('credit') ||
+            fullText.contains('mudra') ||
+            fullText.contains('cgtmse') ||
+            fullText.contains('working capital') ||
+            fullText.contains('term loan') ||
+            fullText.contains('svanidhi') ||
+            fullText.contains('standup') ||
+            fullText.contains('financing') ||
+            fullText.contains('collateral-free') ||
+            fullText.contains('collateral free');
+      } else if (q == 'shg & artisan' || q == 'artisan') {
+        return target.contains('artisan') || target.contains('shg') || kw.contains('vishwakarma') || kw.contains('weaver') || fullText.contains('craftsman');
+      } else if (q == 'technology') {
+        return cat.contains('tech') || sector.contains('tech') || kw.contains('technology') || fullText.contains('digital') || fullText.contains('r&d');
+      } else if (q == 'manufacturing') {
+        return sector.contains('manufactur') || cat.contains('manufactur') || kw.contains('manufacturing') || fullText.contains('production') || fullText.contains('factory');
+      } else if (q == 'export & trade promotion' || q == 'export') {
+        return cat.contains('export') || sector.contains('export') || kw.contains('export') || fullText.contains('trade promotion') || fullText.contains('exhibition');
+      }
+
+      return cat.contains(q) || sector.contains(q) || target.contains(q) || fullText.contains(q);
+    }).toList();
+  }
+
+  /// Returns schemes sponsored or issued by a given ministry/department.
+  Future<List<Scheme>> getSchemesByMinistry(String ministry) async {
+    if (ministry.trim().isEmpty) return getAllSchemes();
+
+    final q = ministry.toLowerCase().trim();
     final all = await getAllSchemes();
 
     return all.where((s) {
-      return s.category.toLowerCase().contains(q) ||
-          s.sector.toLowerCase().contains(q) ||
-          s.targetBeneficiary.toLowerCase().contains(q) ||
-          s.searchKeywords.toLowerCase().contains(q);
+      final sponsor = s.sponsoringBody.toLowerCase();
+      final issuer = s.issuingBody.toLowerCase();
+      final fullText = '${s.name} ${s.shortName} ${s.searchKeywords}'.toLowerCase();
+
+      return sponsor.contains(q) || issuer.contains(q) || fullText.contains(q);
+    }).toList();
+  }
+
+  /// Returns schemes applicable to a specific state or All India.
+  Future<List<Scheme>> getSchemesByState(String state) async {
+    if (state.trim().isEmpty) return getAllSchemes();
+
+    final q = state.toLowerCase().trim();
+    final all = await getAllSchemes();
+
+    return all.where((s) {
+      final st = s.state.toLowerCase();
+      final code = s.schemeCode.toLowerCase();
+      final name = s.name.toLowerCase();
+
+      if (q.contains('tamil nadu') || q == 'tn') {
+        return st.contains('tamil') || st.contains('tn') || code.contains('tn_') || name.contains('tamil');
+      }
+
+      return st.contains(q) || code.contains(q) || name.contains(q);
     }).toList();
   }
 
   // ── 4. getSchemeById(id) ───────────────────────────────────────────────
   /// Loads a Scheme by ID or Code in O(1) time.
-  Future<Scheme?> getSchemeById(String id) async {
+  Future<Scheme?> getSchemeById(String id, {String langCode = 'en'}) async {
     if (id.trim().isEmpty) return null;
-    await getAllSchemes();
+    await getAllSchemes(langCode: langCode);
     final key = id.trim().toLowerCase();
     final cached = _schemeByIdMap?[key];
     if (cached != null) return cached;
@@ -107,7 +248,7 @@ class SchemeRepository {
       final bundle = await _loadBundle();
       final entity = bundle.getEntity(id);
       if (entity != null && entity.entityType == 'scheme') {
-        return MssSchemeAdapter.toScheme(entity, bundle);
+        return MssSchemeAdapter.toScheme(entity, bundle, langCode: langCode);
       }
     } catch (e) {
       debugPrint('[SchemeRepository] getSchemeById error: $e');

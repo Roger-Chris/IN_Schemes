@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../providers/app_state_provider.dart';
 import '../utils/constants.dart';
+import '../utils/profile_l10n.dart';
 import 'navigation_mode_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -18,6 +19,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isTa = context.select<AppProvider, bool>(
+      (provider) => provider.selectedLanguage == 'ta',
+    );
+    String l(String key) => ProfileL10n.t(key, isTa);
     final isLoggedIn = context.select<AppProvider, bool>(
       (provider) => provider.isLoggedIn,
     );
@@ -73,7 +78,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                               // Title
                               Text(
-                                'Welcome!',
+                                l('welcome'),
                                 style: GoogleFonts.poppins(
                                   fontSize: 17,
                                   fontWeight: FontWeight.bold,
@@ -84,7 +89,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                               // Subtitle
                               Text(
-                                'Login or sign up to discover and explore government schemes that empower you.',
+                                l('login_subtitle'),
                                 textAlign: TextAlign.center,
                                 style: GoogleFonts.inter(
                                   fontSize: 9.5,
@@ -112,13 +117,13 @@ class _LoginScreenState extends State<LoginScreen> {
                                     ),
                                   ],
                                 ),
-                                child: _buildLoginForm(),
+                                child: _buildLoginForm(isTa),
                               ),
 
                               const Spacer(flex: 2),
 
                               // Bottom Privacy Policy & Terms Section
-                              _buildPrivacySection(),
+                              _buildPrivacySection(isTa),
 
                               const SizedBox(height: 8),
                             ],
@@ -136,13 +141,14 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Widget _buildLoginForm() {
+  Widget _buildLoginForm(bool isTa) {
+    String l(String key) => ProfileL10n.t(key, isTa);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
-          'Continue securely',
+          l('continue_securely'),
           textAlign: TextAlign.center,
           style: GoogleFonts.poppins(
             fontSize: 15,
@@ -152,7 +158,7 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
         const SizedBox(height: 4),
         Text(
-          'Use your Google account to sign in or create your MSS account.',
+          l('google_account_continue'),
           textAlign: TextAlign.center,
           style: GoogleFonts.inter(
             fontSize: 11,
@@ -192,7 +198,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       if (mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text('Error: $e'),
+                            content: Text('${l('error')}: $e'),
                             backgroundColor: AppConstants.errorColor,
                           ),
                         );
@@ -211,7 +217,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 const GoogleIcon(size: 18),
                 const SizedBox(width: 10),
                 Text(
-                  'Continue with Google',
+                  l('continue_with_google'),
                   style: GoogleFonts.inter(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -224,7 +230,7 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
         const SizedBox(height: 12),
         Text(
-          'A secure browser window will open for authentication.',
+          l('secure_browser_auth'),
           textAlign: TextAlign.center,
           style: GoogleFonts.inter(
             fontSize: 10,
@@ -235,7 +241,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Widget _buildPrivacySection() {
+  Widget _buildPrivacySection(bool isTa) {
     return RichText(
       textAlign: TextAlign.center,
       text: TextSpan(
@@ -244,26 +250,26 @@ class _LoginScreenState extends State<LoginScreen> {
           color: Colors.white70,
           height: 1.5,
         ),
-        children: const [
-          TextSpan(text: 'By continuing, you agree to our\n'),
+        children: [
+          TextSpan(text: '${ProfileL10n.t('privacy_note', isTa)}\n'),
           TextSpan(
-            text: 'Terms & Conditions',
-            style: TextStyle(
+            text: ProfileL10n.t('terms', isTa),
+            style: const TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.bold,
               decoration: TextDecoration.underline,
             ),
           ),
-          TextSpan(text: ' and '),
+          TextSpan(text: ' ${ProfileL10n.t('and', isTa)} '),
           TextSpan(
-            text: 'Privacy Notice',
-            style: TextStyle(
+            text: ProfileL10n.t('privacy_policy', isTa),
+            style: const TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.bold,
               decoration: TextDecoration.underline,
             ),
           ),
-          TextSpan(text: '.'),
+          const TextSpan(text: '.'),
         ],
       ),
     );

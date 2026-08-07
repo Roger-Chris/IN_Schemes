@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../providers/app_state_provider.dart';
+import '../../utils/profile_l10n.dart';
 import '../../main.dart';
 import '../../utils/permission_helper.dart';
 
@@ -76,6 +77,8 @@ class _AboutYouProfileScreenState extends State<AboutYouProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isTa = Provider.of<AppProvider>(context, listen: false).selectedLanguage == 'ta';
+    String l(String key) => ProfileL10n.t(key, isTa);
     return Scaffold(
       backgroundColor: Colors.white,
       body: Stack(
@@ -105,7 +108,7 @@ class _AboutYouProfileScreenState extends State<AboutYouProfileScreen> {
                           onPressed: () => Navigator.maybePop(context),
                         ),
                         Text(
-                          'Complete Your Profile',
+                          l('complete_your_profile'),
                           style: GoogleFonts.poppins(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -157,7 +160,7 @@ class _AboutYouProfileScreenState extends State<AboutYouProfileScreen> {
                                     const SizedBox(height: 8),
                                     Center(
                                       child: Text(
-                                        '3/4 Complete',
+                                        l('step_3_of_4'),
                                         style: GoogleFonts.inter(
                                           fontSize: 13,
                                           fontWeight: FontWeight.w600,
@@ -169,7 +172,7 @@ class _AboutYouProfileScreenState extends State<AboutYouProfileScreen> {
 
                                     // Header Text
                                     Text(
-                                      'Tell Us About You',
+                                      l('tell_us_about_you'),
                                       textAlign: TextAlign.center,
                                       style: GoogleFonts.poppins(
                                         fontSize: 20,
@@ -179,7 +182,7 @@ class _AboutYouProfileScreenState extends State<AboutYouProfileScreen> {
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
-                                      'Choose the option that best describes you.',
+                                      l('about_you_subtitle'),
                                       textAlign: TextAlign.center,
                                       style: GoogleFonts.inter(
                                         fontSize: 13,
@@ -203,7 +206,7 @@ class _AboutYouProfileScreenState extends State<AboutYouProfileScreen> {
                                         final role = _roles[index];
                                         final isSelected = _selectedRole == role.id;
 
-                                        return _buildRoleCard(role, isSelected);
+                                        return _buildRoleCard(role, isSelected, isTa);
                                       },
                                     ),
                                   ],
@@ -251,7 +254,7 @@ class _AboutYouProfileScreenState extends State<AboutYouProfileScreen> {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Text(
-                                    'Continue',
+                                    l('continue'),
                                     style: GoogleFonts.inter(
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,
@@ -291,7 +294,19 @@ class _AboutYouProfileScreenState extends State<AboutYouProfileScreen> {
     );
   }
 
-  Widget _buildRoleCard(RoleModel role, bool isSelected) {
+  Widget _buildRoleCard(RoleModel role, bool isSelected, [bool isTa = false]) {
+    final String titleKey = switch (role.id) {
+      'student' => 'student',
+      'entrepreneur' => 'aspiring_entrepreneur',
+      'existing_business' => 'existing_business',
+      'msme' => 'msme_owner',
+      'farmer' => 'farmer',
+      'artisan' => 'artisan_shg',
+      _ => role.id,
+    };
+    final String subtitleKey = '${titleKey}_subtitle';
+    final String localTitle = ProfileL10n.t(titleKey, isTa);
+    final String localSubtitle = ProfileL10n.t(subtitleKey, isTa);
     return GestureDetector(
       onTap: () {
         setState(() {
@@ -381,7 +396,7 @@ class _AboutYouProfileScreenState extends State<AboutYouProfileScreen> {
 
             // Role Title
             Text(
-              role.title,
+              localTitle,
               textAlign: TextAlign.center,
               style: GoogleFonts.inter(
                 fontSize: 13,
@@ -393,7 +408,7 @@ class _AboutYouProfileScreenState extends State<AboutYouProfileScreen> {
 
             // Role Description
             Text(
-              role.subtitle,
+              localSubtitle,
               textAlign: TextAlign.center,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,

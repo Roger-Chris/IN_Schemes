@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../providers/app_state_provider.dart';
 import '../../utils/constants.dart';
+import '../../services/centralized_translator.dart';
 import '../../main.dart';
 import '../../utils/permission_helper.dart';
 import 'package:geolocator/geolocator.dart';
@@ -490,7 +491,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to fetch location: $e'),
+            content: Text('${CentralizedTranslator.instance.translate('Failed to fetch location')}: $e'),
             backgroundColor: AppConstants.errorColor,
           ),
         );
@@ -561,8 +562,8 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Profile saved successfully!'),
+        SnackBar(
+          content: Text(CentralizedTranslator.instance.translate('Profile saved successfully!')),
           backgroundColor: AppConstants.successColor,
         ),
       );
@@ -880,10 +881,10 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                                         style: GoogleFonts.inter(fontSize: 14, color: const Color(0xFF1E293B)),
                                         decoration: _getInputDecoration('Select gender'),
                                         validator: (val) => val == null || val.isEmpty ? 'Required' : null,
-                                        items: const [
-                                          DropdownMenuItem(value: 'Female', child: Text('Female')),
-                                          DropdownMenuItem(value: 'Male', child: Text('Male')),
-                                          DropdownMenuItem(value: 'Transgender', child: Text('Transgender')),
+                                        items: [
+                                          DropdownMenuItem(value: 'Female', child: Text(CentralizedTranslator.instance.translate('Female'))),
+                                          DropdownMenuItem(value: 'Male', child: Text(CentralizedTranslator.instance.translate('Male'))),
+                                          DropdownMenuItem(value: 'Transgender', child: Text(CentralizedTranslator.instance.translate('Transgender'))),
                                         ],
                                         onChanged: (val) {
                                           if (val != null) {
@@ -1207,7 +1208,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                                 Expanded(
                                   child: CheckboxListTile(
                                     contentPadding: EdgeInsets.zero,
-                                    title: Text('Veteran Status', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600)),
+                                    title: Text(CentralizedTranslator.instance.translate('Veteran Status'), style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600)),
                                     value: _isVeteran,
                                     onChanged: (val) {
                                       if (val != null) {
@@ -1221,7 +1222,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                                 Expanded(
                                   child: CheckboxListTile(
                                     contentPadding: EdgeInsets.zero,
-                                    title: Text('Disability', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600)),
+                                    title: Text(CentralizedTranslator.instance.translate('Disability'), style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600)),
                                     value: _hasDisability,
                                     onChanged: (val) {
                                       if (val != null) {
@@ -1274,12 +1275,12 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                                         style: GoogleFonts.inter(fontSize: 14, color: const Color(0xFF1E293B)),
                                         decoration: _getInputDecoration('Select qualification'),
                                         validator: (val) => val == null || val.isEmpty ? 'Required' : null,
-                                        items: const [
-                                          DropdownMenuItem(value: 'School', child: Text('School')),
-                                          DropdownMenuItem(value: 'Diploma', child: Text('Diploma')),
-                                          DropdownMenuItem(value: 'Undergraduate', child: Text('Undergraduate')),
-                                          DropdownMenuItem(value: 'Postgraduate', child: Text('Postgraduate')),
-                                          DropdownMenuItem(value: 'Ph.D.', child: Text('Ph.D.')),
+                                        items: [
+                                          DropdownMenuItem(value: 'School', child: Text(CentralizedTranslator.instance.translate('School'))),
+                                          DropdownMenuItem(value: 'Diploma', child: Text(CentralizedTranslator.instance.translate('Diploma'))),
+                                          DropdownMenuItem(value: 'Undergraduate', child: Text(CentralizedTranslator.instance.translate('Undergraduate'))),
+                                          DropdownMenuItem(value: 'Postgraduate', child: Text(CentralizedTranslator.instance.translate('Postgraduate'))),
+                                          DropdownMenuItem(value: 'Ph.D.', child: Text(CentralizedTranslator.instance.translate('Ph.D.'))),
                                         ],
                                         onChanged: (val) {
                                           if (val != null) {
@@ -1331,7 +1332,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                             const SizedBox(height: 16),
                             SwitchListTile(
                               contentPadding: EdgeInsets.zero,
-                              title: Text('Existing Business / Entrepreneur', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600)),
+                              title: Text(CentralizedTranslator.instance.translate('Existing Business / Entrepreneur'), style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600)),
                               value: _existingBusiness,
                               onChanged: (val) {
                                 setState(() => _existingBusiness = val);
@@ -1361,12 +1362,12 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                                                     style: GoogleFonts.inter(fontSize: 14, color: const Color(0xFF1E293B)),
                                                     decoration: _getInputDecoration('Select stage'),
                                                     validator: (val) => _existingBusiness && (val == null || val.isEmpty) ? 'Required' : null,
-                                                    items: const [
-                                                      DropdownMenuItem(value: 'Idea', child: Text('Idea')),
-                                                      DropdownMenuItem(value: 'Prototype', child: Text('Prototype')),
-                                                      DropdownMenuItem(value: 'Registered', child: Text('Registered')),
-                                                      DropdownMenuItem(value: 'Operational', child: Text('Operational')),
-                                                      DropdownMenuItem(value: 'Expansion', child: Text('Expansion')),
+                                                    items: [
+                                                      DropdownMenuItem(value: 'Idea', child: Text(CentralizedTranslator.instance.translate('Idea'))),
+                                                      DropdownMenuItem(value: 'Prototype', child: Text(CentralizedTranslator.instance.translate('Prototype'))),
+                                                      DropdownMenuItem(value: 'Registered', child: Text(CentralizedTranslator.instance.translate('Registered'))),
+                                                      DropdownMenuItem(value: 'Operational', child: Text(CentralizedTranslator.instance.translate('Operational'))),
+                                                      DropdownMenuItem(value: 'Expansion', child: Text(CentralizedTranslator.instance.translate('Expansion'))),
                                                     ],
                                                     onChanged: (val) {
                                                       if (val != null) {
@@ -1391,12 +1392,12 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                                                     style: GoogleFonts.inter(fontSize: 14, color: const Color(0xFF1E293B)),
                                                     decoration: _getInputDecoration('Select industry'),
                                                     validator: (val) => _existingBusiness && (val == null || val.isEmpty) ? 'Required' : null,
-                                                    items: const [
-                                                      DropdownMenuItem(value: 'Technology', child: Text('Technology')),
-                                                      DropdownMenuItem(value: 'Agriculture', child: Text('Agriculture')),
-                                                      DropdownMenuItem(value: 'Manufacturing', child: Text('Manufacturing')),
-                                                      DropdownMenuItem(value: 'Healthcare', child: Text('Healthcare')),
-                                                      DropdownMenuItem(value: 'Retail / Services', child: Text('Retail / Services')),
+                                                    items: [
+                                                      DropdownMenuItem(value: 'Technology', child: Text(CentralizedTranslator.instance.translate('Technology'))),
+                                                      DropdownMenuItem(value: 'Agriculture', child: Text(CentralizedTranslator.instance.translate('Agriculture'))),
+                                                      DropdownMenuItem(value: 'Manufacturing', child: Text(CentralizedTranslator.instance.translate('Manufacturing'))),
+                                                      DropdownMenuItem(value: 'Healthcare', child: Text(CentralizedTranslator.instance.translate('Healthcare'))),
+                                                      DropdownMenuItem(value: 'Retail / Services', child: Text(CentralizedTranslator.instance.translate('Retail / Services'))),
                                                     ],
                                                     onChanged: (val) {
                                                       if (val != null) {
@@ -1437,12 +1438,12 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                                               style: GoogleFonts.inter(fontSize: 13.5, color: const Color(0xFF1E293B)),
                                               decoration: _getInputDecoration('Select income range'),
                                               validator: (val) => _existingBusiness && (val == null || val.isEmpty) ? 'Required' : null,
-                                              items: const [
-                                                DropdownMenuItem(value: 'Under ₹1.5 Lakhs', child: Text('Below ₹1.5 Lakh')),
-                                                DropdownMenuItem(value: '₹1.5 Lakhs - ₹3 Lakhs', child: Text('₹1.5 Lakh - ₹3 Lakh')),
-                                                DropdownMenuItem(value: '₹3 Lakhs - ₹5 Lakhs', child: Text('₹3 Lakh - ₹5 Lakh')),
-                                                DropdownMenuItem(value: '₹5 Lakhs - ₹8 Lakhs', child: Text('₹5 Lakh - ₹8 Lakh')),
-                                                DropdownMenuItem(value: 'Above ₹8 Lakhs', child: Text('Above ₹8 Lakh')),
+                                              items: [
+                                                DropdownMenuItem(value: 'Under ₹1.5 Lakhs', child: Text(CentralizedTranslator.instance.translate('Below ₹1.5 Lakh'))),
+                                                DropdownMenuItem(value: '₹1.5 Lakhs - ₹3 Lakhs', child: Text(CentralizedTranslator.instance.translate('₹1.5 Lakh - ₹3 Lakh'))),
+                                                DropdownMenuItem(value: '₹3 Lakhs - ₹5 Lakhs', child: Text(CentralizedTranslator.instance.translate('₹3 Lakh - ₹5 Lakh'))),
+                                                DropdownMenuItem(value: '₹5 Lakhs - ₹8 Lakhs', child: Text(CentralizedTranslator.instance.translate('₹5 Lakh - ₹8 Lakh'))),
+                                                DropdownMenuItem(value: 'Above ₹8 Lakhs', child: Text(CentralizedTranslator.instance.translate('Above ₹8 Lakh'))),
                                               ],
                                               onChanged: (val) {
                                                 if (val != null) {

@@ -35,7 +35,7 @@ class MssEntity {
   }
 
   /// Multilingual name resolution. Fallback order:
-  /// localization[preferredLang]['name'] -> localization['ta']['name'] -> localization['en']['name'] -> identity['name']
+  /// localization[preferredLang]['name'] -> localization[alternateLang]['name'] -> identity['name'] -> code
   String getLocalizedName([String preferredLang = 'en']) {
     final loc = raw['localization'] as Map<String, dynamic>?;
     if (loc != null) {
@@ -43,18 +43,35 @@ class MssEntity {
       if (preferred != null && (preferred['name'] as String?)?.isNotEmpty == true) {
         return preferred['name'] as String;
       }
-      final ta = loc['ta'] as Map<String, dynamic>?;
-      if (ta != null && (ta['name'] as String?)?.isNotEmpty == true) {
-        return ta['name'] as String;
-      }
-      final en = loc['en'] as Map<String, dynamic>?;
-      if (en != null && (en['name'] as String?)?.isNotEmpty == true) {
-        return en['name'] as String;
+      final altLang = preferredLang == 'ta' ? 'en' : 'ta';
+      final alt = loc[altLang] as Map<String, dynamic>?;
+      if (alt != null && (alt['name'] as String?)?.isNotEmpty == true) {
+        return alt['name'] as String;
       }
     }
     final identity = raw['identity'] as Map<String, dynamic>?;
     if (identity != null && (identity['name'] as String?)?.isNotEmpty == true) {
       return identity['name'] as String;
+    }
+    return code;
+  }
+
+  /// Multilingual attribute resolution for any field (e.g. 'summary', 'overview', 'description', 'benefits').
+  String getLocalizedAttribute(String key, [String preferredLang = 'en']) {
+    final loc = raw['localization'] as Map<String, dynamic>?;
+    if (loc != null) {
+      final preferred = loc[preferredLang] as Map<String, dynamic>?;
+      if (preferred != null && (preferred[key] as String?)?.isNotEmpty == true) {
+        return preferred[key] as String;
+      }
+      final ta = loc['ta'] as Map<String, dynamic>?;
+      if (ta != null && (ta[key] as String?)?.isNotEmpty == true) {
+        return ta[key] as String;
+      }
+      final en = loc['en'] as Map<String, dynamic>?;
+      if (en != null && (en[key] as String?)?.isNotEmpty == true) {
+        return en[key] as String;
+      }
     }
     return '';
   }

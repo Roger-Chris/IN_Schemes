@@ -1,10 +1,16 @@
 class SchemeDocument {
   final String name;
+  final String nameTa;
   final String mandatory;
+  final String mandatoryTa;
   final String issuingAuthority;
+  final String issuingAuthorityTa;
   final String description;
+  final String descriptionTa;
   final String estimatedCost;
+  final String estimatedCostTa;
   final String remarks;
+  final String remarksTa;
   final String sourceUrl;
   final String validityMonths;
   final String downloadTemplateUrl;
@@ -13,11 +19,17 @@ class SchemeDocument {
 
   const SchemeDocument({
     required this.name,
+    this.nameTa = '',
     this.mandatory = '',
+    this.mandatoryTa = '',
     this.issuingAuthority = '',
+    this.issuingAuthorityTa = '',
     this.description = '',
+    this.descriptionTa = '',
     this.estimatedCost = '',
+    this.estimatedCostTa = '',
     this.remarks = '',
+    this.remarksTa = '',
     this.sourceUrl = '',
     this.validityMonths = '',
     this.downloadTemplateUrl = '',
@@ -27,31 +39,83 @@ class SchemeDocument {
 
   bool get isMandatory =>
       mandatory.toLowerCase() == 'yes' || mandatory.toLowerCase() == 'required';
+
+  SchemeDocument copyWith({
+    String? name,
+    String? nameTa,
+    String? mandatory,
+    String? mandatoryTa,
+    String? issuingAuthority,
+    String? issuingAuthorityTa,
+    String? description,
+    String? descriptionTa,
+    String? estimatedCost,
+    String? estimatedCostTa,
+    String? remarks,
+    String? remarksTa,
+    String? sourceUrl,
+    String? validityMonths,
+    String? downloadTemplateUrl,
+    String? sampleCopyUrl,
+    String? verificationPortalUrl,
+  }) {
+    return SchemeDocument(
+      name: name ?? this.name,
+      nameTa: nameTa ?? this.nameTa,
+      mandatory: mandatory ?? this.mandatory,
+      mandatoryTa: mandatoryTa ?? this.mandatoryTa,
+      issuingAuthority: issuingAuthority ?? this.issuingAuthority,
+      issuingAuthorityTa: issuingAuthorityTa ?? this.issuingAuthorityTa,
+      description: description ?? this.description,
+      descriptionTa: descriptionTa ?? this.descriptionTa,
+      estimatedCost: estimatedCost ?? this.estimatedCost,
+      estimatedCostTa: estimatedCostTa ?? this.estimatedCostTa,
+      remarks: remarks ?? this.remarks,
+      remarksTa: remarksTa ?? this.remarksTa,
+      sourceUrl: sourceUrl ?? this.sourceUrl,
+      validityMonths: validityMonths ?? this.validityMonths,
+      downloadTemplateUrl: downloadTemplateUrl ?? this.downloadTemplateUrl,
+      sampleCopyUrl: sampleCopyUrl ?? this.sampleCopyUrl,
+      verificationPortalUrl: verificationPortalUrl ?? this.verificationPortalUrl,
+    );
+  }
 }
 
 class SchemeService {
   final String name;
+  final String nameTa;
   final String category;
+  final String categoryTa;
   final bool mandatory;
   final String description;
+  final String descriptionTa;
   final String purpose;
+  final String purposeTa;
   final String department;
+  final String departmentTa;
   final String website;
   final String contact;
   final String status;
   final String notes;
+  final String notesTa;
 
   const SchemeService({
     required this.name,
+    this.nameTa = '',
     this.category = '',
+    this.categoryTa = '',
     this.mandatory = false,
     this.description = '',
+    this.descriptionTa = '',
     this.purpose = '',
+    this.purposeTa = '',
     this.department = '',
+    this.departmentTa = '',
     this.website = '',
     this.contact = '',
     this.status = 'ACTIVE',
     this.notes = '',
+    this.notesTa = '',
   });
 }
 
@@ -61,6 +125,7 @@ class Scheme {
   final String id; // Stable catalog code or Supabase UUID
   final String schemeCode; // e.g. "IN001"
   final String name;
+  final String nameTa;
   final String shortName;
   final String fullSchemeName;
   final String ministry;
@@ -78,8 +143,10 @@ class Scheme {
   final String schemeType; // assistance_type
   final String category;
   final String overview; // maps to "overview" column
+  final String overviewTa;
   final String objectives;
   final String benefits; // benefits_description
+  final String benefitsTa;
   final double? subsidyPercentage;
   final double? maxFunding;
   final double? minFunding;
@@ -144,6 +211,7 @@ class Scheme {
     required this.id,
     this.schemeCode = '',
     required this.name,
+    this.nameTa = '',
     this.shortName = '',
     this.fullSchemeName = '',
     this.ministry = '',
@@ -161,8 +229,10 @@ class Scheme {
     this.schemeType = '',
     this.category = '',
     this.overview = '',
+    this.overviewTa = '',
     this.objectives = '',
     this.benefits = '',
+    this.benefitsTa = '',
     this.subsidyPercentage,
     this.maxFunding,
     this.minFunding,
@@ -211,6 +281,30 @@ class Scheme {
     this.requiredServices = const [],
     this.faqs = const [],
   });
+
+  /// Get scheme name localized according to language selection with clean fallback.
+  String getName([String langCode = 'en']) {
+    if (langCode == 'ta' && nameTa.trim().isNotEmpty) {
+      return nameTa.trim();
+    }
+    return name.isNotEmpty ? name : schemeCode;
+  }
+
+  /// Get localized overview description
+  String getOverview([String langCode = 'en']) {
+    if (langCode == 'ta' && overviewTa.trim().isNotEmpty) {
+      return overviewTa.trim();
+    }
+    return overview;
+  }
+
+  /// Get localized benefits description
+  String getBenefits([String langCode = 'en']) {
+    if (langCode == 'ta' && benefitsTa.trim().isNotEmpty) {
+      return benefitsTa.trim();
+    }
+    return benefits;
+  }
 
   /// Build a Scheme from a Supabase row (public.schemes table).
   factory Scheme.fromSupabase(Map<String, dynamic> row) {
@@ -310,8 +404,10 @@ class Scheme {
       schemeType: schemeType,
       category: category,
       overview: overview,
+      overviewTa: overviewTa,
       objectives: objectives,
       benefits: benefits,
+      benefitsTa: benefitsTa,
       subsidyPercentage: subsidyPercentage,
       maxFunding: maxFunding,
       minFunding: minFunding,

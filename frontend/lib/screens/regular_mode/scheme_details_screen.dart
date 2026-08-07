@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../models/scheme_model.dart';
+import '../../models/localized_scheme.dart';
 import '../../services/scheme_repository.dart';
+import '../../providers/app_state_provider.dart';
 import '../../utils/constants.dart';
+import '../../l10n/l10n.dart';
+import '../../services/centralized_translator.dart';
 
 class SchemeDetailsScreen extends StatefulWidget {
   final Scheme scheme;
@@ -16,14 +21,17 @@ class SchemeDetailsScreen extends StatefulWidget {
 
 class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
   int _activeTabIndex = 0;
-  final List<String> _tabs = [
-    "Overview",
-    "Benefits",
-    "Eligibility",
-    "Documents",
-    "Services",
-    "Process",
-  ];
+
+  List<String> _getTabs(BuildContext context) {
+    return [
+      context.l10n.tabOverview,
+      context.l10n.tabBenefits,
+      context.l10n.tabEligibility,
+      context.l10n.tabDocuments,
+      context.l10n.tabServices,
+      context.l10n.tabProcess,
+    ];
+  }
 
   // Fix 3: GlobalKeys for each scrollable section (for sticky tab auto-scroll)
   final _overviewKey = GlobalKey();
@@ -102,7 +110,7 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
     });
   }
 
-  String _applicationDestination(Scheme scheme) {
+  String _applicationDestination(LocalizedScheme scheme) {
     return [
       scheme.applicationUrl,
       scheme.officialWebsite,
@@ -120,8 +128,8 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
     if (!_isSafeWebUrl(value)) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('No verified official link is available.'),
+        SnackBar(
+          content: Text(context.l10n.noVerifiedLink),
         ),
       );
       return;
@@ -133,7 +141,7 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
     );
     if (!opened && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not open the official website.')),
+        SnackBar(content: Text(context.l10n.couldNotOpenWebsite)),
       );
     }
   }
@@ -151,7 +159,28 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final Scheme scheme = _detailedScheme ?? widget.scheme;
+    final rawScheme = _detailedScheme ?? widget.scheme;
+    final provider = Provider.of<AppProvider>(context);
+    final LocalizedScheme scheme = rawScheme.toLocalized(provider.selectedLanguage);
+
+    debugPrint('\n========== [SCHEME DETAILS LOCALIZATION TRACE] ==========');
+    debugPrint('Selected App Language: ${provider.selectedLanguage}');
+    debugPrint('Raw Scheme ID: ${rawScheme.id}');
+    debugPrint('Raw Scheme En Title: ${rawScheme.name}');
+    debugPrint('Raw Scheme Ta Title: ${rawScheme.nameTa}');
+    debugPrint('Localized Widget Title: ${scheme.name}');
+    debugPrint('Localized Widget Overview: ${scheme.overview.length > 50 ? "${scheme.overview.substring(0, 47)}..." : scheme.overview}');
+    debugPrint('Localized Widget Benefits: ${scheme.benefits.length > 50 ? "${scheme.benefits.substring(0, 47)}..." : scheme.benefits}');
+    if (scheme.documents.isNotEmpty) {
+      debugPrint('Localized Widget First Doc: ${scheme.documents.first.name}');
+    }
+    if (scheme.requiredServices.isNotEmpty) {
+      debugPrint('Localized Widget First Service: ${scheme.requiredServices.first.name}');
+    }
+    if (scheme.applicationProcess.isNotEmpty) {
+      debugPrint('Localized Widget First Step: ${scheme.applicationProcess.first}');
+    }
+    debugPrint('=========================================================\n');
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -170,7 +199,7 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                   scrolledUnderElevation: 0,
                   automaticallyImplyLeading: false,
                   title: Text(
-                    "Scheme Details",
+                    context.l10n.schemeDetailsTitle,
                     style: GoogleFonts.poppins(
                       color: const Color(0xFF0F172A),
                       fontSize: 18.0,
@@ -217,7 +246,7 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                         physics: const BouncingScrollPhysics(),
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         child: Row(
-                          children: List.generate(_tabs.length, (index) {
+                          children: List.generate(_getTabs(context).length, (index) {
                             final bool isSelected = _activeTabIndex == index;
                             return GestureDetector(
                               onTap: () {
@@ -258,7 +287,7 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                                   ),
                                 ),
                                 child: Text(
-                                  _tabs[index],
+                                  _getTabs(context)[index],
                                   style: GoogleFonts.inter(
                                     color: isSelected
                                         ? const Color(0xFF2563EB)
@@ -325,7 +354,7 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                         _ExpandableSection(
                           key: _benefitsKey,
                           controller: _benefitsController,
-                          title: "Benefits Details",
+                          title: context.l10n.benefitsDetails,
                           icon: Icons.card_giftcard_outlined,
                           iconColor: const Color(0xFF047857),
                           iconBg: const Color(0xFFECFDF5),
@@ -343,7 +372,7 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                         _ExpandableSection(
                           key: _eligibilityKey,
                           controller: _eligibilityController,
-                          title: "Eligibility Criteria",
+                          title: context.l10n.eligibilityCriteria,
                           icon: Icons.verified_user_outlined,
                           iconColor: const Color(0xFF1D4ED8),
                           iconBg: const Color(0xFFEFF6FF),
@@ -361,7 +390,7 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                         _ExpandableSection(
                           key: _documentsKey,
                           controller: _documentsController,
-                          title: "Required Documents",
+                          title: context.l10n.requiredDocuments,
                           icon: Icons.description_outlined,
                           iconColor: const Color(0xFF6D28D9),
                           iconBg: const Color(0xFFF5F3FF),
@@ -379,7 +408,7 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                         _ExpandableSection(
                           key: _servicesKey,
                           controller: _servicesController,
-                          title: "Required Services",
+                          title: context.l10n.requiredServices,
                           icon: Icons.support_agent_outlined,
                           iconColor: const Color(0xFF0F766E),
                           iconBg: const Color(0xFFCCFBF1),
@@ -397,7 +426,7 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                         _ExpandableSection(
                           key: _processKey,
                           controller: _processController,
-                          title: "Application Process",
+                          title: context.l10n.applicationProcessHeader,
                           icon: Icons.account_tree_outlined,
                           iconColor: const Color(0xFFEA580C),
                           iconBg: const Color(0xFFFFEDD5),
@@ -440,10 +469,10 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
     );
   }
 
-  Widget _buildSchemeHighlightsCard(Scheme scheme) {
+  Widget _buildSchemeHighlightsCard(LocalizedScheme scheme) {
     final matches = [
       scheme.governmentLevel.isNotEmpty
-          ? '${scheme.governmentLevel} Level'
+          ? scheme.governmentLevel
           : '',
       scheme.state,
       scheme.sector,
@@ -475,7 +504,7 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
               ),
               const SizedBox(width: 6),
               Text(
-                "Scheme at a glance",
+                context.l10n.schemeAtAGlance,
                 style: GoogleFonts.poppins(
                   fontSize: 13.0,
                   fontWeight: FontWeight.bold,
@@ -526,7 +555,7 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
     );
   }
 
-  Widget _buildOfficialSourceCard(Scheme scheme) {
+  Widget _buildOfficialSourceCard(LocalizedScheme scheme) {
     final sourceUrl = [
       scheme.sourceUrl,
       scheme.guidelinesUrl,
@@ -550,7 +579,7 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
               children: [
                 Text(
                   scheme.verificationStatus.isEmpty
-                      ? 'Official scheme information'
+                      ? context.l10n.officialInformation
                       : scheme.verificationStatus,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
@@ -562,7 +591,7 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                 ),
                 if (scheme.lastUpdated.isNotEmpty)
                   Text(
-                    'Last updated: ${scheme.lastUpdated}',
+                    context.l10n.lastUpdatedFormat(scheme.lastUpdated),
                     style: GoogleFonts.inter(
                       color: const Color(0xFF64748B),
                       fontSize: 9.5,
@@ -576,7 +605,7 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                 ? null
                 : () => _openOfficialUrl(sourceUrl),
             icon: const Icon(Icons.open_in_new_rounded, size: 15),
-            label: const Text('Source'),
+            label: Text(context.l10n.sourceButton),
           ),
         ],
       ),
@@ -593,14 +622,14 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
     return '₹${amount.toStringAsFixed(0)}';
   }
 
-  Widget _buildBenefitsContent(Scheme scheme) {
+  Widget _buildBenefitsContent(LocalizedScheme scheme) {
     final benefitCards = <Map<String, Object>>[
       if (scheme.subsidyPercentage != null)
         {
           "icon": Icons.percent_rounded,
           "color": const Color(0xFF047857),
           "bg": const Color(0xFFECFDF5),
-          "title": "Subsidy",
+          "title": context.l10n.benefitSubsidy,
           "desc": "${scheme.subsidyPercentage!.toStringAsFixed(0)}%",
         },
       if (scheme.subsidyAmount.isNotEmpty &&
@@ -609,7 +638,7 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
           "icon": Icons.payments_outlined,
           "color": const Color(0xFF1D4ED8),
           "bg": const Color(0xFFEFF6FF),
-          "title": "Amount",
+          "title": context.l10n.benefitAmount,
           "desc": scheme.subsidyAmount,
         },
       if (scheme.maxFunding != null)
@@ -617,7 +646,7 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
           "icon": Icons.account_balance_wallet_outlined,
           "color": const Color(0xFF6D28D9),
           "bg": const Color(0xFFF5F3FF),
-          "title": "Maximum",
+          "title": context.l10n.benefitMaximum,
           "desc": _formatFunding(scheme.maxFunding!),
         },
       if (scheme.schemeType.isNotEmpty)
@@ -625,7 +654,7 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
           "icon": Icons.category_outlined,
           "color": const Color(0xFFEA580C),
           "bg": const Color(0xFFFFEDD5),
-          "title": "Support",
+          "title": context.l10n.benefitSupport,
           "desc": scheme.schemeType,
         },
     ];
@@ -635,7 +664,7 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
       children: [
         Text(
           scheme.benefits.isEmpty
-              ? 'Benefit details are available from the official source.'
+              ? CentralizedTranslator.instance.translate('Benefit details are available from the official source.')
               : scheme.benefits,
           style: GoogleFonts.inter(
             color: const Color(0xFF64748B),
@@ -715,7 +744,7 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
     );
   }
 
-  Widget _buildEligibilityContent(Scheme scheme) {
+  Widget _buildEligibilityContent(LocalizedScheme scheme) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -751,7 +780,7 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
         if (scheme.verificationNotes.isNotEmpty) ...[
           const Divider(height: 20),
           Text(
-            'Verification note',
+            context.l10n.verificationNote,
             style: GoogleFonts.inter(
               color: const Color(0xFF0F172A),
               fontSize: 11.0,
@@ -772,7 +801,7 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
     );
   }
 
-  Widget _buildDocumentsContent(Scheme scheme) {
+  Widget _buildDocumentsContent(LocalizedScheme scheme) {
     final documents = scheme.documents.isNotEmpty
         ? scheme.documents
         : scheme.requiredDocuments
@@ -780,7 +809,7 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
               .toList();
     if (documents.isEmpty) {
       return Text(
-        'No document list is published for this scheme. Check the official source before applying.',
+        context.l10n.noDocumentsPublished,
         style: GoogleFonts.inter(
           color: const Color(0xFF64748B),
           fontSize: 11.5,
@@ -835,7 +864,7 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
-                        document.isMandatory ? 'Required' : document.mandatory,
+                        document.isMandatory ? context.l10n.badgeRequired : document.mandatory,
                         style: GoogleFonts.inter(
                           color: document.isMandatory
                               ? const Color(0xFFB91C1C)
@@ -861,7 +890,7 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
               if (document.issuingAuthority.isNotEmpty) ...[
                 const SizedBox(height: 6),
                 Text(
-                  'Issued by: ${document.issuingAuthority}',
+                  context.l10n.issuedByFormat(document.issuingAuthority),
                   style: GoogleFonts.inter(
                     color: const Color(0xFF475569),
                     fontSize: 9.0,
@@ -872,7 +901,7 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
               if (document.estimatedCost.isNotEmpty &&
                   document.estimatedCost.toLowerCase() != 'not specified')
                 Text(
-                  'Estimated cost: ${document.estimatedCost}',
+                  context.l10n.estimatedCostFormat(document.estimatedCost),
                   style: GoogleFonts.inter(
                     color: const Color(0xFF475569),
                     fontSize: 9.0,
@@ -908,7 +937,7 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                               ),
                               const SizedBox(width: 4),
                               Text(
-                                "Get Document Online",
+                                context.l10n.getDocumentOnline,
                                 style: GoogleFonts.inter(
                                   color: const Color(0xFF2563EB),
                                   fontSize: 10.5,
@@ -934,7 +963,7 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
   Widget _buildServicesContent(List<SchemeService> services) {
     if (services.isEmpty) {
       return Text(
-        'No separate service requirement is listed for this scheme.',
+        context.l10n.noServicesRequiredMsg,
         style: GoogleFonts.inter(
           color: const Color(0xFF64748B),
           fontSize: 11.0,
@@ -1032,7 +1061,7 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    "Complete this phase to progress further.",
+                    context.l10n.processStepSubtitle,
                     style: GoogleFonts.inter(
                       color: const Color(0xFF64748B),
                       fontSize: 9.0,
@@ -1051,12 +1080,12 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
 
 // 2. Extracted Hero Section Widget
 class _HeroSection extends StatelessWidget {
-  final Scheme scheme;
+  final LocalizedScheme scheme;
   final String imagePath;
 
   const _HeroSection({required this.scheme, required this.imagePath});
 
-  String? _getLocalStateEmblem(Scheme scheme) {
+  String? _getLocalStateEmblem(LocalizedScheme scheme) {
     final state = scheme.state.toLowerCase().trim();
     final code = scheme.schemeCode.toLowerCase().trim();
     final name = scheme.name.toLowerCase().trim();
@@ -1250,7 +1279,7 @@ class _HeroSection extends StatelessWidget {
     return null;
   }
 
-  Widget _buildSchemeLogo(Scheme scheme, {double size = 48}) {
+  Widget _buildSchemeLogo(LocalizedScheme scheme, {double size = 48}) {
     final localStateEmblem = _getLocalStateEmblem(scheme);
     
     if (localStateEmblem != null) {
@@ -1320,8 +1349,8 @@ class _HeroSection extends StatelessWidget {
     String shortForm = title;
     String fullName = '';
 
-    if (matchObj != null) {
-      final bracketText = matchObj.group(1)!.trim();
+    final bracketText = matchObj?.group(1)?.trim() ?? '';
+    if (bracketText.isNotEmpty) {
       final outsideText = title
           .replaceAll(regex, '')
           .replaceAll(RegExp(r'\s+'), ' ')
@@ -1422,9 +1451,11 @@ class _HeroSection extends StatelessWidget {
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(
-                            scheme.governmentLevel.isNotEmpty
-                                ? '${scheme.governmentLevel} Scheme'
-                                : 'Central Scheme',
+                            context.l10n.levelSchemeFormat(
+                              scheme.governmentLevel.isNotEmpty
+                                  ? scheme.governmentLevel
+                                  : 'Central',
+                            ),
                             style: GoogleFonts.inter(
                               color: const Color(0xFF2563EB),
                               fontSize: 8.5,
@@ -1537,15 +1568,15 @@ class _HeroSection extends StatelessWidget {
                                 style: GoogleFonts.inter(fontSize: 10),
                                 children: [
                                   TextSpan(
-                                    text: "96% Match ",
+                                    text: context.l10n.matchPercentageFormat(96),
                                     style: const TextStyle(
                                       fontWeight: FontWeight.bold,
                                       color: Color(0xFF2563EB),
                                     ),
                                   ),
-                                  const TextSpan(
-                                    text: "• Highly relevant",
-                                    style: TextStyle(color: Color(0xFF64748B)),
+                                  TextSpan(
+                                    text: " • ${context.l10n.highlyRelevant}",
+                                    style: const TextStyle(color: Color(0xFF64748B)),
                                   ),
                                 ],
                               ),
@@ -1747,7 +1778,7 @@ class _BottomActionBar extends StatelessWidget {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        "Save Scheme",
+                        isBookmarked ? context.l10n.savedSchemeButton : context.l10n.saveSchemeButton,
                         style: GoogleFonts.inter(
                           color: const Color(0xFF2563EB),
                           fontWeight: FontWeight.bold,
@@ -1782,7 +1813,7 @@ class _BottomActionBar extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        "Apply Now",
+                        context.l10n.applyNowButton,
                         style: GoogleFonts.inter(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
