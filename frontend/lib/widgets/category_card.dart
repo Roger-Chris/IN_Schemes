@@ -43,14 +43,11 @@ class CategoryCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: FitOneLine(
-                  child: Text(
-                    icon,
-                    style: const TextStyle(fontSize: 26),
-                  ),
+                  child: Text(icon, style: const TextStyle(fontSize: 26)),
                 ),
               ),
               const SizedBox(width: 16),
-              
+
               // Text Content (Title & Description)
               Expanded(
                 child: Column(
@@ -78,7 +75,7 @@ class CategoryCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              
+
               // Navigation Arrow
               const Icon(
                 Icons.arrow_forward_ios,

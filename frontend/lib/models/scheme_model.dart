@@ -76,7 +76,8 @@ class SchemeDocument {
       validityMonths: validityMonths ?? this.validityMonths,
       downloadTemplateUrl: downloadTemplateUrl ?? this.downloadTemplateUrl,
       sampleCopyUrl: sampleCopyUrl ?? this.sampleCopyUrl,
-      verificationPortalUrl: verificationPortalUrl ?? this.verificationPortalUrl,
+      verificationPortalUrl:
+          verificationPortalUrl ?? this.verificationPortalUrl,
     );
   }
 }
@@ -427,27 +428,34 @@ class Scheme {
       isActive: isActive,
       glanceChips: glanceChips ?? this.glanceChips,
       benefitTypesList: benefitTypesList ?? this.benefitTypesList,
-      capitalSubsidyDetails: capitalSubsidyDetails ?? this.capitalSubsidyDetails,
-      interestSubventionDetails: interestSubventionDetails ?? this.interestSubventionDetails,
+      capitalSubsidyDetails:
+          capitalSubsidyDetails ?? this.capitalSubsidyDetails,
+      interestSubventionDetails:
+          interestSubventionDetails ?? this.interestSubventionDetails,
       marginMoneyDetails: marginMoneyDetails ?? this.marginMoneyDetails,
       loanGuaranteeDetails: loanGuaranteeDetails ?? this.loanGuaranteeDetails,
       supportTypes: supportTypes ?? this.supportTypes,
-      rawBenefitsDisplayText: rawBenefitsDisplayText ?? this.rawBenefitsDisplayText,
+      rawBenefitsDisplayText:
+          rawBenefitsDisplayText ?? this.rawBenefitsDisplayText,
       eligibilityAgeRange: eligibilityAgeRange ?? this.eligibilityAgeRange,
       turnoverLimits: turnoverLimits ?? this.turnoverLimits,
       investmentLimits: investmentLimits ?? this.investmentLimits,
       allowedBusinessTypes: allowedBusinessTypes ?? this.allowedBusinessTypes,
-      educationRequirements: educationRequirements ?? this.educationRequirements,
+      educationRequirements:
+          educationRequirements ?? this.educationRequirements,
       mandatoryConditions: mandatoryConditions ?? this.mandatoryConditions,
       optionalConditions: optionalConditions ?? this.optionalConditions,
       specialCategories: specialCategories ?? this.specialCategories,
       applicationFee: applicationFee ?? this.applicationFee,
-      processingDurationDays: processingDurationDays ?? this.processingDurationDays,
+      processingDurationDays:
+          processingDurationDays ?? this.processingDurationDays,
       intakeTimelineText: intakeTimelineText ?? this.intakeTimelineText,
-      financeProductsSummary: financeProductsSummary ?? this.financeProductsSummary,
+      financeProductsSummary:
+          financeProductsSummary ?? this.financeProductsSummary,
       taxExemptionsSummary: taxExemptionsSummary ?? this.taxExemptionsSummary,
       applicableTaxesList: applicableTaxesList ?? this.applicableTaxesList,
-      knowledgeGuidanceList: knowledgeGuidanceList ?? this.knowledgeGuidanceList,
+      knowledgeGuidanceList:
+          knowledgeGuidanceList ?? this.knowledgeGuidanceList,
       helplineContactsMap: helplineContactsMap ?? this.helplineContactsMap,
       eligibilityCriteria: eligibilityCriteria ?? this.eligibilityCriteria,
       requiredDocuments: requiredDocuments ?? this.requiredDocuments,
@@ -458,4 +466,3 @@ class Scheme {
     );
   }
 }
-

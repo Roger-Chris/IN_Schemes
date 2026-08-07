@@ -49,7 +49,12 @@ void main() {
           data: const MediaQueryData(size: Size(320, 800)),
           child: Builder(
             builder: (context) {
-              result = adaptiveSize(context, base: 42, min: 30, referenceWidth: 375);
+              result = adaptiveSize(
+                context,
+                base: 42,
+                min: 30,
+                referenceWidth: 375,
+              );
               return const SizedBox.shrink();
             },
           ),
@@ -59,14 +64,22 @@ void main() {
       expect(result, closeTo(35.84, 0.01));
     });
 
-    testWidgets('clamps to max on a wider-than-reference screen', (tester) async {
+    testWidgets('clamps to max on a wider-than-reference screen', (
+      tester,
+    ) async {
       double? result;
       await tester.pumpWidget(
         MediaQuery(
           data: const MediaQueryData(size: Size(800, 1000)),
           child: Builder(
             builder: (context) {
-              result = adaptiveSize(context, base: 42, min: 30, max: 42, referenceWidth: 375);
+              result = adaptiveSize(
+                context,
+                base: 42,
+                min: 30,
+                max: 42,
+                referenceWidth: 375,
+              );
               return const SizedBox.shrink();
             },
           ),
@@ -75,14 +88,21 @@ void main() {
       expect(result, 42.0);
     });
 
-    testWidgets('never drops below min on a very narrow screen', (tester) async {
+    testWidgets('never drops below min on a very narrow screen', (
+      tester,
+    ) async {
       double? result;
       await tester.pumpWidget(
         MediaQuery(
           data: const MediaQueryData(size: Size(200, 800)),
           child: Builder(
             builder: (context) {
-              result = adaptiveSize(context, base: 42, min: 30, referenceWidth: 375);
+              result = adaptiveSize(
+                context,
+                base: 42,
+                min: 30,
+                referenceWidth: 375,
+              );
               return const SizedBox.shrink();
             },
           ),
@@ -93,53 +113,57 @@ void main() {
   });
 
   group('FitOneLine', () {
-    testWidgets('shrinks long text to fit a narrow bounded width without overflowing',
-        (tester) async {
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: SizedBox(
-              width: 60,
-              child: FitOneLine(
-                child: Text(
-                  'This is a much longer label than the available space',
-                  style: const TextStyle(fontSize: 20),
+    testWidgets(
+      'shrinks long text to fit a narrow bounded width without overflowing',
+      (tester) async {
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: SizedBox(
+                width: 60,
+                child: FitOneLine(
+                  child: Text(
+                    'This is a much longer label than the available space',
+                    style: const TextStyle(fontSize: 20),
+                  ),
                 ),
               ),
             ),
           ),
-        ),
-      );
-      expect(tester.takeException(), isNull);
-      expect(find.byType(FittedBox), findsOneWidget);
-    });
+        );
+        expect(tester.takeException(), isNull);
+        expect(find.byType(FittedBox), findsOneWidget);
+      },
+    );
   });
 
   group('FlexText', () {
-    testWidgets('lets a long label wrap inside a narrow Row instead of overflowing',
-        (tester) async {
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: SizedBox(
-              width: 100,
-              child: Row(
-                children: [
-                  FlexText(
-                    child: Text(
-                      'This is a much longer label than the available row width',
-                      softWrap: true,
+    testWidgets(
+      'lets a long label wrap inside a narrow Row instead of overflowing',
+      (tester) async {
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: SizedBox(
+                width: 100,
+                child: Row(
+                  children: [
+                    FlexText(
+                      child: Text(
+                        'This is a much longer label than the available row width',
+                        softWrap: true,
+                      ),
                     ),
-                  ),
-                  const Icon(Icons.edit, size: 12),
-                ],
+                    const Icon(Icons.edit, size: 12),
+                  ],
+                ),
               ),
             ),
           ),
-        ),
-      );
-      expect(tester.takeException(), isNull);
-      expect(find.byType(Flexible), findsOneWidget);
-    });
+        );
+        expect(tester.takeException(), isNull);
+        expect(find.byType(Flexible), findsOneWidget);
+      },
+    );
   });
 }

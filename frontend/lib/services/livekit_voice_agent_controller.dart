@@ -112,7 +112,8 @@ bool shouldReportCloudListening({
   required bool agentCanListen,
   required bool isMuted,
   required bool isSpeaking,
-}) => agentCanListen && !isMuted && !isSpeaking;
+  bool isThinking = false,
+}) => agentCanListen && !isMuted && !isSpeaking && !isThinking;
 
 @visibleForTesting
 Map<String, dynamic> buildCloudProfileMetadata(
@@ -349,6 +350,7 @@ class LiveKitVoiceAgentController extends ChangeNotifier
       _state.copyWith(
         phase: VoiceAgentConnectionPhase.connecting,
         usingCloud: true,
+        isListening: cloudVoicePreConnectAudio && !_state.isMuted,
         clearMessage: true,
       ),
     );
@@ -435,10 +437,12 @@ class LiveKitVoiceAgentController extends ChangeNotifier
 
     final agentState = cloudSession.agent.agentState;
     final speaking = agentState == livekit.AgentState.speaking;
+    final thinking = agentState == livekit.AgentState.thinking;
     final listening = shouldReportCloudListening(
       agentCanListen: cloudSession.agent.canListen,
       isMuted: _state.isMuted,
       isSpeaking: speaking,
+      isThinking: thinking,
     );
     final agentLevel = cloudSession.room.agentParticipants.isEmpty
         ? 0.0
@@ -470,6 +474,10 @@ class LiveKitVoiceAgentController extends ChangeNotifier
             VoiceAgentEvent(
               VoiceAgentEventType.inputTranscriptDelta,
               text: current,
+              data: {
+                'messageId': message.id,
+                'timestampMs': message.timestamp.millisecondsSinceEpoch,
+              },
             ),
           );
         case livekit.AgentTranscript():
@@ -478,6 +486,10 @@ class LiveKitVoiceAgentController extends ChangeNotifier
             VoiceAgentEvent(
               VoiceAgentEventType.outputTranscriptDelta,
               text: current,
+              data: {
+                'messageId': message.id,
+                'timestampMs': message.timestamp.millisecondsSinceEpoch,
+              },
             ),
           );
       }
@@ -532,14 +544,23 @@ class LiveKitVoiceAgentController extends ChangeNotifier
 
   @override
   Future<void> setMuted(bool muted) async {
+    final cloudSession = _liveKitSession;
     final localParticipant = _liveKitSession?.room.localParticipant;
     if (localParticipant != null) {
       await localParticipant.setMicrophoneEnabled(!muted);
     }
+    final agentState = cloudSession?.agent.agentState;
+    final canListen = cloudSession?.agent.canListen == true;
     _setState(
       _state.copyWith(
         isMuted: muted,
-        isListening: muted ? false : _state.isListening,
+        isListening:
+            !muted &&
+            (canListen ||
+                (_state.phase == VoiceAgentConnectionPhase.connecting &&
+                    cloudVoicePreConnectAudio)) &&
+            agentState != livekit.AgentState.thinking &&
+            agentState != livekit.AgentState.speaking,
       ),
     );
   }

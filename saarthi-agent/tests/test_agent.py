@@ -128,7 +128,7 @@ def test_voice_turn_defaults_reject_noise_without_clipping_natural_pauses() -> N
     assert config.interrupt_min_speech_frames >= 6
     assert config.negative_frames_count > 2
     assert config.negative_frames_window >= config.negative_frames_count
-    assert 0.25 <= config.endpoint_min_delay <= 0.75
+    assert 0.15 <= config.endpoint_min_delay <= 0.75
     assert config.endpoint_min_delay < config.endpoint_max_delay <= 2.0
     assert config.interruption_min_words >= 1
     assert config.noise_enhancement_level >= 0.8
@@ -142,9 +142,23 @@ def test_voice_turn_defaults_commit_short_answers_promptly() -> None:
     assert config.negative_frames_count * 32 <= 300
     assert config.negative_frames_count < config.negative_frames_window
     assert config.negative_speech_threshold >= 0.5
-    assert config.endpoint_min_delay <= 0.25
-    assert config.endpoint_max_delay <= 1.0
+    assert config.endpoint_min_delay <= 0.2
+    assert config.endpoint_max_delay <= 0.7
     assert config.start_speech_volume_threshold < 0
+
+
+def test_voice_focus_strength_is_deployment_tunable(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Production can tune server ANC without allowing invalid model values."""
+    monkeypatch.setenv("SAARTHI_NOISE_ENHANCEMENT_LEVEL", "0.72")
+    assert VoiceTurnConfig.from_env().noise_enhancement_level == pytest.approx(0.72)
+
+    monkeypatch.setenv("SAARTHI_NOISE_ENHANCEMENT_LEVEL", "4")
+    assert VoiceTurnConfig.from_env().noise_enhancement_level == 1.0
+
+    monkeypatch.setenv("SAARTHI_NOISE_ENHANCEMENT_LEVEL", "invalid")
+    assert VoiceTurnConfig.from_env().noise_enhancement_level == pytest.approx(0.8)
 
 
 def test_saved_profile_context_prevents_redundant_eligibility_questions() -> None:

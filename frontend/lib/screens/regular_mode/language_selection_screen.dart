@@ -29,7 +29,8 @@ class LanguageSelectionScreen extends StatefulWidget {
   const LanguageSelectionScreen({super.key});
 
   @override
-  State<LanguageSelectionScreen> createState() => _LanguageSelectionScreenState();
+  State<LanguageSelectionScreen> createState() =>
+      _LanguageSelectionScreenState();
 }
 
 class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
@@ -101,178 +102,196 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
                       ),
                       child: IntrinsicHeight(
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24.0,
+                            vertical: 16.0,
+                          ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
                               const Spacer(flex: 2),
 
-                    // 3. Isolated Floating Logo
-                    const FloatingLogo(),
-                    
-                    const Spacer(flex: 2),
-                    
-                    // 4. Title & Subtitle
-                    Column(
-                      children: [
-                        Text(
-                          l('choose_your_language'),
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.poppins(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: const Color(0xFF1E293B),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          l('language_subtitle'),
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.inter(
-                            fontSize: 13,
-                            color: const Color(0xFF64748B),
-                            height: 1.4,
-                          ),
-                        ),
-                      ],
-                    ),
+                              // 3. Isolated Floating Logo
+                              const FloatingLogo(),
 
-                    const Spacer(flex: 2),
+                              const Spacer(flex: 2),
 
-                    // 5. Restricted Language List (English, Tamil)
-                    Column(
-                      children: _languages.map((option) {
-                        final isSelected = _selectedLang == option.code;
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 12.0),
-                          child: _buildLanguageItem(option, isSelected),
-                        );
-                      }).toList(),
-                    ),
-
-                    const Spacer(flex: 1),
-
-                    // 6. Info Box Card
-                    Container(
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFEFF6FF), // Blue 50
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: const Color(0xFFBFDBFE)), // Blue 200
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: const BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Color(0xFFDBEAFE),
-                            ),
-                            child: const Icon(
-                              Icons.language,
-                              color: Color(0xFF2563EB), // Blue 600
-                              size: 20,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  l('your_language_experience'),
-                                  style: GoogleFonts.inter(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.bold,
-                                    color: const Color(0xFF1E3A8A),
+                              // 4. Title & Subtitle
+                              Column(
+                                children: [
+                                  Text(
+                                    l('choose_your_language'),
+                                    textAlign: TextAlign.center,
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold,
+                                      color: const Color(0xFF1E293B),
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  l('change_anytime'),
-                                  style: GoogleFonts.inter(
-                                    fontSize: 11,
-                                    color: const Color(0xFF1D4ED8),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    l('language_subtitle'),
+                                    textAlign: TextAlign.center,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 13,
+                                      color: const Color(0xFF64748B),
+                                      height: 1.4,
+                                    ),
                                   ),
+                                ],
+                              ),
+
+                              const Spacer(flex: 2),
+
+                              // 5. Restricted Language List (English, Tamil)
+                              Column(
+                                children: _languages.map((option) {
+                                  final isSelected =
+                                      _selectedLang == option.code;
+                                  return Padding(
+                                    padding: const EdgeInsets.only(
+                                      bottom: 12.0,
+                                    ),
+                                    child: _buildLanguageItem(
+                                      option,
+                                      isSelected,
+                                    ),
+                                  );
+                                }).toList(),
+                              ),
+
+                              const Spacer(flex: 1),
+
+                              // 6. Info Box Card
+                              Container(
+                                padding: const EdgeInsets.all(14),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFEFF6FF), // Blue 50
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
+                                    color: const Color(0xFFBFDBFE),
+                                  ), // Blue 200
                                 ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: const BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: Color(0xFFDBEAFE),
+                                      ),
+                                      child: const Icon(
+                                        Icons.language,
+                                        color: Color(0xFF2563EB), // Blue 600
+                                        size: 20,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            l('your_language_experience'),
+                                            style: GoogleFonts.inter(
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.bold,
+                                              color: const Color(0xFF1E3A8A),
+                                            ),
+                                          ),
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            l('change_anytime'),
+                                            style: GoogleFonts.inter(
+                                              fontSize: 11,
+                                              color: const Color(0xFF1D4ED8),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
 
-                    const Spacer(flex: 2),
+                              const Spacer(flex: 2),
 
-                    // 7. Continue Button
-                    Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF2563EB).withValues(alpha: 0.2),
-                            blurRadius: 12,
-                            offset: const Offset(0, 6),
-                          ),
-                        ],
-                      ),
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF2563EB), // Royal Blue
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          elevation: 0,
-                        ),
-                        onPressed: () {
-                          provider.changeLanguage(_selectedLang);
-                          Navigator.of(context).pushReplacement(
-                            MaterialPageRoute(
-                              builder: (_) => const LoginScreen(),
-                            ),
-                          );
-                        },
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Flexible(
-                              child: FitOneLine(
-                                child: Text(
-                                  l('continue'),
-                                  style: GoogleFonts.inter(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
+                              // 7. Continue Button
+                              Container(
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(16),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: const Color(
+                                        0xFF2563EB,
+                                      ).withValues(alpha: 0.2),
+                                      blurRadius: 12,
+                                      offset: const Offset(0, 6),
+                                    ),
+                                  ],
+                                ),
+                                child: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(
+                                      0xFF2563EB,
+                                    ), // Royal Blue
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 16,
+                                    ),
+                                    elevation: 0,
+                                  ),
+                                  onPressed: () {
+                                    provider.changeLanguage(_selectedLang);
+                                    Navigator.of(context).pushReplacement(
+                                      MaterialPageRoute(
+                                        builder: (_) => const LoginScreen(),
+                                      ),
+                                    );
+                                  },
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Flexible(
+                                        child: FitOneLine(
+                                          child: Text(
+                                            l('continue'),
+                                            style: GoogleFonts.inter(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      const Icon(
+                                        Icons.arrow_forward,
+                                        color: Colors.white,
+                                        size: 20,
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),
-                            ),
-                            const SizedBox(width: 8),
-                            const Icon(
-                              Icons.arrow_forward,
-                              color: Colors.white,
-                              size: 20,
-                            ),
-                          ],
+
+                              const Spacer(flex: 1),
+                            ],
+                          ),
                         ),
                       ),
                     ),
-
-                    const Spacer(flex: 1),
-                  ],
-                ),
+                  );
+                },
               ),
             ),
           ),
-        );
-      },
-    ),
-  ),
-),
-],
-),
-);
+        ],
+      ),
+    );
   }
 
   Widget _buildLanguageItem(LanguageOption option, bool isSelected) {
@@ -286,7 +305,9 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isSelected ? const Color(0xFF3B82F6) : const Color(0xFFE2E8F0), // Blue 500 or Slate 200
+            color: isSelected
+                ? const Color(0xFF3B82F6)
+                : const Color(0xFFE2E8F0), // Blue 500 or Slate 200
             width: isSelected ? 2 : 1.2,
           ),
           boxShadow: isSelected
@@ -326,7 +347,7 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
               ),
             ),
             const SizedBox(width: 14),
-            
+
             // Language names
             Expanded(
               child: Column(
@@ -377,5 +398,3 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
     );
   }
 }
-
-

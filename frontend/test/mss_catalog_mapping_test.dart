@@ -32,21 +32,40 @@ void main() {
         if (scheme.applicationProcess.isNotEmpty) {
           processMappedCount++;
         }
-        if (scheme.documents.isNotEmpty || scheme.requiredDocuments.isNotEmpty) {
+        if (scheme.documents.isNotEmpty ||
+            scheme.requiredDocuments.isNotEmpty) {
           documentsMappedCount++;
         }
       }
 
-      print('========================================================================================');
+      print(
+        '========================================================================================',
+      );
       print('TARGETED RUNTIME AUDIT TABLE FOR 4 CORE SECTIONS (217 SCHEMES)');
-      print('========================================================================================');
-      print('Section               | Catalog Contains Data | Adapter Maps Data | Widget Displays Data | Status');
-      print('----------------------|-----------------------|-------------------|----------------------|-------');
-      print('Eligibility Criteria  | 217 / 217             | $eligibilityMappedCount / 217           | $eligibilityMappedCount / 217            | PASSED');
-      print('Required Services     | 217 / 217             | $servicesMappedCount / 217           | $servicesMappedCount / 217            | PASSED');
-      print('Application Process   | 217 / 217             | $processMappedCount / 217           | $processMappedCount / 217            | PASSED');
-      print('Required Documents    | 217 / 217             | $documentsMappedCount / 217           | $documentsMappedCount / 217            | PASSED');
-      print('========================================================================================');
+      print(
+        '========================================================================================',
+      );
+      print(
+        'Section               | Catalog Contains Data | Adapter Maps Data | Widget Displays Data | Status',
+      );
+      print(
+        '----------------------|-----------------------|-------------------|----------------------|-------',
+      );
+      print(
+        'Eligibility Criteria  | 217 / 217             | $eligibilityMappedCount / 217           | $eligibilityMappedCount / 217            | PASSED',
+      );
+      print(
+        'Required Services     | 217 / 217             | $servicesMappedCount / 217           | $servicesMappedCount / 217            | PASSED',
+      );
+      print(
+        'Application Process   | 217 / 217             | $processMappedCount / 217           | $processMappedCount / 217            | PASSED',
+      );
+      print(
+        'Required Documents    | 217 / 217             | $documentsMappedCount / 217           | $documentsMappedCount / 217            | PASSED',
+      );
+      print(
+        '========================================================================================',
+      );
 
       expect(eligibilityMappedCount, equals(totalSchemes));
       expect(servicesMappedCount, equals(totalSchemes));
@@ -61,8 +80,12 @@ void main() {
 
       for (final sEntity in bundle.schemes) {
         final content = sEntity.content;
-        final appProc = (content['applicationProcess'] as Map<String, dynamic>?) ?? {};
-        final rawSteps = appProc['steps'] ?? content['process']?['steps'] ?? content['workflow'];
+        final appProc =
+            (content['applicationProcess'] as Map<String, dynamic>?) ?? {};
+        final rawSteps =
+            appProc['steps'] ??
+            content['process']?['steps'] ??
+            content['workflow'];
 
         if (rawSteps is List && rawSteps.isNotEmpty) {
           explicitWorkflows++;
@@ -71,13 +94,19 @@ void main() {
         }
       }
 
-      print('========================================================================================');
+      print(
+        '========================================================================================',
+      );
       print('APPLICATION PROCESS WORKFLOW BREAKDOWN (217 SCHEMES)');
-      print('========================================================================================');
+      print(
+        '========================================================================================',
+      );
       print('Total Schemes in Catalog:              $totalSchemes');
       print('Explicit Workflows Stored in Catalog:  $explicitWorkflows');
       print('Generated Runtime Fallbacks:          $generatedWorkflows');
-      print('========================================================================================');
+      print(
+        '========================================================================================',
+      );
 
       expect(explicitWorkflows + generatedWorkflows, equals(totalSchemes));
     });

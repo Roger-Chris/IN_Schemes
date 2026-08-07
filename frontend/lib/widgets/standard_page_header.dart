@@ -5,7 +5,8 @@ import 'package:google_fonts/google_fonts.dart';
 /// ──────────────────
 /// Unified header widget ensuring consistent top padding, SafeArea compliance,
 /// vertically centered back button, aligned titles & subtitles, and action icons.
-class StandardPageHeader extends StatelessWidget implements PreferredSizeWidget {
+class StandardPageHeader extends StatelessWidget
+    implements PreferredSizeWidget {
   final String title;
   final String? subtitle;
   final bool showBackButton;
@@ -26,7 +27,8 @@ class StandardPageHeader extends StatelessWidget implements PreferredSizeWidget 
   });
 
   @override
-  Size get preferredSize => Size.fromHeight(subtitle != null && subtitle!.isNotEmpty ? 64.0 : 56.0);
+  Size get preferredSize =>
+      Size.fromHeight(subtitle != null && subtitle!.isNotEmpty ? 64.0 : 56.0);
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +43,9 @@ class StandardPageHeader extends StatelessWidget implements PreferredSizeWidget 
             color: backgroundColor,
             border: Border(
               bottom: BorderSide(
-                color: elevation > 0 ? const Color(0xFFE2E8F0) : Colors.transparent,
+                color: elevation > 0
+                    ? const Color(0xFFE2E8F0)
+                    : Colors.transparent,
                 width: 1.0,
               ),
             ),
@@ -51,9 +55,14 @@ class StandardPageHeader extends StatelessWidget implements PreferredSizeWidget 
             children: [
               if (showBackButton)
                 IconButton(
-                  icon: const Icon(Icons.arrow_back, color: Color(0xFF0F172A), size: 22),
+                  icon: const Icon(
+                    Icons.arrow_back,
+                    color: Color(0xFF0F172A),
+                    size: 22,
+                  ),
                   splashRadius: 22,
-                  onPressed: onBackPressed ?? () => Navigator.of(context).maybePop(),
+                  onPressed:
+                      onBackPressed ?? () => Navigator.of(context).maybePop(),
                   tooltip: 'Back',
                 )
               else
@@ -92,10 +101,7 @@ class StandardPageHeader extends StatelessWidget implements PreferredSizeWidget 
                 ),
               ),
               if (actions != null && actions!.isNotEmpty)
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: actions!,
-                )
+                Row(mainAxisSize: MainAxisSize.min, children: actions!)
               else
                 const SizedBox(width: 8),
             ],

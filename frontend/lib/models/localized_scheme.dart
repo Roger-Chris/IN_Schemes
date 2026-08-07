@@ -216,17 +216,23 @@ class LocalizedScheme {
     final name = nameTa.isNotEmpty ? nameTa : translator.translate(scheme.name);
 
     final overviewTa = scheme.overviewTa.trim();
-    final overview = overviewTa.isNotEmpty ? overviewTa : translator.translate(scheme.overview);
+    final overview = overviewTa.isNotEmpty
+        ? overviewTa
+        : translator.translate(scheme.overview);
 
     final benefitsTa = scheme.benefitsTa.trim();
-    final benefits = benefitsTa.isNotEmpty ? benefitsTa : translator.translate(scheme.benefits);
+    final benefits = benefitsTa.isNotEmpty
+        ? benefitsTa
+        : translator.translate(scheme.benefits);
 
     return LocalizedScheme._(
       rawScheme: scheme,
       languageCode: 'ta',
       name: name,
       shortName: translator.translateTag(scheme.shortName),
-      fullSchemeName: nameTa.isNotEmpty ? nameTa : translator.translate(scheme.fullSchemeName),
+      fullSchemeName: nameTa.isNotEmpty
+          ? nameTa
+          : translator.translate(scheme.fullSchemeName),
       ministry: translator.translate(scheme.ministry),
       department: translator.translate(scheme.department),
       implementingAgency: translator.translate(scheme.implementingAgency),
@@ -246,62 +252,128 @@ class LocalizedScheme {
       verificationNotes: translator.translate(scheme.verificationNotes),
       lastUpdated: scheme.lastUpdated,
       glanceChips: scheme.glanceChips.map(translator.translateTag).toList(),
-      benefitTypesList: scheme.benefitTypesList.map(translator.translateTag).toList(),
+      benefitTypesList: scheme.benefitTypesList
+          .map(translator.translateTag)
+          .toList(),
       capitalSubsidyDetails: translator.translate(scheme.capitalSubsidyDetails),
-      interestSubventionDetails: translator.translate(scheme.interestSubventionDetails),
+      interestSubventionDetails: translator.translate(
+        scheme.interestSubventionDetails,
+      ),
       marginMoneyDetails: translator.translate(scheme.marginMoneyDetails),
       loanGuaranteeDetails: translator.translate(scheme.loanGuaranteeDetails),
       supportTypes: scheme.supportTypes.map(translator.translateTag).toList(),
-      rawBenefitsDisplayText: translator.translate(scheme.rawBenefitsDisplayText),
+      rawBenefitsDisplayText: translator.translate(
+        scheme.rawBenefitsDisplayText,
+      ),
       eligibilityAgeRange: translator.translate(scheme.eligibilityAgeRange),
       turnoverLimits: translator.translate(scheme.turnoverLimits),
       investmentLimits: translator.translate(scheme.investmentLimits),
-      allowedBusinessTypes: scheme.allowedBusinessTypes.map(translator.translateTag).toList(),
+      allowedBusinessTypes: scheme.allowedBusinessTypes
+          .map(translator.translateTag)
+          .toList(),
       educationRequirements: translator.translate(scheme.educationRequirements),
-      mandatoryConditions: scheme.mandatoryConditions.map(translator.translate).toList(),
-      optionalConditions: scheme.optionalConditions.map(translator.translate).toList(),
-      specialCategories: scheme.specialCategories.map(translator.translateTag).toList(),
+      mandatoryConditions: scheme.mandatoryConditions
+          .map(translator.translate)
+          .toList(),
+      optionalConditions: scheme.optionalConditions
+          .map(translator.translate)
+          .toList(),
+      specialCategories: scheme.specialCategories
+          .map(translator.translateTag)
+          .toList(),
       applicationFee: translator.translate(scheme.applicationFee),
-      processingDurationDays: translator.translate(scheme.processingDurationDays),
+      processingDurationDays: translator.translate(
+        scheme.processingDurationDays,
+      ),
       intakeTimelineText: translator.translate(scheme.intakeTimelineText),
-      financeProductsSummary: scheme.financeProductsSummary.map(translator.translate).toList(),
-      taxExemptionsSummary: scheme.taxExemptionsSummary.map(translator.translate).toList(),
-      applicableTaxesList: scheme.applicableTaxesList.map(translator.translateTag).toList(),
-      knowledgeGuidanceList: scheme.knowledgeGuidanceList.map(translator.translate).toList(),
+      financeProductsSummary: scheme.financeProductsSummary
+          .map(translator.translate)
+          .toList(),
+      taxExemptionsSummary: scheme.taxExemptionsSummary
+          .map(translator.translate)
+          .toList(),
+      applicableTaxesList: scheme.applicableTaxesList
+          .map(translator.translateTag)
+          .toList(),
+      knowledgeGuidanceList: scheme.knowledgeGuidanceList
+          .map(translator.translate)
+          .toList(),
       helplineContactsMap: scheme.helplineContactsMap,
-      eligibilityCriteria: scheme.eligibilityCriteria.map(translator.translate).toList(),
-      requiredDocuments: scheme.requiredDocuments.map(translator.translate).toList(),
-      applicationProcess: scheme.applicationProcess.map(translator.translate).toList(),
-      documents: scheme.documents.map((d) => d.copyWith(
-        name: d.nameTa.isNotEmpty ? d.nameTa : translator.translate(d.name),
-        description: d.descriptionTa.isNotEmpty ? d.descriptionTa : translator.translate(d.description),
-        issuingAuthority: d.issuingAuthorityTa.isNotEmpty ? d.issuingAuthorityTa : translator.translate(d.issuingAuthority),
-        estimatedCost: d.estimatedCostTa.isNotEmpty ? d.estimatedCostTa : translator.translate(d.estimatedCost),
-        mandatory: d.mandatoryTa.isNotEmpty ? d.mandatoryTa : translator.translateTag(d.mandatory),
-        remarks: d.remarksTa.isNotEmpty ? d.remarksTa : translator.translate(d.remarks),
-      )).toList(),
-      requiredServices: scheme.requiredServices.map((s) => SchemeService(
-        name: s.nameTa.isNotEmpty ? s.nameTa : translator.translate(s.name),
-        nameTa: s.nameTa,
-        category: s.categoryTa.isNotEmpty ? s.categoryTa : translator.translateTag(s.category),
-        categoryTa: s.categoryTa,
-        mandatory: s.mandatory,
-        description: s.descriptionTa.isNotEmpty ? s.descriptionTa : translator.translate(s.description),
-        descriptionTa: s.descriptionTa,
-        purpose: s.purposeTa.isNotEmpty ? s.purposeTa : translator.translate(s.purpose),
-        purposeTa: s.purposeTa,
-        department: s.departmentTa.isNotEmpty ? s.departmentTa : translator.translate(s.department),
-        departmentTa: s.departmentTa,
-        website: s.website,
-        contact: s.contact,
-        status: s.status,
-        notes: s.notesTa.isNotEmpty ? s.notesTa : translator.translate(s.notes),
-        notesTa: s.notesTa,
-      )).toList(),
-      faqs: scheme.faqs.map((faq) => {
-        'question': translator.translate(faq['question'] ?? ''),
-        'answer': translator.translate(faq['answer'] ?? ''),
-      }).toList(),
+      eligibilityCriteria: scheme.eligibilityCriteria
+          .map(translator.translate)
+          .toList(),
+      requiredDocuments: scheme.requiredDocuments
+          .map(translator.translate)
+          .toList(),
+      applicationProcess: scheme.applicationProcess
+          .map(translator.translate)
+          .toList(),
+      documents: scheme.documents
+          .map(
+            (d) => d.copyWith(
+              name: d.nameTa.isNotEmpty
+                  ? d.nameTa
+                  : translator.translate(d.name),
+              description: d.descriptionTa.isNotEmpty
+                  ? d.descriptionTa
+                  : translator.translate(d.description),
+              issuingAuthority: d.issuingAuthorityTa.isNotEmpty
+                  ? d.issuingAuthorityTa
+                  : translator.translate(d.issuingAuthority),
+              estimatedCost: d.estimatedCostTa.isNotEmpty
+                  ? d.estimatedCostTa
+                  : translator.translate(d.estimatedCost),
+              mandatory: d.mandatoryTa.isNotEmpty
+                  ? d.mandatoryTa
+                  : translator.translateTag(d.mandatory),
+              remarks: d.remarksTa.isNotEmpty
+                  ? d.remarksTa
+                  : translator.translate(d.remarks),
+            ),
+          )
+          .toList(),
+      requiredServices: scheme.requiredServices
+          .map(
+            (s) => SchemeService(
+              name: s.nameTa.isNotEmpty
+                  ? s.nameTa
+                  : translator.translate(s.name),
+              nameTa: s.nameTa,
+              category: s.categoryTa.isNotEmpty
+                  ? s.categoryTa
+                  : translator.translateTag(s.category),
+              categoryTa: s.categoryTa,
+              mandatory: s.mandatory,
+              description: s.descriptionTa.isNotEmpty
+                  ? s.descriptionTa
+                  : translator.translate(s.description),
+              descriptionTa: s.descriptionTa,
+              purpose: s.purposeTa.isNotEmpty
+                  ? s.purposeTa
+                  : translator.translate(s.purpose),
+              purposeTa: s.purposeTa,
+              department: s.departmentTa.isNotEmpty
+                  ? s.departmentTa
+                  : translator.translate(s.department),
+              departmentTa: s.departmentTa,
+              website: s.website,
+              contact: s.contact,
+              status: s.status,
+              notes: s.notesTa.isNotEmpty
+                  ? s.notesTa
+                  : translator.translate(s.notes),
+              notesTa: s.notesTa,
+            ),
+          )
+          .toList(),
+      faqs: scheme.faqs
+          .map(
+            (faq) => {
+              'question': translator.translate(faq['question'] ?? ''),
+              'answer': translator.translate(faq['answer'] ?? ''),
+            },
+          )
+          .toList(),
     );
   }
 }

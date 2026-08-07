@@ -16,7 +16,7 @@ import '../notifications_screen.dart';
 import '../login_screen.dart';
 import '../../widgets/smart_assessment_bottom_sheet.dart';
 import 'discover_results_screen.dart';
-import 'profile_setup_screen.dart';
+import 'basic_profile_screen.dart';
 import 'msme_module_details_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -30,7 +30,9 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final PageController _carouselPageController = PageController(viewportFraction: 0.88);
+  final PageController _carouselPageController = PageController(
+    viewportFraction: 0.88,
+  );
   final ScrollController _recommendedScrollController = ScrollController();
   int _activeCarouselIndex = 0;
   Timer? _carouselTimer;
@@ -42,7 +44,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   double _scaledLineHeight([double defaultHeight = 1.28]) {
     final provider = Provider.of<AppProvider>(context, listen: false);
-    return provider.selectedLanguage == 'ta' ? defaultHeight * 1.06 : defaultHeight;
+    return provider.selectedLanguage == 'ta'
+        ? defaultHeight * 1.06
+        : defaultHeight;
   }
 
   FontWeight _scaledFontWeight(FontWeight baseWeight) {
@@ -67,18 +71,32 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   String _getCarouselTitle(String raw) {
-    if (raw == 'Applications Closing Soon') return context.l10n.carouselTitleApplicationsClosingSoon;
+    if (raw == 'Applications Closing Soon') {
+      return context.l10n.carouselTitleApplicationsClosingSoon;
+    }
     if (raw == 'New Scheme') return context.l10n.carouselTitleNewScheme;
-    if (raw == 'Important Update') return context.l10n.carouselTitleImportantUpdate;
-    if (raw == 'For Women Entrepreneurs') return context.l10n.forWomenEntrepreneurs;
+    if (raw == 'Important Update') {
+      return context.l10n.carouselTitleImportantUpdate;
+    }
+    if (raw == 'For Women Entrepreneurs') {
+      return context.l10n.forWomenEntrepreneurs;
+    }
     return raw;
   }
 
   String _getCarouselSubtitle(String raw) {
-    if (raw == 'PMEGP · 2 days left') return context.l10n.carouselSubPmegpDaysLeft;
-    if (raw == 'TN Export Promotion Scheme') return context.l10n.carouselSubTnExport;
-    if (raw == 'UDYAM registration process updated') return context.l10n.carouselSubUdyamProcess;
-    if (raw == 'Explore special funding schemes') return context.l10n.exploreSpecialFundingSchemes;
+    if (raw == 'PMEGP · 2 days left') {
+      return context.l10n.carouselSubPmegpDaysLeft;
+    }
+    if (raw == 'TN Export Promotion Scheme') {
+      return context.l10n.carouselSubTnExport;
+    }
+    if (raw == 'UDYAM registration process updated') {
+      return context.l10n.carouselSubUdyamProcess;
+    }
+    if (raw == 'Explore special funding schemes') {
+      return context.l10n.exploreSpecialFundingSchemes;
+    }
     return raw;
   }
 
@@ -179,8 +197,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-
-
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<AppProvider>(context);
@@ -190,12 +206,13 @@ class _HomeScreenState extends State<HomeScreen> {
     final recommendedScored = provider.recommendedSchemes
         .where((entry) => entry.value.score > 0)
         .toList();
-    final recommended = (recommendedScored.isNotEmpty
-            ? recommendedScored
-            : provider.recommendedSchemes)
-        .take(5)
-        .map((entry) => entry.key)
-        .toList();
+    final recommended =
+        (recommendedScored.isNotEmpty
+                ? recommendedScored
+                : provider.recommendedSchemes)
+            .take(5)
+            .map((entry) => entry.key)
+            .toList();
 
     return Scaffold(
       backgroundColor: const Color(
@@ -521,7 +538,10 @@ class _HomeScreenState extends State<HomeScreen> {
           final text = pills[index];
           return GestureDetector(
             onTap: () {
-              final query = text.replaceAll("Search ", "").replaceAll("தேடுக", "").trim();
+              final query = text
+                  .replaceAll("Search ", "")
+                  .replaceAll("தேடுக", "")
+                  .trim();
               if (widget.onVoiceQuery != null) {
                 widget.onVoiceQuery!(query);
               } else {
@@ -567,9 +587,9 @@ class _HomeScreenState extends State<HomeScreen> {
       color: Colors.transparent,
       child: InkWell(
         onTap: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => const ProfileSetupScreen()),
-          );
+          Navigator.of(
+            context,
+          ).push(MaterialPageRoute(builder: (_) => const BasicProfileScreen()));
         },
         borderRadius: BorderRadius.circular(16),
         child: Container(
@@ -577,7 +597,9 @@ class _HomeScreenState extends State<HomeScreen> {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
             image: const DecorationImage(
-              image: AssetImage('assets/images/Background/profile process banner.png'),
+              image: AssetImage(
+                'assets/images/Background/profile process banner.png',
+              ),
               fit: BoxFit.cover,
             ),
             boxShadow: [
@@ -601,7 +623,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       value: completion / 100.0,
                       strokeWidth: 4.0,
                       strokeCap: StrokeCap.round,
-                      backgroundColor: const Color(0xFFEFF6FF).withValues(alpha: 0.8),
+                      backgroundColor: const Color(
+                        0xFFEFF6FF,
+                      ).withValues(alpha: 0.8),
                       valueColor: const AlwaysStoppedAnimation<Color>(
                         Color(0xFF2563EB),
                       ),
@@ -663,8 +687,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-
-
   // Promo Slider Carousel (Snapping PageView with dynamic Supabase integration)
   Widget _buildCarouselSection(BuildContext context) {
     final provider = Provider.of<AppProvider>(context);
@@ -704,7 +726,8 @@ class _HomeScreenState extends State<HomeScreen> {
               } else if (item['graphic_type'] == 'ship') {
                 rightGraphic = _buildShipGraphic();
               } else if (item['graphic_type'] == 'progress') {
-                final double progress = (item['progress'] as num?)?.toDouble() ?? 0.0;
+                final double progress =
+                    (item['progress'] as num?)?.toDouble() ?? 0.0;
                 rightGraphic = _buildProgressGraphic(progress);
               }
 
@@ -713,10 +736,16 @@ class _HomeScreenState extends State<HomeScreen> {
                   width: MediaQuery.of(context).size.width * 0.88,
                   child: _buildCarouselCard(
                     bgGradient: LinearGradient(colors: gradientColors),
-                    borderColor: _parseHexColor(item['badge_bg_color'] ?? '#E2E8F0'),
+                    borderColor: _parseHexColor(
+                      item['badge_bg_color'] ?? '#E2E8F0',
+                    ),
                     badgeText: _getCarouselBadgeText(item['badge_text'] ?? ''),
-                    badgeTextColor: _parseHexColor(item['badge_text_color'] ?? '#0F172A'),
-                    badgeBgColor: _parseHexColor(item['badge_bg_color'] ?? '#F1F5F9'),
+                    badgeTextColor: _parseHexColor(
+                      item['badge_text_color'] ?? '#0F172A',
+                    ),
+                    badgeBgColor: _parseHexColor(
+                      item['badge_bg_color'] ?? '#F1F5F9',
+                    ),
                     title: _getCarouselTitle(item['title'] ?? ''),
                     subtitle: _getCarouselSubtitle(item['subtitle'] ?? ''),
                     titleColor: const Color(0xFF1E293B),
@@ -732,7 +761,11 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
         const SizedBox(height: 8),
-        _buildDotIndicator(items.length, _activeCarouselIndex, const Color(0xFF2563EB)),
+        _buildDotIndicator(
+          items.length,
+          _activeCarouselIndex,
+          const Color(0xFF2563EB),
+        ),
       ],
     );
   }
@@ -749,9 +782,9 @@ class _HomeScreenState extends State<HomeScreen> {
   void _handleCarouselTap(BuildContext context, Map<String, dynamic> item) {
     final route = item['target_route'] as String?;
     if (route == 'notifications') {
-      Navigator.of(context).push(
-        MaterialPageRoute(builder: (_) => const NotificationsScreen()),
-      );
+      Navigator.of(
+        context,
+      ).push(MaterialPageRoute(builder: (_) => const NotificationsScreen()));
     } else if (route == 'discover_results') {
       Navigator.of(context).push(
         MaterialPageRoute(
@@ -808,7 +841,9 @@ class _HomeScreenState extends State<HomeScreen> {
               value: progress,
               strokeWidth: 3,
               backgroundColor: const Color(0xFFEFF6FF),
-              valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF2563EB)),
+              valueColor: const AlwaysStoppedAnimation<Color>(
+                Color(0xFF2563EB),
+              ),
             ),
           ),
           Text(
@@ -847,8 +882,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
     final provider = Provider.of<AppProvider>(context);
     final isTa = provider.selectedLanguage == 'ta';
-    final transTitle = isTa ? CentralizedTranslator.instance.translate(displayTitle) : displayTitle;
-    final transSubtitle = isTa ? CentralizedTranslator.instance.translate(displaySubtitle) : displaySubtitle;
+    final transTitle = isTa
+        ? CentralizedTranslator.instance.translate(displayTitle)
+        : displayTitle;
+    final transSubtitle = isTa
+        ? CentralizedTranslator.instance.translate(displaySubtitle)
+        : displaySubtitle;
 
     return Material(
       color: Colors.transparent,
@@ -861,13 +900,12 @@ class _HomeScreenState extends State<HomeScreen> {
           decoration: BoxDecoration(
             gradient: bgImage != null ? null : bgGradient,
             image: bgImage != null
-                ? DecorationImage(
-                    image: AssetImage(bgImage),
-                    fit: BoxFit.cover,
-                  )
+                ? DecorationImage(image: AssetImage(bgImage), fit: BoxFit.cover)
                 : null,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: bgImage != null ? Colors.transparent : borderColor),
+            border: Border.all(
+              color: bgImage != null ? Colors.transparent : borderColor,
+            ),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.02),
@@ -889,11 +927,17 @@ class _HomeScreenState extends State<HomeScreen> {
                         vertical: 2.5,
                       ),
                       decoration: BoxDecoration(
-                        color: badgeBgColor.withValues(alpha: bgImage != null ? 0.85 : 1.0),
+                        color: badgeBgColor.withValues(
+                          alpha: bgImage != null ? 0.85 : 1.0,
+                        ),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
-                        isTa ? CentralizedTranslator.instance.translateTag(badgeText) : badgeText,
+                        isTa
+                            ? CentralizedTranslator.instance.translateTag(
+                                badgeText,
+                              )
+                            : badgeText,
                         style: GoogleFonts.inter(
                           fontSize: 9,
                           fontWeight: FontWeight.bold,
@@ -1111,7 +1155,47 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return GestureDetector(
       onTap: () async {
-        final schemes = await SchemeRepository.instance.getSchemesByCategory(title);
+        final lowerTitle = title.toLowerCase();
+
+        // 1. Register Udyam -> Opens interactive Udyam Registration module
+        if (lowerTitle.contains('udyam') ||
+            lowerTitle.contains('register udyam')) {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => const MSMEModuleDetailsScreen(
+                moduleId: 'udyam',
+                title: 'Register UDYAM',
+                description:
+                    'Official MSME Registration Guide & Direct Portal Link',
+                icon: Icons.app_registration_rounded,
+                iconColor: Color(0xFF2563EB),
+                themeColor: Color(0xFFEFF6FF),
+              ),
+            ),
+          );
+          return;
+        }
+
+        // 2. Export Support -> Opens Export Readiness module
+        if (lowerTitle.contains('export')) {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => const MSMEModuleDetailsScreen(
+                moduleId: 'export',
+                title: 'Export Support',
+                description: 'Global Trade Readiness & Export Incentives',
+                icon: Icons.public_rounded,
+                iconColor: Color(0xFF047857),
+                themeColor: Color(0xFFECFDF5),
+              ),
+            ),
+          );
+          return;
+        }
+
+        final schemes = await SchemeRepository.instance.getSchemesByCategory(
+          title,
+        );
         if (!context.mounted) return;
         Navigator.of(context).push(
           MaterialPageRoute(
@@ -1143,11 +1227,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         child: Column(
           children: [
-            Icon(
-              icon,
-              color: const Color(0xFF2563EB),
-              size: 24,
-            ),
+            Icon(icon, color: const Color(0xFF2563EB), size: 24),
             const SizedBox(height: 6),
             Expanded(
               child: Center(
@@ -1188,7 +1268,8 @@ class _HomeScreenState extends State<HomeScreen> {
           'id': sRaw.id,
           'title': s.name,
           'subtitle': s.overview.isNotEmpty ? s.overview : s.objectives,
-          'match': "$match% ${provider.selectedLanguage == 'ta' ? 'பொருத்தம்' : 'Match'}",
+          'match':
+              "$match% ${provider.selectedLanguage == 'ta' ? 'பொருத்தம்' : 'Match'}",
           'isBookmarked':
               provider.bookmarkedIds.contains(sRaw.id) ||
               provider.bookmarkedIds.contains(sRaw.schemeCode),
@@ -1354,7 +1435,10 @@ class _HomeScreenState extends State<HomeScreen> {
                             child: FitOneLine(
                               child: Text(
                                 isTa
-                                    ? (item['match'] as String).replaceAll('Match', 'பொருத்தம்')
+                                    ? (item['match'] as String).replaceAll(
+                                        'Match',
+                                        'பொருத்தம்',
+                                      )
                                     : (item['match'] as String),
                                 style: GoogleFonts.inter(
                                   color: const Color(0xFF15803D),
@@ -1428,8 +1512,11 @@ class _HomeScreenState extends State<HomeScreen> {
                           )..sort((a, b) => a.length.compareTo(b.length));
                           final chipsList = isTa
                               ? rawChipsList
-                                  .map((t) => CentralizedTranslator.instance.translateTag(t))
-                                  .toList()
+                                    .map(
+                                      (t) => CentralizedTranslator.instance
+                                          .translateTag(t),
+                                    )
+                                    .toList()
                               : rawChipsList;
                           return Wrap(
                             spacing: 4,
@@ -1583,9 +1670,7 @@ class _HomeScreenState extends State<HomeScreen> {
         GestureDetector(
           onTap: () {
             Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => const NotificationsScreen(),
-              ),
+              MaterialPageRoute(builder: (_) => const NotificationsScreen()),
             );
           },
           child: Container(
@@ -1897,11 +1982,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     color: themeColor.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(
-                    icon,
-                    color: iconColor,
-                    size: 22,
-                  ),
+                  child: Icon(icon, color: iconColor, size: 22),
                 ),
                 const SizedBox(height: 8),
                 Text(

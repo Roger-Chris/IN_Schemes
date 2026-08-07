@@ -26,7 +26,9 @@ class EligibilityResultsScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: StandardPageHeader(
-        title: isTa ? CentralizedTranslator.instance.translate('Eligibility Results') : 'Eligibility Results',
+        title: isTa
+            ? CentralizedTranslator.instance.translate('Eligibility Results')
+            : 'Eligibility Results',
         elevation: 1,
         actions: [
           IconButton(

@@ -1379,8 +1379,15 @@ class _SaarthiHomeScreenState extends State<SaarthiHomeScreen>
             child: Center(
               child: ElevatedButton.icon(
                 onPressed: _scrollToLatest,
-                icon: const Icon(Icons.arrow_downward, size: 16, color: Colors.white),
-                label: Text(CentralizedTranslator.instance.translate('Latest'), style: const TextStyle(color: Colors.white)),
+                icon: const Icon(
+                  Icons.arrow_downward,
+                  size: 16,
+                  color: Colors.white,
+                ),
+                label: Text(
+                  CentralizedTranslator.instance.translate('Latest'),
+                  style: const TextStyle(color: Colors.white),
+                ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF2563EB),
                   padding: const EdgeInsets.symmetric(
@@ -1654,7 +1661,10 @@ class _SaarthiHomeScreenState extends State<SaarthiHomeScreen>
   }
 
   Widget _buildCompactSchemeCard(Scheme scheme, CloudSchemeResult? metadata) {
-    final lang = Provider.of<AppProvider>(context, listen: false).selectedLanguage;
+    final lang = Provider.of<AppProvider>(
+      context,
+      listen: false,
+    ).selectedLanguage;
     final locScheme = scheme.toLocalized(lang);
     final isTa = lang == 'ta';
 
@@ -1738,7 +1748,9 @@ class _SaarthiHomeScreenState extends State<SaarthiHomeScreen>
                       child: Text(
                         confidence == null
                             ? (isTa ? 'பொருத்தம் காண்க' : 'Review match')
-                            : (isTa ? '$confidence% பொருத்தம்' : '$confidence% match'),
+                            : (isTa
+                                  ? '$confidence% பொருத்தம்'
+                                  : '$confidence% match'),
                         style: GoogleFonts.inter(
                           fontSize: 9.5,
                           fontWeight: FontWeight.w800,
@@ -1943,7 +1955,9 @@ class _SaarthiHomeScreenState extends State<SaarthiHomeScreen>
                     ? null
                     : () => unawaited(_connectCloudVoice()),
                 icon: const Icon(Icons.refresh_rounded, size: 17),
-                label: Text(CentralizedTranslator.instance.translate('Retry voice')),
+                label: Text(
+                  CentralizedTranslator.instance.translate('Retry voice'),
+                ),
               ),
             ],
             const SizedBox(height: 10),

@@ -14,5 +14,8 @@ class SchemeCatalogStore {
   static const int supportedSchemaVersion = 1;
 
   Future<CatalogManifest?> readActiveManifest() async => null;
-  Future<StoredSchemeCatalog?> install(CatalogManifest manifest, String payload) async => null;
+  Future<StoredSchemeCatalog?> install(
+    CatalogManifest manifest,
+    String payload,
+  ) async => null;
 }

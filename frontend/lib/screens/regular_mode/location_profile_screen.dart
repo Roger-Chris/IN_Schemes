@@ -6,6 +6,7 @@ import 'about_you_profile_screen.dart';
 import 'package:provider/provider.dart';
 import '../../providers/app_state_provider.dart';
 import '../../utils/responsive.dart';
+import '../../utils/permission_helper.dart';
 
 class LocationProfileScreen extends StatefulWidget {
   const LocationProfileScreen({super.key});
@@ -15,12 +16,11 @@ class LocationProfileScreen extends StatefulWidget {
 }
 
 class _LocationProfileScreenState extends State<LocationProfileScreen> {
-  // Separate controllers for structured address details
-  final _doorStreetController = TextEditingController();
-  final _areaLocalityController = TextEditingController();
-  final _cityDistrictController = TextEditingController();
-  final _stateController = TextEditingController();
-  final _pincodeController = TextEditingController();
+  final TextEditingController _doorStreetController = TextEditingController();
+  final TextEditingController _areaLocalityController = TextEditingController();
+  final TextEditingController _cityDistrictController = TextEditingController();
+  final TextEditingController _stateController = TextEditingController();
+  final TextEditingController _pincodeController = TextEditingController();
 
   bool _isLoading = false;
 
@@ -35,23 +35,25 @@ class _LocationProfileScreenState extends State<LocationProfileScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final provider = Provider.of<AppProvider>(context, listen: false);
-      final profile = provider.profile;
-      
-      // Reconstruct door/street field from house/street
-      String doorStreet = profile.house;
-      if (profile.street.isNotEmpty) {
-        if (doorStreet.isNotEmpty) {
-          doorStreet = '$doorStreet, ${profile.street}';
-        } else {
-          doorStreet = profile.street;
-        }
-      }
-      _doorStreetController.text = doorStreet;
-      
+      _prefillExistingProfile();
+    });
+  }
+
+  void _prefillExistingProfile() {
+    final provider = Provider.of<AppProvider>(context, listen: false);
+    final profile = provider.profile;
+
+    final doorStreetParts = <String>[
+      if (profile.house.trim().isNotEmpty) profile.house.trim(),
+      if (profile.street.trim().isNotEmpty &&
+          profile.street.trim() != profile.house.trim())
+        profile.street.trim(),
+    ];
+
+    setState(() {
+      _doorStreetController.text = doorStreetParts.join(', ');
       _areaLocalityController.text = profile.area;
-      
-      // Reconstruct city/district field
+
       String cityDistrict = profile.district;
       if (profile.city.isNotEmpty && profile.city != profile.district) {
         if (cityDistrict.isNotEmpty) {
@@ -61,7 +63,6 @@ class _LocationProfileScreenState extends State<LocationProfileScreen> {
         }
       }
       _cityDistrictController.text = cityDistrict;
-      
       _stateController.text = profile.state;
       _pincodeController.text = profile.pinCode;
     });
@@ -79,22 +80,36 @@ class _LocationProfileScreenState extends State<LocationProfileScreen> {
 
   // Live Location Fetch and Geocoding Parser
   Future<void> _fetchAndGeocodeLocation() async {
+    // 1. Request Android system location permission first
+    LocationPermission permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) return;
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      if (mounted) {
+        await showLocationServiceOffDialog(context);
+      }
+      return;
+    }
+
+    // 2. Check if device location service (GPS) is turned ON
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      // ONLY show Location Services Off dialog if location services (GPS) are turned off
+      if (mounted) {
+        await showLocationServiceOffDialog(context);
+      }
+      return;
+    }
+
+    // 3. Location service IS enabled -> Fetch location with NO popups!
     setState(() {
       _isLoading = true;
     });
 
     try {
-      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled) throw 'Location services are disabled.';
-
-      LocationPermission permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.denied) throw 'Permission denied.';
-      }
-
-      if (permission == LocationPermission.deniedForever) throw 'Permission permanently denied.';
-
       Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
         timeLimit: const Duration(seconds: 5),
@@ -108,26 +123,11 @@ class _LocationProfileScreenState extends State<LocationProfileScreen> {
       if (placemarks.isNotEmpty) {
         Placemark place = placemarks.first;
         setState(() {
-          // Parse door / street without duplicates
-          String name = place.name ?? '';
-          String subThoroughfare = place.subThoroughfare ?? '';
-          String thoroughfare = place.thoroughfare ?? '';
+          // Only fetch and populate Area, City/District, State, and Pincode via GPS
+          _areaLocalityController.text =
+              place.subLocality ?? place.locality ?? '';
 
-          String doorStreet = name;
-          if (subThoroughfare.isNotEmpty && subThoroughfare != name) {
-            doorStreet = '$subThoroughfare, $doorStreet';
-          }
-          if (thoroughfare.isNotEmpty && thoroughfare != name && thoroughfare != subThoroughfare) {
-            doorStreet = '$doorStreet, $thoroughfare';
-          }
-          
-          _doorStreetController.text = doorStreet
-              .replaceAll(RegExp(r',\s*,'), ',')
-              .trim();
-
-          _areaLocalityController.text = place.subLocality ?? place.locality ?? '';
-
-          // Parse City / District cleanly (fallback from subAdministrativeArea to locality)
+          // Parse City / District
           String district = place.subAdministrativeArea ?? '';
           String city = place.locality ?? '';
           if (district.isEmpty) {
@@ -144,9 +144,8 @@ class _LocationProfileScreenState extends State<LocationProfileScreen> {
         throw 'No address components found.';
       }
     } catch (e) {
-      // Robust simulated fallback to Chennai Central address parameters
+      // Fallback regional parameters for Area, City, State, Pincode
       setState(() {
-        _doorStreetController.text = 'Flat 402, Royal Enclave';
         _areaLocalityController.text = 'Anna Nagar West';
         _cityDistrictController.text = 'Chennai';
         _stateController.text = 'Tamil Nadu';
@@ -186,7 +185,11 @@ class _LocationProfileScreenState extends State<LocationProfileScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         IconButton(
-                          icon: const Icon(Icons.arrow_back, color: kSlate800, size: 24),
+                          icon: const Icon(
+                            Icons.arrow_back,
+                            color: kSlate800,
+                            size: 24,
+                          ),
                           onPressed: () => Navigator.maybePop(context),
                         ),
                         FlexText(
@@ -225,26 +228,36 @@ class _LocationProfileScreenState extends State<LocationProfileScreen> {
                             children: [
                               // Non-scrollable Header Info
                               Padding(
-                                padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
+                                padding: const EdgeInsets.fromLTRB(
+                                  20,
+                                  20,
+                                  20,
+                                  10,
+                                ),
                                 child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
                                   children: [
                                     // Progress Stepper
                                     Row(
                                       children: [
-                                        Expanded(child: _buildProgressSegment(true)),
+                                        Expanded(
+                                          child: _buildProgressSegment(true),
+                                        ),
                                         const SizedBox(width: 4),
-                                        Expanded(child: _buildProgressSegment(true)),
+                                        Expanded(
+                                          child: _buildProgressSegment(true),
+                                        ),
                                         const SizedBox(width: 4),
-                                        Expanded(child: _buildProgressSegment(false, isIntermediate: true)),
-                                        const SizedBox(width: 4),
-                                        Expanded(child: _buildProgressSegment(false)),
+                                        Expanded(
+                                          child: _buildProgressSegment(false),
+                                        ),
                                       ],
                                     ),
                                     const SizedBox(height: 8),
                                     Center(
                                       child: Text(
-                                        '3/4 Complete',
+                                        '2/3 Complete',
                                         style: GoogleFonts.inter(
                                           fontSize: 13,
                                           fontWeight: FontWeight.w600,
@@ -282,9 +295,12 @@ class _LocationProfileScreenState extends State<LocationProfileScreen> {
                               Expanded(
                                 child: SingleChildScrollView(
                                   physics: const BouncingScrollPhysics(),
-                                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 20,
+                                  ),
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.stretch,
                                     children: [
                                       const SizedBox(height: 10),
                                       // Option 1: Live Location Card
@@ -294,9 +310,16 @@ class _LocationProfileScreenState extends State<LocationProfileScreen> {
                                       // Divider
                                       Row(
                                         children: [
-                                          const Expanded(child: Divider(color: kBorderGrey, thickness: 1)),
+                                          const Expanded(
+                                            child: Divider(
+                                              color: kBorderGrey,
+                                              thickness: 1,
+                                            ),
+                                          ),
                                           Padding(
-                                            padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 12.0,
+                                            ),
                                             child: Text(
                                               'OR FILL MANUALLY',
                                               style: GoogleFonts.inter(
@@ -306,17 +329,25 @@ class _LocationProfileScreenState extends State<LocationProfileScreen> {
                                               ),
                                             ),
                                           ),
-                                          const Expanded(child: Divider(color: kBorderGrey, thickness: 1)),
+                                          const Expanded(
+                                            child: Divider(
+                                              color: kBorderGrey,
+                                              thickness: 1,
+                                            ),
+                                          ),
                                         ],
                                       ),
                                       const SizedBox(height: 20),
 
                                       // Door / House No / Street Address Field
-                                      _buildLabel('Door No / Flat / House No / Street'),
+                                      _buildLabel(
+                                        'Door No / Flat / House No / Street',
+                                      ),
                                       const SizedBox(height: 6),
                                       _buildTextField(
                                         controller: _doorStreetController,
-                                        hintText: 'e.g. Flat 402, Royal Enclave',
+                                        hintText:
+                                            'e.g. Flat 402, Royal Enclave',
                                         icon: Icons.home_outlined,
                                       ),
                                       const SizedBox(height: 14),
@@ -343,12 +374,14 @@ class _LocationProfileScreenState extends State<LocationProfileScreen> {
 
                                       // State & Pincode Row (Side-by-Side)
                                       Row(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           Expanded(
                                             flex: 3,
                                             child: Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
                                               children: [
                                                 _buildLabel('State'),
                                                 const SizedBox(height: 6),
@@ -364,15 +397,18 @@ class _LocationProfileScreenState extends State<LocationProfileScreen> {
                                           Expanded(
                                             flex: 2,
                                             child: Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
                                               children: [
                                                 _buildLabel('Pincode'),
                                                 const SizedBox(height: 6),
                                                 _buildTextField(
-                                                  controller: _pincodeController,
+                                                  controller:
+                                                      _pincodeController,
                                                   hintText: '600040',
                                                   icon: Icons.pin_drop_outlined,
-                                                  keyboardType: TextInputType.number,
+                                                  keyboardType:
+                                                      TextInputType.number,
                                                 ),
                                               ],
                                             ),
@@ -398,44 +434,86 @@ class _LocationProfileScreenState extends State<LocationProfileScreen> {
                                     elevation: 0,
                                   ),
                                   onPressed: () {
-                                    final provider = Provider.of<AppProvider>(context, listen: false);
-                                    
-                                    // Parse house & street from _doorStreetController
-                                    final doorStreetParts = _doorStreetController.text.split(',');
-                                    String house = '';
-                                    String street = '';
-                                    if (doorStreetParts.isNotEmpty) {
-                                      house = doorStreetParts[0].trim();
-                                      if (doorStreetParts.length > 1) {
-                                        street = doorStreetParts.sublist(1).join(',').trim();
-                                      }
-                                    }
-                                    
-                                    // Parse city & district from _cityDistrictController
-                                    final cityDistrictParts = _cityDistrictController.text.split(',');
-                                    String city = '';
-                                    String district = '';
-                                    if (cityDistrictParts.isNotEmpty) {
-                                      city = cityDistrictParts[0].trim();
-                                      if (cityDistrictParts.length > 1) {
-                                        district = cityDistrictParts.sublist(1).join(',').trim();
-                                      } else {
-                                        district = city; // fallback
-                                      }
+                                    final doorStreetRaw = _doorStreetController
+                                        .text
+                                        .trim();
+                                    final areaRaw = _areaLocalityController.text
+                                        .trim();
+                                    final cityDistrictRaw =
+                                        _cityDistrictController.text.trim();
+                                    final stateRaw = _stateController.text
+                                        .trim();
+                                    final pincodeRaw = _pincodeController.text
+                                        .trim();
+
+                                    if (doorStreetRaw.isEmpty ||
+                                        areaRaw.isEmpty ||
+                                        cityDistrictRaw.isEmpty ||
+                                        stateRaw.isEmpty ||
+                                        pincodeRaw.isEmpty) {
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            'Please fill in all address fields (House/Street, Area, City/District, State, Pincode) to continue.',
+                                            style: GoogleFonts.inter(
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                          backgroundColor: const Color(
+                                            0xFFDC2626,
+                                          ),
+                                          behavior: SnackBarBehavior.floating,
+                                        ),
+                                      );
+                                      return;
                                     }
 
-                                    provider.updateProfile(provider.profile.copyWith(
-                                      house: house,
-                                      street: street,
-                                      area: _areaLocalityController.text.trim(),
-                                      city: city,
-                                      district: district,
-                                      state: _stateController.text.trim(),
-                                      pinCode: _pincodeController.text.trim(),
-                                    ));
+                                    final provider = Provider.of<AppProvider>(
+                                      context,
+                                      listen: false,
+                                    );
+
+                                    // Parse house & street from _doorStreetController
+                                    final doorStreetParts = doorStreetRaw.split(
+                                      ',',
+                                    );
+                                    String house = doorStreetParts[0].trim();
+                                    String street = doorStreetParts.length > 1
+                                        ? doorStreetParts
+                                              .sublist(1)
+                                              .join(',')
+                                              .trim()
+                                        : house;
+
+                                    // Parse city & district from _cityDistrictController
+                                    final cityDistrictParts = cityDistrictRaw
+                                        .split(',');
+                                    String city = cityDistrictParts[0].trim();
+                                    String district =
+                                        cityDistrictParts.length > 1
+                                        ? cityDistrictParts
+                                              .sublist(1)
+                                              .join(',')
+                                              .trim()
+                                        : city;
+
+                                    provider.updateProfile(
+                                      provider.profile.copyWith(
+                                        house: house,
+                                        street: street,
+                                        area: areaRaw,
+                                        city: city,
+                                        district: district,
+                                        state: stateRaw,
+                                        pinCode: pincodeRaw,
+                                      ),
+                                    );
                                     Navigator.of(context).push(
                                       MaterialPageRoute(
-                                        builder: (_) => const AboutYouProfileScreen(),
+                                        builder: (_) =>
+                                            const AboutYouProfileScreen(),
                                       ),
                                     );
                                   },
@@ -455,7 +533,11 @@ class _LocationProfileScreenState extends State<LocationProfileScreen> {
                                         ),
                                       ),
                                       const SizedBox(width: 8),
-                                      const Icon(Icons.arrow_forward, color: Colors.white, size: 20),
+                                      const Icon(
+                                        Icons.arrow_forward,
+                                        color: Colors.white,
+                                        size: 20,
+                                      ),
                                     ],
                                   ),
                                 ),
@@ -475,7 +557,10 @@ class _LocationProfileScreenState extends State<LocationProfileScreen> {
     );
   }
 
-  Widget _buildProgressSegment(bool isCompleted, {bool isIntermediate = false}) {
+  Widget _buildProgressSegment(
+    bool isCompleted, {
+    bool isIntermediate = false,
+  }) {
     Color segColor;
     if (isCompleted) {
       segColor = kPrimaryBlue;
@@ -508,7 +593,7 @@ class _LocationProfileScreenState extends State<LocationProfileScreen> {
               color: Colors.black.withValues(alpha: 0.015),
               blurRadius: 8,
               offset: const Offset(0, 3),
-            )
+            ),
           ],
         ),
         child: Row(
@@ -549,20 +634,15 @@ class _LocationProfileScreenState extends State<LocationProfileScreen> {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    _isLoading ? 'Fetching coordinates...' : 'Get your current location automatically',
-                    style: GoogleFonts.inter(
-                      fontSize: 12.5,
-                      color: kSlate500,
-                    ),
+                    _isLoading
+                        ? 'Fetching coordinates...'
+                        : 'Get your current location automatically',
+                    style: GoogleFonts.inter(fontSize: 12.5, color: kSlate500),
                   ),
                 ],
               ),
             ),
-            const Icon(
-              Icons.chevron_right,
-              color: kPrimaryBlue,
-              size: 20,
-            ),
+            const Icon(Icons.chevron_right, color: kPrimaryBlue, size: 20),
           ],
         ),
       ),
@@ -589,20 +669,17 @@ class _LocationProfileScreenState extends State<LocationProfileScreen> {
     return TextFormField(
       controller: controller,
       keyboardType: keyboardType,
-      style: GoogleFonts.inter(
-        fontSize: 13.5,
-        color: const Color(0xFF1E293B),
-      ),
+      style: GoogleFonts.inter(fontSize: 13.5, color: const Color(0xFF1E293B)),
       decoration: InputDecoration(
         filled: true,
         fillColor: Colors.white,
         isDense: true,
         hintText: hintText,
-        hintStyle: GoogleFonts.inter(
-          fontSize: 13,
-          color: kSlate500,
+        hintStyle: GoogleFonts.inter(fontSize: 13, color: kSlate500),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 12,
+          vertical: 10,
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         prefixIcon: Icon(icon, color: const Color(0xFF64748B), size: 18),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),

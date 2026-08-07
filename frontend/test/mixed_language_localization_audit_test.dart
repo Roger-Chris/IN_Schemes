@@ -14,7 +14,9 @@ void main() {
     late List<Scheme> allSchemes;
 
     setUpAll(() async {
-      allSchemes = await SchemeRepository.instance.getRecommendedSchemes(UserProfile());
+      allSchemes = await SchemeRepository.instance.getRecommendedSchemes(
+        UserProfile(),
+      );
     });
 
     test('1. Verify 0 mixed-language sentences on full UI sentences', () {
@@ -42,25 +44,54 @@ void main() {
 
       // List of protected technical terms allowed to remain English in Tamil context
       final protectedTerms = {
-        'MSME', 'MSMED', 'GST', 'PAN', 'Aadhaar', 'SIDBI', 'CGTMSE', 'PMEGP',
-        'TReDS', 'KVIC', 'NSIC', 'DIC', 'TIIC', 'StartupTN', 'EdiiTN',
-        'TANGEDCO', 'INR', 'RBI', 'ARR', 'CSR', 'BSE', 'NSE', 'ECGC', 'RoDTEP', 'RoSCTL'
+        'MSME',
+        'MSMED',
+        'GST',
+        'PAN',
+        'Aadhaar',
+        'SIDBI',
+        'CGTMSE',
+        'PMEGP',
+        'TReDS',
+        'KVIC',
+        'NSIC',
+        'DIC',
+        'TIIC',
+        'StartupTN',
+        'EdiiTN',
+        'TANGEDCO',
+        'INR',
+        'RBI',
+        'ARR',
+        'CSR',
+        'BSE',
+        'NSE',
+        'ECGC',
+        'RoDTEP',
+        'RoSCTL',
       };
 
       for (final sentence in fullUiSentences) {
         final translated = CentralizedTranslator.instance.translate(sentence);
-        expect(translated.trim(), isNotEmpty, reason: 'Sentence "$sentence" translated to empty');
+        expect(
+          translated.trim(),
+          isNotEmpty,
+          reason: 'Sentence "$sentence" translated to empty',
+        );
 
         final words = translated.split(RegExp(r'\s+'));
         final englishWords = words.where((w) {
           final clean = w.replaceAll(RegExp(r'[^a-zA-Z]'), '');
-          return clean.length >= 3 && !protectedTerms.contains(clean.toUpperCase());
+          return clean.length >= 3 &&
+              !protectedTerms.contains(clean.toUpperCase());
         }).toList();
 
         final hasTamil = tamilRegex.hasMatch(translated);
 
         if (hasTamil && englishWords.isNotEmpty) {
-          fail('Mixed language sentence detected: "$translated" (English words: $englishWords) from original "$sentence"');
+          fail(
+            'Mixed language sentence detected: "$translated" (English words: $englishWords) from original "$sentence"',
+          );
         }
       }
     });
@@ -69,7 +100,10 @@ void main() {
       const headerNormal = StandardPageHeader(title: 'Test Header');
       expect(headerNormal.preferredSize.height, equals(56.0));
 
-      const headerWithSub = StandardPageHeader(title: 'Test Header', subtitle: 'Test Subtitle');
+      const headerWithSub = StandardPageHeader(
+        title: 'Test Header',
+        subtitle: 'Test Subtitle',
+      );
       expect(headerWithSub.preferredSize.height, equals(64.0));
     });
 
@@ -79,14 +113,17 @@ void main() {
       expect(AppCardStyle.chipSpacing, equals(6.0));
     });
 
-    test('4. Verify catalog scheme descriptions translate cleanly without mixed-language artifacts', () {
-      expect(allSchemes, isNotEmpty);
-      for (final scheme in allSchemes.take(20)) {
-        final locTa = scheme.toLocalized('ta');
-        expect(locTa.name.trim(), isNotEmpty);
-        expect(locTa.overview.trim(), isNotEmpty);
-        expect(locTa.benefits.trim(), isNotEmpty);
-      }
-    });
+    test(
+      '4. Verify catalog scheme descriptions translate cleanly without mixed-language artifacts',
+      () {
+        expect(allSchemes, isNotEmpty);
+        for (final scheme in allSchemes.take(20)) {
+          final locTa = scheme.toLocalized('ta');
+          expect(locTa.name.trim(), isNotEmpty);
+          expect(locTa.overview.trim(), isNotEmpty);
+          expect(locTa.benefits.trim(), isNotEmpty);
+        }
+      },
+    );
   });
 }

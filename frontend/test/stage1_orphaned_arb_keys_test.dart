@@ -49,26 +49,27 @@ const Map<String, String> _stage1EnglishValues = {
 };
 
 String _read(AppLocalizations l, String key) => switch (key) {
-      'navHome' => l.navHome,
-      'navSearch' => l.navSearch,
-      'navDiscover' => l.navDiscover,
-      'navSaved' => l.navSaved,
-      'navProfile' => l.navProfile,
-      'viewAll' => l.viewAll,
-      'doneManaging' => l.doneManaging,
-      'manageSaved' => l.manageSaved,
-      'browseByCategories' => l.browseByCategories,
-      'browseByMinistry' => l.browseByMinistry,
-      'browseByState' => l.browseByState,
-      _ => throw ArgumentError('unmapped key $key'),
-    };
+  'navHome' => l.navHome,
+  'navSearch' => l.navSearch,
+  'navDiscover' => l.navDiscover,
+  'navSaved' => l.navSaved,
+  'navProfile' => l.navProfile,
+  'viewAll' => l.viewAll,
+  'doneManaging' => l.doneManaging,
+  'manageSaved' => l.manageSaved,
+  'browseByCategories' => l.browseByCategories,
+  'browseByMinistry' => l.browseByMinistry,
+  'browseByState' => l.browseByState,
+  _ => throw ArgumentError('unmapped key $key'),
+};
 
 /// Tamil script block: U+0B80..U+0BFF.
 final RegExp _tamilScript = RegExp(r'[஀-௿]');
 
 void main() {
-  testWidgets('en locale returns the unchanged English for every Stage 1 key',
-      (tester) async {
+  testWidgets('en locale returns the unchanged English for every Stage 1 key', (
+    tester,
+  ) async {
     final l10n = await _l10nFor(tester, const Locale('en'));
     for (final entry in _stage1EnglishValues.entries) {
       expect(
@@ -79,8 +80,9 @@ void main() {
     }
   });
 
-  testWidgets('ta locale returns real Tamil script for every Stage 1 key',
-      (tester) async {
+  testWidgets('ta locale returns real Tamil script for every Stage 1 key', (
+    tester,
+  ) async {
     final l10n = await _l10nFor(tester, const Locale('ta'));
     for (final key in _stage1EnglishValues.keys) {
       final value = _read(l10n, key);

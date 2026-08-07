@@ -3,7 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'companion_mode/saarthi_welcome_screen.dart';
 import 'regular_mode/language_selection_screen.dart';
-import 'regular_mode/profile_setup_screen.dart';
+import 'regular_mode/basic_profile_screen.dart';
 import '../providers/app_state_provider.dart';
 import '../main.dart';
 import '../utils/responsive.dart';
@@ -14,10 +14,7 @@ enum NavigationMode { regular, companion }
 class NavigationModeScreen extends StatefulWidget {
   final Function(NavigationMode)? onContinue;
 
-  const NavigationModeScreen({
-    super.key,
-    this.onContinue,
-  });
+  const NavigationModeScreen({super.key, this.onContinue});
 
   @override
   State<NavigationModeScreen> createState() => _NavigationModeScreenState();
@@ -69,13 +66,21 @@ class _NavigationModeScreenState extends State<NavigationModeScreen> {
                             Align(
                               alignment: Alignment.topLeft,
                               child: Padding(
-                                padding: const EdgeInsets.only(left: 12.0, top: 8.0),
+                                padding: const EdgeInsets.only(
+                                  left: 12.0,
+                                  top: 8.0,
+                                ),
                                 child: IconButton(
-                                  icon: const Icon(Icons.arrow_back, color: kSlate800, size: 24),
+                                  icon: const Icon(
+                                    Icons.arrow_back,
+                                    color: kSlate800,
+                                    size: 24,
+                                  ),
                                   onPressed: () {
                                     Navigator.of(context).pushReplacement(
                                       MaterialPageRoute(
-                                        builder: (_) => const LanguageSelectionScreen(),
+                                        builder: (_) =>
+                                            const LanguageSelectionScreen(),
                                       ),
                                     );
                                   },
@@ -85,7 +90,9 @@ class _NavigationModeScreenState extends State<NavigationModeScreen> {
 
                             // Middle Content
                             Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: kPaddingSide),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: kPaddingSide,
+                              ),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
@@ -110,10 +117,18 @@ class _NavigationModeScreenState extends State<NavigationModeScreen> {
                                             color: kSlate800,
                                           ),
                                           children: [
-                                            TextSpan(text: context.l10n.navChooseYourPrefix),
                                             TextSpan(
-                                              text: context.l10n.navExperienceSuffix,
-                                              style: const TextStyle(color: kPrimaryBlue),
+                                              text: context
+                                                  .l10n
+                                                  .navChooseYourPrefix,
+                                            ),
+                                            TextSpan(
+                                              text: context
+                                                  .l10n
+                                                  .navExperienceSuffix,
+                                              style: const TextStyle(
+                                                color: kPrimaryBlue,
+                                              ),
                                             ),
                                           ],
                                         ),
@@ -137,42 +152,74 @@ class _NavigationModeScreenState extends State<NavigationModeScreen> {
                                     children: [
                                       NavigationOptionCard(
                                         mode: NavigationMode.regular,
-                                        isSelected: _selectedMode == NavigationMode.regular,
-                                        title: context.l10n.navRegularNavigationTitle,
-                                        subtitle: context.l10n.navModeRegularSubtitle,
+                                        isSelected:
+                                            _selectedMode ==
+                                            NavigationMode.regular,
+                                        title: context
+                                            .l10n
+                                            .navRegularNavigationTitle,
+                                        subtitle:
+                                            context.l10n.navModeRegularSubtitle,
                                         icon: Icons.explore_rounded,
                                         iconColor: kPrimaryBlue,
                                         iconBgColor: const Color(0xFFEFF6FF),
                                         chips: const [
                                           ChipInfo(Icons.bolt, 'Fast & Simple'),
-                                          ChipInfo(Icons.phone_android, 'Traditional UI'),
-                                          ChipInfo(Icons.touch_app, 'Self-paced browsing'),
-                                          ChipInfo(Icons.auto_awesome, 'AI available anytime'),
+                                          ChipInfo(
+                                            Icons.phone_android,
+                                            'Traditional UI',
+                                          ),
+                                          ChipInfo(
+                                            Icons.touch_app,
+                                            'Self-paced browsing',
+                                          ),
+                                          ChipInfo(
+                                            Icons.auto_awesome,
+                                            'AI available anytime',
+                                          ),
                                         ],
                                         onTap: () {
                                           setState(() {
-                                            _selectedMode = NavigationMode.regular;
+                                            _selectedMode =
+                                                NavigationMode.regular;
                                           });
                                         },
                                       ),
                                       const SizedBox(height: 8),
                                       NavigationOptionCard(
                                         mode: NavigationMode.companion,
-                                        isSelected: _selectedMode == NavigationMode.companion,
+                                        isSelected:
+                                            _selectedMode ==
+                                            NavigationMode.companion,
                                         title: context.l10n.navAiCompanionTitle,
-                                        subtitle: context.l10n.navModeCompanionSubtitle,
+                                        subtitle: context
+                                            .l10n
+                                            .navModeCompanionSubtitle,
                                         icon: Icons.support_agent_rounded,
                                         iconColor: const Color(0xFF2563EB),
                                         iconBgColor: const Color(0xFFEFF6FF),
                                         chips: const [
-                                          ChipInfo(Icons.mic, 'Voice-first experience'),
-                                          ChipInfo(Icons.person, 'Personalized guidance'),
-                                          ChipInfo(Icons.lightbulb_outline, 'Smart recommendations'),
-                                          ChipInfo(Icons.co_present, 'Explains every screen'),
+                                          ChipInfo(
+                                            Icons.mic,
+                                            'Voice-first experience',
+                                          ),
+                                          ChipInfo(
+                                            Icons.person,
+                                            'Personalized guidance',
+                                          ),
+                                          ChipInfo(
+                                            Icons.lightbulb_outline,
+                                            'Smart recommendations',
+                                          ),
+                                          ChipInfo(
+                                            Icons.co_present,
+                                            'Explains every screen',
+                                          ),
                                         ],
                                         onTap: () {
                                           setState(() {
-                                            _selectedMode = NavigationMode.companion;
+                                            _selectedMode =
+                                                NavigationMode.companion;
                                           });
                                         },
                                       ),
@@ -183,7 +230,8 @@ class _NavigationModeScreenState extends State<NavigationModeScreen> {
                                   // Info Card
                                   InfoCard(
                                     title: context.l10n.navSwitchAnytimeTitle,
-                                    description: context.l10n.navSwitchAnytimeDesc,
+                                    description:
+                                        context.l10n.navSwitchAnytimeDesc,
                                   ),
                                 ],
                               ),
@@ -194,14 +242,22 @@ class _NavigationModeScreenState extends State<NavigationModeScreen> {
                             // Bottom Navigation Bar Area for Sticky Button
                             Container(
                               color: Colors.transparent,
-                              padding: const EdgeInsets.only(bottom: 16.0, top: 10.0),
+                              padding: const EdgeInsets.only(
+                                bottom: 16.0,
+                                top: 10.0,
+                              ),
                               alignment: Alignment.center,
                               child: PrimaryButton(
                                 width: screenWidth * 0.78,
                                 onPressed: () {
-                                  final provider = Provider.of<AppProvider>(context, listen: false);
+                                  final provider = Provider.of<AppProvider>(
+                                    context,
+                                    listen: false,
+                                  );
                                   provider.changeNavigationMode(
-                                    _selectedMode == NavigationMode.companion ? 'companion' : 'regular',
+                                    _selectedMode == NavigationMode.companion
+                                        ? 'companion'
+                                        : 'regular',
                                   );
 
                                   if (widget.onContinue != null) {
@@ -210,19 +266,23 @@ class _NavigationModeScreenState extends State<NavigationModeScreen> {
                                     if (provider.profile.profileCompleted) {
                                       Navigator.of(context).pushReplacement(
                                         MaterialPageRoute(
-                                          builder: (_) => const MainTabsContainer(),
+                                          builder: (_) =>
+                                              const MainTabsContainer(),
                                         ),
                                       );
-                                    } else if (_selectedMode == NavigationMode.companion) {
+                                    } else if (_selectedMode ==
+                                        NavigationMode.companion) {
                                       Navigator.of(context).push(
                                         MaterialPageRoute(
-                                          builder: (_) => const SaarthiWelcomeScreen(),
+                                          builder: (_) =>
+                                              const SaarthiWelcomeScreen(),
                                         ),
                                       );
                                     } else {
                                       Navigator.of(context).pushReplacement(
                                         MaterialPageRoute(
-                                          builder: (_) => const ProfileSetupScreen(),
+                                          builder: (_) =>
+                                              const BasicProfileScreen(),
                                         ),
                                       );
                                     }
@@ -235,7 +295,7 @@ class _NavigationModeScreenState extends State<NavigationModeScreen> {
                       ),
                     ),
                   );
-                }
+                },
               ),
             ),
           ),
@@ -279,12 +339,19 @@ class NavigationOptionCard extends StatelessWidget {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeOutQuint,
-        padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 10.0), // Reduced card padding
+        padding: const EdgeInsets.symmetric(
+          horizontal: 14.0,
+          vertical: 10.0,
+        ), // Reduced card padding
         decoration: BoxDecoration(
           color: isSelected ? activeBg : Colors.white,
-          borderRadius: BorderRadius.circular(_NavigationModeScreenState.kCardRadius), // Radius 28
+          borderRadius: BorderRadius.circular(
+            _NavigationModeScreenState.kCardRadius,
+          ), // Radius 28
           border: Border.all(
-            color: isSelected ? activeColor : _NavigationModeScreenState.kBorderGrey,
+            color: isSelected
+                ? activeColor
+                : _NavigationModeScreenState.kBorderGrey,
             width: isSelected ? 2.0 : 1.2,
           ),
           boxShadow: [
@@ -341,15 +408,18 @@ class NavigationOptionCard extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 8), // Tighter spacing
-
                       // Vertical Layout for Feature Chips
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           for (int i = 0; i < chips.length; i++) ...[
-                            if (i > 0) const SizedBox(height: 4), // Reduced chip spacing
+                            if (i > 0)
+                              const SizedBox(height: 4), // Reduced chip spacing
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 2.5,
+                              ),
                               decoration: BoxDecoration(
                                 color: isSelected ? Colors.white : iconBgColor,
                                 borderRadius: BorderRadius.circular(6),
@@ -357,7 +427,11 @@ class NavigationOptionCard extends StatelessWidget {
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(chips[i].icon, color: iconColor, size: 9),
+                                  Icon(
+                                    chips[i].icon,
+                                    color: iconColor,
+                                    size: 9,
+                                  ),
                                   const SizedBox(width: 4),
                                   Flexible(
                                     child: FitOneLine(
@@ -374,7 +448,7 @@ class NavigationOptionCard extends StatelessWidget {
                                 ],
                               ),
                             ),
-                          ]
+                          ],
                         ],
                       ),
                     ],
@@ -409,7 +483,10 @@ class NavigationOptionCard extends StatelessWidget {
                       height: 20,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        border: Border.all(color: const Color(0xFFCBD5E1), width: 1.5),
+                        border: Border.all(
+                          color: const Color(0xFFCBD5E1),
+                          width: 1.5,
+                        ),
                       ),
                     ),
             ),
@@ -424,16 +501,15 @@ class InfoCard extends StatelessWidget {
   final String title;
   final String description;
 
-  const InfoCard({
-    super.key,
-    required this.title,
-    required this.description,
-  });
+  const InfoCard({super.key, required this.title, required this.description});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10), // More compact padding
+      padding: const EdgeInsets.symmetric(
+        horizontal: 14,
+        vertical: 10,
+      ), // More compact padding
       decoration: BoxDecoration(
         color: const Color(0xFFEFF6FF), // Blue tinted background
         borderRadius: BorderRadius.circular(16),
@@ -442,11 +518,7 @@ class InfoCard extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(
-            Icons.info_outline,
-            color: Color(0xFF2563EB),
-            size: 18,
-          ),
+          const Icon(Icons.info_outline, color: Color(0xFF2563EB), size: 18),
           const SizedBox(width: 10),
           Expanded(
             child: Column(
@@ -530,11 +602,7 @@ class PrimaryButton extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 8),
-            const Icon(
-              Icons.arrow_forward,
-              color: Colors.white,
-              size: 20,
-            ),
+            const Icon(Icons.arrow_forward, color: Colors.white, size: 20),
           ],
         ),
       ),
@@ -548,5 +616,3 @@ class ChipInfo {
 
   const ChipInfo(this.icon, this.label);
 }
-
-

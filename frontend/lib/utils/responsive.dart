@@ -17,8 +17,8 @@ import 'package:flutter/material.dart';
 ///
 /// Uses `MediaQuery.of(context).size.width` rather than `LayoutBuilder`:
 /// several existing screens nest fixed-size widgets inside an
-/// `IntrinsicHeight` ancestor (e.g. otp_screen.dart's scroll-sizing
-/// wrapper), and `LayoutBuilder` cannot participate in intrinsic-dimension
+/// `IntrinsicHeight` ancestor (for example, a scroll-sized form wrapper),
+/// and `LayoutBuilder` cannot participate in intrinsic-dimension
 /// computation in that position -- it throws at layout time. MediaQuery
 /// has no such restriction.
 double adaptiveSize(
@@ -76,11 +76,7 @@ class FitOneLine extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FittedBox(
-      fit: BoxFit.scaleDown,
-      alignment: alignment,
-      child: child,
-    );
+    return FittedBox(fit: BoxFit.scaleDown, alignment: alignment, child: child);
   }
 }
 

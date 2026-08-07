@@ -359,17 +359,20 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                         borderSide: const BorderSide(color: Color(0xFF2563EB)),
                       ),
                     ),
-                    items: [
-                      'General Inquiry',
-                      'Eligibility Matcher Bug',
-                      'Wrong Scheme Details',
-                      'Feature Request',
-                    ].map((cat) {
-                      return DropdownMenuItem(
-                        value: cat,
-                        child: Text(CentralizedTranslator.instance.translate(cat)),
-                      );
-                    }).toList(),
+                    items:
+                        [
+                          'General Inquiry',
+                          'Eligibility Matcher Bug',
+                          'Wrong Scheme Details',
+                          'Feature Request',
+                        ].map((cat) {
+                          return DropdownMenuItem(
+                            value: cat,
+                            child: Text(
+                              CentralizedTranslator.instance.translate(cat),
+                            ),
+                          );
+                        }).toList(),
                     onChanged: (val) {
                       if (val != null) {
                         setModalState(() => _issueCategory = val);
@@ -442,26 +445,38 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                               if (text.isEmpty) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                    content: Text(CentralizedTranslator.instance.translate('Please describe the issue.')),
+                                    content: Text(
+                                      CentralizedTranslator.instance.translate(
+                                        'Please describe the issue.',
+                                      ),
+                                    ),
                                   ),
                                 );
                                 return;
                               }
                               setModalState(() => _isSubmitting = true);
-                              
+
                               // Realtime Supabase insertion of support ticket notification
-                              final userId = Supabase.instance.client.auth.currentUser?.id;
+                              final userId =
+                                  Supabase.instance.client.auth.currentUser?.id;
                               if (userId != null) {
-                                Supabase.instance.client.from('notifications').insert({
-                                  'user_id': userId,
-                                  'title': 'Ticket Created: $_issueCategory',
-                                  'message': 'Your support ticket description: "$text" has been received. Our team will contact you at ${_emailController.text.trim()}.',
-                                  'notification_type': 'updates',
-                                  'is_read': false,
-                                }).catchError((e) {
-                                  debugPrint('[HelpSupportScreen] Failed to save support notification: $e');
-                                  return null;
-                                });
+                                Supabase.instance.client
+                                    .from('notifications')
+                                    .insert({
+                                      'user_id': userId,
+                                      'title':
+                                          'Ticket Created: $_issueCategory',
+                                      'message':
+                                          'Your support ticket description: "$text" has been received. Our team will contact you at ${_emailController.text.trim()}.',
+                                      'notification_type': 'updates',
+                                      'is_read': false,
+                                    })
+                                    .catchError((e) {
+                                      debugPrint(
+                                        '[HelpSupportScreen] Failed to save support notification: $e',
+                                      );
+                                      return null;
+                                    });
                               }
 
                               Future.delayed(
@@ -773,8 +788,8 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                           widget.initialMode == 'faq'
                               ? 'Help & FAQ'
                               : widget.initialMode == 'contact'
-                                  ? 'Contact Us'
-                                  : 'Help & Support',
+                              ? 'Contact Us'
+                              : 'Help & Support',
                           softWrap: true,
                           style: GoogleFonts.poppins(
                             fontSize: 20.0,

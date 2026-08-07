@@ -6,17 +6,56 @@ void main() {
 
   group('Explore & MSME Support Module-Wise Localization Audit', () {
     final protectedTerms = {
-      'MSME', 'MSMED', 'GST', 'CGST', 'SGST', 'IGST', 'PAN', 'Aadhaar', 'SIDBI', 'NSIC', 'DIC', 'KVIC',
-      'TIIC', 'SIPCOT', 'DGFT', 'TREDS', 'IEC', 'RCMC', 'HS', 'INR', 'RBI',
-      'PMEGP', 'CGTMSE', 'SFURTI', 'TANSEED', 'MSEFC', 'NBFC', 'RXIL', 'M1XCHANGE',
-      'INVOICEMART', 'DPIIT', 'MRR', 'ARR', 'KYC', 'CSR', 'CODE', 'EMI', 'MSME-DI', 'DI'
+      'MSME',
+      'MSMED',
+      'GST',
+      'CGST',
+      'SGST',
+      'IGST',
+      'PAN',
+      'Aadhaar',
+      'SIDBI',
+      'NSIC',
+      'DIC',
+      'KVIC',
+      'TIIC',
+      'SIPCOT',
+      'DGFT',
+      'TREDS',
+      'IEC',
+      'RCMC',
+      'HS',
+      'INR',
+      'RBI',
+      'PMEGP',
+      'CGTMSE',
+      'SFURTI',
+      'TANSEED',
+      'MSEFC',
+      'NBFC',
+      'RXIL',
+      'M1XCHANGE',
+      'INVOICEMART',
+      'DPIIT',
+      'MRR',
+      'ARR',
+      'KYC',
+      'CSR',
+      'CODE',
+      'EMI',
+      'MSME-DI',
+      'DI',
     };
 
     final tamilRegex = RegExp(r'[\u0B80-\u0BFF]');
 
     void assertNoMixedLanguage(String original, String contextName) {
       final translated = CentralizedTranslator.instance.translate(original);
-      expect(translated.trim(), isNotEmpty, reason: '$contextName translated to empty string');
+      expect(
+        translated.trim(),
+        isNotEmpty,
+        reason: '$contextName translated to empty string',
+      );
 
       final tokens = translated.split(RegExp(r'[^a-zA-Z0-9]+'));
       final invalidEnglishWords = tokens.where((token) {
@@ -26,7 +65,9 @@ void main() {
 
       final hasTamil = tamilRegex.hasMatch(translated);
       if (hasTamil && invalidEnglishWords.isNotEmpty) {
-        fail('Mixed language sentence in $contextName: "$translated" (Invalid English words: $invalidEnglishWords) from original "$original"');
+        fail(
+          'Mixed language sentence in $contextName: "$translated" (Invalid English words: $invalidEnglishWords) from original "$original"',
+        );
       }
     }
 

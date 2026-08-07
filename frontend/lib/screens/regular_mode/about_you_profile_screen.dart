@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import '../../providers/app_state_provider.dart';
 import '../../utils/profile_l10n.dart';
 import '../../main.dart';
-import '../../utils/permission_helper.dart';
 import '../../utils/responsive.dart';
 
 class AboutYouProfileScreen extends StatefulWidget {
@@ -78,9 +77,21 @@ class _AboutYouProfileScreenState extends State<AboutYouProfileScreen> {
     ),
   ];
 
+  static String _canonicalRoleTitle(String roleId) => switch (roleId) {
+    'student' => 'Student',
+    'entrepreneur' => 'Aspiring Entrepreneur',
+    'existing_business' => 'Existing Business',
+    'msme' => 'MSME Owner',
+    'farmer' => 'Farmer',
+    'artisan' => 'Artisan / SHG Member',
+    _ => roleId,
+  };
+
   @override
   Widget build(BuildContext context) {
-    final isTa = Provider.of<AppProvider>(context, listen: false).selectedLanguage == 'ta';
+    final isTa = context.select<AppProvider, bool>(
+      (provider) => provider.selectedLanguage == 'ta',
+    );
     String l(String key) => ProfileL10n.t(key, isTa);
     final roles = _buildRoles(l);
     return Scaffold(
@@ -108,7 +119,11 @@ class _AboutYouProfileScreenState extends State<AboutYouProfileScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         IconButton(
-                          icon: const Icon(Icons.arrow_back, color: kSlate800, size: 24),
+                          icon: const Icon(
+                            Icons.arrow_back,
+                            color: kSlate800,
+                            size: 24,
+                          ),
                           onPressed: () => Navigator.maybePop(context),
                         ),
                         FlexText(
@@ -129,7 +144,9 @@ class _AboutYouProfileScreenState extends State<AboutYouProfileScreen> {
                     // Main Card Container (Expanded to take remaining space)
                     Expanded(
                       child: Container(
-                        padding: const EdgeInsets.all(16.0), // Tight card padding
+                        padding: const EdgeInsets.all(
+                          16.0,
+                        ), // Tight card padding
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(24),
@@ -149,24 +166,29 @@ class _AboutYouProfileScreenState extends State<AboutYouProfileScreen> {
                               child: SingleChildScrollView(
                                 physics: const BouncingScrollPhysics(),
                                 child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
                                   children: [
                                     // Progress Stepper & Header Group
                                     Row(
                                       children: [
-                                        Expanded(child: _buildProgressSegment(true)),
+                                        Expanded(
+                                          child: _buildProgressSegment(true),
+                                        ),
                                         const SizedBox(width: 4),
-                                        Expanded(child: _buildProgressSegment(true)),
+                                        Expanded(
+                                          child: _buildProgressSegment(true),
+                                        ),
                                         const SizedBox(width: 4),
-                                        Expanded(child: _buildProgressSegment(true)),
-                                        const SizedBox(width: 4),
-                                        Expanded(child: _buildProgressSegment(false)),
+                                        Expanded(
+                                          child: _buildProgressSegment(true),
+                                        ),
                                       ],
                                     ),
                                     const SizedBox(height: 8),
                                     Center(
                                       child: Text(
-                                        l('step_3_of_4'),
+                                        l('step_3_of_3'),
                                         style: GoogleFonts.inter(
                                           fontSize: 13,
                                           fontWeight: FontWeight.w600,
@@ -200,19 +222,28 @@ class _AboutYouProfileScreenState extends State<AboutYouProfileScreen> {
                                     // 2x3 Grid Area (non-scrollable itself, scrolls with parent)
                                     GridView.builder(
                                       shrinkWrap: true,
-                                      physics: const NeverScrollableScrollPhysics(),
+                                      physics:
+                                          const NeverScrollableScrollPhysics(),
                                       itemCount: roles.length,
-                                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                                        crossAxisCount: 2,
-                                        crossAxisSpacing: 12,
-                                        mainAxisSpacing: 12,
-                                        childAspectRatio: 0.88, // Balanced compact aspect ratio
-                                      ),
+                                      gridDelegate:
+                                          SliverGridDelegateWithFixedCrossAxisCount(
+                                            crossAxisCount: 2,
+                                            crossAxisSpacing: 12,
+                                            mainAxisSpacing: 12,
+                                            childAspectRatio:
+                                                MediaQuery.sizeOf(
+                                                      context,
+                                                    ).width <
+                                                    360
+                                                ? 0.78
+                                                : 0.88,
+                                          ),
                                       itemBuilder: (context, index) {
                                         final role = roles[index];
-                                        final isSelected = _selectedRole == role.id;
+                                        final isSelected =
+                                            _selectedRole == role.id;
 
-                                        return _buildRoleCard(role, isSelected, isTa);
+                                        return _buildRoleCard(role, isSelected);
                                       },
                                     ),
                                   ],
@@ -224,38 +255,55 @@ class _AboutYouProfileScreenState extends State<AboutYouProfileScreen> {
                             // Sticky Action Button (Bottom of card, outside scrollable area)
                             ElevatedButton(
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: _selectedRole != null ? kPrimaryBlue : Colors.grey.shade300,
+                                backgroundColor: _selectedRole != null
+                                    ? kPrimaryBlue
+                                    : Colors.grey.shade300,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 minimumSize: const Size.fromHeight(50),
                                 elevation: 0,
                               ),
-                              onPressed: _selectedRole != null
-                                  ? () async {
-                                      final provider = Provider.of<AppProvider>(context, listen: false);
-                                      final selectedRoleModel = roles.firstWhere((r) => r.id == _selectedRole);
-                                      final roleTitle = selectedRoleModel.title;
-
-                                      final updatedProfile = provider.profile.copyWith(
-                                        employmentStatus: roleTitle,
-                                        profileCompleted: true,
-                                      );
-
-                                      await provider.updateProfile(updatedProfile);
-
-                                      if (!context.mounted) return;
-                                      await requestDefaultPermissions(context);
-
-                                      if (!context.mounted) return;
-                                      Navigator.of(context).pushAndRemoveUntil(
-                                        MaterialPageRoute(
-                                          builder: (_) => const MainTabsContainer(),
+                              onPressed: () async {
+                                final selectedRole = _selectedRole;
+                                if (selectedRole == null) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        l('about_you_subtitle'),
+                                        style: GoogleFonts.inter(
+                                          fontWeight: FontWeight.w600,
                                         ),
-                                        (route) => false,
-                                      );
-                                    }
-                                  : null,
+                                      ),
+                                      backgroundColor: const Color(0xFFDC2626),
+                                      behavior: SnackBarBehavior.floating,
+                                    ),
+                                  );
+                                  return;
+                                }
+
+                                final provider = Provider.of<AppProvider>(
+                                  context,
+                                  listen: false,
+                                );
+                                final updatedProfile = provider.profile
+                                    .copyWith(
+                                      employmentStatus: _canonicalRoleTitle(
+                                        selectedRole,
+                                      ),
+                                      profileCompleted: true,
+                                    );
+
+                                await provider.updateProfile(updatedProfile);
+
+                                if (!context.mounted) return;
+                                Navigator.of(context).pushAndRemoveUntil(
+                                  MaterialPageRoute(
+                                    builder: (_) => const MainTabsContainer(),
+                                  ),
+                                  (route) => false,
+                                );
+                              },
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
@@ -266,7 +314,9 @@ class _AboutYouProfileScreenState extends State<AboutYouProfileScreen> {
                                         style: GoogleFonts.inter(
                                           fontSize: 16,
                                           fontWeight: FontWeight.bold,
-                                          color: _selectedRole != null ? Colors.white : Colors.grey.shade500,
+                                          color: _selectedRole != null
+                                              ? Colors.white
+                                              : Colors.grey.shade500,
                                         ),
                                       ),
                                     ),
@@ -274,7 +324,9 @@ class _AboutYouProfileScreenState extends State<AboutYouProfileScreen> {
                                   const SizedBox(width: 8),
                                   Icon(
                                     Icons.arrow_forward,
-                                    color: _selectedRole != null ? Colors.white : Colors.grey.shade500,
+                                    color: _selectedRole != null
+                                        ? Colors.white
+                                        : Colors.grey.shade500,
                                     size: 20,
                                   ),
                                 ],
@@ -304,19 +356,7 @@ class _AboutYouProfileScreenState extends State<AboutYouProfileScreen> {
     );
   }
 
-  Widget _buildRoleCard(RoleModel role, bool isSelected, [bool isTa = false]) {
-    final String titleKey = switch (role.id) {
-      'student' => 'student',
-      'entrepreneur' => 'aspiring_entrepreneur',
-      'existing_business' => 'existing_business',
-      'msme' => 'msme_owner',
-      'farmer' => 'farmer',
-      'artisan' => 'artisan_shg',
-      _ => role.id,
-    };
-    final String subtitleKey = '${titleKey}_subtitle';
-    final String localTitle = ProfileL10n.t(titleKey, isTa);
-    final String localSubtitle = ProfileL10n.t(subtitleKey, isTa);
+  Widget _buildRoleCard(RoleModel role, bool isSelected) {
     return GestureDetector(
       onTap: () {
         setState(() {
@@ -339,14 +379,14 @@ class _AboutYouProfileScreenState extends State<AboutYouProfileScreen> {
                     color: kPrimaryBlue.withValues(alpha: 0.1),
                     blurRadius: 8,
                     offset: const Offset(0, 3),
-                  )
+                  ),
                 ]
               : [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: 0.02),
                     blurRadius: 4,
                     offset: const Offset(0, 2),
-                  )
+                  ),
                 ],
         ),
         child: Column(
@@ -368,11 +408,7 @@ class _AboutYouProfileScreenState extends State<AboutYouProfileScreen> {
                 ),
                 alignment: Alignment.center,
                 child: isSelected
-                    ? const Icon(
-                        Icons.check,
-                        color: Colors.white,
-                        size: 10,
-                      )
+                    ? const Icon(Icons.check, color: Colors.white, size: 10)
                     : null,
               ),
             ),
@@ -392,11 +428,7 @@ class _AboutYouProfileScreenState extends State<AboutYouProfileScreen> {
                         color: role.color.withValues(alpha: 0.1),
                         shape: BoxShape.circle,
                       ),
-                      child: Icon(
-                        role.icon,
-                        color: role.color,
-                        size: 22,
-                      ),
+                      child: Icon(role.icon, color: role.color, size: 22),
                     );
                   },
                 ),
@@ -406,8 +438,10 @@ class _AboutYouProfileScreenState extends State<AboutYouProfileScreen> {
 
             // Role Title
             Text(
-              localTitle,
+              role.title,
               textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
               style: GoogleFonts.inter(
                 fontSize: 13,
                 fontWeight: FontWeight.bold,
@@ -418,7 +452,7 @@ class _AboutYouProfileScreenState extends State<AboutYouProfileScreen> {
 
             // Role Description
             Text(
-              localSubtitle,
+              role.subtitle,
               textAlign: TextAlign.center,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,

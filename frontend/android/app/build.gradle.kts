@@ -34,6 +34,8 @@ android {
 
     signingConfigs.getByName("debug") {
         // Use repo-specific debug.keystore if available, otherwise fall back to standard Android debug keystore.
+        // This certificate is registered with the Android Google OAuth client if present.
+        // The keystore itself is ignored by Git (android/.gitignore).
         val customKeystore = file("debug.keystore")
         if (customKeystore.exists()) {
             storeFile = customKeystore

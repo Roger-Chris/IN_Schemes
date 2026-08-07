@@ -18,7 +18,11 @@ class FloatingLogo extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(width: 16, height: 1.5, color: const Color(0xFFF97316)), // Orange
+            Container(
+              width: 16,
+              height: 1.5,
+              color: const Color(0xFFF97316),
+            ), // Orange
             const SizedBox(width: 8),
             Flexible(
               child: FitOneLine(
@@ -33,7 +37,11 @@ class FloatingLogo extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 8),
-            Container(width: 16, height: 1.5, color: const Color(0xFF15803D)), // Green
+            Container(
+              width: 16,
+              height: 1.5,
+              color: const Color(0xFF15803D),
+            ), // Green
           ],
         ),
       ],

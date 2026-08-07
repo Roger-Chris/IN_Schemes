@@ -12,6 +12,7 @@ import '../../engine/recommendation_engine.dart';
 import '../../l10n/l10n.dart';
 import '../../services/centralized_translator.dart';
 import '../../utils/responsive.dart';
+import '../../utils/emblem_helper.dart';
 
 String _getLocalizedTagOrCategory(String text, String langCode) {
   if (langCode != 'ta') return text;
@@ -77,8 +78,6 @@ class SearchScreenState extends State<SearchScreen> {
     }
   }
 
-
-
   void _applySorting() {
     if (_masterSearchResults.isEmpty) return;
 
@@ -93,11 +92,17 @@ class SearchScreenState extends State<SearchScreen> {
       });
     } else if (_currentSort == 'Scheme Name (A-Z)') {
       sorted.sort(
-        (a, b) => a.getName(provider.selectedLanguage).toLowerCase().compareTo(b.getName(provider.selectedLanguage).toLowerCase()),
+        (a, b) => a
+            .getName(provider.selectedLanguage)
+            .toLowerCase()
+            .compareTo(b.getName(provider.selectedLanguage).toLowerCase()),
       );
     } else if (_currentSort == 'Scheme Name (Z-A)') {
       sorted.sort(
-        (a, b) => b.getName(provider.selectedLanguage).toLowerCase().compareTo(a.getName(provider.selectedLanguage).toLowerCase()),
+        (a, b) => b
+            .getName(provider.selectedLanguage)
+            .toLowerCase()
+            .compareTo(a.getName(provider.selectedLanguage).toLowerCase()),
       );
     }
 
@@ -129,7 +134,9 @@ class SearchScreenState extends State<SearchScreen> {
       final recs = await SchemeRepository.instance.getRecommendedSchemes(
         provider.profile,
       );
-      final hint = await SchemeRepository.instance.getDynamicSearchHint(provider.selectedLanguage);
+      final hint = await SchemeRepository.instance.getDynamicSearchHint(
+        provider.selectedLanguage,
+      );
 
       if (mounted) {
         setState(() {
@@ -236,7 +243,9 @@ class SearchScreenState extends State<SearchScreen> {
     try {
       List<Scheme> results;
       final String normalQuery = searchTerm.toLowerCase().trim();
-      if (_activeFilter == 'For Me' || normalQuery == 'suitable schemes' || normalQuery == 'for me') {
+      if (_activeFilter == 'For Me' ||
+          normalQuery == 'suitable schemes' ||
+          normalQuery == 'for me') {
         results = await SchemeRepository.instance.getRecommendedSchemes(
           provider.profile,
         );
@@ -269,7 +278,9 @@ class SearchScreenState extends State<SearchScreen> {
         filteredResults = results.where((scheme) {
           final type = scheme.schemeType.toLowerCase();
           final category = scheme.category.toLowerCase();
-          final fullText = '${scheme.name} ${scheme.shortName} ${scheme.schemeType} ${scheme.category} ${scheme.sector} ${scheme.searchKeywords} ${scheme.overview}'.toLowerCase();
+          final fullText =
+              '${scheme.name} ${scheme.shortName} ${scheme.schemeType} ${scheme.category} ${scheme.sector} ${scheme.searchKeywords} ${scheme.overview}'
+                  .toLowerCase();
           return type.contains('loan') ||
               category.contains('loan') ||
               category.contains('credit') ||
@@ -284,27 +295,38 @@ class SearchScreenState extends State<SearchScreen> {
         }).toList();
       } else if (_activeFilter == 'Udyam') {
         filteredResults = results.where((scheme) {
-          final reqDocs = scheme.requiredDocuments.map((d) => d.toLowerCase()).join(' ');
+          final reqDocs = scheme.requiredDocuments
+              .map((d) => d.toLowerCase())
+              .join(' ');
           final desc = scheme.searchKeywords.toLowerCase();
-          return reqDocs.contains('udyam') || desc.contains('udyam') || desc.contains('udyam registration');
+          return reqDocs.contains('udyam') ||
+              desc.contains('udyam') ||
+              desc.contains('udyam registration');
         }).toList();
       } else if (_activeFilter == 'Startup') {
         filteredResults = results.where((scheme) {
           final desc = scheme.searchKeywords.toLowerCase();
           final cat = scheme.category.toLowerCase();
-          return desc.contains('startup') || cat.contains('startup') || desc.contains('dpiit');
+          return desc.contains('startup') ||
+              cat.contains('startup') ||
+              desc.contains('dpiit');
         }).toList();
       } else if (_activeFilter == 'Subsidy') {
         filteredResults = results.where((scheme) {
           final type = scheme.schemeType.toLowerCase();
           final cat = scheme.category.toLowerCase();
           final desc = scheme.searchKeywords.toLowerCase();
-          return type.contains('subsidy') || cat.contains('subsidy') || desc.contains('subsidy');
+          return type.contains('subsidy') ||
+              cat.contains('subsidy') ||
+              desc.contains('subsidy');
         }).toList();
       } else if (_activeFilter == 'Collateral-Free') {
         filteredResults = results.where((scheme) {
           final desc = scheme.searchKeywords.toLowerCase();
-          return desc.contains('cgtmse') || desc.contains('mudra') || desc.contains('collateral free') || desc.contains('collateral-free');
+          return desc.contains('cgtmse') ||
+              desc.contains('mudra') ||
+              desc.contains('collateral free') ||
+              desc.contains('collateral-free');
         }).toList();
       }
 
@@ -316,11 +338,16 @@ class SearchScreenState extends State<SearchScreen> {
           if (locs.isNotEmpty) {
             bool matchesLoc = false;
             for (final loc in locs) {
-              if (loc == 'All India' && scheme.state.toLowerCase() == 'all india') {
+              if (loc == 'All India' &&
+                  scheme.state.toLowerCase() == 'all india') {
                 matchesLoc = true;
-              } else if (loc == 'Central' && scheme.governmentLevel.toLowerCase() == 'central') {
+              } else if (loc == 'Central' &&
+                  scheme.governmentLevel.toLowerCase() == 'central') {
                 matchesLoc = true;
-              } else if (loc == 'State' && (scheme.governmentLevel.toLowerCase() == 'state' || (scheme.state.isNotEmpty && scheme.state.toLowerCase() != 'all india'))) {
+              } else if (loc == 'State' &&
+                  (scheme.governmentLevel.toLowerCase() == 'state' ||
+                      (scheme.state.isNotEmpty &&
+                          scheme.state.toLowerCase() != 'all india'))) {
                 matchesLoc = true;
               }
             }
@@ -347,7 +374,8 @@ class SearchScreenState extends State<SearchScreen> {
             final kw = scheme.searchKeywords.toLowerCase();
             final name = scheme.name.toLowerCase();
             for (final stage in stages) {
-              if (kw.contains(stage.toLowerCase()) || name.contains(stage.toLowerCase())) {
+              if (kw.contains(stage.toLowerCase()) ||
+                  name.contains(stage.toLowerCase())) {
                 matchesStage = true;
               }
             }
@@ -362,7 +390,9 @@ class SearchScreenState extends State<SearchScreen> {
             final cat = scheme.category.toLowerCase();
             final ben = scheme.benefits.toLowerCase();
             for (final b in benefits) {
-              if (type.contains(b.toLowerCase()) || cat.contains(b.toLowerCase()) || ben.contains(b.toLowerCase())) {
+              if (type.contains(b.toLowerCase()) ||
+                  cat.contains(b.toLowerCase()) ||
+                  ben.contains(b.toLowerCase())) {
                 matchesBen = true;
               }
             }
@@ -389,7 +419,8 @@ class SearchScreenState extends State<SearchScreen> {
             final sponsor = scheme.sponsoringBody.toLowerCase();
             final issuer = scheme.issuingBody.toLowerCase();
             for (final auth in authorities) {
-              if (sponsor.contains(auth.toLowerCase()) || issuer.contains(auth.toLowerCase())) {
+              if (sponsor.contains(auth.toLowerCase()) ||
+                  issuer.contains(auth.toLowerCase())) {
                 matchesAuth = true;
               }
             }
@@ -579,11 +610,11 @@ class SearchScreenState extends State<SearchScreen> {
   Future<void> openFilterBottomSheet() async {
     final Map<String, List<String>>? selectedFilters =
         await showModalBottomSheet<Map<String, List<String>>>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => const FilterBottomSheet(),
-    );
+          context: context,
+          isScrollControlled: true,
+          backgroundColor: Colors.transparent,
+          builder: (context) => const FilterBottomSheet(),
+        );
     if (selectedFilters != null && mounted) {
       setState(() {
         _activeSearchFilters = selectedFilters;
@@ -649,7 +680,10 @@ class SearchScreenState extends State<SearchScreen> {
         controller: _searchController,
         focusNode: _searchFocusNode,
         onSubmitted: _triggerSearch,
-        style: GoogleFonts.inter(fontSize: _scaledFontSize(13), color: const Color(0xFF1E293B)),
+        style: GoogleFonts.inter(
+          fontSize: _scaledFontSize(13),
+          color: const Color(0xFF1E293B),
+        ),
         decoration: InputDecoration(
           hintText: context.l10n.searchPlaceholder,
           hintStyle: GoogleFonts.inter(
@@ -749,14 +783,22 @@ class SearchScreenState extends State<SearchScreen> {
                           softWrap: true,
                           style: GoogleFonts.inter(
                             fontSize: _scaledFontSize(12),
-                            fontWeight: _currentSort == 'Match %' ? FontWeight.bold : FontWeight.normal,
-                            color: _currentSort == 'Match %' ? const Color(0xFF2563EB) : const Color(0xFF1E293B),
+                            fontWeight: _currentSort == 'Match %'
+                                ? FontWeight.bold
+                                : FontWeight.normal,
+                            color: _currentSort == 'Match %'
+                                ? const Color(0xFF2563EB)
+                                : const Color(0xFF1E293B),
                           ),
                         ),
                       ),
                       const SizedBox(width: 8),
                       if (_currentSort == 'Match %')
-                        const Icon(Icons.check, color: Color(0xFF2563EB), size: 14),
+                        const Icon(
+                          Icons.check,
+                          color: Color(0xFF2563EB),
+                          size: 14,
+                        ),
                     ],
                   ),
                 ),
@@ -771,14 +813,22 @@ class SearchScreenState extends State<SearchScreen> {
                           softWrap: true,
                           style: GoogleFonts.inter(
                             fontSize: _scaledFontSize(12),
-                            fontWeight: _currentSort == 'Scheme Name (A-Z)' ? FontWeight.bold : FontWeight.normal,
-                            color: _currentSort == 'Scheme Name (A-Z)' ? const Color(0xFF2563EB) : const Color(0xFF1E293B),
+                            fontWeight: _currentSort == 'Scheme Name (A-Z)'
+                                ? FontWeight.bold
+                                : FontWeight.normal,
+                            color: _currentSort == 'Scheme Name (A-Z)'
+                                ? const Color(0xFF2563EB)
+                                : const Color(0xFF1E293B),
                           ),
                         ),
                       ),
                       const SizedBox(width: 8),
                       if (_currentSort == 'Scheme Name (A-Z)')
-                        const Icon(Icons.check, color: Color(0xFF2563EB), size: 14),
+                        const Icon(
+                          Icons.check,
+                          color: Color(0xFF2563EB),
+                          size: 14,
+                        ),
                     ],
                   ),
                 ),
@@ -793,14 +843,22 @@ class SearchScreenState extends State<SearchScreen> {
                           softWrap: true,
                           style: GoogleFonts.inter(
                             fontSize: _scaledFontSize(12),
-                            fontWeight: _currentSort == 'Scheme Name (Z-A)' ? FontWeight.bold : FontWeight.normal,
-                            color: _currentSort == 'Scheme Name (Z-A)' ? const Color(0xFF2563EB) : const Color(0xFF1E293B),
+                            fontWeight: _currentSort == 'Scheme Name (Z-A)'
+                                ? FontWeight.bold
+                                : FontWeight.normal,
+                            color: _currentSort == 'Scheme Name (Z-A)'
+                                ? const Color(0xFF2563EB)
+                                : const Color(0xFF1E293B),
                           ),
                         ),
                       ),
                       const SizedBox(width: 8),
                       if (_currentSort == 'Scheme Name (Z-A)')
-                        const Icon(Icons.check, color: Color(0xFF2563EB), size: 14),
+                        const Icon(
+                          Icons.check,
+                          color: Color(0xFF2563EB),
+                          size: 14,
+                        ),
                     ],
                   ),
                 ),
@@ -1113,7 +1171,9 @@ class SearchScreenState extends State<SearchScreen> {
                   Text(
                     _isLoadingCounts
                         ? context.l10n.calculatingMatches
-                        : context.l10n.schemesMatchProfile(_matchingProfileCount),
+                        : context.l10n.schemesMatchProfile(
+                            _matchingProfileCount,
+                          ),
                     style: GoogleFonts.inter(
                       fontSize: _scaledFontSize(10.5),
                       color: const Color(0xFF64748B),
@@ -1230,7 +1290,8 @@ class SearchScreenState extends State<SearchScreen> {
           borderRadius: BorderRadius.circular(12),
           onTap: () async {
             final categoryTitle = category["title"] as String;
-            final schemes = await SchemeRepository.instance.getSchemesByCategory(categoryTitle);
+            final schemes = await SchemeRepository.instance
+                .getSchemesByCategory(categoryTitle);
             if (!mounted) return;
             Navigator.of(context).push(
               MaterialPageRoute(
@@ -1262,7 +1323,10 @@ class SearchScreenState extends State<SearchScreen> {
               ),
             ),
             title: Text(
-              _getLocalizedTagOrCategory(category["title"] as String, provider.selectedLanguage),
+              _getLocalizedTagOrCategory(
+                category["title"] as String,
+                provider.selectedLanguage,
+              ),
               style: GoogleFonts.inter(
                 fontSize: _scaledFontSize(12.5),
                 fontWeight: _scaledFontWeight(FontWeight.bold),
@@ -1339,257 +1403,26 @@ class _ResultSchemeCard extends StatelessWidget {
     return uniqueList.take(4).toList();
   }
 
-  String? _getLocalStateEmblem(Scheme scheme) {
-    final state = scheme.state.toLowerCase().trim();
-    final code = scheme.schemeCode.toLowerCase().trim();
-    final name = scheme.name.toLowerCase().trim();
-    final sponsor = scheme.sponsoringBody.toLowerCase().trim();
-    final issuer = scheme.issuingBody.toLowerCase().trim();
-
-    bool matchesState(String stateKey, List<String> variations) {
-      for (final v in variations) {
-        if (state.contains(v) ||
-            name.contains(v) ||
-            sponsor.contains(v) ||
-            issuer.contains(v)) {
-          return true;
-        }
-      }
-      return false;
-    }
-
-    if (matchesState('tamil nadu', ['tamil', 'tn', 'tanglish']) ||
-        code.startsWith('tn_') ||
-        code.contains('_tn_') ||
-        code.endsWith('_tn')) {
-      return 'assets/images/States assets/State Emblem/Tamil Nadu.png';
-    }
-    if (matchesState('andhra pradesh', ['andhra', 'ap']) ||
-        code.startsWith('ap_') ||
-        code.contains('_ap_') ||
-        code.endsWith('_ap')) {
-      return 'assets/images/States assets/State Emblem/Andhra Pradesh.png';
-    }
-    if (matchesState('arunachal pradesh', ['arunachal', 'ar']) ||
-        code.startsWith('ar_') ||
-        code.contains('_ar_') ||
-        code.endsWith('_ar')) {
-      return 'assets/images/States assets/State Emblem/Arunachal Pradesh.png';
-    }
-    if (matchesState('assam', ['assam', 'as']) ||
-        code.startsWith('as_') ||
-        code.contains('_as_') ||
-        code.endsWith('_as')) {
-      return 'assets/images/States assets/State Emblem/Assam.png';
-    }
-    if (matchesState('bihar', ['bihar', 'br']) ||
-        code.startsWith('br_') ||
-        code.contains('_br_') ||
-        code.endsWith('_br')) {
-      return 'assets/images/States assets/State Emblem/Bihar.png';
-    }
-    if (matchesState('chhattisgarh', ['chhattisgarh', 'chhatisgarh', 'cg']) ||
-        code.startsWith('cg_') ||
-        code.contains('_cg_') ||
-        code.endsWith('_cg')) {
-      return 'assets/images/States assets/State Emblem/Chhatisgarh.png';
-    }
-    if (matchesState('goa', ['goa', 'ga']) ||
-        code.startsWith('ga_') ||
-        code.contains('_ga_') ||
-        code.endsWith('_ga')) {
-      return 'assets/images/States assets/State Emblem/Goa.png';
-    }
-    if (matchesState('gujarat', ['gujarat', 'gj']) ||
-        code.startsWith('gj_') ||
-        code.contains('_gj_') ||
-        code.endsWith('_gj')) {
-      return 'assets/images/States assets/State Emblem/Gujarat.png';
-    }
-    if (matchesState('haryana', ['haryana', 'hr']) ||
-        code.startsWith('hr_') ||
-        code.contains('_hr_') ||
-        code.endsWith('_hr')) {
-      return 'assets/images/States assets/State Emblem/Haryana.png';
-    }
-    if (matchesState('himachal pradesh', ['himachal', 'hp']) ||
-        code.startsWith('hp_') ||
-        code.contains('_hp_') ||
-        code.endsWith('_hp')) {
-      return 'assets/images/States assets/State Emblem/Himachal Pradesh.png';
-    }
-    if (matchesState('jharkhand', ['jharkhand', 'jh']) ||
-        code.startsWith('jh_') ||
-        code.contains('_jh_') ||
-        code.endsWith('_jh')) {
-      return 'assets/images/States assets/State Emblem/Jharkhand.png';
-    }
-    if (matchesState('karnataka', ['karnataka', 'ka']) ||
-        code.startsWith('ka_') ||
-        code.contains('_ka_') ||
-        code.endsWith('_ka')) {
-      return 'assets/images/States assets/State Emblem/Karnataka.png';
-    }
-    if (matchesState('kerala', ['kerala', 'kl']) ||
-        code.startsWith('kl_') ||
-        code.contains('_kl_') ||
-        code.endsWith('_kl')) {
-      return 'assets/images/States assets/State Emblem/kerala.png';
-    }
-    if (matchesState('madhya pradesh', ['madhya', 'mp']) ||
-        code.startsWith('mp_') ||
-        code.contains('_mp_') ||
-        code.endsWith('_mp')) {
-      return 'assets/images/States assets/State Emblem/Madhya Pradesh.png';
-    }
-    if (matchesState('maharashtra', ['maharashtra', 'mh']) ||
-        code.startsWith('mh_') ||
-        code.contains('_mh_') ||
-        code.endsWith('_mh')) {
-      return 'assets/images/States assets/State Emblem/Maharashtra.png';
-    }
-    if (matchesState('manipur', ['manipur', 'mn']) ||
-        code.startsWith('mn_') ||
-        code.contains('_mn_') ||
-        code.endsWith('_mn')) {
-      return 'assets/images/States assets/State Emblem/Manipur.png';
-    }
-    if (matchesState('meghalaya', ['meghalaya', 'ml', 'maghalaya']) ||
-        code.startsWith('ml_') ||
-        code.contains('_ml_') ||
-        code.endsWith('_ml')) {
-      return 'assets/images/States assets/State Emblem/Maghalaya.png';
-    }
-    if (matchesState('mizoram', ['mizoram', 'mz']) ||
-        code.startsWith('mz_') ||
-        code.contains('_mz_') ||
-        code.endsWith('_mz')) {
-      return 'assets/images/States assets/State Emblem/Mizoram.png';
-    }
-    if (matchesState('nagaland', ['nagaland', 'nl']) ||
-        code.startsWith('nl_') ||
-        code.contains('_nl_') ||
-        code.endsWith('_nl')) {
-      return 'assets/images/States assets/State Emblem/Nagaland.png';
-    }
-    if (matchesState('odisha', ['odisha', 'orissa', 'od']) ||
-        code.startsWith('od_') ||
-        code.contains('_od_') ||
-        code.endsWith('_od') ||
-        code.startsWith('or_') ||
-        code.contains('_or_') ||
-        code.endsWith('_or')) {
-      return 'assets/images/States assets/State Emblem/Odisha.png';
-    }
-    if (matchesState('punjab', ['punjab', 'pb']) ||
-        code.startsWith('pb_') ||
-        code.contains('_pb_') ||
-        code.endsWith('_pb')) {
-      return 'assets/images/States assets/State Emblem/Punjab.png';
-    }
-    if (matchesState('rajasthan', ['rajasthan', 'rj']) ||
-        code.startsWith('rj_') ||
-        code.contains('_rj_') ||
-        code.endsWith('_rj')) {
-      return 'assets/images/States assets/State Emblem/Rajasthan.png';
-    }
-    if (matchesState('sikkim', ['sikkim', 'sk']) ||
-        code.startsWith('sk_') ||
-        code.contains('_sk_') ||
-        code.endsWith('_sk')) {
-      return 'assets/images/States assets/State Emblem/Sikkim.png';
-    }
-    if (matchesState('telangana', ['telangana', 'tg', 'telagana']) ||
-        code.startsWith('tg_') ||
-        code.contains('_tg_') ||
-        code.endsWith('_tg')) {
-      return 'assets/images/States assets/State Emblem/Telagana.png';
-    }
-    if (matchesState('tripura', ['tripura', 'tr']) ||
-        code.startsWith('tr_') ||
-        code.contains('_tr_') ||
-        code.endsWith('_tr')) {
-      return 'assets/images/States assets/State Emblem/Tripura.png';
-    }
-    if (matchesState('uttar pradesh', ['uttar pradesh', 'up']) ||
-        code.startsWith('up_') ||
-        code.contains('_up_') ||
-        code.endsWith('_up')) {
-      return 'assets/images/States assets/State Emblem/Uttar Pradesh.png';
-    }
-    if (matchesState('uttarakhand', ['uttarakhand', 'uttarkhand', 'uk', 'ua']) ||
-        code.startsWith('uk_') ||
-        code.contains('_uk_') ||
-        code.endsWith('_uk')) {
-      return 'assets/images/States assets/State Emblem/Uttarakhand.png';
-    }
-    if (matchesState('west bengal', ['west bengal', 'wb']) ||
-        code.startsWith('wb_') ||
-        code.contains('_wb_') ||
-        code.endsWith('_wb')) {
-      return 'assets/images/States assets/State Emblem/West Bengal.png';
-    }
-
-    return null;
-  }
-
   Widget _buildSchemeLogo(Scheme scheme, {double size = 48}) {
-    final localStateEmblem = _getLocalStateEmblem(scheme);
-    
-    if (localStateEmblem != null) {
-      return Image.asset(
-        localStateEmblem,
-        fit: BoxFit.cover,
-        width: size,
-        height: size,
-        errorBuilder: (context, error, stackTrace) {
-          return Image.asset(
-            'assets/images/Logo/Logo icon.png',
-            fit: BoxFit.contain,
-            width: size,
-            height: size,
-          );
-        },
-      );
-    }
-    
-    final code = scheme.schemeCode.toUpperCase();
-    String logoUrl = 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Emblem_of_India.svg/358px-Emblem_of_India.svg.png';
-    
-    if (code.contains('MUDRA') || code.contains('PMMY')) {
-      logoUrl = 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Logo_of_the_Pradhan_Mantri_Mudra_Yojana.svg/450px-Logo_of_the_Pradhan_Mantri_Mudra_Yojana.svg.png';
-    } else if (code.contains('MSME') || code.contains('CGTMSE') || code.contains('PMEGP')) {
-      logoUrl = 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/00/MSME_logo_%28colour%29.svg/330px-MSME_logo_%28colour%29.svg.png';
-    }
+    final emblemAsset = EmblemHelper.getEmblemAsset(
+      governmentLevel: scheme.governmentLevel,
+      state: scheme.state,
+      schemeCode: scheme.schemeCode,
+      sponsoringBody: scheme.sponsoringBody,
+      name: scheme.name,
+    );
 
-    return Image.network(
-      logoUrl,
+    return Image.asset(
+      emblemAsset,
       fit: BoxFit.contain,
       width: size,
       height: size,
       errorBuilder: (context, error, stackTrace) {
         return Image.asset(
-          'assets/images/Logo/Logo icon.png',
+          'assets/images/States assets/Indian emblem.png',
           fit: BoxFit.contain,
           width: size,
           height: size,
-        );
-      },
-      loadingBuilder: (context, child, loadingProgress) {
-        if (loadingProgress == null) return child;
-        return SizedBox(
-          width: size,
-          height: size,
-          child: const Center(
-            child: SizedBox(
-              width: 16,
-              height: 16,
-              child: CircularProgressIndicator(
-                strokeWidth: 1.5,
-                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2563EB)),
-              ),
-            ),
-          ),
         );
       },
     );
@@ -1705,13 +1538,8 @@ class _ResultSchemeCard extends StatelessWidget {
                         width: 1.2,
                       ),
                     ),
-                    padding: _getLocalStateEmblem(scheme) != null ? EdgeInsets.zero : const EdgeInsets.all(10),
-                    child: ClipOval(
-                      child: _buildSchemeLogo(
-                        scheme,
-                        size: 72,
-                      ),
-                    ),
+                    padding: EdgeInsets.zero,
+                    child: ClipOval(child: _buildSchemeLogo(scheme, size: 72)),
                   ),
                   const SizedBox(width: 16),
 
@@ -1734,7 +1562,12 @@ class _ResultSchemeCard extends StatelessWidget {
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: Text(
-                              context.l10n.matchScorePercent(RecommendationEngine.evaluate(provider.profile, scheme).percentage),
+                              context.l10n.matchScorePercent(
+                                RecommendationEngine.evaluate(
+                                  provider.profile,
+                                  scheme,
+                                ).percentage,
+                              ),
                               style: GoogleFonts.inter(
                                 color: const Color(0xFF2E7D32),
                                 fontSize: 7.5,
@@ -1748,9 +1581,13 @@ class _ResultSchemeCard extends StatelessWidget {
                         Text(
                           locScheme.name,
                           style: GoogleFonts.poppins(
-                            fontSize: provider.selectedLanguage == 'ta' ? 11.5 * 0.90 : 11.5,
+                            fontSize: provider.selectedLanguage == 'ta'
+                                ? 11.5 * 0.90
+                                : 11.5,
                             fontWeight: FontWeight.bold,
-                            height: provider.selectedLanguage == 'ta' ? 1.35 : 1.22,
+                            height: provider.selectedLanguage == 'ta'
+                                ? 1.35
+                                : 1.22,
                             color: const Color(0xFF0F172A),
                           ),
                           maxLines: 3,
@@ -1761,7 +1598,9 @@ class _ResultSchemeCard extends StatelessWidget {
                           Text(
                             subtitleText,
                             style: GoogleFonts.inter(
-                              fontSize: provider.selectedLanguage == 'ta' ? 9.5 * 0.90 : 9.5,
+                              fontSize: provider.selectedLanguage == 'ta'
+                                  ? 9.5 * 0.90
+                                  : 9.5,
                               color: const Color(0xFF64748B),
                               fontWeight: FontWeight.w500,
                               height: 1.3,
@@ -1788,9 +1627,14 @@ class _ResultSchemeCard extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(5),
                               ),
                               child: Text(
-                                _getLocalizedTagOrCategory(tag, provider.selectedLanguage),
+                                _getLocalizedTagOrCategory(
+                                  tag,
+                                  provider.selectedLanguage,
+                                ),
                                 style: GoogleFonts.inter(
-                                  fontSize: provider.selectedLanguage == 'ta' ? 8.5 * 0.90 : 8.5,
+                                  fontSize: provider.selectedLanguage == 'ta'
+                                      ? 8.5 * 0.90
+                                      : 8.5,
                                   fontWeight: FontWeight.bold,
                                   color: colors['text'],
                                 ),

@@ -41,10 +41,15 @@ class RecommendationEngine {
     // Get basic stats
     final age = profile.age;
     final isTN = profile.state.toLowerCase() == 'tamil nadu';
-    final isFemale = profile.gender.toLowerCase() == 'female' || profile.gender.toLowerCase() == 'transgender';
-    final isSCST = profile.community.toLowerCase() == 'sc' || profile.community.toLowerCase() == 'st';
-    final isSpecialCommunity = isSCST || 
-        profile.community.toLowerCase() == 'obc' || 
+    final isFemale =
+        profile.gender.toLowerCase() == 'female' ||
+        profile.gender.toLowerCase() == 'transgender';
+    final isSCST =
+        profile.community.toLowerCase() == 'sc' ||
+        profile.community.toLowerCase() == 'st';
+    final isSpecialCommunity =
+        isSCST ||
+        profile.community.toLowerCase() == 'obc' ||
         profile.community.toLowerCase() == 'minority' ||
         profile.community.toLowerCase() == 'ews';
 
@@ -54,20 +59,28 @@ class RecommendationEngine {
     for (var doc in scheme.requiredDocuments) {
       if (doc == 'Nativity Certificate (TN)' && !isTN) {
         missingDocuments.add(doc);
-      } else if (doc == 'Community Certificate' && profile.community.toLowerCase() == 'general') {
+      } else if (doc == 'Community Certificate' &&
+          profile.community.toLowerCase() == 'general') {
         // General category usually doesn't have a community certificate, but if the scheme requires it, it's flagged
         missingDocuments.add(doc);
-      } else if (doc == 'Degree/Diploma Certificate' && profile.educationLevel == 'School') {
+      } else if (doc == 'Degree/Diploma Certificate' &&
+          profile.educationLevel == 'School') {
         missingDocuments.add(doc);
       } else if (doc == 'Artisan Identity Card (DC Handicrafts)') {
         // Unless they specifically have it, flag as missing (simulate for demonstration)
         missingDocuments.add(doc);
-      } else if (doc == 'DPIIT Certificate of Recognition' || doc == 'Certificate of Incorporation (Pvt Ltd / LLP / Registered Partnership)') {
+      } else if (doc == 'DPIIT Certificate of Recognition' ||
+          doc ==
+              'Certificate of Incorporation (Pvt Ltd / LLP / Registered Partnership)') {
         missingDocuments.add(doc);
-      } else if (doc == 'Project Report / Business Plan' || doc == 'Project Report / DPR' || doc == 'Project Report') {
+      } else if (doc == 'Project Report / Business Plan' ||
+          doc == 'Project Report / DPR' ||
+          doc == 'Project Report') {
         // Project report is always missing initially for new entrepreneurs
         missingDocuments.add(doc);
-      } else if (doc == 'Quotations for machinery/equipment' || doc == 'Price Quotation of machinery/equipment or items to be purchased') {
+      } else if (doc == 'Quotations for machinery/equipment' ||
+          doc ==
+              'Price Quotation of machinery/equipment or items to be purchased') {
         missingDocuments.add(doc);
       }
     }
@@ -78,7 +91,9 @@ class RecommendationEngine {
         // State Match
         if (!isTN) {
           score = 0.0;
-          missingRequirements.add('Residency: This scheme is strictly for residents of Tamil Nadu.');
+          missingRequirements.add(
+            'Residency: This scheme is strictly for residents of Tamil Nadu.',
+          );
         } else {
           matchingReasons.add('Location: You reside in Tamil Nadu.');
         }
@@ -86,15 +101,21 @@ class RecommendationEngine {
         // Education Match
         if (profile.educationLevel == 'School') {
           score *= 0.2; // severe penalty
-          missingRequirements.add('Education: Requires a college Degree, Diploma, ITI, or Vocational Certificate.');
+          missingRequirements.add(
+            'Education: Requires a college Degree, Diploma, ITI, or Vocational Certificate.',
+          );
         } else {
-          matchingReasons.add('Education: You hold a college degree/diploma (${profile.educationLevel}).');
+          matchingReasons.add(
+            'Education: You hold a college degree/diploma (${profile.educationLevel}).',
+          );
         }
 
         // First Gen Graduate Bonus
         if (profile.firstGenGraduate) {
           score = (score + 0.1).clamp(0.0, 1.0);
-          matchingReasons.add('Priority: You are a First-Generation Graduate (priority selection).');
+          matchingReasons.add(
+            'Priority: You are a First-Generation Graduate (priority selection).',
+          );
         }
 
         // Age limits
@@ -102,35 +123,50 @@ class RecommendationEngine {
         final maxAge = (isFemale || isSpecialCommunity) ? 45 : 35;
         if (age < 21 || age > maxAge) {
           score *= 0.3;
-          missingRequirements.add('Age: Your age ($age) is outside the eligible range of 21-$maxAge years.');
+          missingRequirements.add(
+            'Age: Your age ($age) is outside the eligible range of 21-$maxAge years.',
+          );
         } else {
-          matchingReasons.add('Age: Your age ($age) is within the eligible range of 21-$maxAge years.');
+          matchingReasons.add(
+            'Age: Your age ($age) is within the eligible range of 21-$maxAge years.',
+          );
         }
 
         // Project Cost check
         // Eligible project cost: 10 Lakhs to 5 Crores
-        if (profile.annualIncome > 50000000) { // arbitrary
+        if (profile.annualIncome > 50000000) {
+          // arbitrary
           score *= 0.8;
         }
-        matchingReasons.add('Funding: Supports project costs from ₹10 Lakhs to ₹5 Crores.');
+        matchingReasons.add(
+          'Funding: Supports project costs from ₹10 Lakhs to ₹5 Crores.',
+        );
         break;
 
       case 'PMEGP':
       case 'IN130':
-        matchingReasons.add('Age: Eligible for any citizen above 18 years (you are $age).');
+        matchingReasons.add(
+          'Age: Eligible for any citizen above 18 years (you are $age).',
+        );
 
         // Education checks
         // VIII standard pass required for project >10L manufacturing or >5L service.
         // Since we don't have project cost input in profile, we check if education level is high enough.
         if (profile.educationLevel == 'School') {
           score *= 0.9;
-          matchingReasons.add('Education: VIII standard pass criteria applies for larger projects.');
+          matchingReasons.add(
+            'Education: VIII standard pass criteria applies for larger projects.',
+          );
         } else {
-          matchingReasons.add('Education: You satisfy the minimum VIII standard pass requirement.');
+          matchingReasons.add(
+            'Education: You satisfy the minimum VIII standard pass requirement.',
+          );
         }
 
         if (profile.state.toLowerCase() == 'tamil nadu') {
-          matchingReasons.add('Implementation: Supported in Tamil Nadu via DIC and KVIC offices.');
+          matchingReasons.add(
+            'Implementation: Supported in Tamil Nadu via DIC and KVIC offices.',
+          );
         }
         break;
 
@@ -140,13 +176,19 @@ class RecommendationEngine {
         final eligibleCategory = isFemale || isSCST;
         if (!eligibleCategory) {
           score = 0.0;
-          missingRequirements.add('Category: Stand-Up India is reserved for Women entrepreneurs and SC/ST category individuals.');
+          missingRequirements.add(
+            'Category: Stand-Up India is reserved for Women entrepreneurs and SC/ST category individuals.',
+          );
         } else {
           if (isFemale) {
-            matchingReasons.add('Gender: You match the requirement for Women entrepreneurs.');
+            matchingReasons.add(
+              'Gender: You match the requirement for Women entrepreneurs.',
+            );
           }
           if (isSCST) {
-            matchingReasons.add('Community: You match the requirement for SC/ST category borrowers.');
+            matchingReasons.add(
+              'Community: You match the requirement for SC/ST category borrowers.',
+            );
           }
         }
 
@@ -156,13 +198,19 @@ class RecommendationEngine {
           missingRequirements.add('Age: Must be at least 18 years old.');
         }
 
-        matchingReasons.add('Project Type: Facilitates greenfield projects between ₹10 Lakhs and ₹1 Crore.');
+        matchingReasons.add(
+          'Project Type: Facilitates greenfield projects between ₹10 Lakhs and ₹1 Crore.',
+        );
         break;
 
       case 'MUDRA':
       case 'IN128':
-        matchingReasons.add('Eligibility: Open to all Indian citizens with a viable business plan.');
-        matchingReasons.add('Collateral: 100% collateral-free loan up to ₹10 Lakhs.');
+        matchingReasons.add(
+          'Eligibility: Open to all Indian citizens with a viable business plan.',
+        );
+        matchingReasons.add(
+          'Collateral: 100% collateral-free loan up to ₹10 Lakhs.',
+        );
         // High matching base score because Mudra is very general
         score = 1.0;
         break;
@@ -171,52 +219,77 @@ class RecommendationEngine {
       case 'IN212':
         if (!isFemale) {
           score *= 0.3;
-          missingRequirements.add('Gender: This platform is specifically designed to support Women Entrepreneurs.');
+          missingRequirements.add(
+            'Gender: This platform is specifically designed to support Women Entrepreneurs.',
+          );
         } else {
-          matchingReasons.add('Gender: Designed for women-led businesses and female founders.');
+          matchingReasons.add(
+            'Gender: Designed for women-led businesses and female founders.',
+          );
         }
-        matchingReasons.add('Aggregation: Provides aggregated support for mentoring, incubation, and networking.');
+        matchingReasons.add(
+          'Aggregation: Provides aggregated support for mentoring, incubation, and networking.',
+        );
         break;
 
       case 'TREAD':
       case 'IN195':
         if (!isFemale) {
           score = 0.0;
-          missingRequirements.add('Gender: TREAD is exclusively for groups or individual Women seeking self-employment.');
+          missingRequirements.add(
+            'Gender: TREAD is exclusively for groups or individual Women seeking self-employment.',
+          );
         } else {
-          matchingReasons.add('Gender: Exclusively supports women entrepreneur groups.');
+          matchingReasons.add(
+            'Gender: Exclusively supports women entrepreneur groups.',
+          );
         }
-        matchingReasons.add('Funding structure: Government grants up to 30% of the project cost through registered NGOs.');
+        matchingReasons.add(
+          'Funding structure: Government grants up to 30% of the project cost through registered NGOs.',
+        );
         break;
 
       case 'KALAIGNAR_KAIVINAI':
       case 'IN074':
         if (!isTN) {
           score = 0.0;
-          missingRequirements.add('Residency: Strictly for artisans residing in Tamil Nadu.');
+          missingRequirements.add(
+            'Residency: Strictly for artisans residing in Tamil Nadu.',
+          );
         } else {
           matchingReasons.add('Location: You reside in Tamil Nadu.');
         }
 
         // Artisan check: if the profile lists "Artisan" or "Self-employed" as employment, or if community is special.
         // Since we removed Employment/Occupation, we check if they have general eligibility but flag Artisan Card.
-        missingRequirements.add('Artisan Status: Must hold a valid Pehchan Artisan Card from the Ministry of Textiles.');
-        score *= 0.5; // lower match unless they explicitly select it in filters/search
+        missingRequirements.add(
+          'Artisan Status: Must hold a valid Pehchan Artisan Card from the Ministry of Textiles.',
+        );
+        score *=
+            0.5; // lower match unless they explicitly select it in filters/search
         break;
 
       case 'STARTUP_TN':
       case 'IN182':
         if (!isTN) {
           score = 0.0;
-          missingRequirements.add('Residency: Startups must be incorporated or registered in Tamil Nadu.');
+          missingRequirements.add(
+            'Residency: Startups must be incorporated or registered in Tamil Nadu.',
+          );
         } else {
-          matchingReasons.add('Location: Available for startups incorporated in Tamil Nadu.');
+          matchingReasons.add(
+            'Location: Available for startups incorporated in Tamil Nadu.',
+          );
         }
-        
+
         // General startup match
-        missingRequirements.add('DPIIT Recognition: Requires registration and recognition from DPIIT (Govt of India).');
+        missingRequirements.add(
+          'DPIIT Recognition: Requires registration and recognition from DPIIT (Govt of India).',
+        );
         score *= 0.7; // Needs DPIIT recognition
-        matchingReasons.add('Innovation: Offers TANSEED grants of up to ₹15 Lakhs.');
+        matchingReasons.add(
+          'Innovation: Offers TANSEED grants of up to ₹15 Lakhs.',
+        );
         break;
 
       case 'POST_MATRIC':
@@ -227,9 +300,13 @@ class RecommendationEngine {
         }
         if (profile.community.toLowerCase() == 'general') {
           score *= 0.8;
-          missingRequirements.add('Community: Priority is given to SC, ST, OBC and Minority community students.');
+          missingRequirements.add(
+            'Community: Priority is given to SC, ST, OBC and Minority community students.',
+          );
         } else {
-          matchingReasons.add('Community: You belong to a priority group (${profile.community}).');
+          matchingReasons.add(
+            'Community: You belong to a priority group (${profile.community}).',
+          );
         }
         matchingReasons.add('Academic: Supports Class 11 to PhD levels.');
         break;
@@ -240,11 +317,17 @@ class RecommendationEngine {
         }
         if (profile.annualIncome > 250000) {
           score *= 0.7;
-          missingRequirements.add('Income: Requires family annual income below ₹2.5 Lakhs.');
+          missingRequirements.add(
+            'Income: Requires family annual income below ₹2.5 Lakhs.',
+          );
         } else {
-          matchingReasons.add('Income: Your family income is below ₹2.5 Lakhs.');
+          matchingReasons.add(
+            'Income: Your family income is below ₹2.5 Lakhs.',
+          );
         }
-        matchingReasons.add('Academic: Designed for UG & PG professional courses.');
+        matchingReasons.add(
+          'Academic: Designed for UG & PG professional courses.',
+        );
         break;
 
       case 'INSPIRE':
@@ -257,7 +340,9 @@ class RecommendationEngine {
         } else {
           matchingReasons.add('Age: You fit the age bracket of 17-22 years.');
         }
-        matchingReasons.add('Academic: For top 1% performers in Class 12 pursuing basic sciences.');
+        matchingReasons.add(
+          'Academic: For top 1% performers in Class 12 pursuing basic sciences.',
+        );
         break;
 
       case 'PRAGATI':
@@ -267,45 +352,70 @@ class RecommendationEngine {
         } else {
           matchingReasons.add('Gender: Female candidate.');
         }
-        if (profile.educationLevel != 'Undergraduate' && profile.educationLevel != 'Diploma' && profile.educationLevel != 'Postgraduate') {
+        if (profile.educationLevel != 'Undergraduate' &&
+            profile.educationLevel != 'Diploma' &&
+            profile.educationLevel != 'Postgraduate') {
           score *= 0.5;
-          missingRequirements.add('Academic: Designed for Diploma, UG or PG courses.');
+          missingRequirements.add(
+            'Academic: Designed for Diploma, UG or PG courses.',
+          );
         } else {
-          matchingReasons.add('Academic: Enrolled in eligible level (${profile.educationLevel}).');
+          matchingReasons.add(
+            'Academic: Enrolled in eligible level (${profile.educationLevel}).',
+          );
         }
         break;
 
       default:
         // 1. State/Residency check
-        if (scheme.state.isNotEmpty && 
-            scheme.state.toLowerCase() != 'all india' && 
+        if (scheme.state.isNotEmpty &&
+            scheme.state.toLowerCase() != 'all india' &&
             scheme.state.toLowerCase() != 'pan-india' &&
             scheme.state.toLowerCase() != profile.state.toLowerCase()) {
           score = 0.0;
-          missingRequirements.add('Residency: This scheme is for residents of ${scheme.state}.');
+          missingRequirements.add(
+            'Residency: This scheme is for residents of ${scheme.state}.',
+          );
         } else {
-          if (scheme.state.isNotEmpty && scheme.state.toLowerCase() == profile.state.toLowerCase()) {
-            matchingReasons.add('Location: You reside in ${scheme.state} where this scheme is offered.');
+          if (scheme.state.isNotEmpty &&
+              scheme.state.toLowerCase() == profile.state.toLowerCase()) {
+            matchingReasons.add(
+              'Location: You reside in ${scheme.state} where this scheme is offered.',
+            );
           }
         }
 
         // 2. Gender check
         final targetUpper = scheme.targetBeneficiary.toUpperCase();
-        final hasWomenKeyword = targetUpper.contains('WOMEN') || targetUpper.contains('FEMALE');
+        final hasWomenKeyword =
+            targetUpper.contains('WOMEN') || targetUpper.contains('FEMALE');
         if (hasWomenKeyword && !isFemale) {
           score = 0.0;
-          missingRequirements.add('Gender: This scheme is targeted towards Women/Female entrepreneurs.');
+          missingRequirements.add(
+            'Gender: This scheme is targeted towards Women/Female entrepreneurs.',
+          );
         } else if (hasWomenKeyword && isFemale) {
-          matchingReasons.add('Gender: You match the target female demographic.');
+          matchingReasons.add(
+            'Gender: You match the target female demographic.',
+          );
         }
 
         // 3. Community check (SC/ST/OBC)
-        final hasSCSTKeyword = targetUpper.contains('SC/') || targetUpper.contains('SC ') || targetUpper.contains('ST ') || targetUpper.contains('SC-ST') || targetUpper.contains('SC/ST');
+        final hasSCSTKeyword =
+            targetUpper.contains('SC/') ||
+            targetUpper.contains('SC ') ||
+            targetUpper.contains('ST ') ||
+            targetUpper.contains('SC-ST') ||
+            targetUpper.contains('SC/ST');
         if (hasSCSTKeyword && !isSCST) {
           score *= 0.5;
-          missingRequirements.add('Community: Priority/eligibility is for SC/ST categories.');
+          missingRequirements.add(
+            'Community: Priority/eligibility is for SC/ST categories.',
+          );
         } else if (hasSCSTKeyword && isSCST) {
-          matchingReasons.add('Community: Matches the SC/ST priority demographic.');
+          matchingReasons.add(
+            'Community: Matches the SC/ST priority demographic.',
+          );
         }
 
         // 4. Stable dynamic baseline score for matches (e.g. 75% to 89%)
@@ -320,7 +430,9 @@ class RecommendationEngine {
     // Adjust score based on missing documents (slight penalty)
     if (score > 0.0 && missingDocuments.isNotEmpty) {
       // Scale score down slightly based on documents, but keep it high enough to recommend
-      final docRatio = (scheme.requiredDocuments.length - missingDocuments.length) / scheme.requiredDocuments.length;
+      final docRatio =
+          (scheme.requiredDocuments.length - missingDocuments.length) /
+          scheme.requiredDocuments.length;
       score = (score * (0.8 + 0.2 * docRatio)).clamp(0.0, 1.0);
     }
 

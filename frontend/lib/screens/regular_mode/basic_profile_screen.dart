@@ -50,7 +50,7 @@ class _BasicProfileScreenState extends State<BasicProfileScreen> {
         'Sep',
         'Oct',
         'Nov',
-        'Dec'
+        'Dec',
       ];
       _dobController = TextEditingController(
         text: '$day-${months[_selectedDob!.month - 1]}-${_selectedDob!.year}',
@@ -81,7 +81,9 @@ class _BasicProfileScreenState extends State<BasicProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isTa = Provider.of<AppProvider>(context, listen: false).selectedLanguage == 'ta';
+    final isTa =
+        Provider.of<AppProvider>(context, listen: false).selectedLanguage ==
+        'ta';
     String l(String key) => ProfileL10n.t(key, isTa);
     return Scaffold(
       backgroundColor: Colors.white,
@@ -106,13 +108,18 @@ class _BasicProfileScreenState extends State<BasicProfileScreen> {
                     Row(
                       children: [
                         IconButton(
-                          icon: const Icon(Icons.arrow_back, color: kSlate800, size: 24),
+                          icon: const Icon(
+                            Icons.arrow_back,
+                            color: kSlate800,
+                            size: 24,
+                          ),
                           onPressed: () => Navigator.maybePop(context),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 2), // Tighter spacing between back button and heading
-
+                    const SizedBox(
+                      height: 2,
+                    ), // Tighter spacing between back button and heading
                     // Header Text (Moved out of the card)
                     Text(
                       'Complete Your Profile',
@@ -133,7 +140,6 @@ class _BasicProfileScreenState extends State<BasicProfileScreen> {
                       ),
                     ),
                     const SizedBox(height: 12), // Reduced spacing below header
-
                     // Main Card Container
                     Expanded(
                       child: Container(
@@ -157,7 +163,8 @@ class _BasicProfileScreenState extends State<BasicProfileScreen> {
                               child: SingleChildScrollView(
                                 physics: const BouncingScrollPhysics(),
                                 child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
                                   children: [
                                     // Custom Stepper
                                     _buildStepper(),
@@ -191,13 +198,15 @@ class _BasicProfileScreenState extends State<BasicProfileScreen> {
                                       leadingIcon: Icons.phone_outlined,
                                       trailingIcon: Icons.edit_outlined,
                                       keyboardType: TextInputType.phone,
-                                      prefixText: '+91 ', // Reserve +91 country code
+                                      prefixText:
+                                          '+91 ', // Reserve +91 country code
                                     ),
                                     const SizedBox(height: 16),
 
                                     // Gender Selector (Now spans full card width)
                                     Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Text(
                                           'Gender',
@@ -210,11 +219,26 @@ class _BasicProfileScreenState extends State<BasicProfileScreen> {
                                         const SizedBox(height: 8),
                                         Row(
                                           children: [
-                                            Expanded(child: _buildGenderBox('Male', Icons.male)),
+                                            Expanded(
+                                              child: _buildGenderBox(
+                                                'Male',
+                                                Icons.male,
+                                              ),
+                                            ),
                                             const SizedBox(width: 6),
-                                            Expanded(child: _buildGenderBox('Female', Icons.female)),
+                                            Expanded(
+                                              child: _buildGenderBox(
+                                                'Female',
+                                                Icons.female,
+                                              ),
+                                            ),
                                             const SizedBox(width: 6),
-                                            Expanded(child: _buildGenderBox('Other', Icons.transgender)),
+                                            Expanded(
+                                              child: _buildGenderBox(
+                                                'Other',
+                                                Icons.transgender,
+                                              ),
+                                            ),
                                           ],
                                         ),
                                       ],
@@ -225,7 +249,8 @@ class _BasicProfileScreenState extends State<BasicProfileScreen> {
                                     CustomInputField(
                                       label: l('date_of_birth'),
                                       controller: _dobController,
-                                      leadingIcon: Icons.calendar_today_outlined,
+                                      leadingIcon:
+                                          Icons.calendar_today_outlined,
                                       trailingIcon: Icons.arrow_drop_down,
                                       readOnly: true,
                                       onTap: () => _selectDob(context),
@@ -241,27 +266,59 @@ class _BasicProfileScreenState extends State<BasicProfileScreen> {
                             ),
 
                             // Sticky Continue Button at the bottom of the card
-                             ElevatedButton(
+                            ElevatedButton(
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: kPrimaryBlue,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
-                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 16,
+                                ),
                                 elevation: 0,
                               ),
                               onPressed: () {
-                                final provider = Provider.of<AppProvider>(context, listen: false);
-                                provider.updateProfile(provider.profile.copyWith(
-                                  name: _nameController.text.trim(),
-                                  email: _emailController.text.trim(),
-                                  mobile: _phoneController.text.trim(),
-                                  dob: _selectedDob,
-                                  gender: _selectedGender,
-                                ));
+                                final name = _nameController.text.trim();
+                                final email = _emailController.text.trim();
+                                final phone = _phoneController.text.trim();
+
+                                if (name.isEmpty ||
+                                    email.isEmpty ||
+                                    phone.isEmpty ||
+                                    _selectedGender.isEmpty ||
+                                    _selectedDob == null) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        'Please fill in all mandatory fields (Name, Email, Mobile, Gender, Date of Birth).',
+                                        style: GoogleFonts.inter(
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      backgroundColor: const Color(0xFFDC2626),
+                                      behavior: SnackBarBehavior.floating,
+                                    ),
+                                  );
+                                  return;
+                                }
+
+                                final provider = Provider.of<AppProvider>(
+                                  context,
+                                  listen: false,
+                                );
+                                provider.updateProfile(
+                                  provider.profile.copyWith(
+                                    name: name,
+                                    email: email,
+                                    mobile: phone,
+                                    dob: _selectedDob,
+                                    gender: _selectedGender,
+                                  ),
+                                );
                                 Navigator.of(context).push(
                                   MaterialPageRoute(
-                                    builder: (_) => const LocationProfileScreen(),
+                                    builder: (_) =>
+                                        const LocationProfileScreen(),
                                   ),
                                 );
                               },
@@ -281,7 +338,11 @@ class _BasicProfileScreenState extends State<BasicProfileScreen> {
                                     ),
                                   ),
                                   const SizedBox(width: 8),
-                                  const Icon(Icons.arrow_forward, color: Colors.white, size: 20),
+                                  const Icon(
+                                    Icons.arrow_forward,
+                                    color: Colors.white,
+                                    size: 20,
+                                  ),
                                 ],
                               ),
                             ),
@@ -308,8 +369,6 @@ class _BasicProfileScreenState extends State<BasicProfileScreen> {
         Expanded(child: _buildProgressSegment(false)),
         const SizedBox(width: 4),
         Expanded(child: _buildProgressSegment(false)),
-        const SizedBox(width: 4),
-        Expanded(child: _buildProgressSegment(false)),
       ],
     );
   }
@@ -326,7 +385,7 @@ class _BasicProfileScreenState extends State<BasicProfileScreen> {
 
   Widget _buildProgressPill() {
     return Text(
-      '1/4 Complete',
+      '1/3 Complete',
       style: GoogleFonts.inter(
         fontSize: 13,
         fontWeight: FontWeight.w600,
@@ -369,7 +428,8 @@ class _BasicProfileScreenState extends State<BasicProfileScreen> {
                 gender,
                 overflow: TextOverflow.ellipsis,
                 style: GoogleFonts.inter(
-                  fontSize: 11, // Reduced font size to fit inside 6.5px boundary
+                  fontSize:
+                      11, // Reduced font size to fit inside 6.5px boundary
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                   color: isSelected ? kPrimaryBlue : kSlate800,
                 ),
@@ -418,7 +478,8 @@ class _BasicProfileScreenState extends State<BasicProfileScreen> {
       initialDate: _selectedDob,
       firstDate: DateTime(1900),
       lastDate: DateTime.now(),
-      initialDatePickerMode: DatePickerMode.year, // Start in year mode so users can instantly select year/month
+      initialDatePickerMode: DatePickerMode
+          .year, // Start in year mode so users can instantly select year/month
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
@@ -430,7 +491,8 @@ class _BasicProfileScreenState extends State<BasicProfileScreen> {
             ),
             textButtonTheme: TextButtonThemeData(
               style: TextButton.styleFrom(
-                foregroundColor: kPrimaryBlue, // Smooth, responsive button color
+                foregroundColor:
+                    kPrimaryBlue, // Smooth, responsive button color
               ),
             ),
           ),
@@ -443,7 +505,20 @@ class _BasicProfileScreenState extends State<BasicProfileScreen> {
         _selectedDob = picked;
         // Format: dd-MMM-yyyy
         final day = picked.day.toString().padLeft(2, '0');
-        final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        final months = [
+          'Jan',
+          'Feb',
+          'Mar',
+          'Apr',
+          'May',
+          'Jun',
+          'Jul',
+          'Aug',
+          'Sep',
+          'Oct',
+          'Nov',
+          'Dec',
+        ];
         final monthStr = months[picked.month - 1];
         final year = picked.year;
         _dobController.text = '$day-$monthStr-$year';
@@ -504,26 +579,46 @@ class CustomInputField extends StatelessWidget {
               decoration: InputDecoration(
                 filled: true,
                 fillColor: Colors.white,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-                prefixIcon: Icon(leadingIcon, color: const Color(0xFF64748B), size: 20),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 14,
+                ),
+                prefixIcon: Icon(
+                  leadingIcon,
+                  color: const Color(0xFF64748B),
+                  size: 20,
+                ),
                 prefixText: prefixText,
                 prefixStyle: GoogleFonts.inter(
                   fontSize: 14.5,
                   fontWeight: FontWeight.w600,
                   color: const Color(0xFF1E293B),
                 ),
-                suffixIcon: Icon(trailingIcon, color: const Color(0xFF64748B), size: 20),
+                suffixIcon: Icon(
+                  trailingIcon,
+                  color: const Color(0xFF64748B),
+                  size: 20,
+                ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFFE2E8F0), width: 1.2),
+                  borderSide: const BorderSide(
+                    color: Color(0xFFE2E8F0),
+                    width: 1.2,
+                  ),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFFE2E8F0), width: 1.2),
+                  borderSide: const BorderSide(
+                    color: Color(0xFFE2E8F0),
+                    width: 1.2,
+                  ),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFF2563EB), width: 1.8),
+                  borderSide: const BorderSide(
+                    color: Color(0xFF2563EB),
+                    width: 1.8,
+                  ),
                 ),
               ),
             ),

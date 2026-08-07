@@ -32,11 +32,11 @@ class MssCatalogBundle {
     this.duplicateEntityIdCount = 0,
     this.danglingReferenceCount = 0,
     this.uniqueRelationshipIdsCount = 0,
-  })  : byId = UnmodifiableMapView(byId),
-        byCatalog = UnmodifiableMapView(
-          byCatalog.map((k, v) => MapEntry(k, UnmodifiableListView(v))),
-        ),
-        _searchTokenMap = searchTokenMap;
+  }) : byId = UnmodifiableMapView(byId),
+       byCatalog = UnmodifiableMapView(
+         byCatalog.map((k, v) => MapEntry(k, UnmodifiableListView(v))),
+       ),
+       _searchTokenMap = searchTokenMap;
 
   static MssCatalogBundle? _instance;
   static Future<MssCatalogBundle>? _loadFuture;
@@ -70,7 +70,9 @@ class MssCatalogBundle {
   /// Guarantees catalog_bundle.json.gz is loaded, verified, and decompressed ONCE.
   static Future<MssCatalogBundle> load({bool overrideChecksumForTest = false}) {
     if (_instance != null) return Future.value(_instance!);
-    return _loadFuture ??= _loadInternal(overrideChecksumForTest: overrideChecksumForTest);
+    return _loadFuture ??= _loadInternal(
+      overrideChecksumForTest: overrideChecksumForTest,
+    );
   }
 
   /// Reset instance (for testing checksum exceptions).
@@ -80,7 +82,9 @@ class MssCatalogBundle {
     _loadFuture = null;
   }
 
-  static Future<MssCatalogBundle> _loadInternal({bool overrideChecksumForTest = false}) async {
+  static Future<MssCatalogBundle> _loadInternal({
+    bool overrideChecksumForTest = false,
+  }) async {
     String releaseJsonStr;
     Uint8List compressedBytes;
 
@@ -100,11 +104,15 @@ class MssCatalogBundle {
     }
 
     final releaseJson = jsonDecode(releaseJsonStr) as Map<String, dynamic>;
-    final expectedChecksum = (releaseJson['bundleSha256'] as String?)?.toLowerCase() ?? '';
+    final expectedChecksum =
+        (releaseJson['bundleSha256'] as String?)?.toLowerCase() ?? '';
     final releaseTag = (releaseJson['releaseTag'] as String?) ?? 'unknown';
 
     // Verify SHA-256 Checksum
-    final actualChecksum = sha256.convert(compressedBytes).toString().toLowerCase();
+    final actualChecksum = sha256
+        .convert(compressedBytes)
+        .toString()
+        .toLowerCase();
     if (!overrideChecksumForTest && actualChecksum != expectedChecksum) {
       throw Exception(
         'Catalog bundle SHA-256 checksum mismatch. Expected: $expectedChecksum, Got: $actualChecksum',
@@ -141,7 +149,8 @@ class MssCatalogBundle {
       final catalogObject = bundleJson[fileKey] as Map<String, dynamic>?;
       if (catalogObject == null) continue;
 
-      final catalogName = (catalogObject['metadata']?['catalogName'] as String?) ??
+      final catalogName =
+          (catalogObject['metadata']?['catalogName'] as String?) ??
           fileKey.replaceAll('_catalog.json', '');
 
       final dataList = catalogObject['data'] as List?;
@@ -182,8 +191,11 @@ class MssCatalogBundle {
         if (relId != null && relId.isNotEmpty) {
           seenRelIds.add(relId);
         }
-        final targetId = ref['targetId'] as String? ?? ref['target_id'] as String?;
-        if (targetId != null && targetId.isNotEmpty && !byId.containsKey(targetId)) {
+        final targetId =
+            ref['targetId'] as String? ?? ref['target_id'] as String?;
+        if (targetId != null &&
+            targetId.isNotEmpty &&
+            !byId.containsKey(targetId)) {
           danglingReferenceCount++;
         }
       }
@@ -288,11 +300,17 @@ class MssCatalogBundle {
     final seenIds = <String>{};
 
     for (final ref in entity.references) {
-      final tId = (ref['entityId'] ?? ref['targetId'] ?? ref['target_id'] ?? ref['id'])?.toString();
+      final tId =
+          (ref['entityId'] ?? ref['targetId'] ?? ref['target_id'] ?? ref['id'])
+              ?.toString();
       if (tId == null || tId.isEmpty || seenIds.contains(tId)) continue;
 
-      final relType = (ref['relationType'] ?? ref['type'] ?? '').toString().toLowerCase();
-      final refType = (ref['entityType'] ?? ref['targetType'] ?? '').toString().toLowerCase();
+      final relType = (ref['relationType'] ?? ref['type'] ?? '')
+          .toString()
+          .toLowerCase();
+      final refType = (ref['entityType'] ?? ref['targetType'] ?? '')
+          .toString()
+          .toLowerCase();
 
       if (relationType != null && relationType.isNotEmpty) {
         if (!relType.contains(relationType.toLowerCase())) continue;
@@ -329,12 +347,19 @@ class MssCatalogBundle {
         matches = true;
       }
       if (!matches && content['evidencedInSchemes'] is List) {
-        final list = (content['evidencedInSchemes'] as List).map((x) => x.toString());
+        final list = (content['evidencedInSchemes'] as List).map(
+          (x) => x.toString(),
+        );
         if (list.contains(targetSchemeId)) matches = true;
       }
       if (!matches) {
         for (final ref in e.references) {
-          final tId = (ref['entityId'] ?? ref['targetId'] ?? ref['target_id'] ?? ref['id'])?.toString();
+          final tId =
+              (ref['entityId'] ??
+                      ref['targetId'] ??
+                      ref['target_id'] ??
+                      ref['id'])
+                  ?.toString();
           if (tId == targetSchemeId) {
             matches = true;
             break;
@@ -422,4 +447,3 @@ class MssCatalogBundle {
     return map.values.toList();
   }
 }
-

@@ -22,17 +22,56 @@ void main() {
 
   group('FINAL APP-WIDE LOCALIZATION STABILIZATION & UI OVERFLOW SUITE', () {
     final protectedTerms = {
-      'MSME', 'MSMED', 'GST', 'CGST', 'SGST', 'IGST', 'PAN', 'AADHAAR', 'SIDBI', 'NSIC', 'DIC', 'KVIC',
-      'TIIC', 'SIPCOT', 'DGFT', 'TREDS', 'IEC', 'RCMC', 'HS', 'INR', 'RBI',
-      'PMEGP', 'CGTMSE', 'SFURTI', 'TANSEED', 'MSEFC', 'NBFC', 'RXIL', 'M1XCHANGE',
-      'INVOICEMART', 'DPIIT', 'MRR', 'ARR', 'KYC', 'CSR', 'CODE', 'EMI', 'MSME-DI', 'DI'
+      'MSME',
+      'MSMED',
+      'GST',
+      'CGST',
+      'SGST',
+      'IGST',
+      'PAN',
+      'AADHAAR',
+      'SIDBI',
+      'NSIC',
+      'DIC',
+      'KVIC',
+      'TIIC',
+      'SIPCOT',
+      'DGFT',
+      'TREDS',
+      'IEC',
+      'RCMC',
+      'HS',
+      'INR',
+      'RBI',
+      'PMEGP',
+      'CGTMSE',
+      'SFURTI',
+      'TANSEED',
+      'MSEFC',
+      'NBFC',
+      'RXIL',
+      'M1XCHANGE',
+      'INVOICEMART',
+      'DPIIT',
+      'MRR',
+      'ARR',
+      'KYC',
+      'CSR',
+      'CODE',
+      'EMI',
+      'MSME-DI',
+      'DI',
     };
 
     final tamilRegex = RegExp(r'[\u0B80-\u0BFF]');
 
     void assertNoMixedLanguage(String original, String contextName) {
       final translated = CentralizedTranslator.instance.translate(original);
-      expect(translated.trim(), isNotEmpty, reason: '$contextName translated to empty string');
+      expect(
+        translated.trim(),
+        isNotEmpty,
+        reason: '$contextName translated to empty string',
+      );
 
       final tokens = translated.split(RegExp(r'[^a-zA-Z0-9]+'));
       final invalidEnglishWords = tokens.where((token) {
@@ -42,7 +81,9 @@ void main() {
 
       final hasTamil = tamilRegex.hasMatch(translated);
       if (hasTamil && invalidEnglishWords.isNotEmpty) {
-        fail('Mixed language sentence in $contextName: "$translated" (Invalid English words: $invalidEnglishWords) from original "$original"');
+        fail(
+          'Mixed language sentence in $contextName: "$translated" (Invalid English words: $invalidEnglishWords) from original "$original"',
+        );
       }
     }
 
@@ -59,8 +100,14 @@ void main() {
       expect(enLoc.calcEmiTitle, 'Business Loan EMI Calculator');
       expect(taLoc.calcEmiTitle, 'தொழில் கடன் EMI கால்குலேட்டர்');
 
-      expect(enLoc.notifToastSelectedRead, 'Selected notifications marked as read');
-      expect(taLoc.notifToastSelectedRead, 'தேர்ந்தெடுக்கப்பட்ட அறிவிப்புகள் படித்ததாகக் குறிக்கப்பட்டன');
+      expect(
+        enLoc.notifToastSelectedRead,
+        'Selected notifications marked as read',
+      );
+      expect(
+        taLoc.notifToastSelectedRead,
+        'தேர்ந்தெடுக்கப்பட்ட அறிவிப்புகள் படித்ததாகக் குறிக்கப்பட்டன',
+      );
     });
 
     test('2. Verify Zero Mixed-Language Sentences Across All Static UI Copy', () {
@@ -105,62 +152,64 @@ void main() {
       }
     });
 
-    testWidgets('3. Responsive UI Sweep — Categories Screen at 320dp (Tamil mode)', (WidgetTester tester) async {
-      final appProvider = AppProvider();
-      appProvider.changeLanguage('ta');
+    testWidgets(
+      '3. Responsive UI Sweep — Categories Screen at 320dp (Tamil mode)',
+      (WidgetTester tester) async {
+        final appProvider = AppProvider();
+        appProvider.changeLanguage('ta');
 
-      await tester.binding.setSurfaceSize(const Size(320, 640));
+        await tester.binding.setSurfaceSize(const Size(320, 640));
 
-      await tester.pumpWidget(
-        ChangeNotifierProvider<AppProvider>.value(
-          value: appProvider,
-          child: MaterialApp(
-            locale: const Locale('ta'),
-            localizationsDelegates: const [
-              AppLocalizations.delegate,
-              GlobalMaterialLocalizations.delegate,
-              GlobalWidgetsLocalizations.delegate,
-              GlobalCupertinoLocalizations.delegate,
-            ],
-            supportedLocales: const [Locale('en'), Locale('ta')],
-            home: const Scaffold(
-              body: CategoriesScreen(),
+        await tester.pumpWidget(
+          ChangeNotifierProvider<AppProvider>.value(
+            value: appProvider,
+            child: MaterialApp(
+              locale: const Locale('ta'),
+              localizationsDelegates: const [
+                AppLocalizations.delegate,
+                GlobalMaterialLocalizations.delegate,
+                GlobalWidgetsLocalizations.delegate,
+                GlobalCupertinoLocalizations.delegate,
+              ],
+              supportedLocales: const [Locale('en'), Locale('ta')],
+              home: const Scaffold(body: CategoriesScreen()),
             ),
           ),
-        ),
-      );
+        );
 
-      await tester.pumpAndSettle();
-      expect(tester.takeException(), isNull);
-    });
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+      },
+    );
 
-    testWidgets('4. Responsive UI Sweep — Categories Screen at 360dp (Tamil mode)', (WidgetTester tester) async {
-      final appProvider = AppProvider();
-      appProvider.changeLanguage('ta');
+    testWidgets(
+      '4. Responsive UI Sweep — Categories Screen at 360dp (Tamil mode)',
+      (WidgetTester tester) async {
+        final appProvider = AppProvider();
+        appProvider.changeLanguage('ta');
 
-      await tester.binding.setSurfaceSize(const Size(360, 740));
+        await tester.binding.setSurfaceSize(const Size(360, 740));
 
-      await tester.pumpWidget(
-        ChangeNotifierProvider<AppProvider>.value(
-          value: appProvider,
-          child: MaterialApp(
-            locale: const Locale('ta'),
-            localizationsDelegates: const [
-              AppLocalizations.delegate,
-              GlobalMaterialLocalizations.delegate,
-              GlobalWidgetsLocalizations.delegate,
-              GlobalCupertinoLocalizations.delegate,
-            ],
-            supportedLocales: const [Locale('en'), Locale('ta')],
-            home: const Scaffold(
-              body: CategoriesScreen(),
+        await tester.pumpWidget(
+          ChangeNotifierProvider<AppProvider>.value(
+            value: appProvider,
+            child: MaterialApp(
+              locale: const Locale('ta'),
+              localizationsDelegates: const [
+                AppLocalizations.delegate,
+                GlobalMaterialLocalizations.delegate,
+                GlobalWidgetsLocalizations.delegate,
+                GlobalCupertinoLocalizations.delegate,
+              ],
+              supportedLocales: const [Locale('en'), Locale('ta')],
+              home: const Scaffold(body: CategoriesScreen()),
             ),
           ),
-        ),
-      );
+        );
 
-      await tester.pumpAndSettle();
-      expect(tester.takeException(), isNull);
-    });
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+      },
+    );
   });
 }

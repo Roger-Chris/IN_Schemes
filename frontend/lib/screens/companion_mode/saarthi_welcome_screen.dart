@@ -43,7 +43,9 @@ class _SaarthiWelcomeScreenState extends State<SaarthiWelcomeScreen> {
     } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.toString().replaceFirst('Bad state: ', ''))),
+        SnackBar(
+          content: Text(error.toString().replaceFirst('Bad state: ', '')),
+        ),
       );
     } finally {
       if (mounted) setState(() => _previewingVoice = false);
@@ -64,9 +66,7 @@ class _SaarthiWelcomeScreenState extends State<SaarthiWelcomeScreen> {
           builder: (context, constraints) {
             return SingleChildScrollView(
               child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  minHeight: constraints.maxHeight,
-                ),
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
                 child: IntrinsicHeight(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -77,10 +77,7 @@ class _SaarthiWelcomeScreenState extends State<SaarthiWelcomeScreen> {
                           gradient: LinearGradient(
                             begin: Alignment.topCenter,
                             end: Alignment.bottomCenter,
-                            colors: [
-                              Color(0xFFEBF5FF),
-                              Color(0xFFF8FAFC),
-                            ],
+                            colors: [Color(0xFFEBF5FF), Color(0xFFF8FAFC)],
                           ),
                         ),
                         child: Stack(
@@ -92,7 +89,8 @@ class _SaarthiWelcomeScreenState extends State<SaarthiWelcomeScreen> {
                                 child: Image.asset(
                                   'assets/images/Background/companion intro bg.png',
                                   fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
+                                  errorBuilder: (context, error, stackTrace) =>
+                                      const SizedBox.shrink(),
                                 ),
                               ),
                             ),
@@ -113,7 +111,8 @@ class _SaarthiWelcomeScreenState extends State<SaarthiWelcomeScreen> {
                                       Expanded(
                                         flex: 6,
                                         child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
                                             Text(
                                               'Meet',
@@ -136,24 +135,32 @@ class _SaarthiWelcomeScreenState extends State<SaarthiWelcomeScreen> {
                                           ],
                                         ),
                                       ),
-                                      
+
                                       // Avatar right above the card (aligned to the right)
                                       Expanded(
                                         flex: 4,
                                         child: Align(
                                           alignment: Alignment.bottomRight,
                                           child: Transform.translate(
-                                            offset: const Offset(0, 10), // Shifting avatar down to sit on the card
+                                            offset: const Offset(
+                                              0,
+                                              10,
+                                            ), // Shifting avatar down to sit on the card
                                             child: SizedBox(
                                               height: 100,
                                               child: Image.asset(
                                                 'assets/images/saarthi/sarathi.png',
                                                 fit: BoxFit.contain,
-                                                errorBuilder: (context, error, stackTrace) => const Icon(
-                                                  Icons.android,
-                                                  size: 60,
-                                                  color: kBrandBlue,
-                                                ),
+                                                errorBuilder:
+                                                    (
+                                                      context,
+                                                      error,
+                                                      stackTrace,
+                                                    ) => const Icon(
+                                                      Icons.android,
+                                                      size: 60,
+                                                      color: kBrandBlue,
+                                                    ),
                                               ),
                                             ),
                                           ),
@@ -170,14 +177,17 @@ class _SaarthiWelcomeScreenState extends State<SaarthiWelcomeScreen> {
                                       borderRadius: BorderRadius.circular(16),
                                       boxShadow: [
                                         BoxShadow(
-                                          color: Colors.black.withValues(alpha: 0.06),
+                                          color: Colors.black.withValues(
+                                            alpha: 0.06,
+                                          ),
                                           blurRadius: 16,
                                           offset: const Offset(0, 4),
                                         ),
                                       ],
                                     ),
                                     child: Row(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Container(
                                           padding: const EdgeInsets.all(10),
@@ -194,7 +204,8 @@ class _SaarthiWelcomeScreenState extends State<SaarthiWelcomeScreen> {
                                         const SizedBox(width: 12),
                                         Expanded(
                                           child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
                                             children: [
                                               Text(
                                                 "I'm Saarthi, your smart assistant.",
@@ -225,7 +236,7 @@ class _SaarthiWelcomeScreenState extends State<SaarthiWelcomeScreen> {
                           ],
                         ),
                       ),
-                      
+
                       const SizedBox(height: 12),
 
                       // 2 & 3. Middle content area
@@ -367,20 +378,29 @@ class _SaarthiWelcomeScreenState extends State<SaarthiWelcomeScreen> {
                                     ),
                                     const SizedBox(width: 10),
                                     ChoiceChip(
-                                      label: Text(CentralizedTranslator.instance.translate('Natural')),
+                                      label: Text(
+                                        CentralizedTranslator.instance
+                                            .translate('Natural'),
+                                      ),
                                       selected: _selectedVoice == 'natural',
-                                      onSelected: (_) => _selectVoice('natural'),
+                                      onSelected: (_) =>
+                                          _selectVoice('natural'),
                                     ),
                                     const SizedBox(width: 6),
                                     ChoiceChip(
-                                      label: Text(CentralizedTranslator.instance.translate('Clear')),
+                                      label: Text(
+                                        CentralizedTranslator.instance
+                                            .translate('Clear'),
+                                      ),
                                       selected: _selectedVoice == 'clear',
                                       onSelected: (_) => _selectVoice('clear'),
                                     ),
                                     const Spacer(),
                                     IconButton(
                                       tooltip: 'Preview in English and Tamil',
-                                      onPressed: _previewingVoice ? null : _previewVoice,
+                                      onPressed: _previewingVoice
+                                          ? null
+                                          : _previewVoice,
                                       icon: _previewingVoice
                                           ? const SizedBox(
                                               width: 18,
@@ -389,7 +409,9 @@ class _SaarthiWelcomeScreenState extends State<SaarthiWelcomeScreen> {
                                                 strokeWidth: 2,
                                               ),
                                             )
-                                          : const Icon(Icons.play_circle_outline),
+                                          : const Icon(
+                                              Icons.play_circle_outline,
+                                            ),
                                     ),
                                   ],
                                 ),
@@ -442,7 +464,10 @@ class _SaarthiWelcomeScreenState extends State<SaarthiWelcomeScreen> {
                             elevation: 0,
                           ),
                           onPressed: () async {
-                            final provider = Provider.of<AppProvider>(context, listen: false);
+                            final provider = Provider.of<AppProvider>(
+                              context,
+                              listen: false,
+                            );
                             final navigator = Navigator.of(context);
                             provider.changeLanguage(_selectedLang);
 
@@ -489,13 +514,9 @@ class _SaarthiWelcomeScreenState extends State<SaarthiWelcomeScreen> {
         ),
       ),
     );
-
   }
 
-  Widget _buildFeatureCard({
-    required IconData icon,
-    required String title,
-  }) {
+  Widget _buildFeatureCard({required IconData icon, required String title}) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
       decoration: BoxDecoration(
@@ -513,11 +534,7 @@ class _SaarthiWelcomeScreenState extends State<SaarthiWelcomeScreen> {
               color: Color(0xFFEFF6FF),
               shape: BoxShape.circle,
             ),
-            child: Icon(
-              icon,
-              color: kBrandBlue,
-              size: 16,
-            ),
+            child: Icon(icon, color: kBrandBlue, size: 16),
           ),
           const SizedBox(height: 6),
           Text(
@@ -606,27 +623,23 @@ class _SaarthiWelcomeScreenState extends State<SaarthiWelcomeScreen> {
                   const SizedBox(height: 2),
                   Text(
                     subtitle,
-                    style: GoogleFonts.inter(
-                      fontSize: 11.5,
-                      color: kSlate500,
-                    ),
+                    style: GoogleFonts.inter(fontSize: 11.5, color: kSlate500),
                   ),
                 ],
               ),
             ),
             // Selection indicator circle / icon
             isSelected
-                ? const Icon(
-                    Icons.check_circle,
-                    color: kBrandBlue,
-                    size: 22,
-                  )
+                ? const Icon(Icons.check_circle, color: kBrandBlue, size: 22)
                 : Container(
                     width: 22,
                     height: 22,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      border: Border.all(color: const Color(0xFFCBD5E1), width: 1.5),
+                      border: Border.all(
+                        color: const Color(0xFFCBD5E1),
+                        width: 1.5,
+                      ),
                     ),
                   ),
           ],

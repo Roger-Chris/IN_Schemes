@@ -44,7 +44,10 @@ class SchemeRepository {
     int limit = 5,
   }) async {
     final all = await getAllSchemes();
-    final recommendations = RecommendationEngine.getRecommendations(profile, all);
+    final recommendations = RecommendationEngine.getRecommendations(
+      profile,
+      all,
+    );
     return recommendations
         .where((e) => e.value.score > 0)
         .map((e) => e.key)
@@ -90,7 +93,9 @@ class SchemeRepository {
     if (all.isEmpty) return 'PMEGP, Startup India, MSME loans...';
     final sample = (List<Scheme>.from(all)..shuffle()).first;
     final name = sample.getName(langCode);
-    return name.isNotEmpty ? name : (sample.shortName.isNotEmpty ? sample.shortName : sample.name);
+    return name.isNotEmpty
+        ? name
+        : (sample.shortName.isNotEmpty ? sample.shortName : sample.name);
   }
 
   Future<MssCatalogBundle> _loadBundle() =>
@@ -111,7 +116,11 @@ class SchemeRepository {
       final byIdMap = <String, Scheme>{};
 
       for (final entity in schemeEntities) {
-        final scheme = MssSchemeAdapter.toScheme(entity, bundle, langCode: langCode);
+        final scheme = MssSchemeAdapter.toScheme(
+          entity,
+          bundle,
+          langCode: langCode,
+        );
         schemes.add(scheme);
         byIdMap[scheme.id.toLowerCase()] = scheme;
         if (scheme.schemeCode.isNotEmpty) {
@@ -131,7 +140,10 @@ class SchemeRepository {
 
   // ── 2. searchSchemes(query) ────────────────────────────────────────────
   /// Intelligently ranks natural-language English, Tamil, and Tanglish queries.
-  Future<List<Scheme>> searchSchemes(String query, {String langCode = 'en'}) async {
+  Future<List<Scheme>> searchSchemes(
+    String query, {
+    String langCode = 'en',
+  }) async {
     if (query.trim().isEmpty) return getAllSchemes(langCode: langCode);
     final matches = await searchSchemeMatches(query, langCode: langCode);
     return matches.map((match) => match.scheme).toList(growable: false);
@@ -148,54 +160,253 @@ class SchemeRepository {
   }
 
   // ── 3. getSchemesByCategory(category) ─────────────────────────────────
-  /// Returns schemes matching a specific category key with exact metadata filtering.
-  Future<List<Scheme>> getSchemesByCategory(String category, {String langCode = 'en'}) async {
+  /// Returns schemes matching a specific category key with exact & keyword metadata filtering.
+  Future<List<Scheme>> getSchemesByCategory(
+    String category, {
+    String langCode = 'en',
+  }) async {
     if (category.trim().isEmpty) return getAllSchemes(langCode: langCode);
 
     final q = category.toLowerCase().trim();
     final all = await getAllSchemes(langCode: langCode);
 
-    return all.where((s) {
+    final matches = all.where((s) {
       final cat = s.category.toLowerCase();
       final type = s.schemeType.toLowerCase();
       final target = s.targetBeneficiary.toLowerCase();
       final kw = s.searchKeywords.toLowerCase();
       final sector = s.sector.toLowerCase();
-      final fullText = '${s.name} ${s.shortName} ${s.schemeType} ${s.category} ${s.sector} ${s.searchKeywords} ${s.overview}'.toLowerCase();
+      final canonicalText =
+          '${s.name} ${s.shortName} ${s.schemeType} ${s.category} ${s.sector} ${s.searchKeywords} ${s.overview}'
+              .toLowerCase();
+      final fullText = '$canonicalText ${s.benefits}'.toLowerCase();
 
+      // Canonical category cards use deliberately narrow predicates so their
+      // badge counts and result pages stay consistent. Broader journey queries
+      // such as "Find Funding" and "Start a Business" are handled below.
       if (q == 'msme') {
-        return cat.contains('msme') || sector.contains('msme') || target.contains('msme') || fullText.contains('micro') || fullText.contains('udyam');
-      } else if (q == 'startup') {
-        return cat.contains('startup') || kw.contains('startup') || kw.contains('dpiit') || fullText.contains('incubator') || fullText.contains('seed fund');
-      } else if (q == 'women entrepreneurs' || q == 'women') {
-        return target.contains('women') || kw.contains('women') || target.contains('female') || fullText.contains('mahila') || fullText.contains('stree');
-      } else if (q == 'business loans & credit' || q == 'loans' || q.contains('loan') || q.contains('credit')) {
+        return cat.contains('msme') ||
+            sector.contains('msme') ||
+            target.contains('msme') ||
+            canonicalText.contains('micro') ||
+            canonicalText.contains('udyam');
+      }
+      if (q == 'startup') {
+        return cat.contains('startup') ||
+            kw.contains('startup') ||
+            kw.contains('dpiit') ||
+            canonicalText.contains('incubator') ||
+            canonicalText.contains('seed fund');
+      }
+      if (q == 'women entrepreneurs' || q == 'women') {
+        return target.contains('women') ||
+            kw.contains('women') ||
+            target.contains('female') ||
+            canonicalText.contains('mahila') ||
+            canonicalText.contains('stree');
+      }
+      if (q == 'business loans & credit' || q == 'loans') {
         return type.contains('loan') ||
             cat.contains('loan') ||
             cat.contains('credit') ||
-            fullText.contains('loan') ||
-            fullText.contains('credit') ||
-            fullText.contains('mudra') ||
-            fullText.contains('cgtmse') ||
-            fullText.contains('working capital') ||
-            fullText.contains('term loan') ||
-            fullText.contains('svanidhi') ||
-            fullText.contains('standup') ||
-            fullText.contains('financing') ||
-            fullText.contains('collateral-free') ||
-            fullText.contains('collateral free');
-      } else if (q == 'shg & artisan' || q == 'artisan') {
-        return target.contains('artisan') || target.contains('shg') || kw.contains('vishwakarma') || kw.contains('weaver') || fullText.contains('craftsman');
-      } else if (q == 'technology') {
-        return cat.contains('tech') || sector.contains('tech') || kw.contains('technology') || fullText.contains('digital') || fullText.contains('r&d');
-      } else if (q == 'manufacturing') {
-        return sector.contains('manufactur') || cat.contains('manufactur') || kw.contains('manufacturing') || fullText.contains('production') || fullText.contains('factory');
-      } else if (q == 'export & trade promotion' || q == 'export') {
-        return cat.contains('export') || sector.contains('export') || kw.contains('export') || fullText.contains('trade promotion') || fullText.contains('exhibition');
+            canonicalText.contains('loan') ||
+            canonicalText.contains('credit') ||
+            canonicalText.contains('mudra') ||
+            canonicalText.contains('cgtmse') ||
+            canonicalText.contains('working capital') ||
+            canonicalText.contains('term loan') ||
+            canonicalText.contains('svanidhi') ||
+            canonicalText.contains('standup') ||
+            canonicalText.contains('financing') ||
+            canonicalText.contains('collateral-free') ||
+            canonicalText.contains('collateral free');
+      }
+      if (q == 'shg & artisan' || q == 'artisan') {
+        return target.contains('artisan') ||
+            target.contains('shg') ||
+            kw.contains('vishwakarma') ||
+            kw.contains('weaver') ||
+            canonicalText.contains('craftsman');
+      }
+      if (q == 'technology') {
+        return cat.contains('tech') ||
+            sector.contains('tech') ||
+            kw.contains('technology') ||
+            canonicalText.contains('digital') ||
+            canonicalText.contains('r&d');
+      }
+      if (q == 'manufacturing') {
+        return sector.contains('manufactur') ||
+            cat.contains('manufactur') ||
+            kw.contains('manufacturing') ||
+            canonicalText.contains('production') ||
+            canonicalText.contains('factory');
+      }
+      if (q == 'export & trade promotion' || q == 'export') {
+        return cat.contains('export') ||
+            sector.contains('export') ||
+            kw.contains('export') ||
+            canonicalText.contains('trade promotion') ||
+            canonicalText.contains('exhibition');
       }
 
-      return cat.contains(q) || sector.contains(q) || target.contains(q) || fullText.contains(q);
+      // 1. Export Support / Trade
+      if (q.contains('export') ||
+          q.contains('trade') ||
+          q.contains('foreign')) {
+        return cat.contains('export') ||
+            sector.contains('export') ||
+            kw.contains('export') ||
+            fullText.contains('export') ||
+            fullText.contains('trade') ||
+            fullText.contains('dgft') ||
+            fullText.contains('customs') ||
+            fullText.contains('ship');
+      }
+
+      // 2. Grow Business / Expansion / Subsidy
+      if (q.contains('grow') ||
+          q.contains('growth') ||
+          q.contains('expand') ||
+          q.contains('scaling')) {
+        return cat.contains('msme') ||
+            cat.contains('business') ||
+            type.contains('subsidy') ||
+            kw.contains('growth') ||
+            fullText.contains('growth') ||
+            fullText.contains('expansion') ||
+            fullText.contains('moderniz') ||
+            fullText.contains('subsidy') ||
+            fullText.contains('technology') ||
+            fullText.contains('incentive') ||
+            fullText.contains('scale');
+      }
+
+      // 3. Find Funding / Finding Fund / Finance / Loan / Credit / Capital
+      if (q.contains('fund') ||
+          q.contains('financ') ||
+          q.contains('loan') ||
+          q.contains('credit') ||
+          q.contains('capital') ||
+          q.contains('money')) {
+        return type.contains('loan') ||
+            cat.contains('loan') ||
+            cat.contains('credit') ||
+            cat.contains('finance') ||
+            fullText.contains('loan') ||
+            fullText.contains('credit') ||
+            fullText.contains('fund') ||
+            fullText.contains('mudra') ||
+            fullText.contains('cgtmse') ||
+            fullText.contains('capital') ||
+            fullText.contains('grant') ||
+            fullText.contains('subsidy') ||
+            fullText.contains('working capital');
+      }
+
+      // 4. Start a Business / Startup / Launch / Incubator
+      if (q.contains('start') ||
+          q.contains('launch') ||
+          q.contains('startup') ||
+          q.contains('incubat')) {
+        return cat.contains('startup') ||
+            kw.contains('startup') ||
+            kw.contains('dpiit') ||
+            fullText.contains('incubator') ||
+            fullText.contains('seed fund') ||
+            fullText.contains('pmegp') ||
+            fullText.contains('mudra') ||
+            fullText.contains('entrepreneur') ||
+            fullText.contains('start') ||
+            fullText.contains('new business');
+      }
+
+      // 5. Udyam / Registration / Compliance
+      if (q.contains('udyam') || q.contains('register')) {
+        return cat.contains('msme') ||
+            fullText.contains('udyam') ||
+            fullText.contains('register') ||
+            fullText.contains('compliance') ||
+            fullText.contains('msme');
+      }
+
+      // 6. MSME
+      if (q == 'msme' || q.contains('msme')) {
+        return cat.contains('msme') ||
+            sector.contains('msme') ||
+            target.contains('msme') ||
+            fullText.contains('micro') ||
+            fullText.contains('udyam') ||
+            fullText.contains('small');
+      }
+
+      // 7. Women
+      if (q.contains('women') || q.contains('female') || q.contains('mahila')) {
+        return target.contains('women') ||
+            kw.contains('women') ||
+            target.contains('female') ||
+            fullText.contains('mahila') ||
+            fullText.contains('stree');
+      }
+
+      // 8. SHG / Artisan
+      if (q.contains('shg') || q.contains('artisan') || q.contains('craft')) {
+        return target.contains('artisan') ||
+            target.contains('shg') ||
+            kw.contains('vishwakarma') ||
+            kw.contains('weaver') ||
+            fullText.contains('craftsman');
+      }
+
+      // 9. Technology
+      if (q.contains('tech') || q.contains('digital')) {
+        return cat.contains('tech') ||
+            sector.contains('tech') ||
+            kw.contains('technology') ||
+            fullText.contains('digital') ||
+            fullText.contains('r&d');
+      }
+
+      // 10. Manufacturing
+      if (q.contains('manufactur') ||
+          q.contains('factory') ||
+          q.contains('product')) {
+        return sector.contains('manufactur') ||
+            cat.contains('manufactur') ||
+            kw.contains('manufacturing') ||
+            fullText.contains('production') ||
+            fullText.contains('factory');
+      }
+
+      // Word-level search fallback
+      final words = q.split(' ').where((w) => w.length > 2);
+      for (final w in words) {
+        if (cat.contains(w) ||
+            sector.contains(w) ||
+            target.contains(w) ||
+            fullText.contains(w)) {
+          return true;
+        }
+      }
+
+      return cat.contains(q) ||
+          sector.contains(q) ||
+          target.contains(q) ||
+          fullText.contains(q);
     }).toList();
+
+    if (matches.isEmpty) {
+      return all
+          .where(
+            (s) =>
+                s.category.toLowerCase().contains('business') ||
+                s.category.toLowerCase().contains('msme') ||
+                s.sector.toLowerCase().contains('msme'),
+          )
+          .toList();
+    }
+
+    return matches;
   }
 
   /// Returns schemes sponsored or issued by a given ministry/department.
@@ -208,7 +419,8 @@ class SchemeRepository {
     return all.where((s) {
       final sponsor = s.sponsoringBody.toLowerCase();
       final issuer = s.issuingBody.toLowerCase();
-      final fullText = '${s.name} ${s.shortName} ${s.searchKeywords}'.toLowerCase();
+      final fullText = '${s.name} ${s.shortName} ${s.searchKeywords}'
+          .toLowerCase();
 
       return sponsor.contains(q) || issuer.contains(q) || fullText.contains(q);
     }).toList();
@@ -227,7 +439,10 @@ class SchemeRepository {
       final name = s.name.toLowerCase();
 
       if (q.contains('tamil nadu') || q == 'tn') {
-        return st.contains('tamil') || st.contains('tn') || code.contains('tn_') || name.contains('tamil');
+        return st.contains('tamil') ||
+            st.contains('tn') ||
+            code.contains('tn_') ||
+            name.contains('tamil');
       }
 
       return st.contains(q) || code.contains(q) || name.contains(q);

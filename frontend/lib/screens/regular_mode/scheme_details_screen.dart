@@ -10,6 +10,7 @@ import '../../utils/constants.dart';
 import '../../l10n/l10n.dart';
 import '../../services/centralized_translator.dart';
 import '../../utils/responsive.dart';
+import '../../utils/emblem_helper.dart';
 
 class SchemeDetailsScreen extends StatefulWidget {
   final Scheme scheme;
@@ -128,11 +129,9 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
   Future<void> _openOfficialUrl(String value) async {
     if (!_isSafeWebUrl(value)) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(context.l10n.noVerifiedLink),
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(context.l10n.noVerifiedLink)));
       return;
     }
 
@@ -141,9 +140,9 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
       mode: LaunchMode.externalApplication,
     );
     if (!opened && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(context.l10n.couldNotOpenWebsite)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(context.l10n.couldNotOpenWebsite)));
     }
   }
 
@@ -162,7 +161,9 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
   Widget build(BuildContext context) {
     final rawScheme = _detailedScheme ?? widget.scheme;
     final provider = Provider.of<AppProvider>(context);
-    final LocalizedScheme scheme = rawScheme.toLocalized(provider.selectedLanguage);
+    final LocalizedScheme scheme = rawScheme.toLocalized(
+      provider.selectedLanguage,
+    );
 
     debugPrint('\n========== [SCHEME DETAILS LOCALIZATION TRACE] ==========');
     debugPrint('Selected App Language: ${provider.selectedLanguage}');
@@ -170,16 +171,24 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
     debugPrint('Raw Scheme En Title: ${rawScheme.name}');
     debugPrint('Raw Scheme Ta Title: ${rawScheme.nameTa}');
     debugPrint('Localized Widget Title: ${scheme.name}');
-    debugPrint('Localized Widget Overview: ${scheme.overview.length > 50 ? "${scheme.overview.substring(0, 47)}..." : scheme.overview}');
-    debugPrint('Localized Widget Benefits: ${scheme.benefits.length > 50 ? "${scheme.benefits.substring(0, 47)}..." : scheme.benefits}');
+    debugPrint(
+      'Localized Widget Overview: ${scheme.overview.length > 50 ? "${scheme.overview.substring(0, 47)}..." : scheme.overview}',
+    );
+    debugPrint(
+      'Localized Widget Benefits: ${scheme.benefits.length > 50 ? "${scheme.benefits.substring(0, 47)}..." : scheme.benefits}',
+    );
     if (scheme.documents.isNotEmpty) {
       debugPrint('Localized Widget First Doc: ${scheme.documents.first.name}');
     }
     if (scheme.requiredServices.isNotEmpty) {
-      debugPrint('Localized Widget First Service: ${scheme.requiredServices.first.name}');
+      debugPrint(
+        'Localized Widget First Service: ${scheme.requiredServices.first.name}',
+      );
     }
     if (scheme.applicationProcess.isNotEmpty) {
-      debugPrint('Localized Widget First Step: ${scheme.applicationProcess.first}');
+      debugPrint(
+        'Localized Widget First Step: ${scheme.applicationProcess.first}',
+      );
     }
     debugPrint('=========================================================\n');
 
@@ -254,7 +263,9 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                         physics: const BouncingScrollPhysics(),
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         child: Row(
-                          children: List.generate(_getTabs(context).length, (index) {
+                          children: List.generate(_getTabs(context).length, (
+                            index,
+                          ) {
                             final bool isSelected = _activeTabIndex == index;
                             return GestureDetector(
                               onTap: () {
@@ -479,9 +490,7 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
 
   Widget _buildSchemeHighlightsCard(LocalizedScheme scheme) {
     final matches = [
-      scheme.governmentLevel.isNotEmpty
-          ? scheme.governmentLevel
-          : '',
+      scheme.governmentLevel.isNotEmpty ? scheme.governmentLevel : '',
       scheme.state,
       scheme.sector,
       scheme.targetBeneficiary,
@@ -675,7 +684,9 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
       children: [
         Text(
           scheme.benefits.isEmpty
-              ? CentralizedTranslator.instance.translate('Benefit details are available from the official source.')
+              ? CentralizedTranslator.instance.translate(
+                  'Benefit details are available from the official source.',
+                )
               : scheme.benefits,
           style: GoogleFonts.inter(
             color: const Color(0xFF64748B),
@@ -700,7 +711,10 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                       width: cardWidth,
                       height: cardHeight,
                       margin: const EdgeInsets.only(right: 12, bottom: 4),
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 8,
+                      ),
                       decoration: BoxDecoration(
                         color: card["bg"] as Color,
                         borderRadius: BorderRadius.circular(12),
@@ -875,7 +889,9 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
-                        document.isMandatory ? context.l10n.badgeRequired : document.mandatory,
+                        document.isMandatory
+                            ? context.l10n.badgeRequired
+                            : document.mandatory,
                         style: GoogleFonts.inter(
                           color: document.isMandatory
                               ? const Color(0xFFB91C1C)
@@ -919,14 +935,13 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                   ),
                 ),
               (() {
-                final docLink = AppConstants.documentLinks.entries.firstWhere(
-                  (entry) {
-                    final key = entry.key.toLowerCase();
-                    final name = document.name.toLowerCase();
-                    return name.contains(key) || key.contains(name);
-                  },
-                  orElse: () => const MapEntry('', ''),
-                ).value;
+                final docLink = AppConstants.documentLinks.entries.firstWhere((
+                  entry,
+                ) {
+                  final key = entry.key.toLowerCase();
+                  final name = document.name.toLowerCase();
+                  return name.contains(key) || key.contains(name);
+                }, orElse: () => const MapEntry('', '')).value;
 
                 if (docLink.isNotEmpty) {
                   return Padding(
@@ -937,7 +952,10 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                         onTap: () => _openOfficialUrl(docLink),
                         borderRadius: BorderRadius.circular(4),
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
@@ -1102,257 +1120,26 @@ class _HeroSection extends StatelessWidget {
 
   const _HeroSection({required this.scheme, required this.imagePath});
 
-  String? _getLocalStateEmblem(LocalizedScheme scheme) {
-    final state = scheme.state.toLowerCase().trim();
-    final code = scheme.schemeCode.toLowerCase().trim();
-    final name = scheme.name.toLowerCase().trim();
-    final sponsor = scheme.sponsoringBody.toLowerCase().trim();
-    final issuer = scheme.issuingBody.toLowerCase().trim();
-
-    bool matchesState(String stateKey, List<String> variations) {
-      for (final v in variations) {
-        if (state.contains(v) ||
-            name.contains(v) ||
-            sponsor.contains(v) ||
-            issuer.contains(v)) {
-          return true;
-        }
-      }
-      return false;
-    }
-
-    if (matchesState('tamil nadu', ['tamil', 'tn', 'tanglish']) ||
-        code.startsWith('tn_') ||
-        code.contains('_tn_') ||
-        code.endsWith('_tn')) {
-      return 'assets/images/States assets/State Emblem/Tamil Nadu.png';
-    }
-    if (matchesState('andhra pradesh', ['andhra', 'ap']) ||
-        code.startsWith('ap_') ||
-        code.contains('_ap_') ||
-        code.endsWith('_ap')) {
-      return 'assets/images/States assets/State Emblem/Andhra Pradesh.png';
-    }
-    if (matchesState('arunachal pradesh', ['arunachal', 'ar']) ||
-        code.startsWith('ar_') ||
-        code.contains('_ar_') ||
-        code.endsWith('_ar')) {
-      return 'assets/images/States assets/State Emblem/Arunachal Pradesh.png';
-    }
-    if (matchesState('assam', ['assam', 'as']) ||
-        code.startsWith('as_') ||
-        code.contains('_as_') ||
-        code.endsWith('_as')) {
-      return 'assets/images/States assets/State Emblem/Assam.png';
-    }
-    if (matchesState('bihar', ['bihar', 'br']) ||
-        code.startsWith('br_') ||
-        code.contains('_br_') ||
-        code.endsWith('_br')) {
-      return 'assets/images/States assets/State Emblem/Bihar.png';
-    }
-    if (matchesState('chhattisgarh', ['chhattisgarh', 'chhatisgarh', 'cg']) ||
-        code.startsWith('cg_') ||
-        code.contains('_cg_') ||
-        code.endsWith('_cg')) {
-      return 'assets/images/States assets/State Emblem/Chhatisgarh.png';
-    }
-    if (matchesState('goa', ['goa', 'ga']) ||
-        code.startsWith('ga_') ||
-        code.contains('_ga_') ||
-        code.endsWith('_ga')) {
-      return 'assets/images/States assets/State Emblem/Goa.png';
-    }
-    if (matchesState('gujarat', ['gujarat', 'gj']) ||
-        code.startsWith('gj_') ||
-        code.contains('_gj_') ||
-        code.endsWith('_gj')) {
-      return 'assets/images/States assets/State Emblem/Gujarat.png';
-    }
-    if (matchesState('haryana', ['haryana', 'hr']) ||
-        code.startsWith('hr_') ||
-        code.contains('_hr_') ||
-        code.endsWith('_hr')) {
-      return 'assets/images/States assets/State Emblem/Haryana.png';
-    }
-    if (matchesState('himachal pradesh', ['himachal', 'hp']) ||
-        code.startsWith('hp_') ||
-        code.contains('_hp_') ||
-        code.endsWith('_hp')) {
-      return 'assets/images/States assets/State Emblem/Himachal Pradesh.png';
-    }
-    if (matchesState('jharkhand', ['jharkhand', 'jh']) ||
-        code.startsWith('jh_') ||
-        code.contains('_jh_') ||
-        code.endsWith('_jh')) {
-      return 'assets/images/States assets/State Emblem/Jharkhand.png';
-    }
-    if (matchesState('karnataka', ['karnataka', 'ka']) ||
-        code.startsWith('ka_') ||
-        code.contains('_ka_') ||
-        code.endsWith('_ka')) {
-      return 'assets/images/States assets/State Emblem/Karnataka.png';
-    }
-    if (matchesState('kerala', ['kerala', 'kl']) ||
-        code.startsWith('kl_') ||
-        code.contains('_kl_') ||
-        code.endsWith('_kl')) {
-      return 'assets/images/States assets/State Emblem/kerala.png';
-    }
-    if (matchesState('madhya pradesh', ['madhya', 'mp']) ||
-        code.startsWith('mp_') ||
-        code.contains('_mp_') ||
-        code.endsWith('_mp')) {
-      return 'assets/images/States assets/State Emblem/Madhya Pradesh.png';
-    }
-    if (matchesState('maharashtra', ['maharashtra', 'mh']) ||
-        code.startsWith('mh_') ||
-        code.contains('_mh_') ||
-        code.endsWith('_mh')) {
-      return 'assets/images/States assets/State Emblem/Maharashtra.png';
-    }
-    if (matchesState('manipur', ['manipur', 'mn']) ||
-        code.startsWith('mn_') ||
-        code.contains('_mn_') ||
-        code.endsWith('_mn')) {
-      return 'assets/images/States assets/State Emblem/Manipur.png';
-    }
-    if (matchesState('meghalaya', ['meghalaya', 'ml', 'maghalaya']) ||
-        code.startsWith('ml_') ||
-        code.contains('_ml_') ||
-        code.endsWith('_ml')) {
-      return 'assets/images/States assets/State Emblem/Maghalaya.png';
-    }
-    if (matchesState('mizoram', ['mizoram', 'mz']) ||
-        code.startsWith('mz_') ||
-        code.contains('_mz_') ||
-        code.endsWith('_mz')) {
-      return 'assets/images/States assets/State Emblem/Mizoram.png';
-    }
-    if (matchesState('nagaland', ['nagaland', 'nl']) ||
-        code.startsWith('nl_') ||
-        code.contains('_nl_') ||
-        code.endsWith('_nl')) {
-      return 'assets/images/States assets/State Emblem/Nagaland.png';
-    }
-    if (matchesState('odisha', ['odisha', 'orissa', 'od']) ||
-        code.startsWith('od_') ||
-        code.contains('_od_') ||
-        code.endsWith('_od') ||
-        code.startsWith('or_') ||
-        code.contains('_or_') ||
-        code.endsWith('_or')) {
-      return 'assets/images/States assets/State Emblem/Odisha.png';
-    }
-    if (matchesState('punjab', ['punjab', 'pb']) ||
-        code.startsWith('pb_') ||
-        code.contains('_pb_') ||
-        code.endsWith('_pb')) {
-      return 'assets/images/States assets/State Emblem/Punjab.png';
-    }
-    if (matchesState('rajasthan', ['rajasthan', 'rj']) ||
-        code.startsWith('rj_') ||
-        code.contains('_rj_') ||
-        code.endsWith('_rj')) {
-      return 'assets/images/States assets/State Emblem/Rajasthan.png';
-    }
-    if (matchesState('sikkim', ['sikkim', 'sk']) ||
-        code.startsWith('sk_') ||
-        code.contains('_sk_') ||
-        code.endsWith('_sk')) {
-      return 'assets/images/States assets/State Emblem/Sikkim.png';
-    }
-    if (matchesState('telangana', ['telangana', 'tg', 'telagana']) ||
-        code.startsWith('tg_') ||
-        code.contains('_tg_') ||
-        code.endsWith('_tg')) {
-      return 'assets/images/States assets/State Emblem/Telagana.png';
-    }
-    if (matchesState('tripura', ['tripura', 'tr']) ||
-        code.startsWith('tr_') ||
-        code.contains('_tr_') ||
-        code.endsWith('_tr')) {
-      return 'assets/images/States assets/State Emblem/Tripura.png';
-    }
-    if (matchesState('uttar pradesh', ['uttar pradesh', 'up']) ||
-        code.startsWith('up_') ||
-        code.contains('_up_') ||
-        code.endsWith('_up')) {
-      return 'assets/images/States assets/State Emblem/Uttar Pradesh.png';
-    }
-    if (matchesState('uttarakhand', ['uttarakhand', 'uttarkhand', 'uk', 'ua']) ||
-        code.startsWith('uk_') ||
-        code.contains('_uk_') ||
-        code.endsWith('_uk')) {
-      return 'assets/images/States assets/State Emblem/Uttarakhand.png';
-    }
-    if (matchesState('west bengal', ['west bengal', 'wb']) ||
-        code.startsWith('wb_') ||
-        code.contains('_wb_') ||
-        code.endsWith('_wb')) {
-      return 'assets/images/States assets/State Emblem/West Bengal.png';
-    }
-
-    return null;
-  }
-
   Widget _buildSchemeLogo(LocalizedScheme scheme, {double size = 48}) {
-    final localStateEmblem = _getLocalStateEmblem(scheme);
-    
-    if (localStateEmblem != null) {
-      return Image.asset(
-        localStateEmblem,
-        fit: BoxFit.cover,
-        width: size,
-        height: size,
-        errorBuilder: (context, error, stackTrace) {
-          return Image.asset(
-            'assets/images/Logo/Logo icon.png',
-            fit: BoxFit.contain,
-            width: size,
-            height: size,
-          );
-        },
-      );
-    }
-    
-    final code = scheme.schemeCode.toUpperCase();
-    String logoUrl = 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Emblem_of_India.svg/358px-Emblem_of_India.svg.png';
-    
-    if (code.contains('MUDRA') || code.contains('PMMY')) {
-      logoUrl = 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Logo_of_the_Pradhan_Mantri_Mudra_Yojana.svg/450px-Logo_of_the_Pradhan_Mantri_Mudra_Yojana.svg.png';
-    } else if (code.contains('MSME') || code.contains('CGTMSE') || code.contains('PMEGP')) {
-      logoUrl = 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/00/MSME_logo_%28colour%29.svg/330px-MSME_logo_%28colour%29.svg.png';
-    }
+    final emblemAsset = EmblemHelper.getEmblemAsset(
+      governmentLevel: scheme.governmentLevel,
+      state: scheme.state,
+      schemeCode: scheme.schemeCode,
+      sponsoringBody: scheme.sponsoringBody,
+      name: scheme.name,
+    );
 
-    return Image.network(
-      logoUrl,
+    return Image.asset(
+      emblemAsset,
       fit: BoxFit.contain,
       width: size,
       height: size,
       errorBuilder: (context, error, stackTrace) {
         return Image.asset(
-          'assets/images/Logo/Logo icon.png',
+          'assets/images/States assets/Indian emblem.png',
           fit: BoxFit.contain,
           width: size,
           height: size,
-        );
-      },
-      loadingBuilder: (context, child, loadingProgress) {
-        if (loadingProgress == null) return child;
-        return SizedBox(
-          width: size,
-          height: size,
-          child: const Center(
-            child: SizedBox(
-              width: 16,
-              height: 16,
-              child: CircularProgressIndicator(
-                strokeWidth: 1.5,
-                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2563EB)),
-              ),
-            ),
-          ),
         );
       },
     );
@@ -1432,13 +1219,8 @@ class _HeroSection extends StatelessWidget {
                       ),
                     ],
                   ),
-                  padding: _getLocalStateEmblem(scheme) != null ? EdgeInsets.zero : const EdgeInsets.all(8),
-                  child: ClipOval(
-                    child: _buildSchemeLogo(
-                      scheme,
-                      size: 120,
-                    ),
-                  ),
+                  padding: EdgeInsets.zero,
+                  child: ClipOval(child: _buildSchemeLogo(scheme, size: 120)),
                 ),
               ),
             ),
@@ -1585,7 +1367,9 @@ class _HeroSection extends StatelessWidget {
                                 style: GoogleFonts.inter(fontSize: 10),
                                 children: [
                                   TextSpan(
-                                    text: context.l10n.matchPercentageFormat(96),
+                                    text: context.l10n.matchPercentageFormat(
+                                      96,
+                                    ),
                                     style: const TextStyle(
                                       fontWeight: FontWeight.bold,
                                       color: Color(0xFF2563EB),
@@ -1593,7 +1377,9 @@ class _HeroSection extends StatelessWidget {
                                   ),
                                   TextSpan(
                                     text: " • ${context.l10n.highlyRelevant}",
-                                    style: const TextStyle(color: Color(0xFF64748B)),
+                                    style: const TextStyle(
+                                      color: Color(0xFF64748B),
+                                    ),
                                   ),
                                 ],
                               ),
@@ -1795,7 +1581,9 @@ class _BottomActionBar extends StatelessWidget {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        isBookmarked ? context.l10n.savedSchemeButton : context.l10n.saveSchemeButton,
+                        isBookmarked
+                            ? context.l10n.savedSchemeButton
+                            : context.l10n.saveSchemeButton,
                         style: GoogleFonts.inter(
                           color: const Color(0xFF2563EB),
                           fontWeight: FontWeight.bold,

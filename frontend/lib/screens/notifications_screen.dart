@@ -6,7 +6,7 @@ import 'package:frontend/utils/constants.dart';
 import 'package:frontend/services/centralized_translator.dart';
 import 'package:frontend/l10n/l10n.dart';
 import 'package:frontend/utils/responsive.dart';
-import 'regular_mode/profile_setup_screen.dart';
+import 'regular_mode/basic_profile_screen.dart';
 
 class NotificationsScreen extends StatefulWidget {
   final String? initialFilter;
@@ -695,7 +695,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           } else {
             provider.markNotificationRead(id);
             Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const ProfileSetupScreen()),
+              MaterialPageRoute(builder: (_) => const BasicProfileScreen()),
             );
           }
         },
@@ -893,7 +893,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(
-                                CentralizedTranslator.instance.translate('Selected notifications marked as read'),
+                                CentralizedTranslator.instance.translate(
+                                  'Selected notifications marked as read',
+                                ),
                               ),
                             ),
                           );
@@ -916,7 +918,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                           provider.deleteNotifications(_selectedIds.toList());
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text(CentralizedTranslator.instance.translate('Selected notifications deleted')),
+                              content: Text(
+                                CentralizedTranslator.instance.translate(
+                                  'Selected notifications deleted',
+                                ),
+                              ),
                             ),
                           );
                           setState(() {
@@ -937,7 +943,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   onPressed: () {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text(CentralizedTranslator.instance.translate('Filter options opened')),
+                        content: Text(
+                          CentralizedTranslator.instance.translate(
+                            'Filter options opened',
+                          ),
+                        ),
                         duration: const Duration(milliseconds: 500),
                       ),
                     );
@@ -960,14 +970,22 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                       provider.markAllNotificationsRead();
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text(CentralizedTranslator.instance.translate('All notifications marked as read')),
+                          content: Text(
+                            CentralizedTranslator.instance.translate(
+                              'All notifications marked as read',
+                            ),
+                          ),
                         ),
                       );
                     } else if (value == 'delete_all') {
                       provider.deleteAllNotifications();
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text(CentralizedTranslator.instance.translate('All notifications deleted')),
+                          content: Text(
+                            CentralizedTranslator.instance.translate(
+                              'All notifications deleted',
+                            ),
+                          ),
                         ),
                       );
                     } else if (value == 'select') {

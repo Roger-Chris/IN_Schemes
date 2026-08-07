@@ -21,9 +21,11 @@ class MssEntity {
   factory MssEntity.fromJson(Map<String, dynamic> json) {
     final identity = json['identity'] as Map<String, dynamic>? ?? {};
     final id = (identity['id'] ?? json['entityId'] ?? '') as String;
-    final entityType = (identity['entityType'] ?? json['entityType'] ?? '') as String;
+    final entityType =
+        (identity['entityType'] ?? json['entityType'] ?? '') as String;
     final code = (identity['code'] ?? '') as String;
-    final status = (identity['status'] ?? json['status'] ?? 'unknown') as String;
+    final status =
+        (identity['status'] ?? json['status'] ?? 'unknown') as String;
 
     return MssEntity._(
       id: id,
@@ -40,7 +42,8 @@ class MssEntity {
     final loc = raw['localization'] as Map<String, dynamic>?;
     if (loc != null) {
       final preferred = loc[preferredLang] as Map<String, dynamic>?;
-      if (preferred != null && (preferred['name'] as String?)?.isNotEmpty == true) {
+      if (preferred != null &&
+          (preferred['name'] as String?)?.isNotEmpty == true) {
         return preferred['name'] as String;
       }
       final altLang = preferredLang == 'ta' ? 'en' : 'ta';
@@ -61,7 +64,8 @@ class MssEntity {
     final loc = raw['localization'] as Map<String, dynamic>?;
     if (loc != null) {
       final preferred = loc[preferredLang] as Map<String, dynamic>?;
-      if (preferred != null && (preferred[key] as String?)?.isNotEmpty == true) {
+      if (preferred != null &&
+          (preferred[key] as String?)?.isNotEmpty == true) {
         return preferred[key] as String;
       }
       final ta = loc['ta'] as Map<String, dynamic>?;
@@ -95,9 +99,7 @@ class MssEntity {
   List<Map<String, dynamic>> get references {
     final refs = relationships['references'] as List?;
     if (refs == null) return const [];
-    return refs
-        .whereType<Map<String, dynamic>>()
-        .toList(growable: false);
+    return refs.whereType<Map<String, dynamic>>().toList(growable: false);
   }
 
   @override
@@ -109,5 +111,6 @@ class MssEntity {
   int get hashCode => id.hashCode;
 
   @override
-  String toString() => 'MssEntity(id: $id, type: $entityType, code: $code, status: $status)';
+  String toString() =>
+      'MssEntity(id: $id, type: $entityType, code: $code, status: $status)';
 }

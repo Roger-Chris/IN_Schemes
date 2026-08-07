@@ -62,7 +62,10 @@ class CustomButton extends StatelessWidget {
         gradient: isSecondary || onPressed == null
             ? null
             : const LinearGradient(
-                colors: [AppConstants.secondaryColor, AppConstants.primaryColor],
+                colors: [
+                  AppConstants.secondaryColor,
+                  AppConstants.primaryColor,
+                ],
                 begin: Alignment.centerLeft,
                 end: Alignment.centerRight,
               ),
@@ -81,7 +84,9 @@ class CustomButton extends StatelessWidget {
       ),
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
-          backgroundColor: isSecondary ? Colors.transparent : Colors.transparent,
+          backgroundColor: isSecondary
+              ? Colors.transparent
+              : Colors.transparent,
           shadowColor: Colors.transparent,
           disabledBackgroundColor: Colors.black.withValues(alpha: 0.05),
           shape: RoundedRectangleBorder(

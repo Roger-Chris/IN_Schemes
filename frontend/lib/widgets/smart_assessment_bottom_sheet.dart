@@ -61,16 +61,16 @@ class QuestionNode {
 
     final String qText = isTamil
         ? ((questionTextTa != null && questionTextTa!.trim().isNotEmpty)
-            ? questionTextTa!
-            : CentralizedTranslator.instance.translate(questionText))
+              ? questionTextTa!
+              : CentralizedTranslator.instance.translate(questionText))
         : questionText;
 
     String? subText;
     if (subtitleText != null) {
       subText = isTamil
           ? ((subtitleTextTa != null && subtitleTextTa!.trim().isNotEmpty)
-              ? subtitleTextTa!
-              : CentralizedTranslator.instance.translate(subtitleText!))
+                ? subtitleTextTa!
+                : CentralizedTranslator.instance.translate(subtitleText!))
           : subtitleText;
     }
 
@@ -78,7 +78,9 @@ class QuestionNode {
     for (int i = 0; i < options.length; i++) {
       final rawOpt = options[i];
       if (isTamil) {
-        if (optionsTa != null && i < optionsTa!.length && optionsTa![i].trim().isNotEmpty) {
+        if (optionsTa != null &&
+            i < optionsTa!.length &&
+            optionsTa![i].trim().isNotEmpty) {
           locOptions.add(optionsTa![i]);
         } else {
           locOptions.add(CentralizedTranslator.instance.translate(rawOpt));
@@ -110,7 +112,12 @@ class SmartAssessmentBottomSheet extends StatefulWidget {
     required this.onCompleted,
   });
 
-  static void show(BuildContext context, String title, String type, VoidCallback onCompleted) {
+  static void show(
+    BuildContext context,
+    String title,
+    String type,
+    VoidCallback onCompleted,
+  ) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -124,10 +131,12 @@ class SmartAssessmentBottomSheet extends StatefulWidget {
   }
 
   @override
-  State<SmartAssessmentBottomSheet> createState() => _SmartAssessmentBottomSheetState();
+  State<SmartAssessmentBottomSheet> createState() =>
+      _SmartAssessmentBottomSheetState();
 }
 
-class _SmartAssessmentBottomSheetState extends State<SmartAssessmentBottomSheet> {
+class _SmartAssessmentBottomSheetState
+    extends State<SmartAssessmentBottomSheet> {
   late String _currentQuestionId;
   final Map<String, String> _answers = {};
   final List<String> _questionHistory = [];
@@ -145,22 +154,37 @@ class _SmartAssessmentBottomSheetState extends State<SmartAssessmentBottomSheet>
     final title = widget.cardTitle.toLowerCase().trim();
 
     if (widget.cardType == 'category') {
-      if (title.contains('educat') || title.contains('scholar') || title.contains('student')) {
+      if (title.contains('educat') ||
+          title.contains('scholar') ||
+          title.contains('student')) {
         _questionFlow = _getEducationFlow();
         _currentQuestionId = 'edu_q1';
-      } else if (title.contains('women') || title.contains('child') || title.contains('matern')) {
+      } else if (title.contains('women') ||
+          title.contains('child') ||
+          title.contains('matern')) {
         _questionFlow = _getWomenFlow();
         _currentQuestionId = 'women_q1';
-      } else if (title.contains('agri') || title.contains('farm') || title.contains('crop')) {
+      } else if (title.contains('agri') ||
+          title.contains('farm') ||
+          title.contains('crop')) {
         _questionFlow = _getAgricultureFlow();
         _currentQuestionId = 'agri_q1';
-      } else if (title.contains('skill') || title.contains('employ') || title.contains('job')) {
+      } else if (title.contains('skill') ||
+          title.contains('employ') ||
+          title.contains('job')) {
         _questionFlow = _getSkillFlow();
         _currentQuestionId = 'skill_q1';
-      } else if (title.contains('tech') || title.contains('export') || title.contains('trade')) {
+      } else if (title.contains('tech') ||
+          title.contains('export') ||
+          title.contains('trade')) {
         _questionFlow = _getTechExportFlow();
         _currentQuestionId = 'te_q1';
-      } else if (title.contains('business') || title.contains('msme') || title.contains('start') || title.contains('artisan') || title.contains('loan') || title.contains('credit')) {
+      } else if (title.contains('business') ||
+          title.contains('msme') ||
+          title.contains('start') ||
+          title.contains('artisan') ||
+          title.contains('loan') ||
+          title.contains('credit')) {
         _questionFlow = _getBusinessFlow();
         _currentQuestionId = 'biz_q1';
       } else {
@@ -180,11 +204,15 @@ class _SmartAssessmentBottomSheetState extends State<SmartAssessmentBottomSheet>
     return const Color(0xFF2563EB); // Unified Royal Blue theme
   }
 
-  void _onOptionSelected(String selectedLocalizedOption, LocalizedQuestionNode localizedNode) {
+  void _onOptionSelected(
+    String selectedLocalizedOption,
+    LocalizedQuestionNode localizedNode,
+  ) {
     setState(() {
       // Find raw option string for downstream answer logic
       final index = localizedNode.options.indexOf(selectedLocalizedOption);
-      final rawOption = (index >= 0 && index < localizedNode.rawNode.options.length)
+      final rawOption =
+          (index >= 0 && index < localizedNode.rawNode.options.length)
           ? localizedNode.rawNode.options[index]
           : selectedLocalizedOption;
 
@@ -223,24 +251,44 @@ class _SmartAssessmentBottomSheetState extends State<SmartAssessmentBottomSheet>
     String bizStage = profile.businessStage;
 
     _answers.forEach((qId, ans) {
-      if (qId.contains('income') || qId.contains('turnover') || qId.endsWith('q5') || qId.contains('q4_income')) {
-        if (ans.contains('Under ₹1') || ans.contains('Under ₹1.2') || ans.contains('Under ₹1.5') || ans.contains('Under ₹1.8')) {
+      if (qId.contains('income') ||
+          qId.contains('turnover') ||
+          qId.endsWith('q5') ||
+          qId.contains('q4_income')) {
+        if (ans.contains('Under ₹1') ||
+            ans.contains('Under ₹1.2') ||
+            ans.contains('Under ₹1.5') ||
+            ans.contains('Under ₹1.8')) {
           income = 120000.0;
-        } else if (ans.contains('₹1.2') || ans.contains('₹1.5') || ans.contains('Under ₹2') || ans.contains('Under ₹2.5')) {
+        } else if (ans.contains('₹1.2') ||
+            ans.contains('₹1.5') ||
+            ans.contains('Under ₹2') ||
+            ans.contains('Under ₹2.5')) {
           income = 200000.0;
-        } else if (ans.contains('₹2.5') || ans.contains('₹1.8 - ₹3') || ans.contains('₹2 - ₹8') || ans.contains('₹1.5 - ₹5')) {
+        } else if (ans.contains('₹2.5') ||
+            ans.contains('₹1.8 - ₹3') ||
+            ans.contains('₹2 - ₹8') ||
+            ans.contains('₹1.5 - ₹5')) {
           income = 450000.0;
-        } else if (ans.contains('Over ₹8') || ans.contains('Over ₹6') || ans.contains('Over ₹10') || ans.contains('Over ₹5')) {
+        } else if (ans.contains('Over ₹8') ||
+            ans.contains('Over ₹6') ||
+            ans.contains('Over ₹10') ||
+            ans.contains('Over ₹5')) {
           income = 900000.0;
         }
       }
 
-      if (qId.contains('caste') || qId.contains('category') || qId.contains('reservation')) {
+      if (qId.contains('caste') ||
+          qId.contains('category') ||
+          qId.contains('reservation')) {
         if (ans.contains('SC')) {
           community = 'SC';
         } else if (ans.contains('ST')) {
           community = 'ST';
-        } else if (ans.contains('OBC') || ans.contains('BC') || ans.contains('SEBC') || ans.contains('MBC')) {
+        } else if (ans.contains('OBC') ||
+            ans.contains('BC') ||
+            ans.contains('SEBC') ||
+            ans.contains('MBC')) {
           community = 'OBC';
         } else if (ans.contains('EWS')) {
           community = 'EWS';
@@ -250,19 +298,26 @@ class _SmartAssessmentBottomSheetState extends State<SmartAssessmentBottomSheet>
       }
 
       if (qId.contains('gender')) {
-        if (ans.contains('Female') || ans.contains('woman') || ans.contains('Women')) {
+        if (ans.contains('Female') ||
+            ans.contains('woman') ||
+            ans.contains('Women')) {
           gender = 'Female';
         } else {
           gender = 'Male';
         }
       }
 
-      if (qId.contains('livelihood') || qId.contains('profession') || qId.contains('occupation') || qId.contains('employment')) {
+      if (qId.contains('livelihood') ||
+          qId.contains('profession') ||
+          qId.contains('occupation') ||
+          qId.contains('employment')) {
         if (ans.contains('Farmer') || ans.contains('Agri')) {
           employment = 'Farmer';
         } else if (ans.contains('Student')) {
           employment = 'Student';
-        } else if (ans.contains('Business') || ans.contains('Startup') || ans.contains('entrepreneur')) {
+        } else if (ans.contains('Business') ||
+            ans.contains('Startup') ||
+            ans.contains('entrepreneur')) {
           employment = 'Business Owner';
         } else if (ans.contains('Self-employed') || ans.contains('artisan')) {
           employment = 'Self-employed';
@@ -275,7 +330,9 @@ class _SmartAssessmentBottomSheetState extends State<SmartAssessmentBottomSheet>
         if (ans.contains('Yes')) existingBiz = true;
         if (ans.contains('Idea')) bizStage = 'Idea';
         if (ans.contains('Prototype')) bizStage = 'Prototype';
-        if (ans.contains('Operational') || ans.contains('Registered')) bizStage = 'Operational';
+        if (ans.contains('Operational') || ans.contains('Registered')) {
+          bizStage = 'Operational';
+        }
       }
     });
 
@@ -332,7 +389,10 @@ class _SmartAssessmentBottomSheetState extends State<SmartAssessmentBottomSheet>
     if (rawNode == null) return const SizedBox.shrink();
 
     final localizedNode = rawNode.toLocalized(language);
-    final cardTitleLocalized = _getLocalizedCardTitle(widget.cardTitle, language);
+    final cardTitleLocalized = _getLocalizedCardTitle(
+      widget.cardTitle,
+      language,
+    );
 
     final themeColor = _getThemeColor();
     final totalSteps = 5;
@@ -389,49 +449,51 @@ class _SmartAssessmentBottomSheetState extends State<SmartAssessmentBottomSheet>
             children: [
               Flexible(
                 child: Row(
-                children: [
-                  Container(
-                    padding: widget.cardType == 'state' ? EdgeInsets.zero : const EdgeInsets.all(6),
-                    decoration: widget.cardType == 'state'
-                        ? null
-                        : BoxDecoration(
-                            color: themeColor.withValues(alpha: 0.1),
-                            shape: BoxShape.circle,
-                          ),
-                    child: widget.cardType == 'state'
-                        ? Image.asset(
-                            _getStateMapAsset(widget.cardTitle),
-                            width: 32,
-                            height: 32,
-                            fit: BoxFit.contain,
-                            errorBuilder: (context, error, stackTrace) {
-                              return CustomPaint(
-                                size: const Size(32, 32),
-                                painter: StateMapPainter(widget.cardTitle),
-                              );
-                            },
-                          )
-                        : Icon(
-                            widget.cardType == 'ministry'
-                                ? Icons.account_balance_rounded
-                                : Icons.grid_view_rounded,
-                            color: themeColor,
-                            size: 16,
-                          ),
-                  ),
-                  const SizedBox(width: 8),
-                  Flexible(
-                    child: Text(
-                      cardTitleLocalized,
-                      softWrap: true,
-                      style: GoogleFonts.poppins(
-                        fontSize: isTamil ? 13.0 : 14.0,
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xFF0F172A),
+                  children: [
+                    Container(
+                      padding: widget.cardType == 'state'
+                          ? EdgeInsets.zero
+                          : const EdgeInsets.all(6),
+                      decoration: widget.cardType == 'state'
+                          ? null
+                          : BoxDecoration(
+                              color: themeColor.withValues(alpha: 0.1),
+                              shape: BoxShape.circle,
+                            ),
+                      child: widget.cardType == 'state'
+                          ? Image.asset(
+                              _getStateMapAsset(widget.cardTitle),
+                              width: 32,
+                              height: 32,
+                              fit: BoxFit.contain,
+                              errorBuilder: (context, error, stackTrace) {
+                                return CustomPaint(
+                                  size: const Size(32, 32),
+                                  painter: StateMapPainter(widget.cardTitle),
+                                );
+                              },
+                            )
+                          : Icon(
+                              widget.cardType == 'ministry'
+                                  ? Icons.account_balance_rounded
+                                  : Icons.grid_view_rounded,
+                              color: themeColor,
+                              size: 16,
+                            ),
+                    ),
+                    const SizedBox(width: 8),
+                    Flexible(
+                      child: Text(
+                        cardTitleLocalized,
+                        softWrap: true,
+                        style: GoogleFonts.poppins(
+                          fontSize: isTamil ? 13.0 : 14.0,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF0F172A),
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
                 ),
               ),
               IconButton(
@@ -497,7 +559,8 @@ class _SmartAssessmentBottomSheetState extends State<SmartAssessmentBottomSheet>
                     height: isTamil ? 1.35 : 1.25,
                   ),
                 ),
-                if (localizedNode.subtitleText != null && localizedNode.subtitleText!.isNotEmpty) ...[
+                if (localizedNode.subtitleText != null &&
+                    localizedNode.subtitleText!.isNotEmpty) ...[
                   const SizedBox(height: 6),
                   Text(
                     localizedNode.subtitleText!,
@@ -520,13 +583,21 @@ class _SmartAssessmentBottomSheetState extends State<SmartAssessmentBottomSheet>
                     margin: const EdgeInsets.only(bottom: 10),
                     width: double.infinity,
                     child: OutlinedButton(
-                      onPressed: () => _onOptionSelected(optionLocalized, localizedNode),
+                      onPressed: () =>
+                          _onOptionSelected(optionLocalized, localizedNode),
                       style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 13, horizontal: 16),
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 13,
+                          horizontal: 16,
+                        ),
                         alignment: Alignment.centerLeft,
-                        backgroundColor: isSelected ? themeColor.withValues(alpha: 0.06) : Colors.white,
+                        backgroundColor: isSelected
+                            ? themeColor.withValues(alpha: 0.06)
+                            : Colors.white,
                         side: BorderSide(
-                          color: isSelected ? themeColor : const Color(0xFFE2E8F0),
+                          color: isSelected
+                              ? themeColor
+                              : const Color(0xFFE2E8F0),
                           width: isSelected ? 1.5 : 1,
                         ),
                         shape: RoundedRectangleBorder(
@@ -539,8 +610,12 @@ class _SmartAssessmentBottomSheetState extends State<SmartAssessmentBottomSheet>
                         overflow: TextOverflow.visible,
                         style: GoogleFonts.inter(
                           fontSize: isTamil ? 11.5 : 12.5,
-                          fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                          color: isSelected ? themeColor : const Color(0xFF334155),
+                          fontWeight: isSelected
+                              ? FontWeight.bold
+                              : FontWeight.w500,
+                          color: isSelected
+                              ? themeColor
+                              : const Color(0xFF334155),
                           height: isTamil ? 1.35 : 1.25,
                         ),
                       ),
@@ -570,7 +645,9 @@ class _SmartAssessmentBottomSheetState extends State<SmartAssessmentBottomSheet>
                         ),
                       ),
                     ),
-                    style: TextButton.styleFrom(foregroundColor: const Color(0xFF64748B)),
+                    style: TextButton.styleFrom(
+                      foregroundColor: const Color(0xFF64748B),
+                    ),
                   ),
                 )
               else
@@ -611,56 +688,121 @@ class _SmartAssessmentBottomSheetState extends State<SmartAssessmentBottomSheet>
         id: 'edu_q1',
         questionText: "What is your current level of education?",
         questionTextTa: "உங்கள் தற்போதைய கல்வித் தகுதி என்ன?",
-        options: ["Schooling (Up to 12th)", "Undergraduate", "Postgraduate", "Ph.D. & Research"],
-        optionsTa: ["பள்ளி கல்வி (12 ஆம் வகுப்பு வரை)", "இளங்கலை (UG)", "முதுகலை (PG)", "முனைவர் பட்டம் & ஆராய்ச்சி"],
-        nextId: (ans) => ans.contains("Schooling") ? "edu_q2_school" : ans.contains("Research") ? "edu_q2_research" : "edu_q2_college",
+        options: [
+          "Schooling (Up to 12th)",
+          "Undergraduate",
+          "Postgraduate",
+          "Ph.D. & Research",
+        ],
+        optionsTa: [
+          "பள்ளி கல்வி (12 ஆம் வகுப்பு வரை)",
+          "இளங்கலை (UG)",
+          "முதுகலை (PG)",
+          "முனைவர் பட்டம் & ஆராய்ச்சி",
+        ],
+        nextId: (ans) => ans.contains("Schooling")
+            ? "edu_q2_school"
+            : ans.contains("Research")
+            ? "edu_q2_research"
+            : "edu_q2_college",
       ),
       'edu_q2_school': QuestionNode(
         id: 'edu_q2_school',
         questionText: "What class/grade are you currently enrolled in?",
         questionTextTa: "நீங்கள் தற்போது எந்த வகுப்பில் படிக்கிறீர்கள்?",
-        options: ["Class 1 - 8 (Primary)", "Class 9 - 10 (Secondary)", "Class 11 - 12 (Higher Secondary)"],
-        optionsTa: ["வகுப்பு 1 - 8 (தொடக்கப்பள்ளி)", "வகுப்பு 9 - 10 (உயர்நிலைப்பள்ளி)", "வகுப்பு 11 - 12 (மேல்நிலைப்பள்ளி)"],
+        options: [
+          "Class 1 - 8 (Primary)",
+          "Class 9 - 10 (Secondary)",
+          "Class 11 - 12 (Higher Secondary)",
+        ],
+        optionsTa: [
+          "வகுப்பு 1 - 8 (தொடக்கப்பள்ளி)",
+          "வகுப்பு 9 - 10 (உயர்நிலைப்பள்ளி)",
+          "வகுப்பு 11 - 12 (மேல்நிலைப்பள்ளி)",
+        ],
         nextId: (_) => "edu_q3_school",
       ),
       'edu_q2_college': QuestionNode(
         id: 'edu_q2_college',
         questionText: "What is your primary stream of study?",
         questionTextTa: "உங்கள் முதன்மை கல்விப் பிரிவு என்ன?",
-        options: ["STEM (Science/Engineering/IT)", "Arts, Commerce & Humanities", "Medical & Nursing", "Agricultural Studies"],
-        optionsTa: ["STEM (அறிவியல்/பொறியியல்/IT)", "கலை, வணிகவியல் & மானுடவியல்", "மருத்துவம் & செவிலியர்", "வேளாண் படிப்புகள்"],
+        options: [
+          "STEM (Science/Engineering/IT)",
+          "Arts, Commerce & Humanities",
+          "Medical & Nursing",
+          "Agricultural Studies",
+        ],
+        optionsTa: [
+          "STEM (அறிவியல்/பொறியியல்/IT)",
+          "கலை, வணிகவியல் & மானுடவியல்",
+          "மருத்துவம் & செவிலியர்",
+          "வேளாண் படிப்புகள்",
+        ],
         nextId: (_) => "edu_q3_college",
       ),
       'edu_q2_research': QuestionNode(
         id: 'edu_q2_research',
         questionText: "What is your research specialization domain?",
         questionTextTa: "உங்கள் ஆராய்ச்சி துறை என்ன?",
-        options: ["STEM Research & Patents", "Humanities & Social Sciences", "Agricultural/Biological Sciences"],
-        optionsTa: ["STEM ஆராய்ச்சி & காப்புரிமை", "மானுடவியல் & சமூக அறிவியல்", "வேளாண் / உயிரியல் அறிவியல்"],
+        options: [
+          "STEM Research & Patents",
+          "Humanities & Social Sciences",
+          "Agricultural/Biological Sciences",
+        ],
+        optionsTa: [
+          "STEM ஆராய்ச்சி & காப்புரிமை",
+          "மானுடவியல் & சமூக அறிவியல்",
+          "வேளாண் / உயிரியல் அறிவியல்",
+        ],
         nextId: (_) => "edu_q3_research",
       ),
       'edu_q3_school': QuestionNode(
         id: 'edu_q3_school',
         questionText: "What type of aid is most important right now?",
         questionTextTa: "தற்போது உங்களுக்கு எந்த வகையான உதவி தேவைப்படுகிறது?",
-        options: ["Pre-matric Scholarship", "Free textbooks & uniforms", "Hostel accommodation subsidy"],
-        optionsTa: ["பள்ளிப்படிப்பு உதவித்தொகை (Pre-matric)", "இலவச பாடப்புத்தகங்கள் & சீருடைகள்", "விடுதி தங்குமிட மானியம்"],
+        options: [
+          "Pre-matric Scholarship",
+          "Free textbooks & uniforms",
+          "Hostel accommodation subsidy",
+        ],
+        optionsTa: [
+          "பள்ளிப்படிப்பு உதவித்தொகை (Pre-matric)",
+          "இலவச பாடப்புத்தகங்கள் & சீருடைகள்",
+          "விடுதி தங்குமிட மானியம்",
+        ],
         nextId: (_) => "edu_q4_caste",
       ),
       'edu_q3_college': QuestionNode(
         id: 'edu_q3_college',
-        questionText: "Are you interested in a low-interest student education loan?",
+        questionText:
+            "Are you interested in a low-interest student education loan?",
         questionTextTa: "குறைந்த வட்டி கல்விக்கடனில் ஆர்வமாக உள்ளீர்களா?",
-        options: ["Yes, need education loan", "No, seeking tuition scholarships only"],
-        optionsTa: ["ஆம், கல்விக்கடன் தேவை", "இல்லை, கல்வி உதவித்தொகை மட்டும் தேவை"],
+        options: [
+          "Yes, need education loan",
+          "No, seeking tuition scholarships only",
+        ],
+        optionsTa: [
+          "ஆம், கல்விக்கடன் தேவை",
+          "இல்லை, கல்வி உதவித்தொகை மட்டும் தேவை",
+        ],
         nextId: (_) => "edu_q4_caste",
       ),
       'edu_q3_research': QuestionNode(
         id: 'edu_q3_research',
-        questionText: "Are you seeking a research fellowship or international study grant?",
-        questionTextTa: "ஆராய்ச்சி உதவித்தொகை அல்லது வெளிநாட்டு கல்வி நிதி எதிர்பார்க்கிறீர்களா?",
-        options: ["National Fellowship grant", "International study allowance", "Merit publication awards"],
-        optionsTa: ["தேசிய ஆராய்ச்சி நிதி (Fellowship)", "வெளிநாட்டு கல்வி உதவித்தொகை", "ஆராய்ச்சி கட்டுரை விருதுகள்"],
+        questionText:
+            "Are you seeking a research fellowship or international study grant?",
+        questionTextTa:
+            "ஆராய்ச்சி உதவித்தொகை அல்லது வெளிநாட்டு கல்வி நிதி எதிர்பார்க்கிறீர்களா?",
+        options: [
+          "National Fellowship grant",
+          "International study allowance",
+          "Merit publication awards",
+        ],
+        optionsTa: [
+          "தேசிய ஆராய்ச்சி நிதி (Fellowship)",
+          "வெளிநாட்டு கல்வி உதவித்தொகை",
+          "ஆராய்ச்சி கட்டுரை விருதுகள்",
+        ],
         nextId: (_) => "edu_q4_caste",
       ),
       'edu_q4_caste': QuestionNode(
@@ -668,7 +810,12 @@ class _SmartAssessmentBottomSheetState extends State<SmartAssessmentBottomSheet>
         questionText: "What is your caste/social reservation category?",
         questionTextTa: "உங்கள் சமூகப் பிரிவு என்ன?",
         options: ["General", "OBC", "SC / ST", "EWS / Minority"],
-        optionsTa: ["பொதுப்பிரிவு (General)", "பிற்படுத்தப்பட்டோர் (OBC/BC)", "பட்டியல் வகுப்பினர் (SC / ST)", "பொருளாதாரத்தில் பின்தங்கியோர் / சிறுபான்மையினர்"],
+        optionsTa: [
+          "பொதுப்பிரிவு (General)",
+          "பிற்படுத்தப்பட்டோர் (OBC/BC)",
+          "பட்டியல் வகுப்பினர் (SC / ST)",
+          "பொருளாதாரத்தில் பின்தங்கியோர் / சிறுபான்மையினர்",
+        ],
         nextId: (_) => "edu_q5_income",
       ),
       'edu_q5_income': QuestionNode(
@@ -676,7 +823,11 @@ class _SmartAssessmentBottomSheetState extends State<SmartAssessmentBottomSheet>
         questionText: "What is your family's annual household income?",
         questionTextTa: "உங்கள் குடும்பத்தின் ஆண்டு வருமானம் என்ன?",
         options: ["Under ₹2.5 Lakhs", "₹2.5 Lakhs - ₹8 Lakhs", "Over ₹8 Lakhs"],
-        optionsTa: ["₹2.5 இலட்சத்திற்குக் கீழ்", "₹2.5 இலட்சம் - ₹8 இலட்சம்", "₹8 இலட்சத்திற்கு மேல்"],
+        optionsTa: [
+          "₹2.5 இலட்சத்திற்குக் கீழ்",
+          "₹2.5 இலட்சம் - ₹8 இலட்சம்",
+          "₹8 இலட்சத்திற்கு மேல்",
+        ],
         nextId: (_) => null,
       ),
     };
@@ -688,72 +839,136 @@ class _SmartAssessmentBottomSheetState extends State<SmartAssessmentBottomSheet>
         id: 'women_q1',
         questionText: "Who is the primary beneficiary of the scheme?",
         questionTextTa: "திட்டத்தின் முதன்மை பயனாளி யார்?",
-        options: ["Pregnant or Lactating Mother", "Girl Child (Parent applying)", "Woman Entrepreneur", "Single Woman / Widow in distress"],
-        optionsTa: ["கர்ப்பிணி அல்லது பாலூட்டும் தாய்", "பெண் குழந்தை (பெற்றோர் விண்ணப்பிக்கின்றனர்)", "பெண் தொழில்முனைவோர்", "தனித்து வாழும் பெண் / விதவை தாய்"],
-        nextId: (ans) => ans.contains("Mother") ? "women_q2_maternal" : ans.contains("Child") ? "women_q2_girl" : ans.contains("Entrepreneur") ? "women_q2_biz" : "women_q2_welfare",
+        options: [
+          "Pregnant or Lactating Mother",
+          "Girl Child (Parent applying)",
+          "Woman Entrepreneur",
+          "Single Woman / Widow in distress",
+        ],
+        optionsTa: [
+          "கர்ப்பிணி அல்லது பாலூட்டும் தாய்",
+          "பெண் குழந்தை (பெற்றோர் விண்ணப்பிக்கின்றனர்)",
+          "பெண் தொழில்முனைவோர்",
+          "தனித்து வாழும் பெண் / விதவை தாய்",
+        ],
+        nextId: (ans) => ans.contains("Mother")
+            ? "women_q2_maternal"
+            : ans.contains("Child")
+            ? "women_q2_girl"
+            : ans.contains("Entrepreneur")
+            ? "women_q2_biz"
+            : "women_q2_welfare",
       ),
       'women_q2_maternal': QuestionNode(
         id: 'women_q2_maternal',
         questionText: "Is this your first or second pregnancy?",
         questionTextTa: "இது உங்கள் முதலாவது அல்லது இரண்டாவது கர்ப்பமா?",
         options: ["First pregnancy", "Second pregnancy", "More than two"],
-        optionsTa: ["முதல் கர்ப்பம்", "இரண்டாவது கர்ப்பம்", "இரண்டிற்கும் மேற்பட்டவை"],
+        optionsTa: [
+          "முதல் கர்ப்பம்",
+          "இரண்டாவது கர்ப்பம்",
+          "இரண்டிற்கும் மேற்பட்டவை",
+        ],
         nextId: (_) => "women_q3_matern_reg",
       ),
       'women_q2_girl': QuestionNode(
         id: 'women_q2_girl',
         questionText: "What is the age of the girl child?",
         questionTextTa: "பெண் குழந்தையின் வயது என்ன?",
-        options: ["Newborn (0 - 1 Year)", "Child (2 - 10 Years)", "Adolescent (11 - 18 Years)"],
-        optionsTa: ["பிறந்த குழந்தை (0 - 1 வயது)", "குழந்தை (2 - 10 வயது)", "இளம் பெண் (11 - 18 வயது)"],
-        nextId: (ans) => ans.contains("Adolescent") ? "women_q3_girl_edu" : "women_q3_girl_save",
+        options: [
+          "Newborn (0 - 1 Year)",
+          "Child (2 - 10 Years)",
+          "Adolescent (11 - 18 Years)",
+        ],
+        optionsTa: [
+          "பிறந்த குழந்தை (0 - 1 வயது)",
+          "குழந்தை (2 - 10 வயது)",
+          "இளம் பெண் (11 - 18 வயது)",
+        ],
+        nextId: (ans) => ans.contains("Adolescent")
+            ? "women_q3_girl_edu"
+            : "women_q3_girl_save",
       ),
       'women_q2_biz': QuestionNode(
         id: 'women_q2_biz',
-        questionText: "Do women hold at least a 51% ownership stake in the enterprise?",
-        questionTextTa: "நிறுவனத்தில் பெண்களுக்கு குறைந்தது 51% பங்கீடு உள்ளதா?",
+        questionText:
+            "Do women hold at least a 51% ownership stake in the enterprise?",
+        questionTextTa:
+            "நிறுவனத்தில் பெண்களுக்கு குறைந்தது 51% பங்கீடு உள்ளதா?",
         options: ["Yes, fully owned by women", "No, minor/shared stake"],
-        optionsTa: ["ஆம், முழுவதும் பெண்கள் உரிமையிலானது", "இல்லை, குறைந்த பங்கீடு"],
+        optionsTa: [
+          "ஆம், முழுவதும் பெண்கள் உரிமையிலானது",
+          "இல்லை, குறைந்த பங்கீடு",
+        ],
         nextId: (_) => "women_q3_biz_credit",
       ),
       'women_q2_welfare': QuestionNode(
         id: 'women_q2_welfare',
         questionText: "Do you possess a BPL (Below Poverty Line) Ration Card?",
-        questionTextTa: "உங்களிடம் வறுமைக் கோட்டிற்கு கீழ் (BPL) குடும்ப அட்டை உள்ளதா?",
+        questionTextTa:
+            "உங்களிடம் வறுமைக் கோட்டிற்கு கீழ் (BPL) குடும்ப அட்டை உள்ளதா?",
         options: ["Yes, BPL Cardholder", "No, APL / General"],
         optionsTa: ["ஆம், BPL அட்டைதாரர்", "இல்லை, APL / பொதுப்பிரிவு"],
         nextId: (_) => "women_q3_welfare_pension",
       ),
       'women_q3_matern_reg': QuestionNode(
         id: 'women_q3_matern_reg',
-        questionText: "Are you registered at your local Anganwadi/Health center?",
-        questionTextTa: "உள்ளூர் அங்கன்வாடி / சுகாதார மையத்தில் பதிவு செய்துள்ளீர்களா?",
+        questionText:
+            "Are you registered at your local Anganwadi/Health center?",
+        questionTextTa:
+            "உள்ளூர் அங்கன்வாடி / சுகாதார மையத்தில் பதிவு செய்துள்ளீர்களா?",
         options: ["Yes, registered", "No, not registered yet"],
-        optionsTa: ["ஆம், பதிவு செய்யப்பட்டுள்ளது", "இல்லை, இன்னும் பதிவு செய்யவில்லை"],
+        optionsTa: [
+          "ஆம், பதிவு செய்யப்பட்டுள்ளது",
+          "இல்லை, இன்னும் பதிவு செய்யவில்லை",
+        ],
         nextId: (_) => "women_q4_caste",
       ),
       'women_q3_girl_save': QuestionNode(
         id: 'women_q3_girl_save',
-        questionText: "Would you like to open a long-term savings account (Sukanya Samriddhi)?",
-        questionTextTa: "செல்வமகள் சேமிப்பு கணக்கு (Sukanya Samriddhi) தொடங்க விரும்புகிறீர்களா?",
-        options: ["Yes, open savings account", "No, seeking educational scholarships"],
-        optionsTa: ["ஆம், சேமிப்பு கணக்கு தொடங்க வேண்டும்", "இல்லை, கல்வி உதவித்தொகை தேவை"],
+        questionText:
+            "Would you like to open a long-term savings account (Sukanya Samriddhi)?",
+        questionTextTa:
+            "செல்வமகள் சேமிப்பு கணக்கு (Sukanya Samriddhi) தொடங்க விரும்புகிறீர்களா?",
+        options: [
+          "Yes, open savings account",
+          "No, seeking educational scholarships",
+        ],
+        optionsTa: [
+          "ஆம், சேமிப்பு கணக்கு தொடங்க வேண்டும்",
+          "இல்லை, கல்வி உதவித்தொகை தேவை",
+        ],
         nextId: (_) => "women_q4_caste",
       ),
       'women_q3_girl_edu': QuestionNode(
         id: 'women_q3_girl_edu',
         questionText: "Is the girl child currently enrolled in school/college?",
         questionTextTa: "பெண் குழந்தை தற்போது பள்ளி / கல்லூரியில் படிக்கிறாரா?",
-        options: ["Yes, attending school/college", "No, discontinued education"],
-        optionsTa: ["ஆம், பள்ளி / கல்லூரியில் படிக்கிறார்", "இல்லை, படிப்பை நிறுத்திவிட்டார்"],
+        options: [
+          "Yes, attending school/college",
+          "No, discontinued education",
+        ],
+        optionsTa: [
+          "ஆம், பள்ளி / கல்லூரியில் படிக்கிறார்",
+          "இல்லை, படிப்பை நிறுத்திவிட்டார்",
+        ],
         nextId: (_) => "women_q4_caste",
       ),
       'women_q3_biz_credit': QuestionNode(
         id: 'women_q3_biz_credit',
-        questionText: "What capital support size are you seeking for your business?",
+        questionText:
+            "What capital support size are you seeking for your business?",
         questionTextTa: "உங்கள் தொழிலுக்கு எவ்வளவு மூலதன நிதி தேவை?",
-        options: ["Micro-credit (Under ₹1 Lakh)", "SME Loan (₹1 Lakh - ₹10 Lakhs)", "Stand-Up India loan (Over ₹10 Lakhs)"],
-        optionsTa: ["குறுங்கடன் (₹1 இலட்சத்திற்கு கீழ்)", "MSME கடன் (₹1 இலட்சம் - ₹10 இலட்சம்)", "ஸ்டாண்ட்-அப் இந்தியா கடன் (₹10 இலட்சத்திற்கு மேல்)"],
+        options: [
+          "Micro-credit (Under ₹1 Lakh)",
+          "SME Loan (₹1 Lakh - ₹10 Lakhs)",
+          "Stand-Up India loan (Over ₹10 Lakhs)",
+        ],
+        optionsTa: [
+          "குறுங்கடன் (₹1 இலட்சத்திற்கு கீழ்)",
+          "MSME கடன் (₹1 இலட்சம் - ₹10 இலட்சம்)",
+          "ஸ்டாண்ட்-அப் இந்தியா கடன் (₹10 இலட்சத்திற்கு மேல்)",
+        ],
         nextId: (_) => "women_q4_caste",
       ),
       'women_q3_welfare_pension': QuestionNode(
@@ -761,7 +976,10 @@ class _SmartAssessmentBottomSheetState extends State<SmartAssessmentBottomSheet>
         questionText: "Are you currently receiving any monthly social pension?",
         questionTextTa: "தற்போது மாதந்தோறும் அரசு ஓய்வூதியம் பெறுகிறீர்களா?",
         options: ["Yes, receiving widow pension", "No pension received"],
-        optionsTa: ["ஆம், விதவை ஓய்வூதியம் பெறுகிறேன்", "இல்லை, ஓய்வூதியம் பெறவில்லை"],
+        optionsTa: [
+          "ஆம், விதவை ஓய்வூதியம் பெறுகிறேன்",
+          "இல்லை, ஓய்வூதியம் பெறவில்லை",
+        ],
         nextId: (_) => "women_q4_caste",
       ),
       'women_q4_caste': QuestionNode(
@@ -769,7 +987,12 @@ class _SmartAssessmentBottomSheetState extends State<SmartAssessmentBottomSheet>
         questionText: "What is your caste/social category?",
         questionTextTa: "உங்கள் சமூகப் பிரிவு என்ன?",
         options: ["General", "OBC", "SC / ST", "Minority / EWS"],
-        optionsTa: ["பொதுப்பிரிவு (General)", "பிற்படுத்தப்பட்டோர் (OBC/BC)", "பட்டியல் வகுப்பினர் (SC / ST)", "சிறுபான்மையினர் / EWS"],
+        optionsTa: [
+          "பொதுப்பிரிவு (General)",
+          "பிற்படுத்தப்பட்டோர் (OBC/BC)",
+          "பட்டியல் வகுப்பினர் (SC / ST)",
+          "சிறுபான்மையினர் / EWS",
+        ],
         nextId: (_) => "women_q5_income",
       ),
       'women_q5_income': QuestionNode(
@@ -777,7 +1000,11 @@ class _SmartAssessmentBottomSheetState extends State<SmartAssessmentBottomSheet>
         questionText: "What is your family's annual income?",
         questionTextTa: "உங்கள் குடும்பத்தின் ஆண்டு வருமானம் என்ன?",
         options: ["Under ₹1.5 Lakhs", "₹1.5 Lakhs - ₹5 Lakhs", "Over ₹5 Lakhs"],
-        optionsTa: ["₹1.5 இலட்சத்திற்குக் கீழ்", "₹1.5 இலட்சம் - ₹5 இலட்சம்", "₹5 இலட்சத்திற்கு மேல்"],
+        optionsTa: [
+          "₹1.5 இலட்சத்திற்குக் கீழ்",
+          "₹1.5 இலட்சம் - ₹5 இலட்சம்",
+          "₹5 இலட்சத்திற்கு மேல்",
+        ],
         nextId: (_) => null,
       ),
     };
@@ -789,32 +1016,68 @@ class _SmartAssessmentBottomSheetState extends State<SmartAssessmentBottomSheet>
         id: 'biz_q1',
         questionText: "Is your business legally registered?",
         questionTextTa: "உங்கள் தொழில் முறைப்படி பதிவு செய்யப்பட்டுள்ளதா?",
-        options: ["Yes, under MSME Udyam", "Yes, as a DPIIT Startup", "No, operating as individual trader/artisan", "No, it is in idea stage"],
-        optionsTa: ["ஆம், MSME உத்யம் மூலம்", "ஆம், DPIIT ஸ்டார்ட்அப்பாக", "இல்லை, தனிநபர் வியாபாரி / கைவினைஞராக", "இல்லை, யோசனை நிலையில் உள்ளது"],
-        nextId: (ans) => ans.contains("MSME") ? "biz_q2_msme" : ans.contains("Startup") ? "biz_q2_startup" : ans.contains("trader") ? "biz_q2_artisan" : "biz_q2_idea",
+        options: [
+          "Yes, under MSME Udyam",
+          "Yes, as a DPIIT Startup",
+          "No, operating as individual trader/artisan",
+          "No, it is in idea stage",
+        ],
+        optionsTa: [
+          "ஆம், MSME உத்யம் மூலம்",
+          "ஆம், DPIIT ஸ்டார்ட்அப்பாக",
+          "இல்லை, தனிநபர் வியாபாரி / கைவினைஞராக",
+          "இல்லை, யோசனை நிலையில் உள்ளது",
+        ],
+        nextId: (ans) => ans.contains("MSME")
+            ? "biz_q2_msme"
+            : ans.contains("Startup")
+            ? "biz_q2_startup"
+            : ans.contains("trader")
+            ? "biz_q2_artisan"
+            : "biz_q2_idea",
       ),
       'biz_q2_msme': QuestionNode(
         id: 'biz_q2_msme',
         questionText: "What is the total investment in machinery/equipment?",
         questionTextTa: "இயந்திரங்கள் / உபகரணங்களில் மொத்த முதலீடு எவ்வளவு?",
-        options: ["Micro (Under ₹1 Crore)", "Small (₹1 Crore - ₹10 Crore)", "Medium (Over ₹10 Crore)"],
-        optionsTa: ["குறுந்தொழில் (₹1 கோடிக்கு கீழ்)", "சிறு தொழில் (₹1 கோடி - ₹10 கோடி)", "நடுத்தர தொழில் (₹10 கோடிக்கு மேல்)"],
+        options: [
+          "Micro (Under ₹1 Crore)",
+          "Small (₹1 Crore - ₹10 Crore)",
+          "Medium (Over ₹10 Crore)",
+        ],
+        optionsTa: [
+          "குறுந்தொழில் (₹1 கோடிக்கு கீழ்)",
+          "சிறு தொழில் (₹1 கோடி - ₹10 கோடி)",
+          "நடுத்தர தொழில் (₹10 கோடிக்கு மேல்)",
+        ],
         nextId: (_) => "biz_q3_msme_need",
       ),
       'biz_q2_startup': QuestionNode(
         id: 'biz_q2_startup',
         questionText: "What stage is your startup currently in?",
         questionTextTa: "உங்கள் ஸ்டார்ட்அப் தற்போது எந்த நிலையில் உள்ளது?",
-        options: ["Prototype / MVP development", "Early Revenue / Validation", "Scaling & expansion"],
-        optionsTa: ["மாதிரி வடிவம் / MVP உருவாக்கம்", "ஆரம்ப வருவாய் / சந்தை சரிபார்ப்பு", "தொழில் விரிவாக்கம்"],
+        options: [
+          "Prototype / MVP development",
+          "Early Revenue / Validation",
+          "Scaling & expansion",
+        ],
+        optionsTa: [
+          "மாதிரி வடிவம் / MVP உருவாக்கம்",
+          "ஆரம்ப வருவாய் / சந்தை சரிபார்ப்பு",
+          "தொழில் விரிவாக்கம்",
+        ],
         nextId: (_) => "biz_q3_startup_need",
       ),
       'biz_q2_artisan': QuestionNode(
         id: 'biz_q2_artisan',
         questionText: "Do you hold a valid PM Vishwakarma Card or Artisan ID?",
-        questionTextTa: "உங்களிடம் பிஎம் விஸ்வகர்மா அட்டை / கைவினைஞர் சான்றிதழ் உள்ளதா?",
+        questionTextTa:
+            "உங்களிடம் பிஎம் விஸ்வகர்மா அட்டை / கைவினைஞர் சான்றிதழ் உள்ளதா?",
         options: ["Yes, active card", "No, not registered"],
-        optionsTa: ["ஆம், செயலில் உள்ள அட்டை உள்ளது", "இல்லை, பதிவு செய்யவில்லை"],
+        optionsTa: [
+          "ஆம், செயலில் உள்ள அட்டை உள்ளது",
+          "இல்லை, பதிவு செய்யவில்லை",
+        ],
         nextId: (_) => "biz_q3_artisan_need",
       ),
       'biz_q2_idea': QuestionNode(
@@ -822,47 +1085,96 @@ class _SmartAssessmentBottomSheetState extends State<SmartAssessmentBottomSheet>
         questionText: "Do you have a business project report prepared?",
         questionTextTa: "தொழில் திட்ட அறிக்கை தயாரித்துள்ளீர்களா?",
         options: ["Yes, report is ready", "No, need project guidance"],
-        optionsTa: ["ஆம், திட்ட அறிக்கை தயார்", "இல்லை, திட்ட வழிகாட்டுதல் தேவை"],
+        optionsTa: [
+          "ஆம், திட்ட அறிக்கை தயார்",
+          "இல்லை, திட்ட வழிகாட்டுதல் தேவை",
+        ],
         nextId: (_) => "biz_q3_msme_need",
       ),
       'biz_q3_msme_need': QuestionNode(
         id: 'biz_q3_msme_need',
         questionText: "What primary credit/loan support do you need?",
         questionTextTa: "உங்களுக்கு முதன்மையாக எந்த கடன் உதவி தேவை?",
-        options: ["Collateral-free Mudra Loan", "Working capital guarantee (CGTMSE)", "Equipment purchase capital subsidy"],
-        optionsTa: ["பிணையமில்லா முத்ரா கடன்", "நடைமுறை மூலதன உத்தரவாதம் (CGTMSE)", "இயந்திரங்கள் வாங்குவதற்கான மூலதன மானியம்"],
+        options: [
+          "Collateral-free Mudra Loan",
+          "Working capital guarantee (CGTMSE)",
+          "Equipment purchase capital subsidy",
+        ],
+        optionsTa: [
+          "பிணையமில்லா முத்ரா கடன்",
+          "நடைமுறை மூலதன உத்தரவாதம் (CGTMSE)",
+          "இயந்திரங்கள் வாங்குவதற்கான மூலதன மானியம்",
+        ],
         nextId: (_) => "biz_q4_demographics",
       ),
       'biz_q3_startup_need': QuestionNode(
         id: 'biz_q3_startup_need',
         questionText: "Are you seeking equity funding or tax exemptions?",
-        questionTextTa: "பங்கு மூலதன நிதி அல்லது வரி விலக்கு எதிர்பார்க்கிறீர்களா?",
-        options: ["Government Seed Funding", "Section 80-IAC Tax Exemption", "Incubator mentoring grant"],
-        optionsTa: ["அரசு தொடக்க நிதி (Seed Funding)", "பிரிவு 80-IAC வரி விலக்கு", "இன்குபேட்டர் வழிகாட்டுதல் மானியம்"],
+        questionTextTa:
+            "பங்கு மூலதன நிதி அல்லது வரி விலக்கு எதிர்பார்க்கிறீர்களா?",
+        options: [
+          "Government Seed Funding",
+          "Section 80-IAC Tax Exemption",
+          "Incubator mentoring grant",
+        ],
+        optionsTa: [
+          "அரசு தொடக்க நிதி (Seed Funding)",
+          "பிரிவு 80-IAC வரி விலக்கு",
+          "இன்குபேட்டர் வழிகாட்டுதல் மானியம்",
+        ],
         nextId: (_) => "biz_q4_demographics",
       ),
       'biz_q3_artisan_need': QuestionNode(
         id: 'biz_q3_artisan_need',
         questionText: "What support does your craft require?",
         questionTextTa: "உங்கள் கைவினைத் தொழிலுக்கு என்ன உதவி தேவை?",
-        options: ["Free toolkit upgrade voucher", "Exhibition & stall subsidies", "Individual craft micro-loan"],
-        optionsTa: ["இலவச கருவித்தொகுப்பு (Toolkit) வவுச்சர்", "கண்காட்சி மற்றும் அரங்கு மானியம்", "கைவினைஞர்களுக்கான தனிநபர் குறுங்கடன்"],
+        options: [
+          "Free toolkit upgrade voucher",
+          "Exhibition & stall subsidies",
+          "Individual craft micro-loan",
+        ],
+        optionsTa: [
+          "இலவச கருவித்தொகுப்பு (Toolkit) வவுச்சர்",
+          "கண்காட்சி மற்றும் அரங்கு மானியம்",
+          "கைவினைஞர்களுக்கான தனிநபர் குறுங்கடன்",
+        ],
         nextId: (_) => "biz_q4_demographics",
       ),
       'biz_q4_demographics': QuestionNode(
         id: 'biz_q4_demographics',
         questionText: "Is the primary owner a Woman or SC/ST entrepreneur?",
         questionTextTa: "முதன்மையாளர் பெண் அல்லது SC/ST தொழில்முனைவோரா?",
-        options: ["Yes, woman entrepreneur", "Yes, SC/ST entrepreneur", "Yes, both SC/ST & Woman", "General category Male"],
-        optionsTa: ["ஆம், பெண் தொழில்முனைவோர்", "ஆம், SC/ST தொழில்முனைவோர்", "ஆம், SC/ST மற்றும் பெண்", "பொதுப்பிரிவு ஆண்"],
+        options: [
+          "Yes, woman entrepreneur",
+          "Yes, SC/ST entrepreneur",
+          "Yes, both SC/ST & Woman",
+          "General category Male",
+        ],
+        optionsTa: [
+          "ஆம், பெண் தொழில்முனைவோர்",
+          "ஆம், SC/ST தொழில்முனைவோர்",
+          "ஆம், SC/ST மற்றும் பெண்",
+          "பொதுப்பிரிவு ஆண்",
+        ],
         nextId: (_) => "biz_q5_turnover",
       ),
       'biz_q5_turnover': QuestionNode(
         id: 'biz_q5_turnover',
-        questionText: "What is the annual turnover or estimated revenue of the business?",
+        questionText:
+            "What is the annual turnover or estimated revenue of the business?",
         questionTextTa: "தொழிலின் ஆண்டு விற்றுமுதல் (Turnover) எவ்வளவு?",
-        options: ["Under ₹10 Lakhs", "₹10 Lakhs - ₹50 Lakhs", "₹50 Lakhs - ₹2 Crores", "Over ₹2 Crores"],
-        optionsTa: ["₹10 இலட்சத்திற்குக் கீழ்", "₹10 இலட்சம் - ₹50 இலட்சம்", "₹50 இலட்சம் - ₹2 கோடி", "₹2 கோடிக்கு மேல்"],
+        options: [
+          "Under ₹10 Lakhs",
+          "₹10 Lakhs - ₹50 Lakhs",
+          "₹50 Lakhs - ₹2 Crores",
+          "Over ₹2 Crores",
+        ],
+        optionsTa: [
+          "₹10 இலட்சத்திற்குக் கீழ்",
+          "₹10 இலட்சம் - ₹50 இலட்சம்",
+          "₹50 இலட்சம் - ₹2 கோடி",
+          "₹2 கோடிக்கு மேல்",
+        ],
         nextId: (_) => null,
       ),
     };
@@ -874,16 +1186,36 @@ class _SmartAssessmentBottomSheetState extends State<SmartAssessmentBottomSheet>
         id: 'agri_q1',
         questionText: "What is your landholding size for farming?",
         questionTextTa: "உங்கள் விவசாய நிலத்தின் பரப்பளவு எவ்வளவு?",
-        options: ["Small / Marginal (Under 2 Hectares)", "Medium (2 - 5 Hectares)", "Large / Commercial (Over 5 Hectares)", "Tenant / Landless Farmer"],
-        optionsTa: ["சிறு / குறு விவசாயி (2 ஹெக்டேருக்கு கீழ்)", "நடுத்தர விவசாயி (2 - 5 ஹெக்டேர்)", "பெரிய விவசாயி (5 ஹெக்டேருக்கு மேல்)", "குத்தகை / நிலமற்ற விவசாயி"],
+        options: [
+          "Small / Marginal (Under 2 Hectares)",
+          "Medium (2 - 5 Hectares)",
+          "Large / Commercial (Over 5 Hectares)",
+          "Tenant / Landless Farmer",
+        ],
+        optionsTa: [
+          "சிறு / குறு விவசாயி (2 ஹெக்டேருக்கு கீழ்)",
+          "நடுத்தர விவசாயி (2 - 5 ஹெக்டேர்)",
+          "பெரிய விவசாயி (5 ஹெக்டேருக்கு மேல்)",
+          "குத்தகை / நிலமற்ற விவசாயி",
+        ],
         nextId: (_) => "agri_q2",
       ),
       'agri_q2': QuestionNode(
         id: 'agri_q2',
         questionText: "What agricultural support do you need urgently?",
         questionTextTa: "உங்களுக்கு உடனடியாக தேவைப்படும் விவசாய உதவி என்ன?",
-        options: ["PM-KISAN Cash Transfer", "Drip Irrigation / Equipment Subsidy", "Crop Insurance & Disaster Relief", "Kisan Credit Card (KCC) Loan"],
-        optionsTa: ["PM-KISAN நேரடி நிதி உதவி", "சொட்டு நீர் பாசனம் / உபகரண மானியம்", "பயிர் காப்பீடு & பேரிடர் நிவாரணம்", "கிசான் கிரெடிட் கார்டு (KCC) கடன்"],
+        options: [
+          "PM-KISAN Cash Transfer",
+          "Drip Irrigation / Equipment Subsidy",
+          "Crop Insurance & Disaster Relief",
+          "Kisan Credit Card (KCC) Loan",
+        ],
+        optionsTa: [
+          "PM-KISAN நேரடி நிதி உதவி",
+          "சொட்டு நீர் பாசனம் / உபகரண மானியம்",
+          "பயிர் காப்பீடு & பேரிடர் நிவாரணம்",
+          "கிசான் கிரெடிட் கார்டு (KCC) கடன்",
+        ],
         nextId: (_) => "agri_q3_caste",
       ),
       'agri_q3_caste': QuestionNode(
@@ -891,7 +1223,12 @@ class _SmartAssessmentBottomSheetState extends State<SmartAssessmentBottomSheet>
         questionText: "What is your social category?",
         questionTextTa: "உங்கள் சமூகப் பிரிவு என்ன?",
         options: ["General", "OBC", "SC / ST", "Small Farmer Special"],
-        optionsTa: ["பொதுப்பிரிவு (General)", "பிற்படுத்தப்பட்டோர் (OBC/BC)", "பட்டியல் வகுப்பினர் (SC / ST)", "சிறப்பு விவசாயி பிரிவு"],
+        optionsTa: [
+          "பொதுப்பிரிவு (General)",
+          "பிற்படுத்தப்பட்டோர் (OBC/BC)",
+          "பட்டியல் வகுப்பினர் (SC / ST)",
+          "சிறப்பு விவசாயி பிரிவு",
+        ],
         nextId: (_) => "agri_q4_income",
       ),
       'agri_q4_income': QuestionNode(
@@ -899,7 +1236,11 @@ class _SmartAssessmentBottomSheetState extends State<SmartAssessmentBottomSheet>
         questionText: "What is your total family annual income?",
         questionTextTa: "உங்கள் குடும்பத்தின் ஆண்டு வருமானம் என்ன?",
         options: ["Under ₹1.5 Lakhs", "₹1.5 Lakhs - ₹5 Lakhs", "Over ₹5 Lakhs"],
-        optionsTa: ["₹1.5 இலட்சத்திற்குக் கீழ்", "₹1.5 இலட்சம் - ₹5 இலட்சம்", "₹5 இலட்சத்திற்கு மேல்"],
+        optionsTa: [
+          "₹1.5 இலட்சத்திற்குக் கீழ்",
+          "₹1.5 இலட்சம் - ₹5 இலட்சம்",
+          "₹5 இலட்சத்திற்கு மேல்",
+        ],
         nextId: (_) => null,
       ),
     };
@@ -911,24 +1252,52 @@ class _SmartAssessmentBottomSheetState extends State<SmartAssessmentBottomSheet>
         id: 'skill_q1',
         questionText: "What is your current employment or skill level?",
         questionTextTa: "உங்கள் தற்போதைய தொழில் / திறன் நிலை என்ன?",
-        options: ["Unemployed youth seeking job", "School/College dropout", "Traditional artisan / Worker", "Employed seeking skill upgrade"],
-        optionsTa: ["வேலைதேடும் இளைஞர்", "பள்ளி / கல்லூரி இடைநின்றவர்", "பாரம்பரிய தொழிலாளி / பணியாளர்", "திறன் மேம்பாடு விரும்பும் பணியாளர்"],
+        options: [
+          "Unemployed youth seeking job",
+          "School/College dropout",
+          "Traditional artisan / Worker",
+          "Employed seeking skill upgrade",
+        ],
+        optionsTa: [
+          "வேலைதேடும் இளைஞர்",
+          "பள்ளி / கல்லூரி இடைநின்றவர்",
+          "பாரம்பரிய தொழிலாளி / பணியாளர்",
+          "திறன் மேம்பாடு விரும்பும் பணியாளர்",
+        ],
         nextId: (_) => "skill_q2",
       ),
       'skill_q2': QuestionNode(
         id: 'skill_q2',
         questionText: "Which skill training area interests you?",
         questionTextTa: "எந்தத் துறையில் பயிற்சி பெற விரும்புகிறீர்கள்?",
-        options: ["IT, Digital & Electronics", "Apparel, Textile & Handicrafts", "Automotive & Mechanical", "Healthcare & Hospitality"],
-        optionsTa: ["தகவல் தொழில்நுட்பம் & எலக்ட்ரானிக்ஸ்", "ஆடை வடிவமைப்பு & கைவினை", "வாகனம் & மெக்கானிக்கல்", "சுகாதாரம் & விருந்தோம்பல்"],
+        options: [
+          "IT, Digital & Electronics",
+          "Apparel, Textile & Handicrafts",
+          "Automotive & Mechanical",
+          "Healthcare & Hospitality",
+        ],
+        optionsTa: [
+          "தகவல் தொழில்நுட்பம் & எலக்ட்ரானிக்ஸ்",
+          "ஆடை வடிவமைப்பு & கைவினை",
+          "வாகனம் & மெக்கானிக்கல்",
+          "சுகாதாரம் & விருந்தோம்பல்",
+        ],
         nextId: (_) => "skill_q3",
       ),
       'skill_q3': QuestionNode(
         id: 'skill_q3',
-        questionText: "Are you looking for government-certified PMKVY training?",
-        questionTextTa: "அரசு அங்கீகாரம் பெற்ற இலவசப் பயிற்சி பெற விரும்புகிறீர்களா?",
-        options: ["Yes, need certified training", "No, seeking self-employment stipend"],
-        optionsTa: ["ஆம், சான்றிதழ் பயிற்சி தேவை", "இல்லை, சுயதொழில் உதவித்தொகை தேவை"],
+        questionText:
+            "Are you looking for government-certified PMKVY training?",
+        questionTextTa:
+            "அரசு அங்கீகாரம் பெற்ற இலவசப் பயிற்சி பெற விரும்புகிறீர்களா?",
+        options: [
+          "Yes, need certified training",
+          "No, seeking self-employment stipend",
+        ],
+        optionsTa: [
+          "ஆம், சான்றிதழ் பயிற்சி தேவை",
+          "இல்லை, சுயதொழில் உதவித்தொகை தேவை",
+        ],
         nextId: (_) => "skill_q4_income",
       ),
       'skill_q4_income': QuestionNode(
@@ -936,7 +1305,11 @@ class _SmartAssessmentBottomSheetState extends State<SmartAssessmentBottomSheet>
         questionText: "What is your annual family income?",
         questionTextTa: "உங்கள் குடும்பத்தின் ஆண்டு வருமானம் என்ன?",
         options: ["Under ₹2.5 Lakhs", "₹2.5 Lakhs - ₹8 Lakhs", "Over ₹8 Lakhs"],
-        optionsTa: ["₹2.5 இலட்சத்திற்குக் கீழ்", "₹2.5 இலட்சம் - ₹8 இலட்சம்", "₹8 இலட்சத்திற்கு மேல்"],
+        optionsTa: [
+          "₹2.5 இலட்சத்திற்குக் கீழ்",
+          "₹2.5 இலட்சம் - ₹8 இலட்சம்",
+          "₹8 இலட்சத்திற்கு மேல்",
+        ],
         nextId: (_) => null,
       ),
     };
@@ -948,16 +1321,36 @@ class _SmartAssessmentBottomSheetState extends State<SmartAssessmentBottomSheet>
         id: 'te_q1',
         questionText: "What is your primary enterprise focus?",
         questionTextTa: "உங்கள் நிறுவனத்தின் முதன்மை கவனம் என்ன?",
-        options: ["Technology / R&D Innovation", "Export & Trade Expansion", "Manufacturing Production Unit", "Digital Infrastructure"],
-        optionsTa: ["தொழில்நுட்பம் / R&D ஆராய்ச்சி", "ஏற்றுமதி & வர்த்தக விரிவாக்கம்", "உற்பத்தி ஆலை (Manufacturing)", "டிஜிட்டல் கட்டமைப்பு"],
+        options: [
+          "Technology / R&D Innovation",
+          "Export & Trade Expansion",
+          "Manufacturing Production Unit",
+          "Digital Infrastructure",
+        ],
+        optionsTa: [
+          "தொழில்நுட்பம் / R&D ஆராய்ச்சி",
+          "ஏற்றுமதி & வர்த்தக விரிவாக்கம்",
+          "உற்பத்தி ஆலை (Manufacturing)",
+          "டிஜிட்டல் கட்டமைப்பு",
+        ],
         nextId: (_) => "te_q2",
       ),
       'te_q2': QuestionNode(
         id: 'te_q2',
         questionText: "What specific government scheme support do you require?",
         questionTextTa: "உங்களுக்கு அரசிடமிருந்து என்ன உதவி தேவைப்படுகிறது?",
-        options: ["Capital Investment Subsidy", "Patent & R&D Filing Reimbursement", "Market Access & International Fair Grant", "Software & Hardware Infrastructure Support"],
-        optionsTa: ["மூலதன முதலீட்டு மானியம்", "காப்புரிமை & R&D கட்டணத் திரும்பப்பெறுதல்", "சர்வதேச வர்த்தகக் கண்காட்சி மானியம்", "மென்பொருள் & வன்பொருள் கட்டமைப்பு"],
+        options: [
+          "Capital Investment Subsidy",
+          "Patent & R&D Filing Reimbursement",
+          "Market Access & International Fair Grant",
+          "Software & Hardware Infrastructure Support",
+        ],
+        optionsTa: [
+          "மூலதன முதலீட்டு மானியம்",
+          "காப்புரிமை & R&D கட்டணத் திரும்பப்பெறுதல்",
+          "சர்வதேச வர்த்தகக் கண்காட்சி மானியம்",
+          "மென்பொருள் & வன்பொருள் கட்டமைப்பு",
+        ],
         nextId: (_) => "te_q3_turnover",
       ),
       'te_q3_turnover': QuestionNode(
@@ -965,7 +1358,11 @@ class _SmartAssessmentBottomSheetState extends State<SmartAssessmentBottomSheet>
         questionText: "What is your enterprise annual turnover?",
         questionTextTa: "உங்கள் நிறுவனத்தின் ஆண்டு விற்றுமுதல் எவ்வளவு?",
         options: ["Under ₹50 Lakhs", "₹50 Lakhs - ₹5 Crores", "Over ₹5 Crores"],
-        optionsTa: ["₹50 இலட்சத்திற்குக் கீழ்", "₹50 இலட்சம் - ₹5 கோடி", "₹5 கோடிக்கு மேல்"],
+        optionsTa: [
+          "₹50 இலட்சத்திற்குக் கீழ்",
+          "₹50 இலட்சம் - ₹5 கோடி",
+          "₹5 கோடிக்கு மேல்",
+        ],
         nextId: (_) => null,
       ),
     };
@@ -977,16 +1374,36 @@ class _SmartAssessmentBottomSheetState extends State<SmartAssessmentBottomSheet>
         id: 'cat_q1',
         questionText: "What describes your current employment status?",
         questionTextTa: "உங்கள் தற்போதைய வேலைவாய்ப்பு நிலை என்ன?",
-        options: ["Student", "Farmer", "Business Owner / Self-employed", "Unemployed / Worker"],
-        optionsTa: ["மாணவர்", "விவசாயி", "தொழிலதிபர் / சுயதொழில்", "வேலையில்லாதவர் / பணியாளர்"],
+        options: [
+          "Student",
+          "Farmer",
+          "Business Owner / Self-employed",
+          "Unemployed / Worker",
+        ],
+        optionsTa: [
+          "மாணவர்",
+          "விவசாயி",
+          "தொழிலதிபர் / சுயதொழில்",
+          "வேலையில்லாதவர் / பணியாளர்",
+        ],
         nextId: (_) => "cat_q2",
       ),
       'cat_q2': QuestionNode(
         id: 'cat_q2',
-        questionText: "Are you seeking financial credit or direct subsidy grants?",
-        questionTextTa: "நிதிக் கடன் அல்லது நேரடி மானியங்களை எதிர்பார்க்கிறீர்களா?",
-        options: ["Business / Study Loans", "Subsidies & welfare grants", "Free skill training / services"],
-        optionsTa: ["தொழில் / கல்வி கடன்கள்", "மானியங்கள் & நலத்திட்ட உதவிகள்", "இலவச திறன் பயிற்சி / சேவைகள்"],
+        questionText:
+            "Are you seeking financial credit or direct subsidy grants?",
+        questionTextTa:
+            "நிதிக் கடன் அல்லது நேரடி மானியங்களை எதிர்பார்க்கிறீர்களா?",
+        options: [
+          "Business / Study Loans",
+          "Subsidies & welfare grants",
+          "Free skill training / services",
+        ],
+        optionsTa: [
+          "தொழில் / கல்வி கடன்கள்",
+          "மானியங்கள் & நலத்திட்ட உதவிகள்",
+          "இலவச திறன் பயிற்சி / சேவைகள்",
+        ],
         nextId: (_) => "cat_q3",
       ),
       'cat_q3': QuestionNode(
@@ -1002,7 +1419,12 @@ class _SmartAssessmentBottomSheetState extends State<SmartAssessmentBottomSheet>
         questionText: "What is your social caste category?",
         questionTextTa: "உங்கள் சமூகப் பிரிவு என்ன?",
         options: ["General", "OBC", "SC / ST", "EWS / Minority"],
-        optionsTa: ["பொதுப்பிரிவு (General)", "பிற்படுத்தப்பட்டோர் (OBC/BC)", "பட்டியல் வகுப்பினர் (SC / ST)", "பொருளாதாரத்தில் பின்தங்கியோர் / சிறுபான்மையினர்"],
+        optionsTa: [
+          "பொதுப்பிரிவு (General)",
+          "பிற்படுத்தப்பட்டோர் (OBC/BC)",
+          "பட்டியல் வகுப்பினர் (SC / ST)",
+          "பொருளாதாரத்தில் பின்தங்கியோர் / சிறுபான்மையினர்",
+        ],
         nextId: (_) => "cat_q5",
       ),
       'cat_q5': QuestionNode(
@@ -1010,7 +1432,11 @@ class _SmartAssessmentBottomSheetState extends State<SmartAssessmentBottomSheet>
         questionText: "What is your annual family income?",
         questionTextTa: "உங்கள் குடும்பத்தின் ஆண்டு வருமானம் என்ன?",
         options: ["Under ₹2.5 Lakhs", "₹2.5 Lakhs - ₹8 Lakhs", "Over ₹8 Lakhs"],
-        optionsTa: ["₹2.5 இலட்சத்திற்குக் கீழ்", "₹2.5 இலட்சம் - ₹8 இலட்சம்", "₹8 இலட்சத்திற்கு மேல்"],
+        optionsTa: [
+          "₹2.5 இலட்சத்திற்குக் கீழ்",
+          "₹2.5 இலட்சம் - ₹8 இலட்சம்",
+          "₹8 இலட்சத்திற்கு மேல்",
+        ],
         nextId: (_) => null,
       ),
     };
@@ -1022,32 +1448,71 @@ class _SmartAssessmentBottomSheetState extends State<SmartAssessmentBottomSheet>
         id: 'state_q1',
         questionText: "Are you a permanent resident/domicile of $stateName?",
         questionTextTa: "நீங்கள் $stateName மாநிலத்தின் நிரந்தர குடியாசியா?",
-        options: ["Yes, I hold a domicile certificate", "No, I am a temporary resident"],
-        optionsTa: ["ஆம், இருப்பிட சான்றிதழ் உள்ளது", "இல்லை, தற்காலிகமாக வசிக்கிறேன்"],
+        options: [
+          "Yes, I hold a domicile certificate",
+          "No, I am a temporary resident",
+        ],
+        optionsTa: [
+          "ஆம், இருப்பிட சான்றிதழ் உள்ளது",
+          "இல்லை, தற்காலிகமாக வசிக்கிறேன்",
+        ],
         nextId: (_) => "state_q2",
       ),
       'state_q2': QuestionNode(
         id: 'state_q2',
-        questionText: "What is your category in the $stateName state reservation list?",
-        questionTextTa: "$stateName மாநில இடஒதுக்கீடு பட்டியலில் உங்கள் பிரிவு என்ன?",
-        options: ["BC / SEBC / OBC", "SC / ST", "EWS / Minority", "General / Open"],
-        optionsTa: ["BC / MBC / OBC", "SC / ST", "EWS / சிறுபான்மையினர்", "பொதுப்பிரிவு (Open)"],
+        questionText:
+            "What is your category in the $stateName state reservation list?",
+        questionTextTa:
+            "$stateName மாநில இடஒதுக்கீடு பட்டியலில் உங்கள் பிரிவு என்ன?",
+        options: [
+          "BC / SEBC / OBC",
+          "SC / ST",
+          "EWS / Minority",
+          "General / Open",
+        ],
+        optionsTa: [
+          "BC / MBC / OBC",
+          "SC / ST",
+          "EWS / சிறுபான்மையினர்",
+          "பொதுப்பிரிவு (Open)",
+        ],
         nextId: (_) => "state_q3",
       ),
       'state_q3': QuestionNode(
         id: 'state_q3',
         questionText: "What is your primary livelihood sector in $stateName?",
-        questionTextTa: "$stateName மாநிலத்தில் உங்கள் முதன்மை வாழ்வாதாரத் துறை என்ன?",
-        options: ["Agriculture / Farmer", "MSME / Startup owner", "Weaving / Traditional Crafts", "Student / Higher studies"],
-        optionsTa: ["வேளாண்மை / விவசாயி", "MSME / ஸ்டார்ட்அப் உரிமையாளர்", "நெசவு / பாரம்பரிய கைவினைஞர்கள்", "மாணவர் / உயர்கல்வி"],
+        questionTextTa:
+            "$stateName மாநிலத்தில் உங்கள் முதன்மை வாழ்வாதாரத் துறை என்ன?",
+        options: [
+          "Agriculture / Farmer",
+          "MSME / Startup owner",
+          "Weaving / Traditional Crafts",
+          "Student / Higher studies",
+        ],
+        optionsTa: [
+          "வேளாண்மை / விவசாயி",
+          "MSME / ஸ்டார்ட்அப் உரிமையாளர்",
+          "நெசவு / பாரம்பரிய கைவினைஞர்கள்",
+          "மாணவர் / உயர்கல்வி",
+        ],
         nextId: (_) => "state_q4",
       ),
       'state_q4': QuestionNode(
         id: 'state_q4',
         questionText: "What type of state assistance are you targeting?",
         questionTextTa: "மாநில அரசின் எந்த உதவிகளை எதிர்பார்க்கிறீர்கள்?",
-        options: ["Monthly cash allowances", "Education fee waivers", "Business subsidies", "Agricultural input support"],
-        optionsTa: ["மாதாந்திர நிதியுதவி / உதவித்தொகை", "கல்விக் கட்டண விலக்கு", "தொழில் மானியங்கள்", "விவசாய உறைவிட உதவிகள்"],
+        options: [
+          "Monthly cash allowances",
+          "Education fee waivers",
+          "Business subsidies",
+          "Agricultural input support",
+        ],
+        optionsTa: [
+          "மாதாந்திர நிதியுதவி / உதவித்தொகை",
+          "கல்விக் கட்டண விலக்கு",
+          "தொழில் மானியங்கள்",
+          "விவசாய உறைவிட உதவிகள்",
+        ],
         nextId: (_) => "state_q5",
       ),
       'state_q5': QuestionNode(
@@ -1055,7 +1520,11 @@ class _SmartAssessmentBottomSheetState extends State<SmartAssessmentBottomSheet>
         questionText: "What is your total family annual income?",
         questionTextTa: "உங்கள் குடும்பத்தின் ஆண்டு வருமானம் என்ன?",
         options: ["Under ₹1.5 Lakhs", "₹1.5 Lakhs - ₹5 Lakhs", "Over ₹5 Lakhs"],
-        optionsTa: ["₹1.5 இலட்சத்திற்குக் கீழ்", "₹1.5 இலட்சம் - ₹5 இலட்சம்", "₹5 இலட்சத்திற்கு மேல்"],
+        optionsTa: [
+          "₹1.5 இலட்சத்திற்குக் கீழ்",
+          "₹1.5 இலட்சம் - ₹5 இலட்சம்",
+          "₹5 இலட்சத்திற்கு மேல்",
+        ],
         nextId: (_) => null,
       ),
     };
@@ -1065,10 +1534,21 @@ class _SmartAssessmentBottomSheetState extends State<SmartAssessmentBottomSheet>
     return {
       'min_q1': QuestionNode(
         id: 'min_q1',
-        questionText: "What is your primary objective within this ministry's portal?",
+        questionText:
+            "What is your primary objective within this ministry's portal?",
         questionTextTa: "இத்துறையின் மூலம் உங்கள் முதன்மை நோக்கம் என்ன?",
-        options: ["Applying for business subsidy / credit", "Seeking educational scholarships", "Seeking farmer agricultural aid", "Seeking rural infrastructure / SHG help"],
-        optionsTa: ["தொழில் மானியம் / கடனுக்கு விண்ணப்பித்தல்", "கல்வி உதவித்தொகை பெறுதல்", "விவசாய நிதி உதவிகள் பெறுதல்", "ஊரக மகளிர் சுயஉதவிக் குழு உதவிகள்"],
+        options: [
+          "Applying for business subsidy / credit",
+          "Seeking educational scholarships",
+          "Seeking farmer agricultural aid",
+          "Seeking rural infrastructure / SHG help",
+        ],
+        optionsTa: [
+          "தொழில் மானியம் / கடனுக்கு விண்ணப்பித்தல்",
+          "கல்வி உதவித்தொகை பெறுதல்",
+          "விவசாய நிதி உதவிகள் பெறுதல்",
+          "ஊரக மகளிர் சுயஉதவிக் குழு உதவிகள்",
+        ],
         nextId: (_) => "min_q2",
       ),
       'min_q2': QuestionNode(
@@ -1076,15 +1556,25 @@ class _SmartAssessmentBottomSheetState extends State<SmartAssessmentBottomSheet>
         questionText: "What is the applicant's current age?",
         questionTextTa: "விண்ணப்பதாரரின் தற்போதைய வயது என்ன?",
         options: ["18 - 35 Years", "36 - 59 Years", "60 Years and above"],
-        optionsTa: ["18 - 35 வயது", "36 - 59 வயது", "60 வயது மற்றும் அதற்கு மேல்"],
+        optionsTa: [
+          "18 - 35 வயது",
+          "36 - 59 வயது",
+          "60 வயது மற்றும் அதற்கு மேல்",
+        ],
         nextId: (_) => "min_q3",
       ),
       'min_q3': QuestionNode(
         id: 'min_q3',
         questionText: "Do you have any registered ID linked to this ministry?",
         questionTextTa: "இமைச்சகத்துடன் பதிவு செய்யப்பட்ட எண் உள்ளதா?",
-        options: ["Yes, Udyam / PM-KISAN / Scholar ID", "No, not registered yet"],
-        optionsTa: ["ஆம், உத்யம் / PM-KISAN / மாணவர் சான்று எண்", "இல்லை, இன்னும் பதிவு செய்யவில்லை"],
+        options: [
+          "Yes, Udyam / PM-KISAN / Scholar ID",
+          "No, not registered yet",
+        ],
+        optionsTa: [
+          "ஆம், உத்யம் / PM-KISAN / மாணவர் சான்று எண்",
+          "இல்லை, இன்னும் பதிவு செய்யவில்லை",
+        ],
         nextId: (_) => "min_q4",
       ),
       'min_q4': QuestionNode(
@@ -1092,7 +1582,12 @@ class _SmartAssessmentBottomSheetState extends State<SmartAssessmentBottomSheet>
         questionText: "What is your social category?",
         questionTextTa: "உங்கள் சமூகப் பிரிவு என்ன?",
         options: ["General", "OBC", "SC / ST", "Minority / PwD"],
-        optionsTa: ["பொதுப்பிரிவு (General)", "பிற்படுத்தப்பட்டோர் (OBC/BC)", "பட்டியல் வகுப்பினர் (SC / ST)", "சிறுபான்மையினர் / மாற்றுத்திறனாளி"],
+        optionsTa: [
+          "பொதுப்பிரிவு (General)",
+          "பிற்படுத்தப்பட்டோர் (OBC/BC)",
+          "பட்டியல் வகுப்பினர் (SC / ST)",
+          "சிறுபான்மையினர் / மாற்றுத்திறனாளி",
+        ],
         nextId: (_) => "min_q5",
       ),
       'min_q5': QuestionNode(
@@ -1100,7 +1595,11 @@ class _SmartAssessmentBottomSheetState extends State<SmartAssessmentBottomSheet>
         questionText: "What is your annual household income?",
         questionTextTa: "உங்கள் குடும்பத்தின் ஆண்டு வருமானம் என்ன?",
         options: ["Under ₹2.5 Lakhs", "₹2.5 Lakhs - ₹8 Lakhs", "Over ₹8 Lakhs"],
-        optionsTa: ["₹2.5 இலட்சத்திற்குக் கீழ்", "₹2.5 இலட்சம் - ₹8 இலட்சம்", "₹8 இலட்சத்திற்கு மேல்"],
+        optionsTa: [
+          "₹2.5 இலட்சத்திற்குக் கீழ்",
+          "₹2.5 இலட்சம் - ₹8 இலட்சம்",
+          "₹8 இலட்சத்திற்கு மேல்",
+        ],
         nextId: (_) => null,
       ),
     };
@@ -1109,7 +1608,10 @@ class _SmartAssessmentBottomSheetState extends State<SmartAssessmentBottomSheet>
 
 String _getStateMapAsset(String stateName) {
   final rawPath = _getStateMapAssetRaw(stateName);
-  return rawPath.replaceAll('assets/images/States and UTs/', 'assets/images/States assets/');
+  return rawPath.replaceAll(
+    'assets/images/States and UTs/',
+    'assets/images/States assets/',
+  );
 }
 
 String _getStateMapAssetRaw(String stateName) {

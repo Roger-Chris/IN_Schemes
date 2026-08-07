@@ -8,12 +8,20 @@ class AppCardStyle {
   AppCardStyle._();
 
   static const double borderRadiusValue = 16.0;
-  static const BorderRadius borderRadius = BorderRadius.all(Radius.circular(borderRadiusValue));
+  static const BorderRadius borderRadius = BorderRadius.all(
+    Radius.circular(borderRadiusValue),
+  );
 
   static const Color borderColor = Color(0xFFE2E8F0);
-  static const BorderSide borderSide = BorderSide(color: borderColor, width: 1.2);
+  static const BorderSide borderSide = BorderSide(
+    color: borderColor,
+    width: 1.2,
+  );
 
-  static const EdgeInsets cardMargin = EdgeInsets.symmetric(vertical: 6.0, horizontal: 16.0);
+  static const EdgeInsets cardMargin = EdgeInsets.symmetric(
+    vertical: 6.0,
+    horizontal: 16.0,
+  );
   static const EdgeInsets cardPadding = EdgeInsets.all(14.0);
   static const EdgeInsets cardInnerPadding = EdgeInsets.all(16.0);
 

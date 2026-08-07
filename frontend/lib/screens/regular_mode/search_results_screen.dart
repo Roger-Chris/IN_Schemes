@@ -378,50 +378,50 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
                           ),
                         ),
                         const SizedBox(width: 6),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          border: Border.all(color: const Color(0xFFE2E8F0)),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: DropdownButton<String>(
-                          value: _sortBy,
-                          elevation: 2,
-                          dropdownColor: Colors.white,
-                          style: GoogleFonts.inter(
-                            color: const Color(0xFF0F172A),
-                            fontSize: 11.5,
-                            fontWeight: FontWeight.bold,
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
                           ),
-                          underline: const SizedBox.shrink(),
-                          icon: const Icon(
-                            Icons.keyboard_arrow_down,
-                            color: Color(0xFF64748B),
-                            size: 16,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            border: Border.all(color: const Color(0xFFE2E8F0)),
+                            borderRadius: BorderRadius.circular(8),
                           ),
-                          items: ['Relevance', 'Name', 'Sponsoring Body'].map((
-                            String val,
-                          ) {
-                            return DropdownMenuItem<String>(
-                              value: val,
-                              child: Text(val),
-                            );
-                          }).toList(),
-                          onChanged: (val) {
-                            if (val != null) {
-                              setState(() {
-                                _sortBy = val;
-                              });
-                            }
-                          },
+                          child: DropdownButton<String>(
+                            value: _sortBy,
+                            elevation: 2,
+                            dropdownColor: Colors.white,
+                            style: GoogleFonts.inter(
+                              color: const Color(0xFF0F172A),
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            underline: const SizedBox.shrink(),
+                            icon: const Icon(
+                              Icons.keyboard_arrow_down,
+                              color: Color(0xFF64748B),
+                              size: 16,
+                            ),
+                            items: ['Relevance', 'Name', 'Sponsoring Body'].map(
+                              (String val) {
+                                return DropdownMenuItem<String>(
+                                  value: val,
+                                  child: Text(val),
+                                );
+                              },
+                            ).toList(),
+                            onChanged: (val) {
+                              if (val != null) {
+                                setState(() {
+                                  _sortBy = val;
+                                });
+                              }
+                            },
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
+                      ],
+                    ),
                   ),
                 ],
               ),

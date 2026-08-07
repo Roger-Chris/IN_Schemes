@@ -77,7 +77,8 @@ class _DiscoverResultsScreenState extends State<DiscoverResultsScreen> {
       // 1. Dropdown Chips Filters: Type (Loan, Subsidy, etc.)
       if (_selectedType != 'All') {
         final typeKeyword = _selectedType.toLowerCase();
-        final matchesType = scheme.schemeType.toLowerCase().contains(typeKeyword) ||
+        final matchesType =
+            scheme.schemeType.toLowerCase().contains(typeKeyword) ||
             scheme.name.toLowerCase().contains(typeKeyword) ||
             scheme.category.toLowerCase().contains(typeKeyword) ||
             scheme.overview.toLowerCase().contains(typeKeyword);
@@ -89,7 +90,8 @@ class _DiscoverResultsScreenState extends State<DiscoverResultsScreen> {
         final benefitLower = _selectedBenefit.toLowerCase();
         bool matchesBenefit = false;
         if (benefitLower == 'financial') {
-          matchesBenefit = scheme.benefits.toLowerCase().contains('financial') ||
+          matchesBenefit =
+              scheme.benefits.toLowerCase().contains('financial') ||
               scheme.benefits.toLowerCase().contains('subsidy') ||
               scheme.benefits.toLowerCase().contains('funding') ||
               scheme.benefits.toLowerCase().contains('grant') ||
@@ -102,7 +104,8 @@ class _DiscoverResultsScreenState extends State<DiscoverResultsScreen> {
               scheme.schemeType.toLowerCase().contains('loan') ||
               scheme.schemeType.toLowerCase().contains('grant');
         } else if (benefitLower == 'skill training') {
-          matchesBenefit = scheme.benefits.toLowerCase().contains('skill') ||
+          matchesBenefit =
+              scheme.benefits.toLowerCase().contains('skill') ||
               scheme.benefits.toLowerCase().contains('training') ||
               scheme.benefits.toLowerCase().contains('workshop') ||
               scheme.benefits.toLowerCase().contains('placement') ||
@@ -111,7 +114,8 @@ class _DiscoverResultsScreenState extends State<DiscoverResultsScreen> {
               scheme.overview.toLowerCase().contains('training') ||
               scheme.overview.toLowerCase().contains('skill');
         } else if (benefitLower == 'infrastructure') {
-          matchesBenefit = scheme.benefits.toLowerCase().contains('infrastructure') ||
+          matchesBenefit =
+              scheme.benefits.toLowerCase().contains('infrastructure') ||
               scheme.benefits.toLowerCase().contains('facility') ||
               scheme.benefits.toLowerCase().contains('technology') ||
               scheme.benefits.toLowerCase().contains('plant') ||
@@ -120,7 +124,8 @@ class _DiscoverResultsScreenState extends State<DiscoverResultsScreen> {
               scheme.overview.toLowerCase().contains('infrastructure') ||
               scheme.overview.toLowerCase().contains('technology');
         } else {
-          matchesBenefit = scheme.benefits.toLowerCase().contains(benefitLower) ||
+          matchesBenefit =
+              scheme.benefits.toLowerCase().contains(benefitLower) ||
               scheme.overview.toLowerCase().contains(benefitLower);
         }
         if (!matchesBenefit) continue;
@@ -129,7 +134,8 @@ class _DiscoverResultsScreenState extends State<DiscoverResultsScreen> {
       // 3. Dropdown Chips Filters: Ministry
       if (_selectedMinistry != 'All') {
         final ministryLower = _selectedMinistry.toLowerCase();
-        final matchesMinistry = scheme.sponsoringBody.toLowerCase().contains(ministryLower) ||
+        final matchesMinistry =
+            scheme.sponsoringBody.toLowerCase().contains(ministryLower) ||
             scheme.issuingBody.toLowerCase().contains(ministryLower) ||
             scheme.category.toLowerCase().contains(ministryLower) ||
             scheme.name.toLowerCase().contains(ministryLower);
@@ -165,9 +171,7 @@ class _DiscoverResultsScreenState extends State<DiscoverResultsScreen> {
         onApplied: () {
           Navigator.of(context).push(
             MaterialPageRoute(
-              builder: (_) => SearchResultsScreen(
-                title: widget.title,
-              ),
+              builder: (_) => SearchResultsScreen(title: widget.title),
             ),
           );
         },
@@ -192,17 +196,19 @@ class _DiscoverResultsScreenState extends State<DiscoverResultsScreen> {
           side: const BorderSide(color: Color(0xFFE2E8F0)),
         ),
         itemBuilder: (context) => options
-            .map((opt) => PopupMenuItem(
-                  value: opt,
-                  child: Text(
-                    opt,
-                    style: GoogleFonts.inter(
-                      fontSize: 12.5,
-                      fontWeight: FontWeight.w500,
-                      color: const Color(0xFF0F172A),
-                    ),
+            .map(
+              (opt) => PopupMenuItem(
+                value: opt,
+                child: Text(
+                  opt,
+                  style: GoogleFonts.inter(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w500,
+                    color: const Color(0xFF0F172A),
                   ),
-                ))
+                ),
+              ),
+            )
             .toList(),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -310,7 +316,12 @@ class _DiscoverResultsScreenState extends State<DiscoverResultsScreen> {
                       ),
                       _buildDropdownChip(
                         'Benefit Type',
-                        ['All', 'Financial', 'Skill training', 'Infrastructure'],
+                        [
+                          'All',
+                          'Financial',
+                          'Skill training',
+                          'Infrastructure',
+                        ],
                         _selectedBenefit,
                         (v) => setState(() => _selectedBenefit = v),
                       ),
@@ -387,7 +398,9 @@ class _DiscoverResultsScreenState extends State<DiscoverResultsScreen> {
                 child: Padding(
                   padding: EdgeInsets.symmetric(vertical: 64.0),
                   child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2563EB)),
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      Color(0xFF2563EB),
+                    ),
                   ),
                 ),
               ),
@@ -399,7 +412,11 @@ class _DiscoverResultsScreenState extends State<DiscoverResultsScreen> {
                   padding: const EdgeInsets.all(24.0),
                   child: Column(
                     children: [
-                      const Icon(Icons.error_outline_rounded, size: 48, color: Colors.redAccent),
+                      const Icon(
+                        Icons.error_outline_rounded,
+                        size: 48,
+                        color: Colors.redAccent,
+                      ),
                       const SizedBox(height: 12),
                       Text(
                         "Failed to Load Schemes",
@@ -500,37 +517,32 @@ class _DiscoverResultsScreenState extends State<DiscoverResultsScreen> {
             )
           else
             SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  final entry = filteredSchemes[index];
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 12.0),
-                    child: SchemeCard(
-                      scheme: entry.key,
-                      result: entry.value,
-                      isBookmarked: provider.bookmarkedIds.contains(entry.key.id),
-                      onBookmarkToggle: () =>
-                          provider.toggleBookmark(entry.key.id),
-                      showActions: false,
-                      showMatchPercentage: false,
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) =>
-                                SchemeDetailsScreen(scheme: entry.key),
-                          ),
-                        );
-                      },
-                    ),
-                  );
-                },
-                childCount: filteredSchemes.length,
-              ),
+              delegate: SliverChildBuilderDelegate((context, index) {
+                final entry = filteredSchemes[index];
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 12.0),
+                  child: SchemeCard(
+                    scheme: entry.key,
+                    result: entry.value,
+                    isBookmarked: provider.bookmarkedIds.contains(entry.key.id),
+                    onBookmarkToggle: () =>
+                        provider.toggleBookmark(entry.key.id),
+                    showActions: false,
+                    showMatchPercentage: false,
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) =>
+                              SchemeDetailsScreen(scheme: entry.key),
+                        ),
+                      );
+                    },
+                  ),
+                );
+              }, childCount: filteredSchemes.length),
             ),
 
-          const SliverToBoxAdapter(
-            child: SizedBox(height: 32),
-          ),
+          const SliverToBoxAdapter(child: SizedBox(height: 32)),
         ],
       ),
     );

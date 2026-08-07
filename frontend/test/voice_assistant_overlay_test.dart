@@ -17,6 +17,164 @@ import 'package:frontend/widgets/voice_assistant_overlay.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 
 void main() {
+  testWidgets(
+    'regular cloud voice keeps stable user and assistant transcript turns',
+    (tester) async {
+      final session = AssistantSessionController(
+        engine: const LocalSchemeUnderstandingEngine(),
+        schemes: const [],
+        profile: UserProfile(),
+      );
+      final cloud = _FakeCloudVoiceAgentController(session);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: VoiceAssistantOverlay(
+            autoStart: false,
+            sessionController: session,
+            voiceAgentController: cloud,
+            recognitionController: _FakeVoiceRecognitionController(),
+            speechOutputController: _FakeSpeechOutputController(),
+            onClose: () {},
+            onSubmit: (_) {},
+          ),
+        ),
+      );
+      await tester.pump();
+
+      cloud.emitTranscript(
+        VoiceAgentEventType.inputTranscriptDelta,
+        id: 'user-1',
+        text: 'I need support',
+      );
+      cloud.emitTranscript(
+        VoiceAgentEventType.outputTranscriptDelta,
+        id: 'agent-1',
+        text: 'Sure, what is',
+      );
+      cloud.emitTranscript(
+        VoiceAgentEventType.outputTranscriptDelta,
+        id: 'agent-1',
+        text: 'Sure, what is your occupation?',
+      );
+      cloud.emitTranscript(
+        VoiceAgentEventType.inputTranscriptDelta,
+        id: 'user-2',
+        text: 'Farmer',
+      );
+      await tester.pump();
+
+      expect(find.byKey(const Key('voice-turn-user-1')), findsOneWidget);
+      expect(find.byKey(const Key('voice-turn-agent-1')), findsOneWidget);
+      expect(find.byKey(const Key('voice-turn-user-2')), findsOneWidget);
+      expect(find.text('Sure, what is'), findsNothing);
+      expect(find.text('Sure, what is your occupation?'), findsOneWidget);
+      expect(find.text('I need support'), findsOneWidget);
+      expect(find.text('Farmer'), findsOneWidget);
+      expect(find.byKey(const Key('voice-open-typed-input')), findsNothing);
+
+      await tester.pumpWidget(const SizedBox());
+      await cloud.dispose();
+      session.dispose();
+    },
+  );
+
+  testWidgets('regular voice panel stays usable on a 320dp phone', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(320, 568);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final session = AssistantSessionController(
+      engine: const LocalSchemeUnderstandingEngine(),
+      schemes: const [],
+      profile: UserProfile(),
+    );
+    final cloud = _FakeCloudVoiceAgentController(session);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: VoiceAssistantOverlay(
+          autoStart: false,
+          sessionController: session,
+          voiceAgentController: cloud,
+          recognitionController: _FakeVoiceRecognitionController(),
+          speechOutputController: _FakeSpeechOutputController(),
+          onClose: () {},
+          onSubmit: (_) {},
+        ),
+      ),
+    );
+    await tester.pump();
+    cloud.emitTranscript(
+      VoiceAgentEventType.inputTranscriptDelta,
+      id: 'small-user',
+      text: 'I am a farmer looking for financial assistance',
+    );
+    cloud.emitTranscript(
+      VoiceAgentEventType.outputTranscriptDelta,
+      id: 'small-agent',
+      text: 'What is your monthly family income?',
+    );
+    await tester.pump();
+
+    expect(find.byKey(const Key('voice-primary-control')), findsOneWidget);
+    expect(
+      find.byKey(const Key('voice-conversation-transcript')),
+      findsOneWidget,
+    );
+    expect(tester.takeException(), isNull);
+
+    await tester.pumpWidget(const SizedBox());
+    await cloud.dispose();
+    session.dispose();
+  });
+
+  testWidgets('mic controls LiveKit during pre-connect instead of local STT', (
+    tester,
+  ) async {
+    final recognition = _FakeVoiceRecognitionController();
+    final session = AssistantSessionController(
+      engine: const LocalSchemeUnderstandingEngine(),
+      schemes: const [],
+      profile: UserProfile(),
+    );
+    final cloud = _FakeCloudVoiceAgentController(
+      session,
+      initialState: const VoiceAgentState(
+        phase: VoiceAgentConnectionPhase.connecting,
+        usingCloud: true,
+        isListening: true,
+      ),
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: VoiceAssistantOverlay(
+          autoStart: false,
+          sessionController: session,
+          voiceAgentController: cloud,
+          recognitionController: recognition,
+          speechOutputController: _FakeSpeechOutputController(),
+          onClose: () {},
+          onSubmit: (_) {},
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('voice-primary-control')));
+    await tester.pump();
+
+    expect(cloud.muteRequests, [true]);
+    expect(recognition.stopCount, 0);
+    expect(recognition.listenCount, 0);
+
+    await tester.pumpWidget(const SizedBox());
+    await cloud.dispose();
+    session.dispose();
+  });
+
   testWidgets('cloud agent scheme results appear as tappable cards', (
     tester,
   ) async {
@@ -358,16 +516,16 @@ void main() {
       ),
     );
 
-    await tester.tap(find.byIcon(Icons.mic_none_rounded));
+    await tester.tap(find.byKey(const Key('voice-primary-control')));
     await tester.pump();
     await tester.pump();
     expect(controller.listenCount, 1);
 
-    await tester.tap(find.byIcon(Icons.mic));
+    await tester.tap(find.byKey(const Key('voice-primary-control')));
     await tester.pump();
     expect(controller.stopCount, 1);
 
-    await tester.tap(find.byIcon(Icons.mic_none_rounded));
+    await tester.tap(find.byKey(const Key('voice-primary-control')));
     await tester.pump();
     await tester.pump();
     expect(controller.listenCount, 2);
@@ -789,7 +947,14 @@ class _FakeVoiceRecognitionController implements VoiceRecognitionController {
 
 class _FakeCloudVoiceAgentController extends ChangeNotifier
     implements VoiceAgentController {
-  _FakeCloudVoiceAgentController(this.session);
+  _FakeCloudVoiceAgentController(this.session, {VoiceAgentState? initialState})
+    : state =
+          initialState ??
+          const VoiceAgentState(
+            phase: VoiceAgentConnectionPhase.connected,
+            usingCloud: true,
+            isListening: true,
+          );
 
   final StreamController<VoiceAgentEvent> _events =
       StreamController<VoiceAgentEvent>.broadcast();
@@ -798,11 +963,8 @@ class _FakeCloudVoiceAgentController extends ChangeNotifier
   final AssistantSessionController session;
 
   @override
-  VoiceAgentState state = const VoiceAgentState(
-    phase: VoiceAgentConnectionPhase.connected,
-    usingCloud: true,
-    isListening: true,
-  );
+  VoiceAgentState state;
+  final List<bool> muteRequests = [];
 
   @override
   Stream<VoiceAgentEvent> get events => _events.stream;
@@ -818,6 +980,14 @@ class _FakeCloudVoiceAgentController extends ChangeNotifier
     );
   }
 
+  void emitTranscript(
+    VoiceAgentEventType type, {
+    required String id,
+    required String text,
+  }) {
+    _events.add(VoiceAgentEvent(type, text: text, data: {'messageId': id}));
+  }
+
   @override
   Future<void> initialize() async {}
 
@@ -828,7 +998,11 @@ class _FakeCloudVoiceAgentController extends ChangeNotifier
   Future<void> sendText(String text) async {}
 
   @override
-  Future<void> setMuted(bool muted) async {}
+  Future<void> setMuted(bool muted) async {
+    muteRequests.add(muted);
+    state = state.copyWith(isMuted: muted, isListening: !muted);
+    notifyListeners();
+  }
 
   @override
   Future<void> interrupt() async {}
