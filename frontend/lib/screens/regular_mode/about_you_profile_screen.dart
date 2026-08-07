@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../providers/app_state_provider.dart';
-import '../../utils/permission_helper.dart';
 import '../../main.dart';
 
 class AboutYouProfileScreen extends StatefulWidget {
@@ -232,9 +231,6 @@ class _AboutYouProfileScreenState extends State<AboutYouProfileScreen> {
                                       );
 
                                       await provider.updateProfile(updatedProfile);
-
-                                      if (!context.mounted) return;
-                                      await requestDefaultPermissions(context);
 
                                       if (!context.mounted) return;
                                       Navigator.of(context).pushAndRemoveUntil(

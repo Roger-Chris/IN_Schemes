@@ -5,6 +5,7 @@ import 'package:geocoding/geocoding.dart';
 import 'about_you_profile_screen.dart';
 import 'package:provider/provider.dart';
 import '../../providers/app_state_provider.dart';
+import '../../utils/permission_helper.dart';
 
 class LocationProfileScreen extends StatefulWidget {
   const LocationProfileScreen({super.key});
@@ -14,12 +15,11 @@ class LocationProfileScreen extends StatefulWidget {
 }
 
 class _LocationProfileScreenState extends State<LocationProfileScreen> {
-  // Separate controllers for structured address details
-  final _doorStreetController = TextEditingController();
-  final _areaLocalityController = TextEditingController();
-  final _cityDistrictController = TextEditingController();
-  final _stateController = TextEditingController();
-  final _pincodeController = TextEditingController();
+  final TextEditingController _doorStreetController = TextEditingController();
+  final TextEditingController _areaLocalityController = TextEditingController();
+  final TextEditingController _cityDistrictController = TextEditingController();
+  final TextEditingController _stateController = TextEditingController();
+  final TextEditingController _pincodeController = TextEditingController();
 
   bool _isLoading = false;
 
@@ -34,23 +34,18 @@ class _LocationProfileScreenState extends State<LocationProfileScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final provider = Provider.of<AppProvider>(context, listen: false);
-      final profile = provider.profile;
-      
-      // Reconstruct door/street field from house/street
-      String doorStreet = profile.house;
-      if (profile.street.isNotEmpty) {
-        if (doorStreet.isNotEmpty) {
-          doorStreet = '$doorStreet, ${profile.street}';
-        } else {
-          doorStreet = profile.street;
-        }
-      }
-      _doorStreetController.text = doorStreet;
-      
+      _prefillExistingProfile();
+    });
+  }
+
+  void _prefillExistingProfile() {
+    final provider = Provider.of<AppProvider>(context, listen: false);
+    final profile = provider.profile;
+    
+    setState(() {
+      _doorStreetController.text = profile.street;
       _areaLocalityController.text = profile.area;
       
-      // Reconstruct city/district field
       String cityDistrict = profile.district;
       if (profile.city.isNotEmpty && profile.city != profile.district) {
         if (cityDistrict.isNotEmpty) {
@@ -60,7 +55,6 @@ class _LocationProfileScreenState extends State<LocationProfileScreen> {
         }
       }
       _cityDistrictController.text = cityDistrict;
-      
       _stateController.text = profile.state;
       _pincodeController.text = profile.pinCode;
     });
@@ -78,22 +72,36 @@ class _LocationProfileScreenState extends State<LocationProfileScreen> {
 
   // Live Location Fetch and Geocoding Parser
   Future<void> _fetchAndGeocodeLocation() async {
+    // 1. Request Android system location permission first
+    LocationPermission permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) return;
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      if (mounted) {
+        await showLocationServiceOffDialog(context);
+      }
+      return;
+    }
+
+    // 2. Check if device location service (GPS) is turned ON
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      // ONLY show Location Services Off dialog if location services (GPS) are turned off
+      if (mounted) {
+        await showLocationServiceOffDialog(context);
+      }
+      return;
+    }
+
+    // 3. Location service IS enabled -> Fetch location with NO popups!
     setState(() {
       _isLoading = true;
     });
 
     try {
-      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled) throw 'Location services are disabled.';
-
-      LocationPermission permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.denied) throw 'Permission denied.';
-      }
-
-      if (permission == LocationPermission.deniedForever) throw 'Permission permanently denied.';
-
       Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
         timeLimit: const Duration(seconds: 5),
