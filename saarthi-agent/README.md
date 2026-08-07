@@ -23,7 +23,12 @@ SARVAM_STT_LANGUAGE=unknown
 SARVAM_STT_MODE=transcribe
 SARVAM_TTS_LANGUAGE=ta-IN
 SARVAM_TTS_SPEAKER=kavitha
+SAARTHI_NOISE_ENHANCEMENT_LEVEL=0.8
 ```
+
+Incoming microphone audio is processed in the agent by LiveKit Cloud's
+ai-coustics Voice Focus model before Sarvam STT and turn detection. Keep the
+level at `0.8` initially; tune it only after testing representative phone audio.
 
 Install, test, and run locally with `uv`:
 

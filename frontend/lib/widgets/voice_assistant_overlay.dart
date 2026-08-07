@@ -35,6 +35,24 @@ enum VoiceEdgeActivity { idle, listening, processing, speaking }
 
 enum _OnlineGroundingPhase { idle, checking, found, unavailable, noSources }
 
+enum _VoiceTranscriptSpeaker { user, assistant }
+
+@immutable
+class _VoiceTranscriptTurn {
+  const _VoiceTranscriptTurn({
+    required this.id,
+    required this.speaker,
+    required this.text,
+  });
+
+  final String id;
+  final _VoiceTranscriptSpeaker speaker;
+  final String text;
+
+  _VoiceTranscriptTurn copyWith({String? text}) =>
+      _VoiceTranscriptTurn(id: id, speaker: speaker, text: text ?? this.text);
+}
+
 class VoiceAssistantOverlay extends StatefulWidget {
   const VoiceAssistantOverlay({
     super.key,
@@ -113,7 +131,6 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
   bool _speaking = false;
   bool _closing = false;
   bool _fallingBackToLocal = false;
-  bool _isKeyboardMode = false;
   List<SchemeSearchMatch> _legacyMatches = const [];
   bool _legacySearching = false;
   int _operationGeneration = 0;
@@ -127,11 +144,23 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
   List<GroundedSource> _groundedSources = const [];
   String? _groundingKey;
   int _groundingGeneration = 0;
+  final List<_VoiceTranscriptTurn> _conversationTurns = [];
+  final ScrollController _panelScrollController = ScrollController();
+  int _fallbackTranscriptId = 0;
 
   bool get _isListening => _voicePhase == _VoiceAssistantPhase.listening;
-  bool get _cloudActive =>
-      _voiceAgentController?.state.usingCloud == true &&
-      _voiceAgentController?.state.phase == VoiceAgentConnectionPhase.connected;
+  bool get _cloudSessionInUse {
+    final state = _voiceAgentController?.state;
+    if (state?.usingCloud != true) return false;
+    return switch (state!.phase) {
+      VoiceAgentConnectionPhase.initializing ||
+      VoiceAgentConnectionPhase.connecting ||
+      VoiceAgentConnectionPhase.connected ||
+      VoiceAgentConnectionPhase.reconnecting => true,
+      _ => false,
+    };
+  }
+
   bool get _isCompanion => widget.surface == VoiceAgentSurface.companion;
   Color get _accent =>
       _isCompanion ? const Color(0xFFEA580C) : const Color(0xFF2563EB);
@@ -337,7 +366,7 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
   void _handleVoiceAgentChanged() {
     if (!mounted || _voiceAgentController == null) return;
     final state = _voiceAgentController!.state;
-    if (!state.usingCloud && !_cloudActive) return;
+    if (!state.usingCloud) return;
     final level = state.audioLevel.clamp(0.0, 1.0);
     _soundLevel.value = level;
     _edgeIntensity.value = math.max(0.18, level);
@@ -358,6 +387,16 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
 
   void _handleVoiceAgentEvent(VoiceAgentEvent event) {
     if (!mounted) return;
+    if (event.type == VoiceAgentEventType.inputTranscriptDelta ||
+        event.type == VoiceAgentEventType.inputTranscriptDone) {
+      _upsertTranscriptTurn(event, _VoiceTranscriptSpeaker.user);
+      return;
+    }
+    if (event.type == VoiceAgentEventType.outputTranscriptDelta ||
+        event.type == VoiceAgentEventType.outputTranscriptDone) {
+      _upsertTranscriptTurn(event, _VoiceTranscriptSpeaker.assistant);
+      return;
+    }
     if (event.type == VoiceAgentEventType.schemeResults) {
       final raw = event.data?['results'];
       final results = raw is List<CloudSchemeResult>
@@ -386,6 +425,50 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
       });
       unawaited(_fallBackToLocalVoice());
     }
+  }
+
+  void _upsertTranscriptTurn(
+    VoiceAgentEvent event,
+    _VoiceTranscriptSpeaker speaker,
+  ) {
+    final text = event.text?.trim() ?? '';
+    if (text.isEmpty) return;
+    final suppliedId = event.data?['messageId'];
+    final id = suppliedId is String && suppliedId.trim().isNotEmpty
+        ? suppliedId.trim()
+        : '${speaker.name}-${_fallbackTranscriptId++}';
+    final index = _conversationTurns.indexWhere((turn) => turn.id == id);
+    setState(() {
+      if (index >= 0) {
+        _conversationTurns[index] = _conversationTurns[index].copyWith(
+          text: text,
+        );
+      } else {
+        _conversationTurns.add(
+          _VoiceTranscriptTurn(id: id, speaker: speaker, text: text),
+        );
+        if (_conversationTurns.length > 12) {
+          _conversationTurns.removeAt(0);
+        }
+      }
+      if (speaker == _VoiceTranscriptSpeaker.user) {
+        _transcript = text;
+      }
+    });
+    _scrollToLatestTurn();
+  }
+
+  void _scrollToLatestTurn() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_panelScrollController.hasClients) return;
+      _panelScrollController.animateTo(
+        _panelScrollController.position.maxScrollExtent,
+        duration: _reduceEdgeMotion
+            ? Duration.zero
+            : const Duration(milliseconds: 240),
+        curve: Curves.easeOutCubic,
+      );
+    });
   }
 
   Future<void> _fallBackToLocalVoice() async {
@@ -452,7 +535,7 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
         state.reply != null) {
       _startOnlineGrounding(state);
     }
-    if (_cloudActive) return;
+    if (_cloudSessionInUse) return;
     final reply = state.reply;
     final question = state.question;
     final turnKey = [
@@ -464,6 +547,14 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
     if (_lastSpokenTurn == turnKey) return;
     if (state.phase == AssistantSessionPhase.asking && question != null) {
       _lastSpokenTurn = turnKey;
+      _upsertTranscriptTurn(
+        VoiceAgentEvent(
+          VoiceAgentEventType.outputTranscriptDone,
+          text: _questionText(state, question),
+          data: {'messageId': 'local-assistant-$turnKey'},
+        ),
+        _VoiceTranscriptSpeaker.assistant,
+      );
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) unawaited(_speakQuestionAndListen());
       });
@@ -471,6 +562,14 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
             state.phase == AssistantSessionPhase.noConfidentMatch) &&
         reply != null) {
       _lastSpokenTurn = turnKey;
+      _upsertTranscriptTurn(
+        VoiceAgentEvent(
+          VoiceAgentEventType.outputTranscriptDone,
+          text: reply.displayText,
+          data: {'messageId': 'local-assistant-$turnKey'},
+        ),
+        _VoiceTranscriptSpeaker.assistant,
+      );
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) unawaited(_speakReply(reply));
       });
@@ -529,7 +628,7 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
 
   Future<void> _startListening({bool preserveTranscript = false}) async {
     if (!mounted || _startingRecognition || _speaking) return;
-    if (_cloudActive) {
+    if (_cloudSessionInUse) {
       await _voiceAgentController!.setMuted(false);
       return;
     }
@@ -631,6 +730,14 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
     }
     _lastFinalRecognitionGeneration = _recognitionGeneration;
     _lastFinalTranscript = transcript;
+    _upsertTranscriptTurn(
+      VoiceAgentEvent(
+        VoiceAgentEventType.inputTranscriptDone,
+        text: transcript,
+        data: {'messageId': 'local-user-$_recognitionGeneration'},
+      ),
+      _VoiceTranscriptSpeaker.user,
+    );
     unawaited(_processFinalTranscript(transcript));
   }
 
@@ -740,7 +847,7 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
 
   Future<void> _stopListening() async {
     _operationGeneration++;
-    if (_cloudActive) {
+    if (_cloudSessionInUse) {
       await _voiceAgentController!.setMuted(true);
       if (!mounted) return;
       _edgeIntensity.value = 0.12;
@@ -758,7 +865,7 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
   }
 
   Future<void> _toggleListening() async {
-    if (_cloudActive && _speaking) {
+    if (_cloudSessionInUse && _speaking) {
       await _voiceAgentController!.interrupt();
       await _voiceAgentController!.setMuted(false);
       return;
@@ -787,7 +894,7 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
   }
 
   Future<void> _speakQuestionAndListen() async {
-    if (_cloudActive) return;
+    if (_cloudSessionInUse) return;
     final state = _session;
     final question = state?.question;
     if (state == null || question == null || _speaking) return;
@@ -823,7 +930,9 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
   }
 
   Future<void> _speakReply(GroundedAssistantReply reply) async {
-    if (_cloudActive || _speaking || reply.spokenText.trim().isEmpty) return;
+    if (_cloudSessionInUse || _speaking || reply.spokenText.trim().isEmpty) {
+      return;
+    }
     await _recognitionController.cancel();
     if (!mounted) return;
     final supported = _speechCapabilities?.supports(reply.languageTag) ?? false;
@@ -876,6 +985,14 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
       _speaking = false;
       _transcript = option;
     });
+    _upsertTranscriptTurn(
+      VoiceAgentEvent(
+        VoiceAgentEventType.inputTranscriptDone,
+        text: option,
+        data: {'messageId': 'option-${_session?.questionsAsked ?? 0}'},
+      ),
+      _VoiceTranscriptSpeaker.user,
+    );
     await _sessionController?.answer(option);
   }
 
@@ -887,7 +1004,15 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
       _transcript = query;
       _message = null;
     });
-    if (_cloudActive) {
+    _upsertTranscriptTurn(
+      VoiceAgentEvent(
+        VoiceAgentEventType.inputTranscriptDone,
+        text: query,
+        data: {'messageId': 'suggestion-${_fallbackTranscriptId++}'},
+      ),
+      _VoiceTranscriptSpeaker.user,
+    );
+    if (_cloudSessionInUse) {
       await _voiceAgentController!.sendText(query);
     } else {
       await _processFinalTranscript(query);
@@ -899,10 +1024,18 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
     if (value.isEmpty) return;
     _typedController.clear();
     await _recognitionController.cancel();
-    if (_cloudActive) {
+    if (_cloudSessionInUse) {
       await _voiceAgentController!.sendText(value);
     } else {
       setState(() => _transcript = value);
+      _upsertTranscriptTurn(
+        VoiceAgentEvent(
+          VoiceAgentEventType.inputTranscriptDone,
+          text: value,
+          data: {'messageId': 'typed-${_fallbackTranscriptId++}'},
+        ),
+        _VoiceTranscriptSpeaker.user,
+      );
       await _processFinalTranscript(value);
     }
   }
@@ -931,7 +1064,9 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            style: TextButton.styleFrom(foregroundColor: const Color(0xFF64748B)),
+            style: TextButton.styleFrom(
+              foregroundColor: const Color(0xFF64748B),
+            ),
             child: Text(CentralizedTranslator.instance.translate('Cancel')),
           ),
           FilledButton(
@@ -1006,10 +1141,16 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            style: TextButton.styleFrom(foregroundColor: const Color(0xFF64748B)),
-            child: Text(_presentInTamil
-                ? CentralizedTranslator.instance.translate('Keep session only')
-                : 'Keep session only'),
+            style: TextButton.styleFrom(
+              foregroundColor: const Color(0xFF64748B),
+            ),
+            child: Text(
+              _presentInTamil
+                  ? CentralizedTranslator.instance.translate(
+                      'Keep session only',
+                    )
+                  : 'Keep session only',
+            ),
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
@@ -1020,9 +1161,11 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
                 borderRadius: BorderRadius.circular(10),
               ),
             ),
-            child: Text(_presentInTamil
-                ? CentralizedTranslator.instance.translate('Save confirmed')
-                : 'Save confirmed'),
+            child: Text(
+              _presentInTamil
+                  ? CentralizedTranslator.instance.translate('Save confirmed')
+                  : 'Save confirmed',
+            ),
           ),
         ],
       ),
@@ -1098,6 +1241,7 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
     _edgeIntensity.dispose();
     _soundLevel.dispose();
     _typedController.dispose();
+    _panelScrollController.dispose();
     super.dispose();
   }
 
@@ -1180,6 +1324,7 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
                     ],
                   ),
                   child: SingleChildScrollView(
+                    controller: _panelScrollController,
                     padding: const EdgeInsets.fromLTRB(18, 16, 18, 14),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
@@ -1188,7 +1333,11 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
                         _buildHeader(),
                         const SizedBox(height: 12),
                         _buildListeningArea(),
-                        if (_cloudActive) ...[
+                        if (_conversationTurns.isNotEmpty) ...[
+                          const SizedBox(height: 12),
+                          _buildConversationTranscript(),
+                        ],
+                        if (_cloudSessionInUse) ...[
                           const SizedBox(height: 8),
                           Row(
                             key: const Key('voice-cloud-disclosure'),
@@ -1342,32 +1491,41 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
                   fontWeight: FontWeight.w700,
                 ),
               ),
-              Row(
-                children: [
-                  Container(
-                    width: 6,
-                    height: 6,
-                    decoration: BoxDecoration(
-                      color: _statusColor,
-                      shape: BoxShape.circle,
+              Semantics(
+                liveRegion: true,
+                label: _statusLabel,
+                child: Row(
+                  children: [
+                    Container(
+                      width: 6,
+                      height: 6,
+                      decoration: BoxDecoration(
+                        color: _statusColor,
+                        shape: BoxShape.circle,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 5),
-                  Text(
-                    _statusLabel,
-                    style: GoogleFonts.inter(
-                      color: _statusColor,
-                      fontSize: 10.5,
-                      fontWeight: FontWeight.w600,
+                    const SizedBox(width: 5),
+                    Flexible(
+                      child: Text(
+                        _statusLabel,
+                        key: const Key('voice-live-status'),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.inter(
+                          color: _statusColor,
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ],
           ),
         ),
         _buildLanguageSelector(),
-        if (_cloudActive)
+        if (_cloudSessionInUse)
           IconButton(
             key: const Key('voice-mute-button'),
             tooltip: _voiceAgentController!.state.isMuted ? 'Unmute' : 'Mute',
@@ -1377,7 +1535,7 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
             icon: Icon(
               _voiceAgentController!.state.isMuted
                   ? Icons.mic_off_rounded
-                  : Icons.volume_up_rounded,
+                  : Icons.mic_rounded,
               color: const Color(0xFFCBD5E1),
             ),
           ),
@@ -1404,7 +1562,19 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
-            _transcript.isEmpty
+            _conversationTurns.isNotEmpty
+                ? (_speaking
+                      ? (_presentInTamil
+                            ? 'பதிலை கேளுங்கள் அல்லது இடைமறிக்க தட்டுங்கள்'
+                            : 'Listen, or tap below to interrupt')
+                      : _isListening
+                      ? (_presentInTamil
+                            ? 'இயல்பாக பேசுங்கள்; முடிந்ததும் சிறிது நிறுத்துங்கள்'
+                            : 'Speak naturally, then pause when you are done')
+                      : (_presentInTamil
+                            ? 'அடுத்த கேள்விக்கு தயாராக உள்ளது'
+                            : 'Ready for your next question'))
+                : _transcript.isEmpty
                 ? (_presentInTamil
                       ? 'உங்கள் நிலையை இயல்பாக சொல்லுங்கள்...'
                       : 'Tell me your situation naturally...')
@@ -1441,24 +1611,13 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
               Expanded(
                 child: Align(
                   alignment: Alignment.centerRight,
-                  child: !_isCompanion
-                      ? IconButton(
-                          key: const Key('voice-open-typed-input'),
-                          tooltip: 'Type instead',
-                          onPressed: () {
-                            setState(() {
-                              _isKeyboardMode = !_isKeyboardMode;
-                              if (_isKeyboardMode) {
-                                _voicePhase = _VoiceAssistantPhase.ready;
-                                unawaited(_recognitionController.cancel());
-                              }
-                            });
-                          },
-                          icon: Icon(
-                            Icons.keyboard_alt_outlined,
-                            color: _isKeyboardMode
-                                ? _accent
-                                : const Color(0xFF94A3B8),
+                  child: _cloudSessionInUse
+                      ? Semantics(
+                          label: 'Server noise filtering is active',
+                          child: const Icon(
+                            Icons.noise_control_off_rounded,
+                            color: Color(0xFF34D399),
+                            size: 22,
                           ),
                         )
                       : const SizedBox(),
@@ -1467,8 +1626,13 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
               const SizedBox(width: 24),
               Semantics(
                 button: true,
-                label: _isListening ? 'Stop listening' : 'Start listening',
+                label: _speaking
+                    ? 'Interrupt assistant'
+                    : _isListening
+                    ? 'Stop listening'
+                    : 'Start listening',
                 child: IconButton.filled(
+                  key: const Key('voice-primary-control'),
                   onPressed: _toggleListening,
                   style: IconButton.styleFrom(
                     backgroundColor: _isListening
@@ -1477,7 +1641,11 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
                     minimumSize: const Size(56, 56),
                   ),
                   icon: Icon(
-                    _isListening ? Icons.mic : Icons.mic_none_rounded,
+                    _speaking
+                        ? Icons.front_hand_rounded
+                        : _isListening
+                        ? Icons.stop_rounded
+                        : Icons.mic_none_rounded,
                     color: Colors.white,
                     size: 26,
                   ),
@@ -1497,7 +1665,48 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
               ),
             ],
           ),
-          if (_isCompanion || _isKeyboardMode) ...[
+          const SizedBox(height: 8),
+          Text(
+            _speaking
+                ? 'Interrupt'
+                : _isListening
+                ? 'Tap when finished'
+                : 'Tap to speak',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.inter(
+              color: _statusColor,
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          if (_cloudSessionInUse) ...[
+            const SizedBox(height: 6),
+            Semantics(
+              label: 'Server noise filtering is on',
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(
+                    Icons.shield_outlined,
+                    color: Color(0xFF34D399),
+                    size: 13,
+                  ),
+                  const SizedBox(width: 5),
+                  Text(
+                    _presentInTamil
+                        ? 'சத்தம் வடிகட்டப்படுகிறது'
+                        : 'Noise filtering on',
+                    style: GoogleFonts.inter(
+                      color: const Color(0xFF6EE7B7),
+                      fontSize: 9.5,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+          if (_isCompanion) ...[
             const SizedBox(height: 10),
             Row(
               children: [
@@ -1534,6 +1743,106 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
             ),
           ],
         ],
+      ),
+    );
+  }
+
+  Widget _buildConversationTranscript() {
+    final visibleTurns = _conversationTurns.length <= 8
+        ? _conversationTurns
+        : _conversationTurns.sublist(_conversationTurns.length - 8);
+    return Semantics(
+      container: true,
+      label: 'Conversation transcript',
+      child: Container(
+        key: const Key('voice-conversation-transcript'),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.035),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.forum_outlined, color: _accent, size: 16),
+                const SizedBox(width: 7),
+                Text(
+                  _presentInTamil ? 'உரையாடல்' : 'Conversation',
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFFCBD5E1),
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            for (final turn in visibleTurns) _buildTranscriptBubble(turn),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTranscriptBubble(_VoiceTranscriptTurn turn) {
+    final isUser = turn.speaker == _VoiceTranscriptSpeaker.user;
+    final bubbleColor = isUser
+        ? _accent.withValues(alpha: 0.24)
+        : Colors.white.withValues(alpha: 0.075);
+    final label = isUser
+        ? (_presentInTamil ? 'நீங்கள்' : 'You')
+        : (_presentInTamil ? 'உதவியாளர்' : 'Assistant');
+    return Align(
+      alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
+      child: Semantics(
+        label: '$label: ${turn.text}',
+        child: Container(
+          key: Key('voice-turn-${turn.id}'),
+          constraints: const BoxConstraints(maxWidth: 440),
+          margin: const EdgeInsets.only(bottom: 9),
+          padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 10),
+          decoration: BoxDecoration(
+            color: bubbleColor,
+            borderRadius: BorderRadius.only(
+              topLeft: const Radius.circular(16),
+              topRight: const Radius.circular(16),
+              bottomLeft: Radius.circular(isUser ? 16 : 4),
+              bottomRight: Radius.circular(isUser ? 4 : 16),
+            ),
+            border: Border.all(
+              color: isUser
+                  ? _accent.withValues(alpha: 0.34)
+                  : Colors.white.withValues(alpha: 0.08),
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                label,
+                style: GoogleFonts.inter(
+                  color: isUser ? const Color(0xFF93C5FD) : _accent,
+                  fontSize: 9.5,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const SizedBox(height: 3),
+              Text(
+                turn.text,
+                style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 13.5,
+                  height: 1.42,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -1794,7 +2103,10 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
             TextButton(
               key: const Key('voice-view-all-results'),
               onPressed: () => widget.onSubmit(_session!.statement),
-              child: Text(CentralizedTranslator.instance.translate('View all'), style: const TextStyle(fontSize: 10.5)),
+              child: Text(
+                CentralizedTranslator.instance.translate('View all'),
+                style: const TextStyle(fontSize: 10.5),
+              ),
             ),
           ],
         ),
@@ -1808,7 +2120,11 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
             key: const Key('voice-review-profile'),
             onPressed: _reviewAndSaveFacts,
             icon: const Icon(Icons.person_add_alt_1_outlined, size: 17),
-            label: Text(CentralizedTranslator.instance.translate('Review and save confirmed details')),
+            label: Text(
+              CentralizedTranslator.instance.translate(
+                'Review and save confirmed details',
+              ),
+            ),
           ),
         ],
       ],

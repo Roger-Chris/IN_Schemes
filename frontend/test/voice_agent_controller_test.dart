@@ -117,6 +117,15 @@ void main() {
       ),
       isFalse,
     );
+    expect(
+      shouldReportCloudListening(
+        agentCanListen: true,
+        isMuted: false,
+        isSpeaking: false,
+        isThinking: true,
+      ),
+      isFalse,
+    );
   });
 
   test('local controller never enters a cloud session', () async {
