@@ -1114,7 +1114,7 @@ class _MSMEModuleDetailsScreenState extends State<MSMEModuleDetailsScreen> {
                   ),
                 ),
                 onPressed: () async {
-                  final Uri url = Uri.parse('https://udyamregistration.gov.in/');
+                  final Uri url = Uri.parse('https://www.udyamregistration.gov.in/');
                   if (await canLaunchUrl(url)) {
                     await launchUrl(url, mode: LaunchMode.externalApplication);
                   }
