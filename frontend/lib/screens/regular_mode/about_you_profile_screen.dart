@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../providers/app_state_provider.dart';
-import '../../utils/profile_l10n.dart';
-import '../../main.dart';
-import '../../utils/permission_helper.dart';
+import '../permission_screen.dart';
 
 class AboutYouProfileScreen extends StatefulWidget {
   const AboutYouProfileScreen({super.key});
@@ -77,8 +75,6 @@ class _AboutYouProfileScreenState extends State<AboutYouProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isTa = Provider.of<AppProvider>(context, listen: false).selectedLanguage == 'ta';
-    String l(String key) => ProfileL10n.t(key, isTa);
     return Scaffold(
       backgroundColor: Colors.white,
       body: Stack(
@@ -108,7 +104,7 @@ class _AboutYouProfileScreenState extends State<AboutYouProfileScreen> {
                           onPressed: () => Navigator.maybePop(context),
                         ),
                         Text(
-                          l('complete_your_profile'),
+                          'Complete Your Profile',
                           style: GoogleFonts.poppins(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -160,7 +156,7 @@ class _AboutYouProfileScreenState extends State<AboutYouProfileScreen> {
                                     const SizedBox(height: 8),
                                     Center(
                                       child: Text(
-                                        l('step_3_of_4'),
+                                        '3/4 Complete',
                                         style: GoogleFonts.inter(
                                           fontSize: 13,
                                           fontWeight: FontWeight.w600,
@@ -172,7 +168,7 @@ class _AboutYouProfileScreenState extends State<AboutYouProfileScreen> {
 
                                     // Header Text
                                     Text(
-                                      l('tell_us_about_you'),
+                                      'Tell Us About You',
                                       textAlign: TextAlign.center,
                                       style: GoogleFonts.poppins(
                                         fontSize: 20,
@@ -182,7 +178,7 @@ class _AboutYouProfileScreenState extends State<AboutYouProfileScreen> {
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
-                                      l('about_you_subtitle'),
+                                      'Choose the option that best describes you.',
                                       textAlign: TextAlign.center,
                                       style: GoogleFonts.inter(
                                         fontSize: 13,
@@ -206,7 +202,7 @@ class _AboutYouProfileScreenState extends State<AboutYouProfileScreen> {
                                         final role = _roles[index];
                                         final isSelected = _selectedRole == role.id;
 
-                                        return _buildRoleCard(role, isSelected, isTa);
+                                        return _buildRoleCard(role, isSelected);
                                       },
                                     ),
                                   ],
@@ -239,12 +235,9 @@ class _AboutYouProfileScreenState extends State<AboutYouProfileScreen> {
                                       await provider.updateProfile(updatedProfile);
 
                                       if (!context.mounted) return;
-                                      await requestDefaultPermissions(context);
-
-                                      if (!context.mounted) return;
                                       Navigator.of(context).pushAndRemoveUntil(
                                         MaterialPageRoute(
-                                          builder: (_) => const MainTabsContainer(),
+                                          builder: (_) => const PermissionScreen(),
                                         ),
                                         (route) => false,
                                       );
@@ -254,7 +247,7 @@ class _AboutYouProfileScreenState extends State<AboutYouProfileScreen> {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Text(
-                                    l('continue'),
+                                    'Continue',
                                     style: GoogleFonts.inter(
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,
@@ -294,19 +287,7 @@ class _AboutYouProfileScreenState extends State<AboutYouProfileScreen> {
     );
   }
 
-  Widget _buildRoleCard(RoleModel role, bool isSelected, [bool isTa = false]) {
-    final String titleKey = switch (role.id) {
-      'student' => 'student',
-      'entrepreneur' => 'aspiring_entrepreneur',
-      'existing_business' => 'existing_business',
-      'msme' => 'msme_owner',
-      'farmer' => 'farmer',
-      'artisan' => 'artisan_shg',
-      _ => role.id,
-    };
-    final String subtitleKey = '${titleKey}_subtitle';
-    final String localTitle = ProfileL10n.t(titleKey, isTa);
-    final String localSubtitle = ProfileL10n.t(subtitleKey, isTa);
+  Widget _buildRoleCard(RoleModel role, bool isSelected) {
     return GestureDetector(
       onTap: () {
         setState(() {
@@ -396,7 +377,7 @@ class _AboutYouProfileScreenState extends State<AboutYouProfileScreen> {
 
             // Role Title
             Text(
-              localTitle,
+              role.title,
               textAlign: TextAlign.center,
               style: GoogleFonts.inter(
                 fontSize: 13,
@@ -408,7 +389,7 @@ class _AboutYouProfileScreenState extends State<AboutYouProfileScreen> {
 
             // Role Description
             Text(
-              localSubtitle,
+              role.subtitle,
               textAlign: TextAlign.center,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
