@@ -115,26 +115,10 @@ class _LocationProfileScreenState extends State<LocationProfileScreen> {
       if (placemarks.isNotEmpty) {
         Placemark place = placemarks.first;
         setState(() {
-          // Parse door / street without duplicates
-          String name = place.name ?? '';
-          String subThoroughfare = place.subThoroughfare ?? '';
-          String thoroughfare = place.thoroughfare ?? '';
-
-          String doorStreet = name;
-          if (subThoroughfare.isNotEmpty && subThoroughfare != name) {
-            doorStreet = '$subThoroughfare, $doorStreet';
-          }
-          if (thoroughfare.isNotEmpty && thoroughfare != name && thoroughfare != subThoroughfare) {
-            doorStreet = '$doorStreet, $thoroughfare';
-          }
-          
-          _doorStreetController.text = doorStreet
-              .replaceAll(RegExp(r',\s*,'), ',')
-              .trim();
-
+          // Only fetch and populate Area, City/District, State, and Pincode via GPS
           _areaLocalityController.text = place.subLocality ?? place.locality ?? '';
 
-          // Parse City / District cleanly (fallback from subAdministrativeArea to locality)
+          // Parse City / District
           String district = place.subAdministrativeArea ?? '';
           String city = place.locality ?? '';
           if (district.isEmpty) {
@@ -151,9 +135,8 @@ class _LocationProfileScreenState extends State<LocationProfileScreen> {
         throw 'No address components found.';
       }
     } catch (e) {
-      // Robust simulated fallback to Chennai Central address parameters
+      // Fallback regional parameters for Area, City, State, Pincode
       setState(() {
-        _doorStreetController.text = 'Flat 402, Royal Enclave';
         _areaLocalityController.text = 'Anna Nagar West';
         _cityDistrictController.text = 'Chennai';
         _stateController.text = 'Tamil Nadu';
