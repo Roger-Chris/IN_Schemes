@@ -28,9 +28,7 @@ class CentralizedTranslator {
     r'(\+91[\s-]?)?(\(?\d{3,5}\)?[\s-]?)?\d{6,8}',
   );
 
-  static final RegExp _codeIdRegex = RegExp(
-    r'^[A-Z0-9_]{3,20}$',
-  );
+  static final RegExp _codeIdRegex = RegExp(r'^[A-Z0-9_]{3,20}$');
 
   /// Check if a given string should be preserved without translation.
   bool isProtectedText(String? input) {
@@ -45,7 +43,10 @@ class CentralizedTranslator {
     // Preserve Scheme Codes / IDs
     if (_codeIdRegex.hasMatch(trimmed) && !trimmed.contains(' ')) return true;
     // Preserve Phone numbers
-    if (_phoneRegex.hasMatch(trimmed) && RegExp(r'^\+?[0-9\s-]{7,15}$').hasMatch(trimmed)) return true;
+    if (_phoneRegex.hasMatch(trimmed) &&
+        RegExp(r'^\+?[0-9\s-]{7,15}$').hasMatch(trimmed)) {
+      return true;
+    }
 
     return false;
   }
@@ -99,20 +100,28 @@ class CentralizedTranslator {
     );
 
     // 3. Phrase replacements (sorted by length descending)
-    final sortedPhrases = _phraseMap.keys.toList()..sort((a, b) => b.length.compareTo(a.length));
+    final sortedPhrases = _phraseMap.keys.toList()
+      ..sort((a, b) => b.length.compareTo(a.length));
     for (final enPhrase in sortedPhrases) {
       final taPhrase = _phraseMap[enPhrase]!;
-      final reg = RegExp(r'\b' + RegExp.escape(enPhrase) + r'\b', caseSensitive: false);
+      final reg = RegExp(
+        r'\b' + RegExp.escape(enPhrase) + r'\b',
+        caseSensitive: false,
+      );
       if (reg.hasMatch(translated)) {
         translated = translated.replaceAll(reg, taPhrase);
       }
     }
 
     // 4. Term replacements (sorted by length descending)
-    final sortedTerms = _termMap.keys.toList()..sort((a, b) => b.length.compareTo(a.length));
+    final sortedTerms = _termMap.keys.toList()
+      ..sort((a, b) => b.length.compareTo(a.length));
     for (final enTerm in sortedTerms) {
       final taTerm = _termMap[enTerm]!;
-      final reg = RegExp(r'\b' + RegExp.escape(enTerm) + r'\b', caseSensitive: false);
+      final reg = RegExp(
+        r'\b' + RegExp.escape(enTerm) + r'\b',
+        caseSensitive: false,
+      );
       if (reg.hasMatch(translated)) {
         translated = translated.replaceAll(reg, taTerm);
       }
@@ -124,33 +133,110 @@ class CentralizedTranslator {
   // ── Sentence Patterns ──────────────────────────────────────────────────
 
   static final Map<RegExp, String Function(Match)> _sentencePatterns = {
-    RegExp(r'\bprovides?\s+capital\s+subsidy\b', caseSensitive: false): (m) => 'மூலதன மானிய நிதி உதவி வழங்குகிறது',
-    RegExp(r'\bfinancial\s+assistance\s+for\b', caseSensitive: false): (m) => 'க்கான நிதி உதவி',
-    RegExp(r'\bcredit\s+guarantee\s+cover\b', caseSensitive: false): (m) => 'கடன் உத்தரவாத பாதுகாப்பு',
-    RegExp(r'\binterest\s+subvention\b', caseSensitive: false): (m) => 'வட்டி மானியம்',
-    RegExp(r'\bmargin\s+money\s+assistance\b', caseSensitive: false): (m) => 'முன்பண நிதி உதவி',
-    RegExp(r'\bfor\s+micro\s+and\s+small\s+enterprises\b', caseSensitive: false): (m) => 'குறு மற்றும் சிறு தொழில்களுக்காக',
-    RegExp(r'\bin\s+tamil\s+nadu\b', caseSensitive: false): (m) => 'தமிழ்நாட்டில்',
-    RegExp(r'\b(all\s+over\s+india|pan-india|across\s+india)\b', caseSensitive: false): (m) => 'இந்தியா முழுவதும்',
-    RegExp(r'\btarget\s+beneficiaries:\s*', caseSensitive: false): (m) => 'பயனாளிகள்: ',
+    RegExp(r'\bprovides?\s+capital\s+subsidy\b', caseSensitive: false): (m) =>
+        'மூலதன மானிய நிதி உதவி வழங்குகிறது',
+    RegExp(r'\bfinancial\s+assistance\s+for\b', caseSensitive: false): (m) =>
+        'க்கான நிதி உதவி',
+    RegExp(r'\bcredit\s+guarantee\s+cover\b', caseSensitive: false): (m) =>
+        'கடன் உத்தரவாத பாதுகாப்பு',
+    RegExp(r'\binterest\s+subvention\b', caseSensitive: false): (m) =>
+        'வட்டி மானியம்',
+    RegExp(r'\bmargin\s+money\s+assistance\b', caseSensitive: false): (m) =>
+        'முன்பண நிதி உதவி',
+    RegExp(
+      r'\bfor\s+micro\s+and\s+small\s+enterprises\b',
+      caseSensitive: false,
+    ): (m) =>
+        'குறு மற்றும் சிறு தொழில்களுக்காக',
+    RegExp(r'\bin\s+tamil\s+nadu\b', caseSensitive: false): (m) =>
+        'தமிழ்நாட்டில்',
+    RegExp(
+      r'\b(all\s+over\s+india|pan-india|across\s+india)\b',
+      caseSensitive: false,
+    ): (m) =>
+        'இந்தியா முழுவதும்',
+    RegExp(r'\btarget\s+beneficiaries:\s*', caseSensitive: false): (m) =>
+        'பயனாளிகள்: ',
     RegExp(r'\bissued\s+by:\s*', caseSensitive: false): (m) => 'வழங்கியவர்: ',
-    RegExp(r'\bestimated\s+cost:\s*', caseSensitive: false): (m) => 'மதிப்பிடப்பட்ட செலவு: ',
-    RegExp(r'\bno\s+educational\s+qualification\s+required\b', caseSensitive: false): (m) => 'கல்வித் தகுதி தேவையில்லை',
-    RegExp(r'\b8th\s+standard\s+pass\b', caseSensitive: false): (m) => '8-ஆம் வகுப்பு தேர்ச்சி',
-    RegExp(r'\baged?\s+between\s+(\d+)\s+and\s+(\d+)\s+years?\b', caseSensitive: false): (m) => 'வயது ${m.group(1) ?? ''} முதல் ${m.group(2) ?? ''} வரை',
-    RegExp(r'\brolling\s+intake\s+throughout\s+(financial|fiscal|நிதி)\s+year\b', caseSensitive: false): (m) => 'நிதி ஆண்டு முழுவதும் தொடர் விண்ணப்ப ஏற்பு',
-    RegExp(r'\bstep\s+1:\s*register\s+and\s+fill\s+online\s+application\s+via\s+(.*?)\s+portal\b', caseSensitive: false): (m) => 'படி 1: ${m.group(1) ?? ''} இணையதளம் மூலம் ஆன்லைன் விண்ணப்பத்தைப் பதிவு செய்து பூர்த்தி செய்யவும்',
-    RegExp(r'\bstep\s+2:\s*submit\s+application\s+copy\s+and\s+checklist\s+documents\s+to\s+(.*?)\b', caseSensitive: false): (m) => 'படி 2: விண்ணப்ப நகல் மற்றும் சரிபார்ப்பு ஆவணங்களை ${m.group(1) ?? ''} இடம் சமர்ப்பிக்கவும்',
-    RegExp(r'\bstep\s+3:\s*verification\s+&\s+field\s+inspection\s+by\s+(.*?)\b', caseSensitive: false): (m) => 'படி 3: ${m.group(1) ?? ''} மூலம் சரிபார்ப்பு மற்றும் கள ஆய்வு',
-    RegExp(r'\bstep\s+4:\s*approval\s+and\s+direct\s+benefit\s+transfer\s*\(dbt\)\s*\/\s*subsidy\s+credit\s+to\s+bank\s+account\b', caseSensitive: false): (m) => 'படி 4: ஒப்புதல் மற்றும் நேரடி பயன் பரிமாற்றம் (DBT) / மானிய கடன் தொகையை வங்கி கணக்கில் செலுத்துதல்',
-    RegExp(r'\badditional\s+capital\s+subsidy\s+for\s+micro\s+manufacturing\s+enterprises\b', caseSensitive: false): (m) => 'குறு உற்பத்தி நிறுவனங்களுக்கான கூடுதல் மூலதன மானியம்',
-    RegExp(r'\bno\s+aadhaar,?\s*pan,?\s*udyam,?\s*bank,?\s*income,?\s*invoice,?\s*certificate,?\s*dpr\s+or\s+other\s+document\s+is\s+assumed\s+as\s+mandatory\b', caseSensitive: false): (m) => 'அதிகாரப்பூர்வ வழிகாட்டுதலின்றி எந்த ஆவணமும் கட்டாயமானதாகக் கருதப்படாது.',
-    RegExp(r'\bno\s+amount,?\s*rate,?\s*eligibility\s+condition\s+or\s+subsidy\s+is\s+asserted\s+without\s+exact\s+current\s+official\s+source\b', caseSensitive: false): (m) => 'துல்லியமான அதிகாரப்பூர்வ ஆதாரம் இன்றி தொகை, வீதம், தகுதி நிபந்தனை அல்லது மானியம் உறுதிப்படுத்தப்படாது.',
-    RegExp(r'\bexact\s+current\s+eligibility,?\s*support\s+amount\s+and\s+application\s+conditions\s+are\s+not\s+entered\b', caseSensitive: false): (m) => 'துல்லியமான தகுதி, உதவித் தொகை மற்றும் விண்ணப்ப நிபந்தனைகள் இன்னும் சரிபார்க்கப்பட வேண்டியுள்ளது.',
-    RegExp(r'\bexact\s+current\s+application\s+document\s+checklist\s+pending\s+verification\b', caseSensitive: false): (m) => 'தற்போதைய துல்லியமான விண்ணப்ப ஆவணங்களின் பட்டியல் சரிபார்ப்பில் உள்ளது',
-    RegExp(r'\bnot\s+specified\s+in\s+a\s+current\s+official\s+source\s+located\b', caseSensitive: false): (m) => 'தற்போதைய அதிகாரப்பூர்வ ஆதாரத்தில் குறிப்பிடப்படவில்லை',
-    RegExp(r'\bprovides?\s+financial\s+assistance,?\s*subsidies,?\s*or\s+institutional\s+support\s+for\s+eligible\s+applicants\.?\b', caseSensitive: false): (m) => 'தகுதியான விண்ணப்பதாரர்களுக்கு நிதி உதவி, மானியங்கள் அல்லது நிறுவன ஆதரவை வழங்குகிறது.',
-    RegExp(r'\blender\s+charges\s+as\s+applicable\b', caseSensitive: false): (m) => 'கடன் வழங்கும் நிறுவனக் கட்டணங்கள் பொருந்தும்',
+    RegExp(r'\bestimated\s+cost:\s*', caseSensitive: false): (m) =>
+        'மதிப்பிடப்பட்ட செலவு: ',
+    RegExp(
+      r'\bno\s+educational\s+qualification\s+required\b',
+      caseSensitive: false,
+    ): (m) =>
+        'கல்வித் தகுதி தேவையில்லை',
+    RegExp(r'\b8th\s+standard\s+pass\b', caseSensitive: false): (m) =>
+        '8-ஆம் வகுப்பு தேர்ச்சி',
+    RegExp(
+      r'\baged?\s+between\s+(\d+)\s+and\s+(\d+)\s+years?\b',
+      caseSensitive: false,
+    ): (m) =>
+        'வயது ${m.group(1) ?? ''} முதல் ${m.group(2) ?? ''} வரை',
+    RegExp(
+      r'\brolling\s+intake\s+throughout\s+(financial|fiscal|நிதி)\s+year\b',
+      caseSensitive: false,
+    ): (m) =>
+        'நிதி ஆண்டு முழுவதும் தொடர் விண்ணப்ப ஏற்பு',
+    RegExp(
+      r'\bstep\s+1:\s*register\s+and\s+fill\s+online\s+application\s+via\s+(.*?)\s+portal\b',
+      caseSensitive: false,
+    ): (m) =>
+        'படி 1: ${m.group(1) ?? ''} இணையதளம் மூலம் ஆன்லைன் விண்ணப்பத்தைப் பதிவு செய்து பூர்த்தி செய்யவும்',
+    RegExp(
+      r'\bstep\s+2:\s*submit\s+application\s+copy\s+and\s+checklist\s+documents\s+to\s+(.*?)\b',
+      caseSensitive: false,
+    ): (m) =>
+        'படி 2: விண்ணப்ப நகல் மற்றும் சரிபார்ப்பு ஆவணங்களை ${m.group(1) ?? ''} இடம் சமர்ப்பிக்கவும்',
+    RegExp(
+      r'\bstep\s+3:\s*verification\s+&\s+field\s+inspection\s+by\s+(.*?)\b',
+      caseSensitive: false,
+    ): (m) =>
+        'படி 3: ${m.group(1) ?? ''} மூலம் சரிபார்ப்பு மற்றும் கள ஆய்வு',
+    RegExp(
+      r'\bstep\s+4:\s*approval\s+and\s+direct\s+benefit\s+transfer\s*\(dbt\)\s*\/\s*subsidy\s+credit\s+to\s+bank\s+account\b',
+      caseSensitive: false,
+    ): (m) =>
+        'படி 4: ஒப்புதல் மற்றும் நேரடி பயன் பரிமாற்றம் (DBT) / மானிய கடன் தொகையை வங்கி கணக்கில் செலுத்துதல்',
+    RegExp(
+      r'\badditional\s+capital\s+subsidy\s+for\s+micro\s+manufacturing\s+enterprises\b',
+      caseSensitive: false,
+    ): (m) =>
+        'குறு உற்பத்தி நிறுவனங்களுக்கான கூடுதல் மூலதன மானியம்',
+    RegExp(
+      r'\bno\s+aadhaar,?\s*pan,?\s*udyam,?\s*bank,?\s*income,?\s*invoice,?\s*certificate,?\s*dpr\s+or\s+other\s+document\s+is\s+assumed\s+as\s+mandatory\b',
+      caseSensitive: false,
+    ): (m) =>
+        'அதிகாரப்பூர்வ வழிகாட்டுதலின்றி எந்த ஆவணமும் கட்டாயமானதாகக் கருதப்படாது.',
+    RegExp(
+      r'\bno\s+amount,?\s*rate,?\s*eligibility\s+condition\s+or\s+subsidy\s+is\s+asserted\s+without\s+exact\s+current\s+official\s+source\b',
+      caseSensitive: false,
+    ): (m) =>
+        'துல்லியமான அதிகாரப்பூர்வ ஆதாரம் இன்றி தொகை, வீதம், தகுதி நிபந்தனை அல்லது மானியம் உறுதிப்படுத்தப்படாது.',
+    RegExp(
+      r'\bexact\s+current\s+eligibility,?\s*support\s+amount\s+and\s+application\s+conditions\s+are\s+not\s+entered\b',
+      caseSensitive: false,
+    ): (m) =>
+        'துல்லியமான தகுதி, உதவித் தொகை மற்றும் விண்ணப்ப நிபந்தனைகள் இன்னும் சரிபார்க்கப்பட வேண்டியுள்ளது.',
+    RegExp(
+      r'\bexact\s+current\s+application\s+document\s+checklist\s+pending\s+verification\b',
+      caseSensitive: false,
+    ): (m) =>
+        'தற்போதைய துல்லியமான விண்ணப்ப ஆவணங்களின் பட்டியல் சரிபார்ப்பில் உள்ளது',
+    RegExp(
+      r'\bnot\s+specified\s+in\s+a\s+current\s+official\s+source\s+located\b',
+      caseSensitive: false,
+    ): (m) =>
+        'தற்போதைய அதிகாரப்பூர்வ ஆதாரத்தில் குறிப்பிடப்படவில்லை',
+    RegExp(
+      r'\bprovides?\s+financial\s+assistance,?\s*subsidies,?\s*or\s+institutional\s+support\s+for\s+eligible\s+applicants\.?\b',
+      caseSensitive: false,
+    ): (m) =>
+        'தகுதியான விண்ணப்பதாரர்களுக்கு நிதி உதவி, மானியங்கள் அல்லது நிறுவன ஆதரவை வழங்குகிறது.',
+    RegExp(
+      r'\blender\s+charges\s+as\s+applicable\b',
+      caseSensitive: false,
+    ): (m) =>
+        'கடன் வழங்கும் நிறுவனக் கட்டணங்கள் பொருந்தும்',
   };
 
   // ── Dictionary Mappings ────────────────────────────────────────────────
@@ -249,8 +335,7 @@ class CentralizedTranslator {
         'சமூக நலன் மற்றும் மகளிர் உரிமைத் துறை, தமிழ்நாடு அரசு',
     'department of social welfare and women empowerment':
         'சமூக நலன் மற்றும் மகளிர் உரிமைத் துறை',
-    'tamil nadu social welfare administration':
-        'தமிழ்நாடு சமூக நல நிர்வாகம்',
+    'tamil nadu social welfare administration': 'தமிழ்நாடு சமூக நல நிர்வாகம்',
     'department of micro, small & medium enterprises, government of tamil nadu':
         'குறு, சிறு மற்றும் நடுத்தரத் தொழில்கள் துறை, தமிழ்நாடு அரசு',
     'district industries centres / tamil nadu msme department':
@@ -278,7 +363,8 @@ class CentralizedTranslator {
     'department of biotechnology, ministry of science & technology':
         'உயிர்தொழில்நுட்பவியல் துறை, அறிவியல் மற்றும் தொழில்நுட்ப அமைச்சகம்',
     'department of biotechnology': 'உயிர்தொழில்நுட்பவியல் துறை',
-    'ministry of science & technology': 'அறிவியல் மற்றும் தொழில்நுட்ப அமைச்சகம்',
+    'ministry of science & technology':
+        'அறிவியல் மற்றும் தொழில்நுட்ப அமைச்சகம்',
     'small industries development bank of india (sidbi)':
         'இந்திய சிறு தொழில்கள் மேம்பாட்டு வங்கி (SIDBI)',
     'small industries development bank of india':
@@ -289,15 +375,15 @@ class CentralizedTranslator {
     'spices board india': 'இந்திய நறுமணப் பொருட்கள் வாரியம்',
     'office of development commissioner (msme)':
         'வளர்ச்சி ஆணையர் அலுவலகம் (MSME)',
-    'atal innovation mission, niti aayog':
-        'அடல் இன்னோவேஷன் மிஷன், நிதி ஆயோக்',
+    'atal innovation mission, niti aayog': 'அடல் இன்னோவேஷன் மிஷன், நிதி ஆயோக்',
     'niti aayog': 'நிதி ஆயோக்',
     'wise-kiran division, dst':
         'WISE-KIRAN பிரிவு, அறிவியல் மற்றும் தொழில்நுட்பத் துறை',
     'dgft regional authorities': 'DGFT மண்டல அதிகாரிகள்',
     'startuptn': 'ஸ்டார்ட்அப் தமிழ்நாடு (StartupTN)',
     'edii-tn': 'EDII-TN (தொழில்முனைவோர் மேம்பாடு மற்றும் புத்தாக்க நிறுவனம்)',
-    'tangedco / electricity authority': 'டாங்கெட்கோ (TANGEDCO) / மின்சார வாரியம்',
+    'tangedco / electricity authority':
+        'டாங்கெட்கோ (TANGEDCO) / மின்சார வாரியம்',
     'member lending institutions': 'உறுப்பினர் கடன் வழங்கும் நிறுவனங்கள்',
     'member lending institution': 'உறுப்பினர் கடன் வழங்கும் நிறுவனம்',
     'government of rajasthan': 'ராஜஸ்தான் அரசு',
@@ -320,7 +406,8 @@ class CentralizedTranslator {
     'udyam registration number': 'உத்யம் பதிவு எண்',
     'professional / bank costs vary': 'தொழில்முறை / வங்கி செலவுகள் மாறுபடும்',
     'government authorities / sidbi': 'அரசு அமைப்புகள் / SIDBI',
-    'lender charges as applicable': 'கடன் வழங்கும் நிறுவனக் கட்டணங்கள் பொருந்தும்',
+    'lender charges as applicable':
+        'கடன் வழங்கும் நிறுவனக் கட்டணங்கள் பொருந்தும்',
     'registrar / partners / company': 'பதிவாளர் / பங்காளிகள் / நிறுவனம்',
     'yes / conditional': 'ஆம் / நிபந்தனைக்குட்பட்டது',
     'yes / நிபந்தனைக்குட்பட்டது': 'ஆம் / நிபந்தனைக்குட்பட்டது',
@@ -348,8 +435,7 @@ class CentralizedTranslator {
         'தகுதியான சொத்துக்கள் அல்லது செலவினங்களுக்கான மேற்கோள்கள் / இன்வாய்ஸ்கள்',
     'kyc of promoters / authorised persons':
         'நிறுவனர்கள் / அதிகாரமளிக்கப்பட்ட நபர்களின் KYC',
-    'udyam registration / msme status proof':
-        'உத்யம் பதிவு / MSME நிலை சான்று',
+    'udyam registration / msme status proof': 'உத்யம் பதிவு / MSME நிலை சான்று',
     'power sanction & meter card': 'மின்சார அனுமதி மற்றும் மீட்டர் கார்டு',
     'goods and services tax (gst)': 'சரக்கு மற்றும் சேவை வரி (GST)',
     'income tax (income_tax)': 'வருமான வரி',
@@ -411,13 +497,12 @@ class CentralizedTranslator {
     'wrong scheme details': 'தவறான திட்ட விவரங்கள்',
     'feature request': 'புதிய வசதி கோரிக்கை',
     'please describe the issue.': 'தயவுசெய்து சிக்கலை விவரிக்கவும்.',
-    'selected notifications deleted': 'தேர்ந்தெடுக்கப்பட்ட அறிவிப்புகள் நீக்கப்பட்டன',
+    'selected notifications deleted':
+        'தேர்ந்தெடுக்கப்பட்ட அறிவிப்புகள் நீக்கப்பட்டன',
     'filter options opened': 'வடிகட்டி விருப்பங்கள் திறக்கப்பட்டன',
     'all notifications marked as read':
         'அனைத்து அறிவிப்புகளும் படிக்கப்பட்டதாக குறிக்கப்பட்டன',
     'all notifications deleted': 'அனைத்து அறிவிப்புகளும் நீக்கப்பட்டன',
-    'a new otp has been sent to your number. (use 123456 to test)':
-        'உங்கள் எண்ணிற்கு புதிய OTP அனுப்பப்பட்டுள்ளது. (சோதிக்க 123456 பயன்படுத்தவும்)',
     'failed to fetch location': 'இருப்பிடத்தைப் பெற முடியவில்லை',
     'natural': 'இயற்கையான ஒலி',
     'clear': 'தெளிவான ஒலி',
@@ -425,7 +510,8 @@ class CentralizedTranslator {
     'svg map here': 'வரைபடம்',
     'registered as pvt ltd / llp / partnership':
         'Pvt Ltd / LLP / பங்குதாரர் நிறுவனமாக பதிவு செய்யப்பட்டது',
-    'must be registered in india': 'இந்தியாவில் பதிவு செய்யப்பட்டிருக்க வேண்டும்',
+    'must be registered in india':
+        'இந்தியாவில் பதிவு செய்யப்பட்டிருக்க வேண்டும்',
     'incorporation age is under 10 years':
         'நிறுவன பதிவு காலம் 10 ஆண்டுகளுக்கு உட்பட்டது',
     'from incorporation date': 'நிறுவன பதிவு தேதியில் இருந்து',
@@ -481,8 +567,7 @@ class CentralizedTranslator {
     'verification note': 'சரிபார்ப்பு குறிப்பு',
     'aspiring and existing entrepreneurs':
         'புதிய மற்றும் நிலவும் தொழில்முனைவோர்கள்',
-    'eligible msmes & enterprises':
-        'தகுதியுள்ள MSMEகள் மற்றும் நிறுவனங்கள்',
+    'eligible msmes & enterprises': 'தகுதியுள்ள MSMEகள் மற்றும் நிறுவனங்கள்',
     'single-window application submission':
         'ஒற்றைச் சாளர விண்ணப்ப சமர்ப்பிப்பு',
     'single-window application submission, document verification, and subsidy processing.':
@@ -490,8 +575,7 @@ class CentralizedTranslator {
     'document verification': 'ஆவணங்கள் சரிபார்ப்பு',
     'implementing agency service': 'செயல்படுத்தும் முகமை சேவை',
     'government service': 'அரசு சேவை',
-    'application & verification service':
-        'விண்ணப்பம் மற்றும் சரிபார்ப்பு சேவை',
+    'application & verification service': 'விண்ணப்பம் மற்றும் சரிபார்ப்பு சேவை',
     'programme-specific': 'திட்டம் சார்ந்த',
     'training / entrepreneurship': 'பயிற்சி / தொழில்முனைவு',
     'batch-specific supporting documents': 'பிரிவு சார்ந்த ஆதரவு ஆவணங்கள்',
@@ -539,8 +623,7 @@ class CentralizedTranslator {
     'eligibility applies': 'தகுதி பொருந்தும்',
     'programme eligibility': 'திட்ட தகுதி',
     'eligibility information': 'தகுதி விவரங்கள்',
-    'age / programme eligibility information':
-        'வயது / திட்ட தகுதி விவரங்கள்',
+    'age / programme eligibility information': 'வயது / திட்ட தகுதி விவரங்கள்',
     'information required to establish programme eligibility':
         'திட்ட தகுதியை உறுதிப்படுத்த தேவையான விவரங்கள்',
     'participants aged 18 years and above':

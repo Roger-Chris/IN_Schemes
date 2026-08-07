@@ -108,9 +108,9 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
 
                     // 3. Isolated Floating Logo
                     const FloatingLogo(),
-                    
+
                     const Spacer(flex: 2),
-                    
+
                     // 4. Title & Subtitle
                     Column(
                       children: [

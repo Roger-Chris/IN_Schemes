@@ -4,8 +4,6 @@ import 'package:google_fonts/google_fonts.dart';
 import '../providers/app_state_provider.dart';
 import '../utils/constants.dart';
 import '../utils/profile_l10n.dart';
-import '../services/centralized_translator.dart';
-import 'otp_screen.dart';
 import 'navigation_mode_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -16,73 +14,28 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _phoneController = TextEditingController();
   bool _isLoading = false;
-  String? _phoneError;
-
-  @override
-  void initState() {
-    super.initState();
-  }
-
-
-  @override
-  void dispose() {
-    _phoneController.dispose();
-    super.dispose();
-  }
-
-  void _sendOtp() {
-    setState(() {
-      _phoneError = null;
-    });
-
-    final phone = _phoneController.text.trim();
-    if (phone.length != 10 || double.tryParse(phone) == null) {
-      final isTa = Provider.of<AppProvider>(context, listen: false).selectedLanguage == 'ta';
-      setState(() {
-        _phoneError = ProfileL10n.t('enter_valid_phone', isTa);
-      });
-      return;
-    }
-
-    setState(() {
-      _isLoading = true;
-    });
-
-    // Simulate network latency
-    Future.delayed(const Duration(milliseconds: 1000), () {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-        
-        final isTa = Provider.of<AppProvider>(context, listen: false).selectedLanguage == 'ta';
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              isTa
-                  ? 'OTP +91 $phone எண்ணிற்கு அனுப்பப்பட்டது (சோதிக்க 123456 பயன்படுத்தவும்)'
-                  : 'OTP sent to +91 $phone (Use 123456 to test)',
-            ),
-            backgroundColor: AppConstants.successColor,
-          ),
-        );
-
-        // Direct user to separate OTP Screen
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (_) => OtpScreen(phoneNumber: phone),
-          ),
-        );
-      }
-    });
-  }
+  bool _navigationScheduled = false;
 
   @override
   Widget build(BuildContext context) {
-    final isTa = Provider.of<AppProvider>(context, listen: false).selectedLanguage == 'ta';
+    final isTa = context.select<AppProvider, bool>(
+      (provider) => provider.selectedLanguage == 'ta',
+    );
     String l(String key) => ProfileL10n.t(key, isTa);
+    final isLoggedIn = context.select<AppProvider, bool>(
+      (provider) => provider.isLoggedIn,
+    );
+    if (isLoggedIn && !_navigationScheduled) {
+      _navigationScheduled = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const NavigationModeScreen()),
+        );
+      });
+    }
+
     return Scaffold(
       resizeToAvoidBottomInset: true,
       body: Stack(
@@ -94,7 +47,7 @@ class _LoginScreenState extends State<LoginScreen> {
               fit: BoxFit.cover,
             ),
           ),
-          
+
           // 2. Content (Fit to page, scrollable only when keyboard is visible to prevent overflow)
           Positioned.fill(
             child: SafeArea(
@@ -107,11 +60,14 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       child: IntrinsicHeight(
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 10,
+                          ),
                           child: Column(
                             children: [
                               const Spacer(flex: 1),
-                              
+
                               // Brand Logo
                               Image.asset(
                                 'assets/images/Logo/Logo.png',
@@ -119,38 +75,40 @@ class _LoginScreenState extends State<LoginScreen> {
                                 fit: BoxFit.contain,
                               ),
                               const SizedBox(height: 12),
-                              
+
                               // Title
                               Text(
                                 l('welcome'),
                                 style: GoogleFonts.poppins(
                                   fontSize: 17,
                                   fontWeight: FontWeight.bold,
-                                  color: const Color(0xFF0F172A),
+                                  color: const Color(0xFF0F172A), // Slate 900
                                 ),
                               ),
                               const SizedBox(height: 4),
-                              
+
                               // Subtitle
                               Text(
                                 l('login_subtitle'),
                                 textAlign: TextAlign.center,
                                 style: GoogleFonts.inter(
                                   fontSize: 9.5,
-                                  color: const Color(0xFF64748B),
+                                  color: const Color(0xFF64748B), // Slate 500
                                   height: 1.3,
-                                  ),
+                                ),
                               ),
-                              
+
                               const Spacer(flex: 1),
-                              
+
                               // Main Card
                               Container(
                                 padding: const EdgeInsets.all(20),
                                 decoration: BoxDecoration(
                                   color: Colors.white,
                                   borderRadius: BorderRadius.circular(20),
-                                  border: Border.all(color: const Color(0xFFE2E8F0)), // Slate 200
+                                  border: Border.all(
+                                    color: const Color(0xFFE2E8F0),
+                                  ), // Slate 200
                                   boxShadow: [
                                     const BoxShadow(
                                       color: Color(0x08000000), // 3% opacity
@@ -161,12 +119,12 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                                 child: _buildLoginForm(isTa),
                               ),
-                              
+
                               const Spacer(flex: 2),
-                              
+
                               // Bottom Privacy Policy & Terms Section
                               _buildPrivacySection(isTa),
-                              
+
                               const SizedBox(height: 8),
                             ],
                           ),
@@ -174,7 +132,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                   );
-                }
+                },
               ),
             ),
           ),
@@ -186,285 +144,98 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget _buildLoginForm(bool isTa) {
     String l(String key) => ProfileL10n.t(key, isTa);
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
-          l('login_with_mobile'),
+          l('continue_securely'),
+          textAlign: TextAlign.center,
           style: GoogleFonts.poppins(
             fontSize: 15,
             fontWeight: FontWeight.bold,
-            color: const Color(0xFF0F172A),
+            color: const Color(0xFF0F172A), // Slate 900
           ),
         ),
         const SizedBox(height: 4),
         Text(
-          l('otp_subtitle'),
+          l('google_account_continue'),
+          textAlign: TextAlign.center,
+          style: GoogleFonts.inter(
+            fontSize: 11,
+            color: const Color(0xFF64748B), // Slate 500
+            height: 1.4,
+          ),
+        ),
+        const SizedBox(height: 20),
+        SizedBox(
+          width: double.infinity,
+          height: 52,
+          child: OutlinedButton(
+            style: OutlinedButton.styleFrom(
+              side: const BorderSide(color: Color(0xFFE2E8F0)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            onPressed: _isLoading
+                ? null
+                : () async {
+                    setState(() {
+                      _isLoading = true;
+                    });
+                    try {
+                      final provider = Provider.of<AppProvider>(
+                        context,
+                        listen: false,
+                      );
+                      final launched = await provider.loginWithGoogle();
+                      if (!launched && mounted) {
+                        throw StateError(
+                          'Unable to open Google authentication.',
+                        );
+                      }
+                    } catch (e) {
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('${l('error')}: $e'),
+                            backgroundColor: AppConstants.errorColor,
+                          ),
+                        );
+                      }
+                    } finally {
+                      if (mounted) {
+                        setState(() {
+                          _isLoading = false;
+                        });
+                      }
+                    }
+                  },
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const GoogleIcon(size: 18),
+                const SizedBox(width: 10),
+                Text(
+                  l('continue_with_google'),
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF475569), // Slate 600
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        Text(
+          l('secure_browser_auth'),
+          textAlign: TextAlign.center,
           style: GoogleFonts.inter(
             fontSize: 10,
             color: const Color(0xFF64748B),
           ),
-        ),
-        const SizedBox(height: 16),
-        
-        // Form Label
-        Text(
-          l('mobile_number'),
-          style: GoogleFonts.inter(
-            fontSize: 11,
-            fontWeight: FontWeight.bold,
-            color: const Color(0xFF1E293B),
-          ),
-        ),
-        const SizedBox(height: 6),
-        
-        // Input Box Row with Country Code & Text Field
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Country Code +91 box
-            Container(
-              height: 52,
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF8FAFC), // Slate 50
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFFCBD5E1)), // Slate 300
-              ),
-              child: Row(
-                children: [
-                  Text(
-                    '+91',
-                    style: GoogleFonts.inter(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: const Color(0xFF1E293B),
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                  const Icon(
-                    Icons.keyboard_arrow_down,
-                    color: Color(0xFF64748B),
-                    size: 16,
-                  ),
-                  const SizedBox(width: 8),
-                  Container(
-                    width: 1,
-                    height: 20,
-                    color: const Color(0xFFCBD5E1), // Vertical Divider
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 10),
-            
-            // Phone number text field
-            Expanded(
-              child: TextFormField(
-                controller: _phoneController,
-                keyboardType: TextInputType.phone,
-                maxLength: 10,
-                style: GoogleFonts.inter(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: const Color(0xFF1E293B),
-                ),
-                decoration: InputDecoration(
-                  hintText: l('enter_10_digit'),
-                  hintStyle: GoogleFonts.inter(
-                    fontSize: 14,
-                    color: const Color(0xFF94A3B8), // Slate 400
-                  ),
-                  counterText: '',
-                  errorText: _phoneError,
-                  errorStyle: const TextStyle(color: AppConstants.errorColor),
-                  contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xFFCBD5E1)), // Slate 300
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xFF2563EB)), // Royal Blue
-                  ),
-                  errorBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: AppConstants.errorColor),
-                  ),
-                  focusedErrorBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: AppConstants.errorColor),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 18),
-        
-        // Send OTP Button
-        SizedBox(
-          width: double.infinity,
-          height: 52,
-          child: ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF2563EB), // Royal Blue
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              elevation: 0,
-            ),
-            onPressed: _sendOtp,
-            child: _isLoading 
-              ? const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2.5,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                  ),
-                )
-              : Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      l('send_otp'),
-                      style: GoogleFonts.inter(
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    const Icon(
-                      Icons.arrow_forward,
-                      color: Colors.white,
-                      size: 18,
-                    ),
-                  ],
-                ),
-          ),
-        ),
-        const SizedBox(height: 16),
-        
-        // OR Divider
-        Row(
-          children: [
-            const Expanded(child: Divider(color: Color(0xFFE2E8F0))),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Text(
-                'OR',
-                style: GoogleFonts.inter(
-                  color: const Color(0xFF94A3B8),
-                  fontSize: 11,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            const Expanded(child: Divider(color: Color(0xFFE2E8F0))),
-          ],
-        ),
-        const SizedBox(height: 16),
-        
-        // Social Media Buttons
-        Row(
-          children: [
-            // Google Button
-            Expanded(
-              child: OutlinedButton(
-                style: OutlinedButton.styleFrom(
-                  fixedSize: const Size.fromHeight(48),
-                  side: const BorderSide(color: Color(0xFFE2E8F0)),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                onPressed: _isLoading
-                    ? null
-                    : () async {
-                        setState(() {
-                          _isLoading = true;
-                        });
-                        try {
-                          final provider = Provider.of<AppProvider>(context, listen: false);
-                          await provider.loginWithGoogle();
-                          if (mounted) {
-                            Navigator.of(context).pushReplacement(
-                              MaterialPageRoute(
-                                builder: (_) => const NavigationModeScreen(),
-                              ),
-                            );
-                          }
-                        } catch (e) {
-                          if (mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('${CentralizedTranslator.instance.translate('Error')}: $e'),
-                                backgroundColor: AppConstants.errorColor,
-                              ),
-                            );
-                          }
-                        } finally {
-                          if (mounted) {
-                            setState(() {
-                              _isLoading = false;
-                            });
-                          }
-                        }
-                      },
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const GoogleIcon(size: 18),
-                    const SizedBox(width: 10),
-                    Text(
-                      'Google',
-                      style: GoogleFonts.inter(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF475569), // Slate 600
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            
-            // Apple Button
-            Expanded(
-              child: OutlinedButton(
-                style: OutlinedButton.styleFrom(
-                  fixedSize: const Size.fromHeight(48),
-                  side: const BorderSide(color: Color(0xFFE2E8F0)),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                onPressed: () {},
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(
-                      Icons.apple,
-                      color: Colors.black87,
-                      size: 20,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Apple',
-                      style: GoogleFonts.inter(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF475569), // Slate 600
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
         ),
       ],
     );
@@ -511,10 +282,7 @@ class GoogleIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomPaint(
-      size: Size(size, size),
-      painter: _GoogleIconPainter(),
-    );
+    return CustomPaint(size: Size(size, size), painter: _GoogleIconPainter());
   }
 }
 
@@ -573,9 +341,23 @@ class _GoogleIconPainter extends CustomPainter {
       ..lineTo(12.0 * s, 9.87 * s)
       ..lineTo(12.0 * s, 14.41 * s)
       ..lineTo(18.44 * s, 14.41 * s)
-      ..cubicTo(18.16 * s, 15.88 * s, 17.33 * s, 17.12 * s, 16.08 * s, 17.96 * s)
+      ..cubicTo(
+        18.16 * s,
+        15.88 * s,
+        17.33 * s,
+        17.12 * s,
+        16.08 * s,
+        17.96 * s,
+      )
       ..lineTo(20.09 * s, 21.07 * s)
-      ..cubicTo(22.43 * s, 18.91 * s, 23.49 * s, 15.73 * s, 23.49 * s, 12.27 * s)
+      ..cubicTo(
+        22.43 * s,
+        18.91 * s,
+        23.49 * s,
+        15.73 * s,
+        23.49 * s,
+        12.27 * s,
+      )
       ..close();
     canvas.drawPath(bluePath, paint);
   }

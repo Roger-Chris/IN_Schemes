@@ -15,7 +15,7 @@ class AppConstants {
 
   static const Color primaryText = Color(0xFF111827); // Charcoal Black
   static const Color secondaryText = Color(0xFF6B7280); // Slate Gray
-  
+
   // Adjusted soft light blue gradient for scaffold background
   static const LinearGradient blueGradient = LinearGradient(
     colors: [Color(0xFFF8FAFC), Color(0xFFE0F2FE), Color(0xFFEFF6FF)],
@@ -31,19 +31,24 @@ class AppConstants {
 
   // Missing Document Assistance External Links (Official Portals)
   static const Map<String, String> documentLinks = {
-    'PAN Card': 'https://www.onlineservices.nsdl.com/paam/endUserRegisterContact.html',
+    'PAN Card':
+        'https://www.onlineservices.nsdl.com/paam/endUserRegisterContact.html',
     'Aadhaar Card': 'https://myaadhaar.uidai.gov.in/',
     'Udyam Registration Certificate': 'https://udyamregistration.gov.in/',
     'Nativity Certificate (TN)': 'https://www.tnesevai.tn.gov.in/',
     'Community Certificate': 'https://www.tnesevai.tn.gov.in/',
     'Artisan Identity Card (DC Handicrafts)': 'https://pehchan.deh.gov.in/',
     'DPIIT Certificate of Recognition': 'https://www.startupindia.gov.in/',
-    'Certificate of Incorporation (Pvt Ltd / LLP / Registered Partnership)': 'https://www.mca.gov.in/',
-    'Project Report / Business Plan': 'https://www.msmedi-chennai.gov.in/msme/project-profiles',
-    'Project Report / DPR': 'https://www.msmedi-chennai.gov.in/msme/project-profiles',
+    'Certificate of Incorporation (Pvt Ltd / LLP / Registered Partnership)':
+        'https://www.mca.gov.in/',
+    'Project Report / Business Plan':
+        'https://www.msmedi-chennai.gov.in/msme/project-profiles',
+    'Project Report / DPR':
+        'https://www.msmedi-chennai.gov.in/msme/project-profiles',
     'Project Report': 'https://www.msmedi-chennai.gov.in/msme/project-profiles',
     'Quotations for machinery/equipment': 'https://www.nsic.co.in/',
-    'Price Quotation of machinery/equipment or items to be purchased': 'https://www.nsic.co.in/',
+    'Price Quotation of machinery/equipment or items to be purchased':
+        'https://www.nsic.co.in/',
   };
 
   // UI Translation Map for English & Tamil
@@ -53,11 +58,9 @@ class AppConstants {
       'tagline': 'Discover every Government Scheme in India',
       'launch_info': 'National Entrepreneurs\' Day Special Release',
       'continue': 'Continue',
-      'login_title': 'Verify Your Mobile Number',
-      'login_subtitle': 'Enter your number to check scheme eligibility',
-      'mobile_label': 'Mobile Number',
-      'otp_label': 'Enter 6-Digit OTP',
-      'login_btn': 'Login & Continue',
+      'login_title': 'Continue securely',
+      'login_subtitle': 'Use your Google account to continue',
+      'login_btn': 'Continue with Google',
       'guest_btn': 'Continue as Guest',
       'welcome_back': 'Welcome Back,',
       'recent_searches': 'Recent Searches',

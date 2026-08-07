@@ -1,10 +1,8 @@
-﻿/// ProfileL10n — Localization strings for all onboarding, login, and profile-setup screens.
+/// ProfileL10n — Localization strings for all onboarding, login, and profile-setup screens.
 ///
 /// Usage:
-///   final isTa = context.read<AppProvider>().selectedLanguage == 'ta';
+///   final isTa = context.read&lt;AppProvider&gt;().selectedLanguage == 'ta';
 ///   Text(ProfileL10n.t('continue', isTa))
-library profile_l10n;
-
 class ProfileL10n {
   ProfileL10n._();
 
@@ -16,37 +14,28 @@ class ProfileL10n {
 
   static const Map<String, String> _en = {
     'choose_your_language': 'Choose Your Language',
-    'language_subtitle': 'Select your preferred language to explore government schemes in your language.',
+    'language_subtitle':
+        'Select your preferred language to explore government schemes in your language.',
     'your_language_experience': 'Your Language, Your Experience',
     'change_anytime': 'Change it anytime from Settings.',
     'continue': 'Continue',
     'welcome': 'Welcome!',
-    'login_subtitle': 'Login or sign up to discover and explore government schemes that empower you.',
-    'login_with_mobile': 'Login with Mobile Number',
-    'otp_subtitle': "We'll send a 6-digit OTP to verify your identity.",
-    'mobile_number': 'Mobile Number',
-    'enter_10_digit': 'Enter 10-digit number',
-    'send_otp': 'Send OTP',
-    'enter_valid_phone': 'Please enter a valid 10-digit mobile number',
+    'login_subtitle':
+        'Login or sign up to discover and explore government schemes that empower you.',
+    'continue_securely': 'Continue securely',
+    'google_account_continue':
+        'Use your Google account to sign in or create your MSS account.',
+    'continue_with_google': 'Continue with Google',
+    'secure_browser_auth':
+        'A secure browser window will open for authentication.',
     'privacy_note': 'By continuing, you agree to our',
     'terms': 'Terms of Service',
     'and': 'and',
     'privacy_policy': 'Privacy Policy',
     'skip_login': 'Skip & Explore',
     'demo_mode': 'Demo mode — all features available',
-    'secure_login': 'Secure Login',
-    'your_number_safe': 'Your number is safe with us. We never share or sell your data.',
     'verified_platform': 'Government Verified Platform',
     'for_india': 'For every Indian entrepreneur & citizen',
-    'verify_mobile': 'Verify Your Mobile',
-    'enter_otp_sent': 'Enter the 6-digit OTP sent to',
-    'verify_otp': 'Verify OTP',
-    'resend_otp': 'Resend OTP',
-    'resend_in': 'Resend in',
-    'otp_sent': 'A new OTP has been sent to your number. (Use 123456 to test)',
-    'invalid_otp': 'Invalid OTP. Please check and try again.',
-    'incorrect_otp': 'Incorrect OTP. Use 123456 to test.',
-    'did_not_receive': "Didn't receive the OTP?",
     'complete_your_profile': 'Complete Your Profile',
     'basic_details_subtitle': "Let's start with your basic details.",
     'full_name': 'Full Name',
@@ -57,13 +46,15 @@ class ProfileL10n {
     'female': 'Female',
     'other': 'Other',
     'date_of_birth': 'Date of Birth (DOB)',
-    'profile_info_note': "We'll use this information to personalize your MSS experience and keep you updated.",
+    'profile_info_note':
+        "We'll use this information to personalize your MSS experience and keep you updated.",
     'step_1_of_4': '1/4 Complete',
     'step_2_of_4': '2/4 Complete',
     'step_3_of_4': '3/4 Complete',
     'step_4_of_4': '4/4 Complete',
     'where_located': 'Where Are You Located?',
-    'location_subtitle': 'We use your location to recommend schemes available in your area.',
+    'location_subtitle':
+        'We use your location to recommend schemes available in your area.',
     'use_current_location': 'Use My Current Location',
     'fetching_coordinates': 'Fetching coordinates...',
     'get_location_auto': 'Get your current location automatically',
@@ -76,11 +67,14 @@ class ProfileL10n {
     'tell_us_about_you': 'Tell Us About You',
     'about_you_subtitle': 'Choose the option that best describes you.',
     'student': 'Student',
-    'student_subtitle': 'Looking for learning, innovation and startup opportunities.',
+    'student_subtitle':
+        'Looking for learning, innovation and startup opportunities.',
     'aspiring_entrepreneur': 'Aspiring Entrepreneur',
-    'aspiring_entrepreneur_subtitle': 'I have an idea and want to start a business.',
+    'aspiring_entrepreneur_subtitle':
+        'I have an idea and want to start a business.',
     'existing_business': 'Existing Business',
-    'existing_business_subtitle': 'I already run a registered or unregistered business.',
+    'existing_business_subtitle':
+        'I already run a registered or unregistered business.',
     'msme_owner': 'MSME Owner',
     'msme_owner_subtitle': 'I own a micro, small or medium enterprise.',
     'farmer': 'Farmer',
@@ -88,12 +82,14 @@ class ProfileL10n {
     'artisan_shg': 'Artisan / SHG Member',
     'artisan_shg_subtitle': 'I am an artisan or part of a Self Help Group.',
     'overwrite_details': 'Overwrite details?',
-    'overwrite_message': 'You have already entered some address details. Do you want to overwrite them with your current location?',
+    'overwrite_message':
+        'You have already entered some address details. Do you want to overwrite them with your current location?',
     'cancel': 'Cancel',
     'overwrite': 'Overwrite',
     'profile_saved': 'Profile saved successfully!',
     'failed_fetch_location': 'Failed to fetch location',
-    'using_default_location': 'Using default location (Chennai) due to GPS/permission constraints.',
+    'using_default_location':
+        'Using default location (Chennai) due to GPS/permission constraints.',
     'location_fetched': 'Location fetched and populated successfully!',
     'save_profile': 'Save Profile',
     'update_profile': 'Update Profile',
@@ -162,37 +158,28 @@ class ProfileL10n {
 
   static const Map<String, String> _ta = {
     'choose_your_language': 'உங்கள் மொழியை தேர்ந்தெடுக்கவும்',
-    'language_subtitle': 'அரசாங்க திட்டங்களை உங்கள் மொழியில் ஆராய விரும்பும் மொழியைத் தேர்ந்தெடுக்கவும்.',
+    'language_subtitle':
+        'அரசாங்க திட்டங்களை உங்கள் மொழியில் ஆராய விரும்பும் மொழியைத் தேர்ந்தெடுக்கவும்.',
     'your_language_experience': 'உங்கள் மொழி, உங்கள் அனுபவம்',
     'change_anytime': 'அமைவுகளில் எப்போதும் மாற்றலாம்.',
     'continue': 'தொடரவும்',
     'welcome': 'வரவேற்கிறோம்!',
-    'login_subtitle': 'உங்களை மேம்படுத்தும் அரசாங்க திட்டங்களை கண்டறிய உள்நுழைக அல்லது பதிவு செய்யுங்கள்.',
-    'login_with_mobile': 'மொபைல் எண்ணில் உள்நுழைக',
-    'otp_subtitle': 'உங்கள் அடையாளத்தை உறுதிப்படுத்த 6 இலக்க OTP அனுப்புவோம்.',
-    'mobile_number': 'மொபைல் எண்',
-    'enter_10_digit': '10 இலக்க எண்ணை உள்ளிடவும்',
-    'send_otp': 'OTP அனுப்பு',
-    'enter_valid_phone': 'சரியான 10 இலக்க மொபைல் எண்ணை உள்ளிடவும்',
-    'privacy_note': 'தொடர்வதன் மூலம், நீங்கள் எங்கள் விதிமுறைகளுக்கு ஒப்புக்கொள்கிறீர்கள்',
+    'login_subtitle':
+        'உங்களை மேம்படுத்தும் அரசாங்க திட்டங்களை கண்டறிய உள்நுழைக அல்லது பதிவு செய்யுங்கள்.',
+    'continue_securely': 'பாதுகாப்பாகத் தொடரவும்',
+    'google_account_continue':
+        'உங்கள் Google கணக்கைப் பயன்படுத்தி MSS-ல் உள்நுழையவும் அல்லது புதிய கணக்கை உருவாக்கவும்.',
+    'continue_with_google': 'Google மூலம் தொடரவும்',
+    'secure_browser_auth': 'அங்கீகாரத்திற்காக பாதுகாப்பான உலாவி திறக்கும்.',
+    'privacy_note':
+        'தொடர்வதன் மூலம், நீங்கள் எங்கள் விதிமுறைகளுக்கு ஒப்புக்கொள்கிறீர்கள்',
     'terms': 'சேவை விதிமுறைகள்',
     'and': 'மற்றும்',
     'privacy_policy': 'தனியுரிமைக் கொள்கை',
     'skip_login': 'தவிர்த்து ஆராயுங்கள்',
     'demo_mode': 'டெமோ பயன்முறை — அனைத்து அம்சங்களும் கிடைக்கும்',
-    'secure_login': 'பாதுகாப்பான உள்நுழைவு',
-    'your_number_safe': 'உங்கள் எண் எங்களிடம் பாதுகாப்பாக உள்ளது. நாங்கள் உங்கள் தரவை பகிர்வதில்லை.',
     'verified_platform': 'அரசால் சரிபார்க்கப்பட்ட தளம்',
     'for_india': 'ஒவ்வொரு இந்திய தொழில்முனைவோர் & குடிமகனுக்கும்',
-    'verify_mobile': 'மொபைல் எண்ணை சரிபார்க்கவும்',
-    'enter_otp_sent': 'இந்த எண்ணிற்கு அனுப்பப்பட்ட 6 இலக்க OTP ஐ உள்ளிடவும்:',
-    'verify_otp': 'OTP சரிபார்க்கவும்',
-    'resend_otp': 'OTP மீண்டும் அனுப்பு',
-    'resend_in': 'மீண்டும் அனுப்ப',
-    'otp_sent': 'புதிய OTP உங்கள் எண்ணிற்கு அனுப்பப்பட்டது. (சோதிக்க 123456 பயன்படுத்தவும்)',
-    'invalid_otp': 'தவறான OTP. சரிபார்த்து மீண்டும் முயற்சிக்கவும்.',
-    'incorrect_otp': 'தவறான OTP. சோதிக்க 123456 பயன்படுத்தவும்.',
-    'did_not_receive': 'OTP பெறவில்லையா?',
     'complete_your_profile': 'உங்கள் சுயவிவரத்தை பூர்த்தி செய்யுங்கள்',
     'basic_details_subtitle': 'உங்கள் அடிப்படை விவரங்களுடன் தொடங்குவோம்.',
     'full_name': 'முழு பெயர்',
@@ -203,13 +190,15 @@ class ProfileL10n {
     'female': 'பெண்',
     'other': 'மற்றவை',
     'date_of_birth': 'பிறந்த தேதி',
-    'profile_info_note': 'இந்த தகவலை உங்கள் MSS அனுபவத்தை தனிப்பயனாக்க பயன்படுத்துவோம்.',
+    'profile_info_note':
+        'இந்த தகவலை உங்கள் MSS அனுபவத்தை தனிப்பயனாக்க பயன்படுத்துவோம்.',
     'step_1_of_4': '1/4 முடிந்தது',
     'step_2_of_4': '2/4 முடிந்தது',
     'step_3_of_4': '3/4 முடிந்தது',
     'step_4_of_4': '4/4 முடிந்தது',
     'where_located': 'நீங்கள் எங்கு வசிக்கிறீர்கள்?',
-    'location_subtitle': 'உங்கள் பகுதியில் கிடைக்கும் திட்டங்களை பரிந்துரைக்க உங்கள் இருப்பிடத்தைப் பயன்படுத்துகிறோம்.',
+    'location_subtitle':
+        'உங்கள் பகுதியில் கிடைக்கும் திட்டங்களை பரிந்துரைக்க உங்கள் இருப்பிடத்தைப் பயன்படுத்துகிறோம்.',
     'use_current_location': 'என் தற்போதைய இருப்பிடத்தைப் பயன்படுத்துக',
     'fetching_coordinates': 'இருப்பிட ஆயத்தொலைவுகளை பெறுகிறோம்...',
     'get_location_auto': 'தானாகவே தற்போதைய இருப்பிடத்தைப் பெறுக',
@@ -220,13 +209,17 @@ class ProfileL10n {
     'state': 'மாநிலம்',
     'pincode': 'அஞ்சல் குறியீடு',
     'tell_us_about_you': 'உங்களைப் பற்றி சொல்லுங்கள்',
-    'about_you_subtitle': 'உங்களை சிறப்பாக விவரிக்கும் விருப்பத்தை தேர்ந்தெடுங்கள்.',
+    'about_you_subtitle':
+        'உங்களை சிறப்பாக விவரிக்கும் விருப்பத்தை தேர்ந்தெடுங்கள்.',
     'student': 'மாணவர்',
-    'student_subtitle': 'கற்றல், கண்டுபிடிப்பு மற்றும் ஸ்டார்ட்அப் வாய்ப்புகளை தேடுகிறேன்.',
+    'student_subtitle':
+        'கற்றல், கண்டுபிடிப்பு மற்றும் ஸ்டார்ட்அப் வாய்ப்புகளை தேடுகிறேன்.',
     'aspiring_entrepreneur': 'தொழில்முனைவை விரும்பும் தொழிலதிபர்',
-    'aspiring_entrepreneur_subtitle': 'என்னிடம் ஒரு யோசனை உள்ளது, தொழில் தொடங்க விரும்புகிறேன்.',
+    'aspiring_entrepreneur_subtitle':
+        'என்னிடம் ஒரு யோசனை உள்ளது, தொழில் தொடங்க விரும்புகிறேன்.',
     'existing_business': 'நிலவும் தொழில்',
-    'existing_business_subtitle': 'பதிவு செய்யப்பட்ட அல்லது பதிவு செய்யப்படாத தொழிலை நடத்துகிறேன்.',
+    'existing_business_subtitle':
+        'பதிவு செய்யப்பட்ட அல்லது பதிவு செய்யப்படாத தொழிலை நடத்துகிறேன்.',
     'msme_owner': 'MSME உரிமையாளர்',
     'msme_owner_subtitle': 'குறு, சிறு அல்லது நடுத்தர நிறுவன உரிமையாளர்.',
     'farmer': 'விவசாயி',
@@ -234,12 +227,14 @@ class ProfileL10n {
     'artisan_shg': 'கைவினைஞர் / சுய உதவிக்குழு உறுப்பினர்',
     'artisan_shg_subtitle': 'கைவினைஞர் அல்லது சுய உதவிக்குழு உறுப்பினர்.',
     'overwrite_details': 'விவரங்களை மேலெழுதவா?',
-    'overwrite_message': 'நீங்கள் ஏற்கனவே முகவரி விவரங்களை உள்ளிட்டுள்ளீர்கள். தற்போதைய இருப்பிடத்துடன் மேலெழுத விரும்புகிறீர்களா?',
+    'overwrite_message':
+        'நீங்கள் ஏற்கனவே முகவரி விவரங்களை உள்ளிட்டுள்ளீர்கள். தற்போதைய இருப்பிடத்துடன் மேலெழுத விரும்புகிறீர்களா?',
     'cancel': 'ரத்து செய்',
     'overwrite': 'மேலெழுது',
     'profile_saved': 'சுயவிவரம் வெற்றிகரமாக சேமிக்கப்பட்டது!',
     'failed_fetch_location': 'இருப்பிடத்தைப் பெற முடியவில்லை',
-    'using_default_location': 'GPS/அனுமதி தடைகள் காரணமாக இயல்புநிலை இருப்பிடம் (சென்னை) பயன்படுத்தப்படுகிறது.',
+    'using_default_location':
+        'GPS/அனுமதி தடைகள் காரணமாக இயல்புநிலை இருப்பிடம் (சென்னை) பயன்படுத்தப்படுகிறது.',
     'location_fetched': 'இருப்பிடம் வெற்றிகரமாக பெறப்பட்டது!',
     'save_profile': 'சுயவிவரம் சேமி',
     'update_profile': 'சுயவிவரம் புதுப்பி',
