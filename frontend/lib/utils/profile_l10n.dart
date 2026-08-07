@@ -1,9 +1,8 @@
-﻿/// ProfileL10n — Localization strings for all onboarding, login, and profile-setup screens.
-///
-/// Usage:
-///   final isTa = context.read<AppProvider>().selectedLanguage == 'ta';
-///   Text(ProfileL10n.t('continue', isTa))
-library profile_l10n;
+// ProfileL10n — Localization strings for all onboarding, login, and profile-setup screens.
+//
+// Usage:
+//   final isTa = context.read<`AppProvider`>().selectedLanguage == 'ta';
+//   Text(ProfileL10n.t('continue', isTa))
 
 class ProfileL10n {
   ProfileL10n._();
