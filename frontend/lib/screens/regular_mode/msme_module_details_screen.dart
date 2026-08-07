@@ -1092,10 +1092,10 @@ class _MSMEModuleDetailsScreenState extends State<MSMEModuleDetailsScreen> {
 
             const SizedBox(height: 16),
 
-            // Redirecting Button to official Udyam portal
+            // Button to official Udyam portal
             SizedBox(
               width: double.infinity,
-              child: ElevatedButton.icon(
+              child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: widget.iconColor,
                   foregroundColor: Colors.white,
@@ -1105,12 +1105,11 @@ class _MSMEModuleDetailsScreenState extends State<MSMEModuleDetailsScreen> {
                   ),
                   padding: const EdgeInsets.symmetric(vertical: 14),
                 ),
-                icon: const Icon(Icons.open_in_new_rounded, size: 18),
-                label: Text(
-                  'Go to Official Udyam Portal (udyamregistration.gov.in)',
+                child: Text(
+                  'Go to Official Udyam Portal',
                   textAlign: TextAlign.center,
                   style: GoogleFonts.inter(
-                    fontSize: 12.5,
+                    fontSize: 13,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
