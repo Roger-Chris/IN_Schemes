@@ -110,8 +110,18 @@ class VoiceTurnConfig:
     false_interruption_timeout: float = 0.8
     # Sarvam expects a dB floor; quiet frames below this are ignored as noise.
     start_speech_volume_threshold: float = -40.0
-    # LiveKit Voice Focus voice isolation for mobile/background-noise conditions.
-    noise_enhancement_level: float = 0.9
+    # LiveKit's published Voice Focus samples use 0.8. Keep this tunable so a
+    # deployment can adjust aggressiveness after testing real phone audio.
+    noise_enhancement_level: float = 0.8
+
+    @classmethod
+    def from_env(cls) -> "VoiceTurnConfig":
+        raw_level = os.getenv("SAARTHI_NOISE_ENHANCEMENT_LEVEL", "0.8")
+        try:
+            level = float(raw_level)
+        except ValueError:
+            level = 0.8
+        return cls(noise_enhancement_level=max(0.0, min(level, 1.0)))
 
 
 @dataclass(frozen=True)
@@ -383,7 +393,7 @@ async def saarthi_agent(ctx: JobContext):
     }
 
     voice = SarvamVoiceConfig.from_env()
-    turns = VoiceTurnConfig()
+    turns = VoiceTurnConfig.from_env()
     profile = await load_user_profile_context(ctx)
 
     # Sarvam handles the multilingual speech and language pipeline. LiveKit keeps

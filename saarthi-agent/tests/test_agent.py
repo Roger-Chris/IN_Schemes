@@ -147,6 +147,20 @@ def test_voice_turn_defaults_commit_short_answers_promptly() -> None:
     assert config.start_speech_volume_threshold < 0
 
 
+def test_voice_focus_strength_is_deployment_tunable(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Production can tune server ANC without allowing invalid model values."""
+    monkeypatch.setenv("SAARTHI_NOISE_ENHANCEMENT_LEVEL", "0.72")
+    assert VoiceTurnConfig.from_env().noise_enhancement_level == pytest.approx(0.72)
+
+    monkeypatch.setenv("SAARTHI_NOISE_ENHANCEMENT_LEVEL", "4")
+    assert VoiceTurnConfig.from_env().noise_enhancement_level == 1.0
+
+    monkeypatch.setenv("SAARTHI_NOISE_ENHANCEMENT_LEVEL", "invalid")
+    assert VoiceTurnConfig.from_env().noise_enhancement_level == pytest.approx(0.8)
+
+
 def test_saved_profile_context_prevents_redundant_eligibility_questions() -> None:
     metadata = json.dumps(
         {

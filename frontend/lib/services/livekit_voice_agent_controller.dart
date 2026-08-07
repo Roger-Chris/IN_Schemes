@@ -470,6 +470,10 @@ class LiveKitVoiceAgentController extends ChangeNotifier
             VoiceAgentEvent(
               VoiceAgentEventType.inputTranscriptDelta,
               text: current,
+              data: {
+                'messageId': message.id,
+                'timestampMs': message.timestamp.millisecondsSinceEpoch,
+              },
             ),
           );
         case livekit.AgentTranscript():
@@ -478,6 +482,10 @@ class LiveKitVoiceAgentController extends ChangeNotifier
             VoiceAgentEvent(
               VoiceAgentEventType.outputTranscriptDelta,
               text: current,
+              data: {
+                'messageId': message.id,
+                'timestampMs': message.timestamp.millisecondsSinceEpoch,
+              },
             ),
           );
       }
