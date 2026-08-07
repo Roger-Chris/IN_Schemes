@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../utils/constants.dart';
+import '../utils/responsive.dart';
 
 class CategoryCard extends StatelessWidget {
   final String title;
@@ -34,16 +35,18 @@ class CategoryCard extends StatelessWidget {
             children: [
               // Emoji / Icon container
               Container(
-                width: 52,
-                height: 52,
+                width: adaptiveSize(context, base: 52, min: 40, max: 52),
+                height: adaptiveSize(context, base: 52, min: 40, max: 52),
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                   color: AppConstants.backgroundColor,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Text(
-                  icon,
-                  style: const TextStyle(fontSize: 26),
+                child: FitOneLine(
+                  child: Text(
+                    icon,
+                    style: const TextStyle(fontSize: 26),
+                  ),
                 ),
               ),
               const SizedBox(width: 16),

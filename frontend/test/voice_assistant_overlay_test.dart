@@ -14,6 +14,7 @@ import 'package:frontend/services/speech_output_controller.dart';
 import 'package:frontend/services/voice_recognition_controller.dart';
 import 'package:frontend/services/voice_agent_controller.dart';
 import 'package:frontend/widgets/voice_assistant_overlay.dart';
+import 'package:frontend/l10n/app_localizations.dart';
 
 void main() {
   testWidgets('cloud agent scheme results appear as tappable cards', (
@@ -33,6 +34,8 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: VoiceAssistantOverlay(
           autoStart: false,
           schemes: const [scheme],
@@ -72,6 +75,8 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: VoiceAssistantOverlay(
             autoStart: false,
             recognitionController: controller,
@@ -124,6 +129,8 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: VoiceAssistantOverlay(
           autoStart: false,
           recognitionController: controller,
@@ -147,6 +154,8 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: VoiceAssistantOverlay(
           recognitionController: controller,
           speechOutputController: _FakeSpeechOutputController(),
@@ -180,6 +189,8 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: VoiceAssistantOverlay(
           recognitionController: controller,
           speechOutputController: _FakeSpeechOutputController(),
@@ -229,6 +240,8 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: VoiceAssistantOverlay(
           recognitionController: controller,
           speechOutputController: _FakeSpeechOutputController(),
@@ -266,6 +279,8 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: VoiceAssistantOverlay(
           recognitionController: controller,
           speechOutputController: _FakeSpeechOutputController(),
@@ -300,6 +315,8 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: VoiceAssistantOverlay(
           recognitionController: controller,
           speechOutputController: _FakeSpeechOutputController(),
@@ -328,6 +345,8 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: VoiceAssistantOverlay(
           autoStart: false,
           recognitionController: controller,
@@ -372,6 +391,8 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: VoiceAssistantOverlay(
           autoStart: false,
           recognitionController: controller,
@@ -428,6 +449,8 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: VoiceAssistantOverlay(
           schemes: const [scheme],
           profile: UserProfile(),
@@ -497,6 +520,8 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: VoiceAssistantOverlay(
           autoStart: false,
           schemes: const [scheme],
@@ -540,6 +565,8 @@ void main() {
         final grounding = _FakeOfficialGroundedSearch();
         await tester.pumpWidget(
           MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
             home: VoiceAssistantOverlay(
               key: ValueKey(surface),
               autoStart: false,
@@ -613,6 +640,8 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: VoiceAssistantOverlay(
           schemes: const [scheme],
           profile: UserProfile(),

@@ -13,6 +13,7 @@ import 'regular_mode/settings_screen.dart';
 import 'regular_mode/help_support_screen.dart';
 import 'notifications_screen.dart';
 import '../widgets/custom_confirm_dialog.dart';
+import '../utils/responsive.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -179,14 +180,18 @@ class ProfileScreen extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               if (trailingText != null)
-                Padding(
-                  padding: const EdgeInsets.only(right: 8.0),
-                  child: Text(
-                    trailingText,
-                    style: GoogleFonts.inter(
-                      fontSize: 12,
-                      color: const Color(0xFF2563EB),
-                      fontWeight: FontWeight.w600,
+                Flexible(
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 8.0),
+                    child: FitOneLine(
+                      child: Text(
+                        trailingText,
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          color: const Color(0xFF2563EB),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -589,14 +594,19 @@ class ProfileScreen extends StatelessWidget {
                                       size: 12,
                                     ),
                                     const SizedBox(width: 6),
-                                    Text(
-                                      profile.mobile.isNotEmpty
-                                          ? '+91 ${profile.mobile}'
-                                          : '-',
-                                      style: GoogleFonts.inter(
-                                        fontSize: 11.5,
-                                        color: Colors.white.withAlpha(230),
-                                        fontWeight: FontWeight.w500,
+                                    Flexible(
+                                      child: FitOneLine(
+                                        alignment: Alignment.centerLeft,
+                                        child: Text(
+                                          profile.mobile.isNotEmpty
+                                              ? '+91 ${profile.mobile}'
+                                              : '-',
+                                          style: GoogleFonts.inter(
+                                            fontSize: 11.5,
+                                            color: Colors.white.withAlpha(230),
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
                                       ),
                                     ),
                                   ],

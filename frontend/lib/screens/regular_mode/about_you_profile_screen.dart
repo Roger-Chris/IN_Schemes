@@ -5,6 +5,7 @@ import '../../providers/app_state_provider.dart';
 import '../../utils/profile_l10n.dart';
 import '../../main.dart';
 import '../../utils/permission_helper.dart';
+import '../../utils/responsive.dart';
 
 class AboutYouProfileScreen extends StatefulWidget {
   const AboutYouProfileScreen({super.key});
@@ -23,52 +24,54 @@ class _AboutYouProfileScreenState extends State<AboutYouProfileScreen> {
   static const Color kSlate500 = Color(0xFF64748B);
   static const Color kBorderGrey = Color(0xFFE2E8F0);
 
-  // List of roles data
-  final List<RoleModel> _roles = [
+  // List of roles data. title/subtitle are localized at build time (see
+  // _buildRoles) since ProfileL10n.t() needs the current locale, which
+  // isn't known yet at field-initializer time.
+  List<RoleModel> _buildRoles(String Function(String) l) => [
     RoleModel(
       id: 'student',
-      title: 'Student',
-      subtitle: 'Looking for learning, innovation and startup opportunities.',
+      title: l('student'),
+      subtitle: l('student_subtitle'),
       imagePath: 'assets/images/roles/student.webp',
       icon: Icons.school_outlined,
       color: const Color(0xFF3B82F6),
     ),
     RoleModel(
       id: 'entrepreneur',
-      title: 'Aspiring Entrepreneur',
-      subtitle: 'I have an idea and want to start a business.',
+      title: l('aspiring_entrepreneur'),
+      subtitle: l('aspiring_entrepreneur_subtitle'),
       imagePath: 'assets/images/roles/entrepreneur.webp',
       icon: Icons.lightbulb_outline,
       color: const Color(0xFFF59E0B),
     ),
     RoleModel(
       id: 'existing_business',
-      title: 'Existing Business',
-      subtitle: 'I already run a registered or unregistered business.',
+      title: l('existing_business'),
+      subtitle: l('existing_business_subtitle'),
       imagePath: 'assets/images/roles/business.webp',
       icon: Icons.business_center_outlined,
       color: const Color(0xFF6366F1),
     ),
     RoleModel(
       id: 'msme',
-      title: 'MSME Owner',
-      subtitle: 'I own a micro, small or medium enterprise.',
+      title: l('msme_owner'),
+      subtitle: l('msme_owner_subtitle'),
       imagePath: 'assets/images/roles/msme.webp',
       icon: Icons.storefront_outlined,
       color: const Color(0xFF10B981),
     ),
     RoleModel(
       id: 'farmer',
-      title: 'Farmer',
-      subtitle: 'I am involved in farming or agriculture.',
+      title: l('farmer'),
+      subtitle: l('farmer_subtitle'),
       imagePath: 'assets/images/roles/farmer.webp',
       icon: Icons.agriculture_outlined,
       color: const Color(0xFF14B8A6),
     ),
     RoleModel(
       id: 'artisan',
-      title: 'Artisan / SHG Member',
-      subtitle: 'I am an artisan or part of a Self Help Group.',
+      title: l('artisan_shg'),
+      subtitle: l('artisan_shg_subtitle'),
       imagePath: 'assets/images/roles/artisan.webp',
       icon: Icons.palette_outlined,
       color: const Color(0xFFEC4899),
@@ -79,6 +82,7 @@ class _AboutYouProfileScreenState extends State<AboutYouProfileScreen> {
   Widget build(BuildContext context) {
     final isTa = Provider.of<AppProvider>(context, listen: false).selectedLanguage == 'ta';
     String l(String key) => ProfileL10n.t(key, isTa);
+    final roles = _buildRoles(l);
     return Scaffold(
       backgroundColor: Colors.white,
       body: Stack(
@@ -107,12 +111,14 @@ class _AboutYouProfileScreenState extends State<AboutYouProfileScreen> {
                           icon: const Icon(Icons.arrow_back, color: kSlate800, size: 24),
                           onPressed: () => Navigator.maybePop(context),
                         ),
-                        Text(
-                          l('complete_your_profile'),
-                          style: GoogleFonts.poppins(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: kSlate900,
+                        FlexText(
+                          child: Text(
+                            l('complete_your_profile'),
+                            style: GoogleFonts.poppins(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: kSlate900,
+                            ),
                           ),
                         ),
                         const SizedBox(width: 40), // Balance centering
@@ -195,7 +201,7 @@ class _AboutYouProfileScreenState extends State<AboutYouProfileScreen> {
                                     GridView.builder(
                                       shrinkWrap: true,
                                       physics: const NeverScrollableScrollPhysics(),
-                                      itemCount: _roles.length,
+                                      itemCount: roles.length,
                                       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                                         crossAxisCount: 2,
                                         crossAxisSpacing: 12,
@@ -203,7 +209,7 @@ class _AboutYouProfileScreenState extends State<AboutYouProfileScreen> {
                                         childAspectRatio: 0.88, // Balanced compact aspect ratio
                                       ),
                                       itemBuilder: (context, index) {
-                                        final role = _roles[index];
+                                        final role = roles[index];
                                         final isSelected = _selectedRole == role.id;
 
                                         return _buildRoleCard(role, isSelected, isTa);
@@ -228,7 +234,7 @@ class _AboutYouProfileScreenState extends State<AboutYouProfileScreen> {
                               onPressed: _selectedRole != null
                                   ? () async {
                                       final provider = Provider.of<AppProvider>(context, listen: false);
-                                      final selectedRoleModel = _roles.firstWhere((r) => r.id == _selectedRole);
+                                      final selectedRoleModel = roles.firstWhere((r) => r.id == _selectedRole);
                                       final roleTitle = selectedRoleModel.title;
 
                                       final updatedProfile = provider.profile.copyWith(
@@ -253,12 +259,16 @@ class _AboutYouProfileScreenState extends State<AboutYouProfileScreen> {
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Text(
-                                    l('continue'),
-                                    style: GoogleFonts.inter(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                      color: _selectedRole != null ? Colors.white : Colors.grey.shade500,
+                                  Flexible(
+                                    child: FitOneLine(
+                                      child: Text(
+                                        l('continue'),
+                                        style: GoogleFonts.inter(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: _selectedRole != null ? Colors.white : Colors.grey.shade500,
+                                        ),
+                                      ),
                                     ),
                                   ),
                                   const SizedBox(width: 8),

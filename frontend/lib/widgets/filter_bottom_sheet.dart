@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../utils/responsive.dart';
+import '../l10n/l10n.dart';
 
 class FilterBottomSheet extends StatefulWidget {
   const FilterBottomSheet({super.key});
@@ -121,22 +123,31 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  "Filter Schemes",
-                  style: GoogleFonts.poppins(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: const Color(0xFF0F172A),
+                Flexible(
+                  child: Text(
+                    "Filter Schemes",
+                    softWrap: true,
+                    style: GoogleFonts.poppins(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF0F172A),
+                    ),
                   ),
                 ),
-                GestureDetector(
-                  onTap: _clearAll,
-                  child: Text(
-                    "Clear All",
-                    style: GoogleFonts.inter(
-                      color: const Color(0xFF2563EB),
-                      fontWeight: FontWeight.w600,
-                      fontSize: 14,
+                const SizedBox(width: 8),
+                Flexible(
+                  child: GestureDetector(
+                    onTap: _clearAll,
+                    child: FitOneLine(
+                      alignment: Alignment.centerRight,
+                      child: Text(
+                        context.l10n.filterClearAll,
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFF2563EB),
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                        ),
+                      ),
                     ),
                   ),
                 ),

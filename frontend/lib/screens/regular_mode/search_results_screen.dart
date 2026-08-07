@@ -6,6 +6,8 @@ import '../../widgets/scheme_card.dart';
 import '../../widgets/filter_panel.dart';
 import '../../providers/app_state_provider.dart';
 import '../../utils/constants.dart';
+import '../../utils/responsive.dart';
+import '../../l10n/l10n.dart';
 import 'scheme_details_screen.dart';
 
 class SearchResultsScreen extends StatefulWidget {
@@ -332,39 +334,50 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  RichText(
-                    text: TextSpan(
-                      children: [
-                        TextSpan(
-                          text: '${results.length} ',
-                          style: GoogleFonts.poppins(
-                            color: const Color(0xFF2563EB),
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14.5,
+                  Flexible(
+                    child: RichText(
+                      overflow: TextOverflow.visible,
+                      softWrap: true,
+                      text: TextSpan(
+                        children: [
+                          TextSpan(
+                            text: '${results.length} ',
+                            style: GoogleFonts.poppins(
+                              color: const Color(0xFF2563EB),
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14.5,
+                            ),
                           ),
-                        ),
-                        TextSpan(
-                          text: 'Results found',
-                          style: GoogleFonts.poppins(
-                            color: const Color(0xFF0F172A),
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14.5,
+                          TextSpan(
+                            text: 'Results found',
+                            style: GoogleFonts.poppins(
+                              color: const Color(0xFF0F172A),
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14.5,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
-                  Row(
-                    children: [
-                      Text(
-                        'Sort by',
-                        style: GoogleFonts.inter(
-                          fontSize: 12,
-                          color: const Color(0xFF64748B),
-                          fontWeight: FontWeight.w500,
+                  const SizedBox(width: 8),
+                  Flexible(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Flexible(
+                          child: FitOneLine(
+                            child: Text(
+                              'Sort by',
+                              style: GoogleFonts.inter(
+                                fontSize: 12,
+                                color: const Color(0xFF64748B),
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 6),
+                        const SizedBox(width: 6),
                       Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 8,
@@ -408,6 +421,7 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
                         ),
                       ),
                     ],
+                  ),
                   ),
                 ],
               ),
@@ -475,26 +489,31 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
                                     ),
                                   ),
                                   const SizedBox(width: 12),
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Loading more results...',
-                                        style: GoogleFonts.inter(
-                                          fontSize: 11.5,
-                                          fontWeight: FontWeight.w600,
-                                          color: const Color(0xFF64748B),
+                                  Flexible(
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Loading more results...',
+                                          softWrap: true,
+                                          style: GoogleFonts.inter(
+                                            fontSize: 11.5,
+                                            fontWeight: FontWeight.w600,
+                                            color: const Color(0xFF64748B),
+                                          ),
                                         ),
-                                      ),
-                                      Text(
-                                        'Pull up to load more',
-                                        style: GoogleFonts.inter(
-                                          fontSize: 9.5,
-                                          color: const Color(0xFF94A3B8),
+                                        Text(
+                                          'Pull up to load more',
+                                          softWrap: true,
+                                          style: GoogleFonts.inter(
+                                            fontSize: 9.5,
+                                            color: const Color(0xFF94A3B8),
+                                          ),
                                         ),
-                                      ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
                                 ],
                               ),
@@ -602,7 +621,7 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 8),
               alignment: Alignment.center,
               child: Text(
-                'Clear All',
+                context.l10n.filterClearAll,
                 style: GoogleFonts.inter(
                   fontSize: 11,
                   fontWeight: FontWeight.bold,

@@ -191,11 +191,16 @@ class _OtpScreenState extends State<OtpScreen> {
                               const SizedBox(height: 4),
                               
                               // Subtitle
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
+                              Wrap(
+                                alignment: WrapAlignment.center,
+                                crossAxisAlignment: WrapCrossAlignment.center,
+                                spacing: 4,
+                                runSpacing: 2,
                                 children: [
                                   Text(
                                     l('enter_otp_sent'),
+                                    textAlign: TextAlign.center,
+                                    softWrap: true,
                                     style: GoogleFonts.inter(
                                       fontSize: 10.5,
                                       color: const Color(0xFF64748B),
@@ -209,7 +214,6 @@ class _OtpScreenState extends State<OtpScreen> {
                                       color: const Color(0xFF2563EB), // Royal Blue
                                     ),
                                   ),
-                                  const SizedBox(width: 4),
                                   GestureDetector(
                                     onTap: () => Navigator.of(context).pop(),
                                     child: const Icon(
@@ -252,52 +256,71 @@ class _OtpScreenState extends State<OtpScreen> {
                                     const SizedBox(height: 12),
                                     
                                     // 6 separate digit input fields
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: List.generate(6, (index) {
-                                        return SizedBox(
-                                          width: 42,
-                                          height: 52,
-                                          child: TextFormField(
-                                            controller: _controllers[index],
-                                            focusNode: _focusNodes[index],
-                                            keyboardType: TextInputType.number,
-                                            maxLength: 1,
-                                            textAlign: TextAlign.center,
-                                            style: GoogleFonts.inter(
-                                              fontSize: 20,
-                                              fontWeight: FontWeight.bold,
-                                              color: const Color(0xFF2563EB),
-                                            ),
-                                            decoration: InputDecoration(
-                                              counterText: '',
-                                              contentPadding: EdgeInsets.zero,
-                                              enabledBorder: OutlineInputBorder(
-                                                borderRadius: BorderRadius.circular(10),
-                                                borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
+                                    //
+                                    // Box width derives from screen width so 6
+                                    // boxes + gaps never overflow on narrow
+                                    // screens; capped at the original 42px
+                                    // design width. MediaQuery is used instead
+                                    // of a nested LayoutBuilder because this
+                                    // subtree sits inside an IntrinsicHeight
+                                    // ancestor (line ~152), and LayoutBuilder
+                                    // cannot participate in intrinsic-dimension
+                                    // computation.
+                                    Builder(
+                                      builder: (context) {
+                                        final screenWidth = MediaQuery.of(context).size.width;
+                                        // 20px outer padding + 20px card padding, each side.
+                                        final availableWidth = screenWidth - 80;
+                                        final boxWidth = (availableWidth / 6 * 0.86)
+                                            .clamp(30.0, 42.0);
+                                        return Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          children: List.generate(6, (index) {
+                                            return SizedBox(
+                                              width: boxWidth,
+                                              height: 52,
+                                              child: TextFormField(
+                                                controller: _controllers[index],
+                                                focusNode: _focusNodes[index],
+                                                keyboardType: TextInputType.number,
+                                                maxLength: 1,
+                                                textAlign: TextAlign.center,
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 20,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: const Color(0xFF2563EB),
+                                                ),
+                                                decoration: InputDecoration(
+                                                  counterText: '',
+                                                  contentPadding: EdgeInsets.zero,
+                                                  enabledBorder: OutlineInputBorder(
+                                                    borderRadius: BorderRadius.circular(10),
+                                                    borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
+                                                  ),
+                                                  focusedBorder: OutlineInputBorder(
+                                                    borderRadius: BorderRadius.circular(10),
+                                                    borderSide: const BorderSide(color: Color(0xFF2563EB), width: 1.5),
+                                                  ),
+                                                ),
+                                                onChanged: (value) {
+                                                  if (value.isNotEmpty) {
+                                                    if (index < 5) {
+                                                      _focusNodes[index + 1].requestFocus();
+                                                    } else {
+                                                      _focusNodes[index].unfocus();
+                                                      _verifyOtp();
+                                                    }
+                                                  } else {
+                                                    if (index > 0) {
+                                                      _focusNodes[index - 1].requestFocus();
+                                                    }
+                                                  }
+                                                },
                                               ),
-                                              focusedBorder: OutlineInputBorder(
-                                                borderRadius: BorderRadius.circular(10),
-                                                borderSide: const BorderSide(color: Color(0xFF2563EB), width: 1.5),
-                                              ),
-                                            ),
-                                            onChanged: (value) {
-                                              if (value.isNotEmpty) {
-                                                if (index < 5) {
-                                                  _focusNodes[index + 1].requestFocus();
-                                                } else {
-                                                  _focusNodes[index].unfocus();
-                                                  _verifyOtp();
-                                                }
-                                              } else {
-                                                if (index > 0) {
-                                                  _focusNodes[index - 1].requestFocus();
-                                                }
-                                              }
-                                            },
-                                          ),
+                                            );
+                                          }),
                                         );
-                                      }),
+                                      },
                                     ),
                                     
                                     if (_otpError != null) ...[
@@ -323,22 +346,28 @@ class _OtpScreenState extends State<OtpScreen> {
                                           size: 14,
                                         ),
                                         const SizedBox(width: 4),
-                                        RichText(
-                                          text: TextSpan(
-                                            style: GoogleFonts.inter(
-                                              fontSize: 11,
-                                              color: const Color(0xFF64748B),
-                                            ),
-                                            children: [
-                                              TextSpan(text: isTa ? 'OTP காலாவதியாகும் நேரம் ' : 'OTP expires in '),
-                                              TextSpan(
-                                                text: _formatTime(),
-                                                style: const TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  color: Color(0xFF2563EB),
+                                        Flexible(
+                                          child: FittedBox(
+                                            fit: BoxFit.scaleDown,
+                                            alignment: Alignment.centerLeft,
+                                            child: RichText(
+                                              text: TextSpan(
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 11,
+                                                  color: const Color(0xFF64748B),
                                                 ),
+                                                children: [
+                                                  TextSpan(text: isTa ? 'OTP காலாவதியாகும் நேரம் ' : 'OTP expires in '),
+                                                  TextSpan(
+                                                    text: _formatTime(),
+                                                    style: const TextStyle(
+                                                      fontWeight: FontWeight.bold,
+                                                      color: Color(0xFF2563EB),
+                                                    ),
+                                                  ),
+                                                ],
                                               ),
-                                            ],
+                                            ),
                                           ),
                                         ),
                                       ],
@@ -402,12 +431,17 @@ class _OtpScreenState extends State<OtpScreen> {
                                             : Row(
                                                 mainAxisAlignment: MainAxisAlignment.center,
                                                 children: [
-                                                  Text(
-                                                    l('verify_otp'),
-                                                    style: GoogleFonts.inter(
-                                                      fontSize: 15,
-                                                      fontWeight: FontWeight.bold,
-                                                      color: Colors.white,
+                                                  Flexible(
+                                                    child: FittedBox(
+                                                      fit: BoxFit.scaleDown,
+                                                      child: Text(
+                                                        l('verify_otp'),
+                                                        style: GoogleFonts.inter(
+                                                          fontSize: 15,
+                                                          fontWeight: FontWeight.bold,
+                                                          color: Colors.white,
+                                                        ),
+                                                      ),
                                                     ),
                                                   ),
                                                   const SizedBox(width: 8),

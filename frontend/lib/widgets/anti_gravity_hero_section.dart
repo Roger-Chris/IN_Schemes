@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/centralized_translator.dart';
+import '../utils/responsive.dart';
 
 class AntiGravityHeroSection extends StatefulWidget {
   final int activeDotIndex;
@@ -89,13 +90,17 @@ class _AntiGravityHeroSectionState extends State<AntiGravityHeroSection> with Ti
                     Opacity(
                       opacity: 0.05,
                       child: Container(
-                        width: 200,
-                        height: 200,
+                        width: adaptiveSize(context, base: 200, min: 140, max: 200),
+                        height: adaptiveSize(context, base: 200, min: 140, max: 200),
                         decoration: BoxDecoration(
                           border: Border.all(color: Colors.blueGrey, width: 2),
                           shape: BoxShape.circle,
                         ),
-                        child: Center(child: Text(CentralizedTranslator.instance.translate('SVG Map Here'))),
+                        child: Center(
+                          child: FitOneLine(
+                            child: Text(CentralizedTranslator.instance.translate('SVG Map Here')),
+                          ),
+                        ),
                       ),
                     ),
 
@@ -129,12 +134,16 @@ class _AntiGravityHeroSectionState extends State<AntiGravityHeroSection> with Ti
                           children: [
                             Container(width: 12, height: 1.5, color: Colors.orange),
                             const SizedBox(width: 6),
-                            const Text(
-                              'Discover every Government Scheme in India',
-                              style: TextStyle(
-                                fontSize: 8.0,
-                                fontWeight: FontWeight.w600,
-                                color: Color(0xFF475569),
+                            Flexible(
+                              child: FitOneLine(
+                                child: const Text(
+                                  'Discover every Government Scheme in India',
+                                  style: TextStyle(
+                                    fontSize: 8.0,
+                                    fontWeight: FontWeight.w600,
+                                    color: Color(0xFF475569),
+                                  ),
+                                ),
                               ),
                             ),
                             const SizedBox(width: 6),

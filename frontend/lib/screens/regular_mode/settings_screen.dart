@@ -8,6 +8,7 @@ import 'language_selection_screen.dart';
 import 'profile_setup_screen.dart';
 import 'help_support_screen.dart';
 import '../../widgets/custom_confirm_dialog.dart';
+import '../../utils/responsive.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -98,8 +99,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   context: context,
                   provider: provider,
                   mode: 'regular',
-                  title: 'Regular Navigation',
-                  subtitle: 'Traditional clean list and tab view layout',
+                  title: context.l10n.navRegularNavigationTitle,
+                  subtitle: context.l10n.settingsRegularSubtitle,
                   icon: Icons.layers_outlined,
                 ),
                 const SizedBox(height: 12),
@@ -107,8 +108,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   context: context,
                   provider: provider,
                   mode: 'companion',
-                  title: 'AI Companion (Saarthi)',
-                  subtitle: 'Voice-first AI guided conversational view',
+                  title: context.l10n.settingsCompanionTitle,
+                  subtitle: context.l10n.settingsCompanionSubtitle,
                   icon: Icons.chat_bubble_outline_rounded,
                 ),
               ],
@@ -619,12 +620,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   if (value != null)
-                    Text(
-                      value,
-                      style: GoogleFonts.inter(
-                        fontSize: 12.5,
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF64748B),
+                    Flexible(
+                      child: FitOneLine(
+                        alignment: Alignment.centerRight,
+                        child: Text(
+                          value,
+                          style: GoogleFonts.inter(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF64748B),
+                          ),
+                        ),
                       ),
                     ),
                   const SizedBox(width: 4),

@@ -64,9 +64,14 @@ class InSchemesApp extends StatelessWidget {
           supportedLocales: AppLocalizations.supportedLocales,
           builder: (context, child) {
             final mediaQueryData = MediaQuery.of(context);
+            // Respect the device's own accessibility text-scale setting
+            // instead of discarding it, but keep the app's 1.20 design
+            // floor and cap the ceiling at 1.30 so layouts stay intact.
+            final deviceScale = mediaQueryData.textScaler.scale(1.0);
+            final boundedScale = deviceScale.clamp(1.20, 1.30);
             return MediaQuery(
               data: mediaQueryData.copyWith(
-                textScaler: const TextScaler.linear(1.20),
+                textScaler: TextScaler.linear(boundedScale),
               ),
               child: child!,
             );
@@ -192,20 +197,28 @@ class _MainTabsContainerState extends State<MainTabsContainer> {
           provider.updateTabIndex(index);
           searchTabKey.currentState?.resetToIdle();
         },
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            iconWidget,
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: GoogleFonts.inter(
-                color: color,
-                fontSize: 10.5,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              iconWidget,
+              const SizedBox(height: 3),
+              Text(
+                label,
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.inter(
+                  color: color,
+                  fontSize: provider.selectedLanguage == 'ta' ? 9.5 : 10.5,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -214,6 +227,7 @@ class _MainTabsContainerState extends State<MainTabsContainer> {
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<AppProvider>(context);
+    final l10n = AppLocalizations.of(context)!;
 
     // List of screens matching tabs
     final List<Widget> tabs = [
@@ -292,35 +306,35 @@ class _MainTabsContainerState extends State<MainTabsContainer> {
                           0,
                           Icons.home_outlined,
                           Icons.home,
-                          'Home',
+                          l10n.navHome,
                           provider,
                         ),
                         _buildNavItem(
                           1,
                           Icons.search,
                           Icons.search_sharp,
-                          'Search',
+                          l10n.navSearch,
                           provider,
                         ),
                         _buildNavItem(
                           2,
                           Icons.explore_outlined,
                           Icons.explore,
-                          'Discover',
+                          l10n.navDiscover,
                           provider,
                         ),
                         _buildNavItem(
                           3,
                           Icons.bookmark_border,
                           Icons.bookmark,
-                          'Saved',
+                          l10n.navSaved,
                           provider,
                         ),
                         _buildNavItem(
                           4,
                           Icons.person_outline,
                           Icons.person,
-                          'Profile',
+                          l10n.navProfile,
                           provider,
                         ),
                       ],

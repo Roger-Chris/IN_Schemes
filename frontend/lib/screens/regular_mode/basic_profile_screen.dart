@@ -3,6 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../providers/app_state_provider.dart';
 import 'location_profile_screen.dart';
+import '../../utils/responsive.dart';
+import '../../utils/profile_l10n.dart';
 
 class BasicProfileScreen extends StatefulWidget {
   const BasicProfileScreen({super.key});
@@ -79,6 +81,8 @@ class _BasicProfileScreenState extends State<BasicProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isTa = Provider.of<AppProvider>(context, listen: false).selectedLanguage == 'ta';
+    String l(String key) => ProfileL10n.t(key, isTa);
     return Scaffold(
       backgroundColor: Colors.white,
       body: Stack(
@@ -165,7 +169,7 @@ class _BasicProfileScreenState extends State<BasicProfileScreen> {
 
                                     // Form Fields
                                     CustomInputField(
-                                      label: 'Full Name',
+                                      label: l('full_name'),
                                       controller: _nameController,
                                       leadingIcon: Icons.person_outline,
                                       trailingIcon: Icons.edit_outlined,
@@ -173,7 +177,7 @@ class _BasicProfileScreenState extends State<BasicProfileScreen> {
                                     const SizedBox(height: 16),
 
                                     CustomInputField(
-                                      label: 'Email Address',
+                                      label: l('email_address'),
                                       controller: _emailController,
                                       leadingIcon: Icons.mail_outline,
                                       trailingIcon: Icons.edit_outlined,
@@ -182,7 +186,7 @@ class _BasicProfileScreenState extends State<BasicProfileScreen> {
                                     const SizedBox(height: 16),
 
                                     CustomInputField(
-                                      label: 'Phone Number',
+                                      label: l('phone_number'),
                                       controller: _phoneController,
                                       leadingIcon: Icons.phone_outlined,
                                       trailingIcon: Icons.edit_outlined,
@@ -219,7 +223,7 @@ class _BasicProfileScreenState extends State<BasicProfileScreen> {
 
                                     // DOB Selector (Moved to a new line)
                                     CustomInputField(
-                                      label: 'Date of Birth (DOB)',
+                                      label: l('date_of_birth'),
                                       controller: _dobController,
                                       leadingIcon: Icons.calendar_today_outlined,
                                       trailingIcon: Icons.arrow_drop_down,
@@ -264,12 +268,16 @@ class _BasicProfileScreenState extends State<BasicProfileScreen> {
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Text(
-                                    'Continue',
-                                    style: GoogleFonts.inter(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
+                                  Flexible(
+                                    child: FitOneLine(
+                                      child: Text(
+                                        'Continue',
+                                        style: GoogleFonts.inter(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white,
+                                        ),
+                                      ),
                                     ),
                                   ),
                                   const SizedBox(width: 8),

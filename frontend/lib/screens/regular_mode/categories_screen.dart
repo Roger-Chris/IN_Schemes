@@ -6,6 +6,7 @@ import '../../providers/app_state_provider.dart';
 import '../../services/scheme_repository.dart';
 import '../../l10n/l10n.dart';
 import '../../services/centralized_translator.dart';
+import '../../utils/responsive.dart';
 
 import '../../widgets/filter_panel.dart';
 
@@ -547,7 +548,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                     // Section 1: By Category
                     _buildSectionHeader(
                       key: _categorySectionKey,
-                      title: 'By Category',
+                      title: context.l10n.browseByCategories,
                     ),
                     _buildCategoryHorizontalList(provider),
                     const SizedBox(height: 16),
@@ -555,7 +556,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                     // Section 2: By Ministry
                     _buildSectionHeader(
                       key: _ministrySectionKey,
-                      title: 'By Ministry',
+                      title: context.l10n.browseByMinistry,
                     ),
                     _buildMinistryHorizontalList(provider),
                     const SizedBox(height: 16),
@@ -563,7 +564,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                     // Section 3: By State
                     _buildSectionHeader(
                       key: _stateSectionKey,
-                      title: 'By State',
+                      title: context.l10n.browseByState,
                     ),
                     _buildStateHorizontalList(provider),
                     const SizedBox(height: 16),
@@ -1089,12 +1090,15 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          'All Categories',
-                          style: GoogleFonts.poppins(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: const Color(0xFF0F172A),
+                        FlexText(
+                          child: Text(
+                            'All Categories',
+                            softWrap: true,
+                            style: GoogleFonts.poppins(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xFF0F172A),
+                            ),
                           ),
                         ),
                         IconButton(
@@ -1287,12 +1291,15 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      'All Ministries',
-                      style: GoogleFonts.poppins(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xFF0F172A),
+                    FlexText(
+                      child: Text(
+                        'All Ministries',
+                        softWrap: true,
+                        style: GoogleFonts.poppins(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF0F172A),
+                        ),
                       ),
                     ),
                     IconButton(
@@ -1415,12 +1422,15 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      'All States & UTs',
-                      style: GoogleFonts.poppins(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xFF0F172A),
+                    FlexText(
+                      child: Text(
+                        'All States & UTs',
+                        softWrap: true,
+                        style: GoogleFonts.poppins(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF0F172A),
+                        ),
                       ),
                     ),
                     IconButton(
@@ -1474,15 +1484,18 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
   }
 
   Widget _buildBusinessUtilitiesSection() {
+    final provider = Provider.of<AppProvider>(context, listen: false);
+    final isTa = provider.selectedLanguage == 'ta';
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: Text(
-            "Business Utilities & Tools",
+            isTa ? CentralizedTranslator.instance.translate('Business Utilities & Tools') : 'Business Utilities & Tools',
             style: GoogleFonts.poppins(
-              fontSize: 15,
+              fontSize: isTa ? 14.0 : 15.0,
               fontWeight: FontWeight.bold,
               color: const Color(0xFF0F172A),
             ),
@@ -1498,44 +1511,44 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
             children: [
               _buildUtilityCard(
                 icon: Icons.domain_verification,
-                title: "Udyam Classifier",
-                desc: "Check MSME tier",
+                title: isTa ? CentralizedTranslator.instance.translate('Udyam Classifier') : 'Udyam Classifier',
+                desc: isTa ? CentralizedTranslator.instance.translate('Check MSME tier') : 'Check MSME tier',
                 onTap: _openUdyamClassifier,
               ),
               _buildUtilityCard(
                 icon: Icons.calculate_outlined,
-                title: "Subsidy Estimator",
-                desc: "Machinery subsidies",
+                title: isTa ? CentralizedTranslator.instance.translate('Subsidy Estimator') : 'Subsidy Estimator',
+                desc: isTa ? CentralizedTranslator.instance.translate('Machinery subsidies') : 'Machinery subsidies',
                 onTap: _openSubsidyEstimator,
               ),
               _buildUtilityCard(
                 icon: Icons.percent_outlined,
-                title: "GST Calculator",
-                desc: "Compute GST invoice",
+                title: isTa ? CentralizedTranslator.instance.translate('GST Calculator') : 'GST Calculator',
+                desc: isTa ? CentralizedTranslator.instance.translate('Compute GST invoice') : 'Compute GST invoice',
                 onTap: _openGstCalculator,
               ),
               _buildUtilityCard(
                 icon: Icons.monetization_on_outlined,
-                title: "EMI Calculator",
-                desc: "Calculate loan EMIs",
+                title: isTa ? CentralizedTranslator.instance.translate('EMI Calculator') : 'EMI Calculator',
+                desc: isTa ? CentralizedTranslator.instance.translate('Calculate loan EMIs') : 'Calculate loan EMIs',
                 onTap: _openEmiCalculator,
               ),
               _buildUtilityCard(
                 icon: Icons.rocket_launch_outlined,
-                title: "DPIIT Eligibility",
-                desc: "Check startup criteria",
+                title: isTa ? CentralizedTranslator.instance.translate('DPIIT Eligibility') : 'DPIIT Eligibility',
+                desc: isTa ? CentralizedTranslator.instance.translate('Check startup criteria') : 'Check startup criteria',
                 onTap: _openDpiitChecklist,
               ),
               _buildUtilityCard(
                 icon: Icons.trending_up_outlined,
-                title: "Valuation Estimator",
-                desc: "Seed valuation ranges",
+                title: isTa ? CentralizedTranslator.instance.translate('Valuation Estimator') : 'Valuation Estimator',
+                desc: isTa ? CentralizedTranslator.instance.translate('Seed valuation ranges') : 'Seed valuation ranges',
                 onTap: _openValuationEstimator,
               ),
               _buildUtilityCard(
                 icon: Icons.rule_folder_outlined,
-                title: "Doc Checklist",
-                desc: "Business setup docs",
+                title: isTa ? CentralizedTranslator.instance.translate('Doc Checklist') : 'Doc Checklist',
+                desc: isTa ? CentralizedTranslator.instance.translate('Business setup docs') : 'Business setup docs',
                 onTap: _openDocumentChecklist,
               ),
             ],
@@ -1604,6 +1617,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
   }
 
   void _openUdyamClassifier() {
+    final isTa = Provider.of<AppProvider>(context, listen: false).selectedLanguage == 'ta';
     final investmentController = TextEditingController();
     final turnoverController = TextEditingController();
     String result = '';
@@ -1662,7 +1676,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Udyam MSME Classifier',
+                              isTa ? CentralizedTranslator.instance.translate('Udyam MSME Classifier') : 'Udyam MSME Classifier',
                               style: GoogleFonts.poppins(
                                 fontSize: 14,
                                 fontWeight: FontWeight.bold,
@@ -1670,7 +1684,9 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                               ),
                             ),
                             Text(
-                              'Classify your business under official government guidelines.',
+                              isTa
+                                  ? CentralizedTranslator.instance.translate('Classify your business under official government guidelines.')
+                                  : 'Classify your business under official government guidelines.',
                               style: GoogleFonts.inter(
                                 fontSize: 10,
                                 color: const Color(0xFF64748B),
@@ -1687,7 +1703,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                   ),
                   const SizedBox(height: 20),
                   Text(
-                    'Investment in Plant & Machinery',
+                    isTa ? CentralizedTranslator.instance.translate('Investment in Plant & Machinery') : 'Investment in Plant & Machinery',
                     style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.bold, color: const Color(0xFF334155)),
                   ),
                   const SizedBox(height: 6),
@@ -1700,8 +1716,10 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                       hintText: '0.5',
                       hintStyle: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF94A3B8)),
                       prefixText: '₹ ',
-                      suffixText: 'Cr',
-                      helperText: 'Enter original purchase value of machinery in Crores',
+                      suffixText: isTa ? 'கோடி' : 'Cr',
+                      helperText: isTa
+                          ? CentralizedTranslator.instance.translate('Enter original purchase value of machinery in Crores')
+                          : 'Enter original purchase value of machinery in Crores',
                       helperStyle: GoogleFonts.inter(fontSize: 9, color: const Color(0xFF64748B)),
                       suffixStyle: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: const Color(0xFF64748B)),
                       prefixStyle: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A)),
@@ -1718,7 +1736,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                   ),
                   const SizedBox(height: 14),
                   Text(
-                    'Annual Turnover',
+                    isTa ? CentralizedTranslator.instance.translate('Annual Turnover') : 'Annual Turnover',
                     style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.bold, color: const Color(0xFF334155)),
                   ),
                   const SizedBox(height: 6),
@@ -1731,8 +1749,10 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                       hintText: '3.0',
                       hintStyle: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF94A3B8)),
                       prefixText: '₹ ',
-                      suffixText: 'Cr',
-                      helperText: 'Enter total revenue/sales of last financial year in Crores',
+                      suffixText: isTa ? 'கோடி' : 'Cr',
+                      helperText: isTa
+                          ? CentralizedTranslator.instance.translate('Enter total revenue/sales of last financial year in Crores')
+                          : 'Enter total revenue/sales of last financial year in Crores',
                       helperStyle: GoogleFonts.inter(fontSize: 9, color: const Color(0xFF64748B)),
                       suffixStyle: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: const Color(0xFF64748B)),
                       prefixStyle: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A)),
@@ -1776,7 +1796,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      'Classification Result',
+                                      isTa ? CentralizedTranslator.instance.translate('Classification Result') : 'Classification Result',
                                       style: GoogleFonts.inter(
                                         fontSize: 9.5,
                                         fontWeight: FontWeight.bold,
@@ -1786,7 +1806,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
-                                      result,
+                                      isTa ? CentralizedTranslator.instance.translate(result) : result,
                                       style: GoogleFonts.poppins(
                                         fontSize: 13,
                                         fontWeight: FontWeight.bold,
@@ -1796,7 +1816,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                                     if (subResult.isNotEmpty) ...[
                                       const SizedBox(height: 4),
                                       Text(
-                                        subResult,
+                                        isTa ? CentralizedTranslator.instance.translate(subResult) : subResult,
                                         style: GoogleFonts.inter(
                                           fontSize: 10,
                                           color: const Color(0xFF475569),
@@ -1857,7 +1877,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
                       child: Text(
-                        'Calculate Classification',
+                        isTa ? CentralizedTranslator.instance.translate('Calculate Classification') : 'Calculate Classification',
                         style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 12.5),
                       ),
                     ),
@@ -1872,6 +1892,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
   }
 
   void _openGstCalculator() {
+    final isTa = Provider.of<AppProvider>(context, listen: false).selectedLanguage == 'ta';
     final amountController = TextEditingController();
     double gstPercentage = 18.0;
     double baseVal = 0.0;
@@ -1932,12 +1953,14 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'GST / Tax Calculator',
+                              isTa ? CentralizedTranslator.instance.translate('GST / Tax Calculator') : 'GST / Tax Calculator',
                               style: GoogleFonts.poppins(
                                   fontSize: 14, fontWeight: FontWeight.bold, color: const Color(0xFF0F172A)),
                             ),
                             Text(
-                              'Calculate CGST, SGST, and Total invoice amounts.',
+                              isTa
+                                  ? CentralizedTranslator.instance.translate('Calculate CGST, SGST, and Total invoice amounts.')
+                                  : 'Calculate CGST, SGST, and Total invoice amounts.',
                               style: GoogleFonts.inter(fontSize: 10, color: const Color(0xFF64748B)),
                             ),
                           ],
@@ -1951,7 +1974,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                   ),
                   const SizedBox(height: 20),
                   Text(
-                    'Base Amount',
+                    isTa ? CentralizedTranslator.instance.translate('Base Amount') : 'Base Amount',
                     style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.bold, color: const Color(0xFF334155)),
                   ),
                   const SizedBox(height: 6),
@@ -1964,7 +1987,9 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                       hintText: '50000',
                       hintStyle: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF94A3B8)),
                       prefixText: '₹ ',
-                      helperText: 'Enter net value of goods or services before GST',
+                      helperText: isTa
+                          ? CentralizedTranslator.instance.translate('Enter net value of goods or services before GST')
+                          : 'Enter net value of goods or services before GST',
                       helperStyle: GoogleFonts.inter(fontSize: 9, color: const Color(0xFF64748B)),
                       prefixStyle: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A)),
                       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
@@ -1980,7 +2005,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                   ),
                   const SizedBox(height: 14),
                   Text(
-                    'GST Rate (%)',
+                    isTa ? CentralizedTranslator.instance.translate('GST Rate (%)') : 'GST Rate (%)',
                     style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.bold, color: const Color(0xFF334155)),
                   ),
                   const SizedBox(height: 8),
@@ -2033,7 +2058,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                         border: Border.all(color: const Color(0xFFFCA5A5)),
                       ),
                       child: Text(
-                        error,
+                        isTa ? CentralizedTranslator.instance.translate(error) : error,
                         style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFFB91C1C), fontWeight: FontWeight.w600),
                         textAlign: TextAlign.center,
                       ),
@@ -2053,8 +2078,9 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(CentralizedTranslator.instance.translate('Base Price'), style: GoogleFonts.inter(fontSize: 11.5, color: const Color(0xFF475569))),
-                              Text('₹ ${baseVal.toStringAsFixed(2)}', style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A))),
+                              Flexible(child: Text(isTa ? CentralizedTranslator.instance.translate('Base Price') : 'Base Price', softWrap: true, style: GoogleFonts.inter(fontSize: 11.5, color: const Color(0xFF475569)))),
+                              const SizedBox(width: 8),
+                              Flexible(child: FitOneLine(alignment: Alignment.centerRight, child: Text('₹ ${baseVal.toStringAsFixed(2)}', style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A))))),
                             ],
                           ),
                           const Padding(
@@ -2064,16 +2090,18 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text('CGST (${(gstPercentage / 2).toStringAsFixed(1)}%)', style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF475569))),
-                              Text('₹ ${cgstVal.toStringAsFixed(2)}', style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A))),
+                              Flexible(child: Text('CGST (${(gstPercentage / 2).toStringAsFixed(1)}%)', softWrap: true, style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF475569)))),
+                              const SizedBox(width: 8),
+                              Flexible(child: FitOneLine(alignment: Alignment.centerRight, child: Text('₹ ${cgstVal.toStringAsFixed(2)}', style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A))))),
                             ],
                           ),
                           const SizedBox(height: 4),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text('SGST (${(gstPercentage / 2).toStringAsFixed(1)}%)', style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF475569))),
-                              Text('₹ ${sgstVal.toStringAsFixed(2)}', style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A))),
+                              Flexible(child: Text('SGST (${(gstPercentage / 2).toStringAsFixed(1)}%)', softWrap: true, style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF475569)))),
+                              const SizedBox(width: 8),
+                              Flexible(child: FitOneLine(alignment: Alignment.centerRight, child: Text('₹ ${sgstVal.toStringAsFixed(2)}', style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A))))),
                             ],
                           ),
                           const Padding(
@@ -2083,8 +2111,9 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(CentralizedTranslator.instance.translate('Total Invoice'), style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.bold, color: const Color(0xFF1E293B))),
-                              Text('₹ ${totalVal.toStringAsFixed(2)}', style: GoogleFonts.poppins(fontSize: 13.5, fontWeight: FontWeight.bold, color: const Color(0xFF2563EB))),
+                              Flexible(child: Text(isTa ? CentralizedTranslator.instance.translate('Total Invoice') : 'Total Invoice', softWrap: true, style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.bold, color: const Color(0xFF1E293B)))),
+                              const SizedBox(width: 8),
+                              Flexible(child: FitOneLine(alignment: Alignment.centerRight, child: Text('₹ ${totalVal.toStringAsFixed(2)}', style: GoogleFonts.poppins(fontSize: 13.5, fontWeight: FontWeight.bold, color: const Color(0xFF2563EB))))),
                             ],
                           ),
                         ],
@@ -2121,7 +2150,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
                       child: Text(
-                        'Calculate Tax',
+                        isTa ? CentralizedTranslator.instance.translate('Calculate Tax') : 'Calculate Tax',
                         style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 12.5),
                       ),
                     ),
@@ -2351,8 +2380,9 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(CentralizedTranslator.instance.translate('Monthly EMI'), style: GoogleFonts.inter(fontSize: 11.5, fontWeight: FontWeight.bold, color: const Color(0xFF1E293B))),
-                              Text('₹ ${emiVal.toStringAsFixed(2)}', style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.bold, color: const Color(0xFF2563EB))),
+                              Flexible(child: Text(CentralizedTranslator.instance.translate('Monthly EMI'), softWrap: true, style: GoogleFonts.inter(fontSize: 11.5, fontWeight: FontWeight.bold, color: const Color(0xFF1E293B)))),
+                              const SizedBox(width: 8),
+                              Flexible(child: FitOneLine(alignment: Alignment.centerRight, child: Text('₹ ${emiVal.toStringAsFixed(2)}', style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.bold, color: const Color(0xFF2563EB))))),
                             ],
                           ),
                           const Padding(
@@ -2362,16 +2392,18 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(CentralizedTranslator.instance.translate('Principal Amount'), style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF475569))),
-                              Text('₹ ${principalVal.toStringAsFixed(2)}', style: GoogleFonts.poppins(fontSize: 11.5, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A))),
+                              Flexible(child: Text(CentralizedTranslator.instance.translate('Principal Amount'), softWrap: true, style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF475569)))),
+                              const SizedBox(width: 8),
+                              Flexible(child: FitOneLine(alignment: Alignment.centerRight, child: Text('₹ ${principalVal.toStringAsFixed(2)}', style: GoogleFonts.poppins(fontSize: 11.5, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A))))),
                             ],
                           ),
                           const SizedBox(height: 4),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(CentralizedTranslator.instance.translate('Total Interest Payable'), style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF475569))),
-                              Text('₹ ${interestVal.toStringAsFixed(2)}', style: GoogleFonts.poppins(fontSize: 11.5, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A))),
+                              Flexible(child: Text(CentralizedTranslator.instance.translate('Total Interest Payable'), softWrap: true, style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF475569)))),
+                              const SizedBox(width: 8),
+                              Flexible(child: FitOneLine(alignment: Alignment.centerRight, child: Text('₹ ${interestVal.toStringAsFixed(2)}', style: GoogleFonts.poppins(fontSize: 11.5, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A))))),
                             ],
                           ),
                           const Padding(
@@ -2381,8 +2413,9 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(CentralizedTranslator.instance.translate('Total Amount (Principal + Int)'), style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF475569))),
-                              Text('₹ ${totalVal.toStringAsFixed(2)}', style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.bold, color: const Color(0xFF0F172A))),
+                              Flexible(child: Text(CentralizedTranslator.instance.translate('Total Amount (Principal + Int)'), softWrap: true, style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF475569)))),
+                              const SizedBox(width: 8),
+                              Flexible(child: FitOneLine(alignment: Alignment.centerRight, child: Text('₹ ${totalVal.toStringAsFixed(2)}', style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.bold, color: const Color(0xFF0F172A))))),
                             ],
                           ),
                         ],
@@ -2858,8 +2891,9 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(CentralizedTranslator.instance.translate('Valuation Range'), style: GoogleFonts.inter(fontSize: 11.5, fontWeight: FontWeight.bold, color: const Color(0xFF1E293B))),
-                              Text('${formatVal(lowEstimate)} - ${formatVal(highEstimate)}', style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.bold, color: const Color(0xFF2563EB))),
+                              Flexible(child: Text(CentralizedTranslator.instance.translate('Valuation Range'), softWrap: true, style: GoogleFonts.inter(fontSize: 11.5, fontWeight: FontWeight.bold, color: const Color(0xFF1E293B)))),
+                              const SizedBox(width: 8),
+                              Flexible(child: FitOneLine(alignment: Alignment.centerRight, child: Text('${formatVal(lowEstimate)} - ${formatVal(highEstimate)}', style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.bold, color: const Color(0xFF2563EB))))),
                             ],
                           ),
                           const Padding(
@@ -2869,16 +2903,18 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(CentralizedTranslator.instance.translate('Calculated ARR'), style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF475569))),
-                              Text('₹ ${(arrVal / 100000).toStringAsFixed(1)} Lakhs', style: GoogleFonts.poppins(fontSize: 11.5, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A))),
+                              Flexible(child: Text(CentralizedTranslator.instance.translate('Calculated ARR'), softWrap: true, style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF475569)))),
+                              const SizedBox(width: 8),
+                              Flexible(child: FitOneLine(alignment: Alignment.centerRight, child: Text('₹ ${(arrVal / 100000).toStringAsFixed(1)} Lakhs', style: GoogleFonts.poppins(fontSize: 11.5, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A))))),
                             ],
                           ),
                           const SizedBox(height: 4),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(CentralizedTranslator.instance.translate('Applied ARR Multiple'), style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF475569))),
-                              Text('${appliedMultiple.toStringAsFixed(1)}x', style: GoogleFonts.poppins(fontSize: 11.5, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A))),
+                              Flexible(child: Text(CentralizedTranslator.instance.translate('Applied ARR Multiple'), softWrap: true, style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF475569)))),
+                              const SizedBox(width: 8),
+                              Flexible(child: FitOneLine(alignment: Alignment.centerRight, child: Text('${appliedMultiple.toStringAsFixed(1)}x', style: GoogleFonts.poppins(fontSize: 11.5, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A))))),
                             ],
                           ),
                         ],
@@ -3319,16 +3355,18 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(CentralizedTranslator.instance.translate('Original Project Cost'), style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF475569))),
-                              Text('₹ ${costVal.toStringAsFixed(2)} Lakhs', style: GoogleFonts.poppins(fontSize: 11.5, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A))),
+                              Flexible(child: Text(CentralizedTranslator.instance.translate('Original Project Cost'), softWrap: true, style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF475569)))),
+                              const SizedBox(width: 8),
+                              Flexible(child: FitOneLine(alignment: Alignment.centerRight, child: Text('₹ ${costVal.toStringAsFixed(2)} Lakhs', style: GoogleFonts.poppins(fontSize: 11.5, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A))))),
                             ],
                           ),
                           const SizedBox(height: 4),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text('${CentralizedTranslator.instance.translate('Expected Subsidy')} (${subsidyPercentVal.toStringAsFixed(1)}%)', style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF475569))),
-                              Text('₹ ${subsidyAmountVal.toStringAsFixed(2)} Lakhs', style: GoogleFonts.poppins(fontSize: 11.5, fontWeight: FontWeight.bold, color: const Color(0xFF0D9488))),
+                              Flexible(child: Text('${CentralizedTranslator.instance.translate('Expected Subsidy')} (${subsidyPercentVal.toStringAsFixed(1)}%)', softWrap: true, style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF475569)))),
+                              const SizedBox(width: 8),
+                              Flexible(child: FitOneLine(alignment: Alignment.centerRight, child: Text('₹ ${subsidyAmountVal.toStringAsFixed(2)} Lakhs', style: GoogleFonts.poppins(fontSize: 11.5, fontWeight: FontWeight.bold, color: const Color(0xFF0D9488))))),
                             ],
                           ),
                           const Padding(
@@ -3338,8 +3376,9 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(CentralizedTranslator.instance.translate('Net Cost to Business'), style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.bold, color: const Color(0xFF1E293B))),
-                              Text('₹ ${netCostVal.toStringAsFixed(2)} Lakhs', style: GoogleFonts.poppins(fontSize: 13.5, fontWeight: FontWeight.bold, color: const Color(0xFF2563EB))),
+                              Flexible(child: Text(CentralizedTranslator.instance.translate('Net Cost to Business'), softWrap: true, style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.bold, color: const Color(0xFF1E293B)))),
+                              const SizedBox(width: 8),
+                              Flexible(child: FitOneLine(alignment: Alignment.centerRight, child: Text('₹ ${netCostVal.toStringAsFixed(2)} Lakhs', style: GoogleFonts.poppins(fontSize: 13.5, fontWeight: FontWeight.bold, color: const Color(0xFF2563EB))))),
                             ],
                           ),
                         ],

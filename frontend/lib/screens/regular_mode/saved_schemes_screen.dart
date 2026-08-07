@@ -6,6 +6,7 @@ import '../../models/scheme_model.dart';
 import '../../models/localized_scheme.dart';
 import '../../l10n/l10n.dart';
 import 'scheme_details_screen.dart';
+import '../../utils/responsive.dart';
 
 class SavedSchemesScreen extends StatefulWidget {
   const SavedSchemesScreen({super.key});
@@ -62,7 +63,7 @@ class _SavedSchemesScreenState extends State<SavedSchemesScreen> {
     final isTa = provider.selectedLanguage == 'ta';
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       padding: const EdgeInsets.all(6),
       decoration: BoxDecoration(
         color: const Color(0xFFF1F5F9),
@@ -351,12 +352,16 @@ class _SavedSchemesScreenState extends State<SavedSchemesScreen> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(
-                        provider.selectedLanguage == 'ta' ? 'விவரங்களைப் பார்க்க' : 'View Details',
-                        style: GoogleFonts.inter(
-                          fontSize: 10.0,
-                          color: const Color(0xFF2563EB),
-                          fontWeight: FontWeight.bold,
+                      Flexible(
+                        child: FitOneLine(
+                          child: Text(
+                            provider.selectedLanguage == 'ta' ? 'விவரங்களைப் பார்க்க' : 'View Details',
+                            style: GoogleFonts.inter(
+                              fontSize: 10.0,
+                              color: const Color(0xFF2563EB),
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
                       ),
                       const SizedBox(width: 4),
@@ -444,7 +449,7 @@ class _SavedSchemesScreenState extends State<SavedSchemesScreen> {
               size: 13,
             ),
             label: Text(
-              _isManageMode ? "Done" : "Manage List",
+              _isManageMode ? context.l10n.doneManaging : context.l10n.manageSaved,
               style: GoogleFonts.inter(
                 fontSize: 10.5,
                 color: _isManageMode ? const Color(0xFF16A34A) : const Color(0xFF2563EB),
@@ -538,7 +543,7 @@ class _SavedSchemesScreenState extends State<SavedSchemesScreen> {
         child: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 36, 20, 16),
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
               child: Row(
                 children: [
                   Expanded(

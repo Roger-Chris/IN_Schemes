@@ -8,6 +8,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../providers/app_state_provider.dart';
 import '../../models/scheme_model.dart';
+import '../../models/localized_scheme.dart';
 import '../../services/assistant_session_controller.dart';
 import '../../services/livekit_voice_agent_controller.dart';
 import '../../services/scheme_understanding_engine.dart';
@@ -18,6 +19,8 @@ import '../profile_screen.dart';
 import '../notifications_screen.dart';
 import '../regular_mode/scheme_details_screen.dart';
 import '../../services/centralized_translator.dart';
+import '../../utils/responsive.dart';
+import '../../l10n/l10n.dart';
 
 enum SaarthiVoiceState { idle, listening, processing, speaking, ended }
 
@@ -956,31 +959,37 @@ class _SaarthiHomeScreenState extends State<SaarthiHomeScreen>
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         // Language Pill selector
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: const Color(0xFFE2E8F0)),
-          ),
-          child: Row(
-            children: [
-              const Icon(Icons.language, color: Color(0xFF2563EB), size: 16),
-              const SizedBox(width: 6),
-              Text(
-                provider.selectedLanguage == 'ta' ? 'தமிழ்' : 'English',
-                style: GoogleFonts.inter(
-                  fontSize: 12.5,
-                  fontWeight: FontWeight.bold,
-                  color: kDarkSlate,
+        Flexible(
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.language, color: Color(0xFF2563EB), size: 16),
+                const SizedBox(width: 6),
+                Flexible(
+                  child: FitOneLine(
+                    child: Text(
+                      provider.selectedLanguage == 'ta' ? 'தமிழ்' : 'English',
+                      style: GoogleFonts.inter(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.bold,
+                        color: kDarkSlate,
+                      ),
+                    ),
+                  ),
                 ),
-              ),
-              const Icon(
-                Icons.arrow_drop_down,
-                color: Color(0xFF64748B),
-                size: 16,
-              ),
-            ],
+                const Icon(
+                  Icons.arrow_drop_down,
+                  color: Color(0xFF64748B),
+                  size: 16,
+                ),
+              ],
+            ),
           ),
         ),
         // Notification icon & Profile photo
@@ -1193,18 +1202,22 @@ class _SaarthiHomeScreenState extends State<SaarthiHomeScreen>
                           : const Color(0xFFDC2626),
                     ),
                     const SizedBox(width: 4),
-                    Text(
-                      _usingCloudVoice
-                          ? 'Voice connected'
-                          : _cloudRetrying
-                          ? 'Connecting'
-                          : 'Voice offline',
-                      style: GoogleFonts.inter(
-                        fontSize: 9.5,
-                        fontWeight: FontWeight.w700,
-                        color: _cloudConnectionError == null
-                            ? const Color(0xFF047857)
-                            : const Color(0xFFDC2626),
+                    Flexible(
+                      child: FitOneLine(
+                        child: Text(
+                          _usingCloudVoice
+                              ? 'Voice connected'
+                              : _cloudRetrying
+                              ? 'Connecting'
+                              : 'Voice offline',
+                          style: GoogleFonts.inter(
+                            fontSize: 9.5,
+                            fontWeight: FontWeight.w700,
+                            color: _cloudConnectionError == null
+                                ? const Color(0xFF047857)
+                                : const Color(0xFFDC2626),
+                          ),
+                        ),
                       ),
                     ),
                   ],
@@ -1271,7 +1284,7 @@ class _SaarthiHomeScreenState extends State<SaarthiHomeScreen>
                     color: kDarkSlate,
                   ),
                   children: [
-                    const TextSpan(text: 'Good Morning, '),
+                    TextSpan(text: '${context.l10n.goodMorning} '),
                     TextSpan(
                       text: '$userName! 👋',
                       style: const TextStyle(color: Color(0xFF2563EB)),
@@ -1519,12 +1532,16 @@ class _SaarthiHomeScreenState extends State<SaarthiHomeScreen>
                                 _buildWaveformBar(7, 8),
                                 _buildWaveformBar(10, 10),
                                 const SizedBox(width: 7),
-                                Text(
-                                  'Speaking',
-                                  style: GoogleFonts.inter(
-                                    fontSize: 10.5,
-                                    color: const Color(0xFF059669),
-                                    fontWeight: FontWeight.w700,
+                                Flexible(
+                                  child: FitOneLine(
+                                    child: Text(
+                                      'Speaking',
+                                      style: GoogleFonts.inter(
+                                        fontSize: 10.5,
+                                        color: const Color(0xFF059669),
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ],
@@ -1554,12 +1571,15 @@ class _SaarthiHomeScreenState extends State<SaarthiHomeScreen>
                         color: Color(0xFF2563EB),
                       ),
                       const SizedBox(width: 6),
-                      Text(
-                        'Recommended for you',
-                        style: GoogleFonts.poppins(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                          color: const Color(0xFF0F172A),
+                      Flexible(
+                        child: Text(
+                          context.l10n.recommendedForYou,
+                          softWrap: true,
+                          style: GoogleFonts.poppins(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0xFF0F172A),
+                          ),
                         ),
                       ),
                     ],
@@ -1634,6 +1654,10 @@ class _SaarthiHomeScreenState extends State<SaarthiHomeScreen>
   }
 
   Widget _buildCompactSchemeCard(Scheme scheme, CloudSchemeResult? metadata) {
+    final lang = Provider.of<AppProvider>(context, listen: false).selectedLanguage;
+    final locScheme = scheme.toLocalized(lang);
+    final isTa = lang == 'ta';
+
     final confidence = metadata?.matchConfidence;
     final confidenceColor = confidence == null
         ? const Color(0xFF64748B)
@@ -1646,9 +1670,9 @@ class _SaarthiHomeScreenState extends State<SaarthiHomeScreen>
         metadata?.isVerified == true ||
         scheme.verificationStatus.toLowerCase().contains('verified');
     final sourceConfidence = metadata?.sourceConfidence.trim() ?? '';
-    final summary = scheme.benefits.trim().isNotEmpty
-        ? scheme.benefits.trim()
-        : scheme.overview.trim();
+    final summary = locScheme.benefits.trim().isNotEmpty
+        ? locScheme.benefits.trim()
+        : locScheme.overview.trim();
 
     return Padding(
       padding: const EdgeInsets.only(top: 9),
@@ -1686,11 +1710,11 @@ class _SaarthiHomeScreenState extends State<SaarthiHomeScreen>
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildSchemeIcon(scheme.name),
+                    _buildSchemeIcon(locScheme.name),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        scheme.name,
+                        locScheme.name,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.inter(
@@ -1713,8 +1737,8 @@ class _SaarthiHomeScreenState extends State<SaarthiHomeScreen>
                       ),
                       child: Text(
                         confidence == null
-                            ? 'Review match'
-                            : '$confidence% match',
+                            ? (isTa ? 'பொருத்தம் காண்க' : 'Review match')
+                            : (isTa ? '$confidence% பொருத்தம்' : '$confidence% match'),
                         style: GoogleFonts.inter(
                           fontSize: 9.5,
                           fontWeight: FontWeight.w800,
@@ -1919,7 +1943,7 @@ class _SaarthiHomeScreenState extends State<SaarthiHomeScreen>
                     ? null
                     : () => unawaited(_connectCloudVoice()),
                 icon: const Icon(Icons.refresh_rounded, size: 17),
-                label: const Text('Retry voice'),
+                label: Text(CentralizedTranslator.instance.translate('Retry voice')),
               ),
             ],
             const SizedBox(height: 10),
@@ -1936,13 +1960,17 @@ class _SaarthiHomeScreenState extends State<SaarthiHomeScreen>
                   color: const Color(0xFF94A3B8),
                 ),
                 const SizedBox(width: 4),
-                Text(
-                  _usingCloudVoice
-                      ? 'Secure live voice session'
-                      : 'Live voice connection required',
-                  style: GoogleFonts.inter(
-                    fontSize: 9.5,
-                    color: const Color(0xFF94A3B8),
+                Flexible(
+                  child: FitOneLine(
+                    child: Text(
+                      _usingCloudVoice
+                          ? 'Secure live voice session'
+                          : 'Live voice connection required',
+                      style: GoogleFonts.inter(
+                        fontSize: 9.5,
+                        color: const Color(0xFF94A3B8),
+                      ),
+                    ),
                   ),
                 ),
               ],
@@ -2061,47 +2089,53 @@ class _SaarthiHomeScreenState extends State<SaarthiHomeScreen>
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          Semantics(
-            button: true,
-            label: '$primaryLabel voice control',
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Material(
-                  color: primaryColor,
-                  shape: const CircleBorder(),
-                  elevation: 2,
-                  child: InkWell(
-                    key: const Key('saarthi-primary-voice-control'),
-                    customBorder: const CircleBorder(),
-                    onTap: _handleControllerMicTap,
-                    child: SizedBox.square(
-                      dimension: 72,
-                      child: Icon(primaryIcon, color: Colors.white, size: 32),
+          Flexible(
+            child: Semantics(
+              button: true,
+              label: '$primaryLabel voice control',
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Material(
+                    color: primaryColor,
+                    shape: const CircleBorder(),
+                    elevation: 2,
+                    child: InkWell(
+                      key: const Key('saarthi-primary-voice-control'),
+                      customBorder: const CircleBorder(),
+                      onTap: _handleControllerMicTap,
+                      child: SizedBox.square(
+                        dimension: 72,
+                        child: Icon(primaryIcon, color: Colors.white, size: 32),
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  primaryLabel,
-                  style: GoogleFonts.inter(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    color: primaryColor,
+                  const SizedBox(height: 6),
+                  FitOneLine(
+                    child: Text(
+                      primaryLabel,
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: primaryColor,
+                      ),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
-          _buildLabeledControl(
-            key: const Key('saarthi-end-control'),
-            icon: Icons.call_end_rounded,
-            label: 'End',
-            color: const Color(0xFFB91C1C),
-            onTap: () {
-              unawaited(HapticFeedback.mediumImpact());
-              unawaited(_endConversation());
-            },
+          Flexible(
+            child: _buildLabeledControl(
+              key: const Key('saarthi-end-control'),
+              icon: Icons.call_end_rounded,
+              label: 'End',
+              color: const Color(0xFFB91C1C),
+              onTap: () {
+                unawaited(HapticFeedback.mediumImpact());
+                unawaited(_endConversation());
+              },
+            ),
           ),
         ],
       ),
@@ -2131,12 +2165,14 @@ class _SaarthiHomeScreenState extends State<SaarthiHomeScreen>
               children: [
                 Icon(icon, size: 26, color: color),
                 const SizedBox(height: 5),
-                Text(
-                  label,
-                  style: GoogleFonts.inter(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    color: color,
+                FitOneLine(
+                  child: Text(
+                    label,
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: color,
+                    ),
                   ),
                 ),
               ],

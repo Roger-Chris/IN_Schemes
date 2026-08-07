@@ -5,6 +5,7 @@ import '../../providers/app_state_provider.dart';
 import '../../widgets/floating_logo.dart';
 import '../../utils/profile_l10n.dart';
 import '../login_screen.dart';
+import '../../utils/responsive.dart';
 
 class LanguageOption {
   final String code;
@@ -235,12 +236,16 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Text(
-                              l('continue'),
-                              style: GoogleFonts.inter(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                            Flexible(
+                              child: FitOneLine(
+                                child: Text(
+                                  l('continue'),
+                                  style: GoogleFonts.inter(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
                               ),
                             ),
                             const SizedBox(width: 8),
@@ -304,8 +309,8 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
           children: [
             // Colored circle with native symbol/text
             Container(
-              width: 40,
-              height: 40,
+              width: adaptiveSize(context, base: 40, min: 28, max: 40),
+              height: adaptiveSize(context, base: 40, min: 28, max: 40),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: option.circleBgColor,

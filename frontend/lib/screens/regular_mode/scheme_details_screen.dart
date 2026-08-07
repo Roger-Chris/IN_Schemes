@@ -9,6 +9,7 @@ import '../../providers/app_state_provider.dart';
 import '../../utils/constants.dart';
 import '../../l10n/l10n.dart';
 import '../../services/centralized_translator.dart';
+import '../../utils/responsive.dart';
 
 class SchemeDetailsScreen extends StatefulWidget {
   final Scheme scheme;
@@ -197,7 +198,14 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                   backgroundColor: Colors.white,
                   elevation: 0,
                   scrolledUnderElevation: 0,
-                  automaticallyImplyLeading: false,
+                  leading: IconButton(
+                    icon: const Icon(
+                      Icons.arrow_back,
+                      color: Color(0xFF0F172A),
+                      size: 22,
+                    ),
+                    onPressed: () => Navigator.of(context).maybePop(),
+                  ),
                   title: Text(
                     context.l10n.schemeDetailsTitle,
                     style: GoogleFonts.poppins(
@@ -503,12 +511,15 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                 size: 16,
               ),
               const SizedBox(width: 6),
-              Text(
-                context.l10n.schemeAtAGlance,
-                style: GoogleFonts.poppins(
-                  fontSize: 13.0,
-                  fontWeight: FontWeight.bold,
-                  color: const Color(0xFF0F172A),
+              Flexible(
+                child: Text(
+                  context.l10n.schemeAtAGlance,
+                  softWrap: true,
+                  style: GoogleFonts.poppins(
+                    fontSize: 13.0,
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF0F172A),
+                  ),
                 ),
               ),
             ],
@@ -936,12 +947,16 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                                 color: Color(0xFF2563EB),
                               ),
                               const SizedBox(width: 4),
-                              Text(
-                                context.l10n.getDocumentOnline,
-                                style: GoogleFonts.inter(
-                                  color: const Color(0xFF2563EB),
-                                  fontSize: 10.5,
-                                  fontWeight: FontWeight.bold,
+                              Flexible(
+                                child: FitOneLine(
+                                  child: Text(
+                                    context.l10n.getDocumentOnline,
+                                    style: GoogleFonts.inter(
+                                      color: const Color(0xFF2563EB),
+                                      fontSize: 10.5,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
                                 ),
                               ),
                             ],
@@ -1022,19 +1037,21 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
             Column(
               children: [
                 Container(
-                  width: 24,
-                  height: 24,
+                  width: adaptiveSize(context, base: 24, min: 20, max: 24),
+                  height: adaptiveSize(context, base: 24, min: 20, max: 24),
                   decoration: const BoxDecoration(
                     color: Color(0xFFEFF6FF),
                     shape: BoxShape.circle,
                   ),
                   alignment: Alignment.center,
-                  child: Text(
-                    "${index + 1}",
-                    style: GoogleFonts.poppins(
-                      color: const Color(0xFF2563EB),
-                      fontSize: 10.5,
-                      fontWeight: FontWeight.bold,
+                  child: FitOneLine(
+                    child: Text(
+                      "${index + 1}",
+                      style: GoogleFonts.poppins(
+                        color: const Color(0xFF2563EB),
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),

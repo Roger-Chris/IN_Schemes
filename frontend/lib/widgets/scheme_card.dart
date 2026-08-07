@@ -5,6 +5,7 @@ import '../models/scheme_model.dart';
 import '../models/localized_scheme.dart';
 import '../engine/recommendation_engine.dart';
 import '../providers/app_state_provider.dart';
+import '../services/centralized_translator.dart';
 
 class SchemeCard extends StatelessWidget {
   final Scheme scheme;
@@ -386,9 +387,13 @@ class SchemeCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<AppProvider>(context);
+    final isTa = provider.selectedLanguage == 'ta';
     final locScheme = scheme.toLocalized(provider.selectedLanguage);
-    final tags = List<String>.from(_getOtherTags(locScheme))
+    final rawTags = List<String>.from(_getOtherTags(locScheme))
       ..sort((a, b) => a.length.compareTo(b.length));
+    final tags = isTa
+        ? rawTags.map((t) => CentralizedTranslator.instance.translateTag(t)).toList()
+        : rawTags;
 
     final department = locScheme.sponsoringBody.isNotEmpty
         ? locScheme.sponsoringBody

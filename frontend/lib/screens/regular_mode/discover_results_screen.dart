@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../widgets/gradient_scaffold.dart';
 import '../../providers/app_state_provider.dart';
 import '../../models/scheme_model.dart';
 import '../../engine/recommendation_engine.dart';
 import '../../services/scheme_repository.dart';
 import '../../widgets/scheme_card.dart';
 import '../../widgets/filter_panel.dart';
+import '../../widgets/standard_page_header.dart';
+import '../../l10n/l10n.dart';
 import 'scheme_details_screen.dart';
 import 'search_results_screen.dart';
 
@@ -238,66 +239,18 @@ class _DiscoverResultsScreenState extends State<DiscoverResultsScreen> {
   Widget build(BuildContext context) {
     final provider = Provider.of<AppProvider>(context);
     final filteredSchemes = _getFilteredSchemes(provider);
+    final isTa = provider.selectedLanguage == 'ta';
+    final titleText = isTa ? 'கண்டறிந்த முடிவுகள்' : 'Discover Results';
+    final subTitleText = widget.isAssessmentCompleted
+        ? (isTa ? 'உங்கள் பதில்களின் அடிப்படையில்' : 'Based on your answers')
+        : null;
 
-    return GradientScaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        shadowColor: Colors.transparent,
-        scrolledUnderElevation: 0,
-        automaticallyImplyLeading: false,
-        title: !widget.isAssessmentCompleted
-            ? Text(
-                "Discover Results",
-                style: GoogleFonts.poppins(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: const Color(0xFF0F172A),
-                ),
-              )
-            : Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Discover Results",
-                    style: GoogleFonts.poppins(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: const Color(0xFF0F172A),
-                    ),
-                  ),
-                  Row(
-                    children: [
-                      Text(
-                        "Based on your answers",
-                        style: GoogleFonts.inter(
-                          fontSize: 11,
-                          color: const Color(0xFF64748B),
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFEFF6FF),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          "5/5 Completed",
-                          style: GoogleFonts.poppins(
-                            fontSize: 8.5,
-                            fontWeight: FontWeight.bold,
-                            color: const Color(0xFF2563EB),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+    return Scaffold(
+      backgroundColor: const Color(0xFFF8FAFC),
+      appBar: StandardPageHeader(
+        title: titleText,
+        subtitle: subTitleText,
+        elevation: 1,
       ),
       body: CustomScrollView(
         physics: const BouncingScrollPhysics(),
@@ -379,7 +332,7 @@ class _DiscoverResultsScreenState extends State<DiscoverResultsScreen> {
                           });
                         },
                         child: Text(
-                          "Clear All",
+                          context.l10n.filterClearAll,
                           style: GoogleFonts.inter(
                             fontSize: 11.5,
                             fontWeight: FontWeight.bold,

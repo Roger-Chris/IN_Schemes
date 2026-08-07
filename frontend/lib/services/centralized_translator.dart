@@ -203,6 +203,13 @@ class CentralizedTranslator {
     'business loans & credit': 'தொழில் கடன்கள் & கடன் உதவி',
     'shg & artisan': 'சுய உதவிக்குழு & கைவினைஞர்',
     'women entrepreneurship': 'பெண் தொழில்முனைவு',
+    'enterprise finance': 'நிறுவன நிதி',
+    'research grant / career support': 'ஆராய்ச்சி மானியம் / தொழில் ஆதரவு',
+    'general': 'பொதுவானவை',
+    'manufacturing enterprises': 'உற்பத்தி நிறுவனங்கள்',
+    'land-purchase subsidy': 'நிலக் கொள்முதல் மானியம்',
+    'women welfare / household support': 'பெண்கள் நலன் / குடும்ப ஆதரவு',
+    'enterprise/startup support': 'நிறுவனம் / ஸ்டார்ட்அப் ஆதரவு',
     'business & msme': 'தொழில் & MSME',
     'agriculture & farming': 'வேளாண்மை & விவசாயம்',
     'education & student': 'கல்வி & மாணவர்கள்',
@@ -229,7 +236,6 @@ class CentralizedTranslator {
     'interestsubvention': 'வட்டி மானியம்',
     'trainingsupport': 'பயிற்சி உதவி',
     'marketsupport': 'சந்தைப்படுத்தல் உதவி',
-    'general': 'பொது',
 
     'finance': 'நிதி',
     'tax & gst': 'வரி & ஜிஎஸ்டி',
@@ -317,6 +323,241 @@ class CentralizedTranslator {
         'படி 4: ஒப்புதல் மற்றும் நேரடி பயன் பரிமாற்றம் (DBT) / மானிய கடன் தொகையை வங்கி கணக்கில் செலுத்துதல்',
     'step 4: approval and direct benefit transfer (dbt) / subsidy credit to bank account':
         'படி 4: ஒப்புதல் மற்றும் நேரடி பயன் பரிமாற்றம் (DBT) / மானிய கடன் தொகையை வங்கி கணக்கில் செலுத்துதல்',
+    'find government subsidies, grants, and registration schemes you are eligible for, customized to your profile details.':
+        'உங்கள் சுயவிவர விவரங்களின் அடிப்படையில் நீங்கள் தகுதியான அரசு மானியங்கள், உதவித்தொகைகள் மற்றும் பதிவு திட்டங்களை கண்டறியுங்கள்.',
+    'access loan options, credit guarantees, equipment loans, and sidbi schemes to finance and expand your enterprise.':
+        'உங்கள் தொழிலுக்கு நிதியளிக்கவும் விரிவாக்கவும் கடன் விருப்பங்கள், கடன் உத்தரவாதங்கள், உபகரண கடன்கள் மற்றும் SIDBI திட்டங்களை அணுகுங்கள்.',
+    'learn about corporate tax reductions, gst threshold relief, composition schemes, and legal interest claims for payment delays.':
+        'கார்ப்பரேட் வரி குறைப்புகள், GST வரம்பு விலக்குகள், காம்போசிஷன் திட்டங்கள் மற்றும் தாமதமான செலுத்துகைகளுக்கான சட்டப்பூர்வ வட்டி உரிமைக்கோரல்கள் பற்றி அறியுங்கள்.',
+    'discover export incentives, financial credits, credit insurance, and regulatory agencies to expand your business globally.':
+        'உங்கள் தொழிலை உலகளவில் விரிவாக்க ஏற்றுமதி சலுகைகள், நிதி கடன்கள், கடன் காப்பீடு மற்றும் ஒழுங்குமுறை முகமைகளை கண்டறியுங்கள்.',
+    'discount your trade invoices through online bidding with banks and financial institutions to get immediate cash flow without collateral.':
+        'பிணையமின்றி உடனடி பணப்புழக்கத்தைப் பெற வங்கிகள் மற்றும் நிதி நிறுவனங்களின் ஆன்லைன் ஏலம் மூலம் உங்கள் வர்த்தக இன்வாய்ஸ்களை தள்ளுபடி செய்யுங்கள்.',
+    'connect with corporate social responsibility (csr) programs, tech incubation grants, and specialized skill development clusters.':
+        'கார்ப்பரேட் சமூகப் பொறுப்பு (CSR) திட்டங்கள், தொழில்நுட்ப இன்குபேஷன் மானியங்கள் மற்றும் சிறப்பு திறன் மேம்பாட்டு கிளஸ்டர்களுடன் இணையுங்கள்.',
+    'understand government department responsibilities and reach the appropriate authority (central ministry, state directorate, or district dic) for business help.':
+        'அரசுத் துறைகளின் பொறுப்புகளைப் புரிந்து கொண்டு தொழில் உதவிக்காக பொருத்தமான அதிகார அமைப்பை (மத்திய அமைச்சகம், மாநில இயக்ககம் அல்லது மாவட்ட DIC) தொடர்பு கொள்ளுங்கள்.',
+    'identify the right institutions (sidbi, nsic, dic, kvic, etc.) and explore their service catalogs, contact avenues, and programs.':
+        'சரியான நிறுவனங்களை (SIDBI, NSIC, DIC, KVIC போன்றவை) அடையாளம் கண்டு அவற்றின் சேவைப் பட்டியல்கள், தொடர்பு வழிகள் மற்றும் திட்டங்களை ஆராயுங்கள்.',
+    'export readiness assessment': 'ஏற்றுமதி தயார்நிலை மதிப்பீடு',
+    'complete this checklist to identify missing links for international trade registration.':
+        'சர்வதேச வர்த்தகப் பதிவிற்கான விடுபட்டத் தேவைகளைக் கண்டறிய இந்த சரிபார்ப்புப் பட்டியலைப் பூர்த்தி செய்யுங்கள்.',
+    'do you have an import export code (iec) from dgft?':
+        'உங்களிடம் DGFT வழங்கும் இறக்குமதி ஏற்றுமதி குறியீடு (IEC) உள்ளதா?',
+    'apply online on dgft.gov.in. it is issued instantly against pan.':
+        'dgft.gov.in இல் ஆன்லைனில் விண்ணப்பிக்கவும். இது PAN அடிப்படையில் உடனடியாக வழங்கப்படுகிறது.',
+    'do you have an active bank account and ad code registration?':
+        'உங்களிடம் செயலில் உள்ள வங்கிக் கணக்கு மற்றும் AD Code பதிவு உள்ளதா?',
+    'request an ad (authorized dealer) code from your bank and register it with customs.':
+        'உங்கள் வங்கியிலிருந்து AD (அங்கீகரிக்கப்பட்ட விநியோகஸ்தர்) குறியீட்டைக் கேட்டு சுங்கத்துறையில் பதிவு செய்யவும்.',
+    'have you identified the hs code (harmonized system code) for your product?':
+        'உங்கள் தயாரிப்புக்கான HS குறியீட்டை (இணக்கமான அமைப்பு குறியீடு) கண்டறிந்துவிட்டீர்களா?',
+    'hs codes classify products globally. search online or consult a customs broker.':
+        'HS குறியீடுகள் தயாரிப்புகளை உலகளவில் வகைப்படுத்துகின்றன. ஆன்லைனில் தேடவும் அல்லது சுங்க தரகரை ஆலோசிக்கவும்.',
+    'is your business registered under udyam (msme registration)?':
+        'உங்கள் தொழில் உத்யம் (MSME பதிவு) கீழ் பதிவு செய்யப்பட்டுள்ளதா?',
+    'free registration on udyamregistration.gov.in. required for export subsidies.':
+        'udyamregistration.gov.in இல் இலவச பதிவு. ஏற்றுமதி மானியங்களுக்கு தேவை.',
+    'do you have an rcmc from an export promotion council?':
+        'ஏற்றுமதி மேம்பாட்டுக் குழுவில் இருந்து RCMC சான்றிதழ் உங்களிடம் உள்ளதா?',
+    'registration cum membership certificate (rcmc) is needed to claim duty refunds/incentives.':
+        'வரித் திரும்பப் பெறுதல்/சலுகைகளைக் கோர பதிவு மற்றும் உறுப்பினர் சான்றிதழ் (RCMC) தேவை.',
+    'treds invoice discounting flow': 'TReDS இன்வாய்ஸ் தள்ளுபடி செயல்முறை',
+    '1. invoice upload': '1. இன்வாய்ஸ் பதிவேற்றம்',
+    'msme seller uploads the invoice for goods/services delivered to the corporate buyer on the treds platform (rxil/m1xchange/invoicemart).':
+        'MSME விற்பனையாளர் கார்ப்பரேட் வாங்குபவருக்கு வழங்கப்பட்ட பொருட்கள்/சேவைகளுக்கான இன்வாய்ஸை TReDS தளத்தில் (RXIL/M1xchange/Invoicemart) பதிவேற்றுகிறார்.',
+    'seller uploads invoice & supporting documents.':
+        'விற்பனையாளர் இன்வாய்ஸ் மற்றும் ஆதரவு ஆவணங்களை பதிவேற்றுகிறார்.',
+    '2. buyer acceptance': '2. வாங்குபவரின் ஏற்பு',
+    'the corporate buyer logs into the treds portal, verifies the details, and digitally accepts the uploaded invoice.':
+        'கார்ப்பரேட் வாங்குபவர் TReDS போர்ட்டலில் உள்நுழைந்து, விவரங்களைச் சரிபார்த்து, பதிவேற்றிய இன்வாய்ஸை டிஜிட்டல் முறையில் ஏற்கிறார்.',
+    'buyer approves invoice; it becomes a legally binding payment obligation.':
+        'வாங்குபவர் இன்வாய்ஸை அங்கீகரிக்கிறார்; இது சட்டப்பூர்வ கட்டணப் பொறுப்பாக மாறுகிறது.',
+    '3. bank bidding': '3. வங்கி ஏலம்',
+    'multiple financiers (banks and nbfcs) compete by placing bids with their discount rates (interest rates) to buy the invoice.':
+        'பல நிதியாளர்கள் (வங்கிகள் மற்றும் NBFCகள்) இன்வாய்ஸை வாங்க தங்களது தள்ளுபடி விகிதங்களுடன் (வட்டி விகிதங்கள்) ஏலம் எடுக்க போட்டியிடுகின்றனர்.',
+    'banks bid anonymously based on the buyer\'s credit rating.':
+        'வாங்குபவரின் கடன் மதிப்பீட்டின் அடிப்படையில் வங்கிகள் அநாமதேயமாக ஏலம் எடுக்கின்றன.',
+    '4. funds disbursal': '4. நிதி வழங்குதல்',
+    'seller selects the best bid (lowest discount rate). funds are credited to the seller\'s bank account within 24-48 hours (t+1 or t+2) minus the discount.':
+        'விற்பனையாளர் சிறந்த ஏலத்தைத் (குறைந்த தள்ளுபடி விகிதம்) தேர்ந்தெடுக்கிறார். தள்ளுபடி கழித்து 24-48 மணி நேரத்திற்குள் (T+1 அல்லது T+2) விற்பனையாளரின் வங்கிக் கணக்கில் நிதி வரவு வைக்கப்படுகிறது.',
+    'seller gets instant working capital; buyer pays the bank on the due date.':
+        'விற்பனையாளர் உடனடி நடப்பு மூலதனத்தைப் பெறுகிறார்; வாங்குபவர் குறித்த தேதியில் வங்கிக்குச் செலுத்துகிறார்.',
+    'explore csr & technology clusters': 'CSR மற்றும் தொழில்நுட்ப கிளஸ்டர்களை ஆராயுங்கள்',
+    'search cluster / tech schemes': 'கிளஸ்டர் / தொழில்நுட்ப திட்டங்களைத் தேடுக',
+    'government authorities tree': 'அரசு அதிகார அமைப்புகள் படிநிலை',
+    'central': 'மத்திய அரசு',
+    'state': 'மாநில அரசு',
+    'district': 'மாவட்ட நிலை',
+    'ministry of micro, small and medium enterprises (m/o msme)':
+        'குறு, சிறு மற்றும் நடுத்தர தொழில்கள் அமைச்சகம் (M/o MSME)',
+    '• formulation and administration of rules, regulations, and laws.\n• designs apex developmental schemes (pmegp, cgtmse, sfurti).\n• coordinates with other central ministries for national policy.':
+        '• விதிகள், விதிமுறைகள் மற்றும் சட்டங்களை உருவாக்குதல் மற்றும் நிர்வகித்தல்.\n• முதன்மை மேம்பாட்டுத் திட்டங்களை (PMEGP, CGTMSE, SFURTI) வடிவமைத்தல்.\n• தேசியக் கொள்கைக்காக பிற மத்திய அமைச்சகங்களுடன் ஒருங்கிணைத்தல்.',
+    'located in udyog bhawan, new delhi. operates msme development institutes (msme-di) nationwide.':
+        'புது தில்லியில் உள்ள உத்யோக் பவனில் அமைந்துள்ளது. நாடு முழுவதும் MSME மேம்பாட்டு நிறுவனங்களை (MSME-DI) இயக்குகிறது.',
+    'state directorate of industries / commissionerate':
+        'மாநில தொழில்கள் இயக்ககம் / ஆணையரகம்',
+    '• implements central and state industrial policies.\n• handles state capital incentives, interest subsidies, and power tariff concessions.\n• coordinates development of industrial parks and estates.':
+        '• மத்திய மற்றும் மாநில தொழில் கொள்கைகளை செயல்படுத்துகிறது.\n• மாநில மூலதனச் சலுகைகள், வட்டி மானியங்கள் மற்றும் மின் கட்டண சலுகைகளைக் கையாள்கிறது.\n• தொழில் பூங்காக்கள் மற்றும் எஸ்டேட்டுகளின் வளர்ச்சியை ஒருங்கிணைக்கிறது.',
+    'in tamil nadu, this is the department of industries and commerce (msme department).':
+        'தமிழ்நாட்டில், இது தொழில் மற்றும் வணிகத் துறை (MSME துறை) ஆகும்.',
+    'district industries centre (dic)': 'மாவட்ட தொழில் மையம் (DIC)',
+    '• nodal agency at the grass-roots level providing udyam registration assistance.\n• recommends loan approvals to banks under pmegp.\n• performs spot verification of industrial units for subsidy release.\n• resolves local vendor issues via micro & small enterprises facilitation council (msefc).':
+        '• உத்யம் பதிவு உதவியை வழங்கும் அடிமட்ட அளவிலான முதன்மை நிறுவனம்.\n• PMEGP இன் கீழ் வங்கிகளுக்கு கடன் ஒப்புதல்களை பரிந்துரைக்கிறது.\n• மானிய வெளியீட்டிற்காக தொழில்முறை பிரிவுகளின் நேரடி கள ஆய்வை மேற்கொள்கிறது.\n• MSEFC மூலம் உள்ளூர் விற்பனையாளர் பிரச்சினைகளை தீர்க்கிறது.',
+    'each district in india has a dic, headed by a general manager.':
+        'இந்தியாவில் உள்ள ஒவ்வொரு மாவட்டத்திலும் ஒரு பொது மேலாளர் தலைமையிலான DIC உள்ளது.',
+    'search support institutions': 'ஆதரவு நிறுவனங்களைத் தேடுக',
+    'principal financial institution for msme promotion, financing, and development.':
+        'MSME ஊக்குவிப்பு, நிதியளிப்பு மற்றும் வளர்ச்சிக்கான முதன்மை நிதி நிறுவனம்.',
+    'direct lending, venture capital, refinance to banks, startup funding.':
+        'நேரடி கடன், வென்ச்சர் கேபிட்டல், வங்கிகளுக்கு மறுநிதியளிப்பு, ஸ்டார்ட்அப் நிதி.',
+    'government enterprise facilitating marketing, technology, and raw material support.':
+        'சந்தைப்படுத்தல், தொழில்நுட்பம் மற்றும் மூலப்பொருட்களின் உதவியை வழங்கும் அரசு நிறுவனம்.',
+    'raw material assistance scheme, single point registration scheme for govt tenders.':
+        'மூலப்பொருள் உதவித் திட்டம், அரசு டெண்டர்களுக்கான ஒற்றைப் புள்ளி பதிவுத் திட்டம்.',
+    'district-level nodal agency providing single-window assistance for setting up msmes.':
+        'MSMEகளை அமைப்பதற்கான ஒற்றைச் சாளர உதவியை வழங்கும் மாவட்ட அளவிலான முதன்மை நிறுவனம்.',
+    'udyam registration support, state subsidy verification, local clearances, pmegp implementation.':
+        'உத்யம் பதிவு ஆதரவு, மாநில மானிய சரிபார்ப்பு, உள்ளூர் அனுமதிகள், PMEGP அமலாக்கம்.',
+    'nodal agency implementing rural employment and cottage industry schemes.':
+        'ஊரக வேலைவாய்ப்பு மற்றும் குடிசைத் தொழில் திட்டங்களை செயல்படுத்தும் முதன்மை நிறுவனம்.',
+    'subsidies, training centers, khadi production support, sales outlets.':
+        'மானியங்கள், பயிற்சி மையங்கள், கதர் உற்பத்தி ஆதரவு, விற்பனை நிலையங்கள்.',
+    'state-level financial institution providing term loans to msmes in tamil nadu.':
+        'தமிழ்நாட்டில் உள்ள MSMEகளுக்கு தவணை கடன்களை வழங்கும் மாநில அளவிலான நிதி நிறுவனம்.',
+    'term loans for land, building, and machinery acquisition.':
+        'நிலம், கட்டிடம் மற்றும் இயந்திரங்கள் வாங்குவதற்கான தவணைக் கடன்கள்.',
+    'nodal agencies for fostering startup ecosystem and facilitating msmes in tamil nadu.':
+        'தமிழ்நாட்டில் ஸ்டார்ட்அப் சுற்றுச்சூழல் அமைப்பை வளர்ப்பதற்கும் MSMEகளை எளிாக்குவதற்கும் முதன்மை முகமைகள்.',
+    'tanseed seed fund, incubator support, marketing assistance, buyer-seller meets.':
+        'TANSEED விதை நிதி, இன்குபேட்டர் ஆதரவு, சந்தைப்படுத்தல் உதவி, வாங்குபவர்-விற்பனையாளர் சந்திப்புகள்.',
+    'industrial infrastructure development agency.':
+        'தொழில்துறை உள்கட்டமைப்பு மேம்பாட்டு முகமை.',
+    'allotment of plots/sheds in industrial parks, basic infrastructure provisions.':
+        'தொழில் பூங்காக்களில் மனைகள்/கொட்டகைகள் ஒதுக்கீடு, அடிப்படை உள்கட்டமைப்பு விதிகள்.',
+    'business utilities & tools': 'தொழில்முறை பயன்பாடுகள் & கருவிகள்',
+    'udyam classifier': 'உத்யம் வகைப்படுத்தி',
+    'check msme tier': 'MSME நிலையைச் சரிபார்க்கவும்',
+    'subsidy estimator': 'மானியம் மதிப்பீட்டாளர்',
+    'machinery subsidies': 'இயந்திர மானியங்கள்',
+    'gst calculator': 'GST கால்குலேட்டர்',
+    'compute gst invoice': 'GST இன்வாய்ஸைக் கணக்கிடுக',
+    'emi calculator': 'EMI கால்குலேட்டர்',
+    'calculate loan emis': 'கடன் EMIகளைக் கணக்கிடுக',
+    'dpiit eligibility': 'DPIIT தகுதிநிலை',
+    'check startup criteria': 'ஸ்டார்ட்அப் தகுதிகளைச் சரிபார்க்கவும்',
+    'valuation estimator': 'மதிப்பீடு மதிப்பீட்டாளர்',
+    'seed valuation ranges': 'விதை நிலை மதிப்பீட்டு வரம்புகள்',
+    'doc checklist': 'ஆவணங்கள் சரிபார்ப்பு',
+    'business setup docs': 'தொழில் தொடக்க ஆவணங்கள்',
+    'udyam msme classifier': 'உத்யம் MSME வகைப்படுத்தி',
+    'classify your business under official government guidelines.':
+        'அதிகாரப்பூர்வ அரசு வழிகாட்டுதல்களின் கீழ் உங்கள் தொழிலை வகைப்படுத்துங்கள்.',
+    'investment in plant & machinery': 'ஆலை & இயந்திரங்களில் முதலீடு',
+    'enter original purchase value of machinery in crores':
+        'இயந்திரங்களின் அசல் கொள்முதல் மதிப்பை கோடிகளில் உள்ளிடவும்',
+    'annual turnover': 'ஆண்டு விற்றுமுதல்',
+    'enter total revenue/sales of last financial year in crores':
+        'கடந்த நிதியாண்டின் மொத்த வருவாய்/விற்பனையை கோடிகளில் உள்ளிடவும்',
+    'classification result': 'வகைப்பாட்டின் முடிவு',
+    'calculate classification': 'வகைப்பாட்டைக் கணக்கிடுக',
+    'micro enterprise': 'குறு நிறுவனம்',
+    'small enterprise': 'சிறு நிறுவனம்',
+    'medium enterprise': 'நடுத்தர நிறுவனம்',
+    'large enterprise (beyond msme limits)':
+        'பெரிய நிறுவனம் (MSME வரம்புகளுக்கு மேல்)',
+    'limits: micro (≤1cr / ≤5cr) | small (≤10cr / ≤50cr) | medium (≤50cr / ≤250cr)':
+        'வரம்புகள்: குறு (≤1கோடி / ≤5கோடி) | சிறு (≤10கோடி / ≤50கோடி) | நடுத்தரம் (≤50கோடி / ≤250கோடி)',
+    'gst / tax calculator': 'GST / வரி கால்குலேட்டர்',
+    'calculate cgst, sgst, and total invoice amounts.':
+        'CGST, SGST மற்றும் மொத்த இன்வாய்ஸ் தொகைகளைக் கணக்கிடுங்கள்.',
+    'base amount': 'அடிப்படைத் தொகை',
+    'enter net value of goods or services before gst':
+        'GSTக்கு முந்தைய பொருட்கள் அல்லது சேவைகளின் நிகர மதிப்பை உள்ளிடவும்',
+    'gst rate (%)': 'GST விகிதம் (%)',
+    'calculate tax': 'வரியைக் கணக்கிடுக',
+    'please enter a valid base amount':
+        'செல்லுபடியாகும் அடிப்படைத் தொகையை உள்ளிடவும்',
+    'invalid input': 'செல்லுபடியற்ற உள்ளீடு',
+    'please enter valid values greater than 0':
+        '0 ஐ விட அதிகமான செல்லுபடியாகும் மதிப்புகளை உள்ளிடவும்',
+    'base price': 'அடிப்படை விலை',
+    'total invoice': 'மொத்த இன்வாய்ஸ்',
+    'selected notifications marked as read':
+        'தேர்ந்தெடுக்கப்பட்ட அறிவிப்புகள் படித்ததாகக் குறிக்கப்பட்டன',
+    'selected notifications deleted':
+        'தேர்ந்தெடுக்கப்பட்ட அறிவிப்புகள் நீக்கப்பட்டன',
+    'filter options opened': 'வடிகட்டி விருப்பங்கள் திறக்கப்பட்டன',
+    'all notifications marked as read':
+        'அனைத்து அறிவிப்புகளும் படித்ததாகக் குறிக்கப்பட்டன',
+    'all notifications deleted': 'அனைத்து அறிவிப்புகளும் நீக்கப்பட்டன',
+    'retry voice': 'மீண்டும் குரலை முயற்சிக்கவும்',
+    'business loan emi calculator': 'தொழில் கடன் EMI கால்குலேட்டர்',
+    'calculate monthly payments for your business loan.':
+        'உங்கள் தொழில் கடனுக்கான மாதாந்திர தவணைகளைக் கணக்கிடுங்கள்.',
+    'loan amount': 'கடன் தொகை',
+    'enter total business loan sum required':
+        'தேவையான மொத்த தொழில் கடன் தொகையை உள்ளிடவும்',
+    'interest rate (% p.a.)': 'வட்டி விகிதம் (% ஆண்டுக்கு)',
+    'enter annual rate': 'ஆண்டு வட்டி விகிதத்தை உள்ளிடவும்',
+    'tenure (months)': 'கால அளவு (மாதங்களில்)',
+    'enter term in months': 'மாதங்களில் கால அளவை உள்ளிடவும்',
+    'calculate emi': 'EMI கணக்கிடுக',
+    'please enter valid inputs': 'செல்லுபடியாகும் உள்ளீடுகளை உள்ளிடவும்',
+    'dpiit recognition checklist': 'DPIIT அங்கீகார சரிபார்ப்புப் பட்டியல்',
+    'evaluate if your business qualifies as a startup under dpiit rules.':
+        'DPIIT விதிகளின் கீழ் உங்கள் தொழில் ஸ்டார்ட்அப்பாக தகுதி பெறுகிறதா என்பதை மதிப்பிடுங்கள்.',
+    'registered as pvt ltd / llp / partnership':
+        'Pvt Ltd / LLP / பங்குதாரராகப் பதிவு செய்யப்பட்டுள்ளது',
+    'must be registered in india': 'இந்தியாவில் பதிவு செய்யப்பட்டிருக்க வேண்டும்',
+    'incorporation age is under 10 years':
+        'நிறுவன தொடக்கக் காலம் 10 ஆண்டுகளுக்குள் உள்ளது',
+    'from incorporation date': 'நிறுவனம் தொடங்கப்பட்ட தேதியிலிருந்து',
+    'annual turnover has never exceeded ₹100 cr':
+        'ஆண்டு விற்றுமுதல் ₹100 கோடியை தாண்டவில்லை',
+    'for any financial year': 'எந்தவொரு நிதியாண்டிற்கும்',
+    'working towards innovation/scaling':
+        'புத்தாக்கம்/தொழில் விரிவாக்கத்தில் செயல்படுகிறது',
+    'developing new products/processes':
+        'புதிய தயாரிப்புகள்/செயல்முறைகளை உருவாக்குதல்',
+    'eligible for dpiit recognition': 'DPIIT அங்கீகாரத்திற்கு தகுதியானது',
+    'not eligible (must fulfill all 4 criteria)':
+        'தகுதியற்றது (4 விதிகளையும் பூர்த்தி செய்ய வேண்டும்)',
+    'seed valuation estimator': 'விதை நிலை மதிப்பீடு கணக்கிடுபவர்',
+    'calculate estimated seed stage valuation ranges based on mrr and growth.':
+        'MRR மற்றும் வளர்ச்சியின் அடிப்படையில் விதை நிலை மதிப்பீட்டு வரம்பைக் கணக்கிடுங்கள்.',
+    'monthly recurring revenue (mrr)': 'மாதாந்திரத் திரும்பவரும் வருவாய் (MRR)',
+    'annual growth rate (%)': 'ஆண்டு வளர்ச்சி விகிதம் (%)',
+    'calculate valuation': 'மதிப்பீட்டைக் கணக்கிடுக',
+    'business setup document checklist': 'தொழில் தொடக்க ஆவணப் பட்டியல்',
+    'essential documents for registering and operating a business in india.':
+        'இந்தியாவில் ஒரு தொழிலைப் பதிவு செய்து இயக்குவதற்கான அத்தியாவசிய ஆவணங்கள்.',
+    'personalized schemes matched to business profile':
+        'உங்கள் தொழில் சுயவிவரத்திற்கு பொருந்தும் தனிப்பயன் திட்டங்கள்',
+    'personalized schemes matched to your profile':
+        'உங்கள் சுயவிவரத்திற்கு பொருந்தும் தனிப்பயன் திட்டங்கள்',
+    'complete your profile or explore schemes with the search engine to get smart matching results.':
+        'உங்கள் சுயவிவரத்தை பூர்த்தி செய்து அல்லது தேடுபொறி மூலம் திட்டங்களை ஆராய்ந்து பொருத்தமான முடிவுகளைப் பெறுங்கள்.',
+    'instantly search our database for credit support, collateral-free business loans, and sidbi programs.':
+        'கடன் உதவி, பிணையமற்ற தொழில் கடன்கள் மற்றும் SIDBI திட்டங்களுக்காக எங்கள் தரவுத்தளத்தில் உடனடி தேடல் செய்யுங்கள்.',
+    'under the msmed act section 15/16, buyers must pay 3x the rbi bank rate as compound interest with monthly rests for delays exceeding 45 days.':
+        'MSMED சட்டம் பிரிவு 15/16-ன் கீழ், 45 நாட்களுக்கு மேல் தாமதமாகும் செலுத்துகைகளுக்கு வாங்குபவர்கள் RBI வங்கி வீதத்தை விட 3 மடங்கு கூட்டு வட்டியை செலுத்த வேண்டும்.',
+    'discover every government scheme in india':
+        'இந்தியாவின் ஒவ்வொரு அரசு திட்டத்தையும் கண்டறியுங்கள்',
+    'search for schemes offering cluster development, technology upgrades, and incubator grants.':
+        'கிளஸ்டர் மேம்பாடு, தொழில்நுட்ப மேம்பாடு மற்றும் இன்குபேட்டர் மானியங்களை வழங்கும் திட்டங்களை தேடுங்கள்.',
+    'what the user gets': 'பயனர் பெறும் நன்மைகள்',
+    'interactive tools & actions': 'ஊடாடும் கருவிகள் & நடவடிக்கைகள்',
+    'main features inside': 'முதன்மை அம்சங்கள்',
+    'delayed payment interest calculator': 'தாமதமான செலுத்துகை வட்டி கால்குலேட்டர்',
+    'invoice amount': 'இன்வாய்ஸ் தொகை',
+    'days delayed': 'தாமதமான நாட்கள்',
+    'interest rate': 'வட்டி விகிதம்',
+    'total claimable': 'மொத்த உரிமைக்கோரக்கூடிய தொகை',
+    'search msme loans & funding': 'MSME கடன்கள் & நிதியுதவி தேடுக',
+    'search schemes': 'திட்டங்களை தேடுக',
+    'complete profile': 'சுயவிவரத்தை பூர்த்தி செய்க',
+    'find funding options': 'நிதியுதவி விருப்பங்களைக் கண்டறியவும்',
     'udyam registration number': 'உத்யம் பதிவு எண்',
     'professional / bank costs vary': 'தொழில்முறை / வங்கி செலவுகள் மாறுபடும்',
     'government authorities / sidbi': 'அரசு அமைப்புகள் / SIDBI',
@@ -367,8 +608,6 @@ class CentralizedTranslator {
     'reimbursement': 'மறுசெலுத்துகை / திரும்பப் பெறுதல்',
     'government small-savings scheme': 'அரசு சிறுகமிப்புத் திட்டம்',
     'women entrepreneurship': 'பெண் தொழில்முனைவோர்',
-    'base price': 'அடிப்படை விலை',
-    'total invoice': 'மொத்த இன்வாய்ஸ்',
     'monthly emi': 'மாதாந்திர தவணை (EMI)',
     'principal amount': 'அசல் தொகை',
     'total interest payable': 'செலுத்த வேண்டிய மொத்த வட்டி',
@@ -411,11 +650,6 @@ class CentralizedTranslator {
     'wrong scheme details': 'தவறான திட்ட விவரங்கள்',
     'feature request': 'புதிய வசதி கோரிக்கை',
     'please describe the issue.': 'தயவுசெய்து சிக்கலை விவரிக்கவும்.',
-    'selected notifications deleted': 'தேர்ந்தெடுக்கப்பட்ட அறிவிப்புகள் நீக்கப்பட்டன',
-    'filter options opened': 'வடிகட்டி விருப்பங்கள் திறக்கப்பட்டன',
-    'all notifications marked as read':
-        'அனைத்து அறிவிப்புகளும் படிக்கப்பட்டதாக குறிக்கப்பட்டன',
-    'all notifications deleted': 'அனைத்து அறிவிப்புகளும் நீக்கப்பட்டன',
     'a new otp has been sent to your number. (use 123456 to test)':
         'உங்கள் எண்ணிற்கு புதிய OTP அனுப்பப்பட்டுள்ளது. (சோதிக்க 123456 பயன்படுத்தவும்)',
     'failed to fetch location': 'இருப்பிடத்தைப் பெற முடியவில்லை',
@@ -423,19 +657,6 @@ class CentralizedTranslator {
     'clear': 'தெளிவான ஒலி',
     'latest': 'புதியது',
     'svg map here': 'வரைபடம்',
-    'registered as pvt ltd / llp / partnership':
-        'Pvt Ltd / LLP / பங்குதாரர் நிறுவனமாக பதிவு செய்யப்பட்டது',
-    'must be registered in india': 'இந்தியாவில் பதிவு செய்யப்பட்டிருக்க வேண்டும்',
-    'incorporation age is under 10 years':
-        'நிறுவன பதிவு காலம் 10 ஆண்டுகளுக்கு உட்பட்டது',
-    'from incorporation date': 'நிறுவன பதிவு தேதியில் இருந்து',
-    'annual turnover has never exceeded ₹100 cr':
-        'ஆண்டு விற்றுமுதல் ஒருபோதும் ₹100 கோடியைத் தாண்டவில்லை',
-    'for any financial year': 'எந்த ஒரு நிதி ஆண்டிலும்',
-    'working towards innovation/scaling':
-        'புதுமை/தொழில் விரிவாக்கத்தை நோக்கிய செயல்பாடு',
-    'developing new products/processes':
-        'புதிய தயாரிப்புகள்/செயல்முறைகளை உருவாக்குதல்',
     'micro manufacturing enterprises': 'குறு உற்பத்தி நிறுவனங்கள்',
     'micro enterprises': 'குறு நிறுவனங்கள்',
     'small enterprises': 'சிறு நிறுவனங்கள்',

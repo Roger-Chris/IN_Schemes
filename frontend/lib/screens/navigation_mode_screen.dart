@@ -6,6 +6,8 @@ import 'regular_mode/language_selection_screen.dart';
 import 'regular_mode/profile_setup_screen.dart';
 import '../providers/app_state_provider.dart';
 import '../main.dart';
+import '../utils/responsive.dart';
+import '../l10n/l10n.dart';
 
 enum NavigationMode { regular, companion }
 
@@ -107,11 +109,11 @@ class _NavigationModeScreenState extends State<NavigationModeScreen> {
                                             fontWeight: FontWeight.bold,
                                             color: kSlate800,
                                           ),
-                                          children: const [
-                                            TextSpan(text: 'Choose Your '),
+                                          children: [
+                                            TextSpan(text: context.l10n.navChooseYourPrefix),
                                             TextSpan(
-                                              text: 'Experience',
-                                              style: TextStyle(color: kPrimaryBlue),
+                                              text: context.l10n.navExperienceSuffix,
+                                              style: const TextStyle(color: kPrimaryBlue),
                                             ),
                                           ],
                                         ),
@@ -136,8 +138,8 @@ class _NavigationModeScreenState extends State<NavigationModeScreen> {
                                       NavigationOptionCard(
                                         mode: NavigationMode.regular,
                                         isSelected: _selectedMode == NavigationMode.regular,
-                                        title: 'Regular Navigation',
-                                        subtitle: 'Browse and explore the app independently.',
+                                        title: context.l10n.navRegularNavigationTitle,
+                                        subtitle: context.l10n.navModeRegularSubtitle,
                                         icon: Icons.explore_rounded,
                                         iconColor: kPrimaryBlue,
                                         iconBgColor: const Color(0xFFEFF6FF),
@@ -157,8 +159,8 @@ class _NavigationModeScreenState extends State<NavigationModeScreen> {
                                       NavigationOptionCard(
                                         mode: NavigationMode.companion,
                                         isSelected: _selectedMode == NavigationMode.companion,
-                                        title: 'AI Companion',
-                                        subtitle: 'Let your AI guide you step by step.',
+                                        title: context.l10n.navAiCompanionTitle,
+                                        subtitle: context.l10n.navModeCompanionSubtitle,
                                         icon: Icons.support_agent_rounded,
                                         iconColor: const Color(0xFF2563EB),
                                         iconBgColor: const Color(0xFFEFF6FF),
@@ -179,9 +181,9 @@ class _NavigationModeScreenState extends State<NavigationModeScreen> {
                                   const SizedBox(height: 12),
 
                                   // Info Card
-                                  const InfoCard(
-                                    title: 'Switch Anytime',
-                                    description: 'You can change your navigation mode later from Settings.',
+                                  InfoCard(
+                                    title: context.l10n.navSwitchAnytimeTitle,
+                                    description: context.l10n.navSwitchAnytimeDesc,
                                   ),
                                 ],
                               ),
@@ -357,12 +359,16 @@ class NavigationOptionCard extends StatelessWidget {
                                 children: [
                                   Icon(chips[i].icon, color: iconColor, size: 9),
                                   const SizedBox(width: 4),
-                                  Text(
-                                    chips[i].label,
-                                    style: GoogleFonts.inter(
-                                      fontSize: 10, // Compact chip size
-                                      fontWeight: FontWeight.w600,
-                                      color: iconColor,
+                                  Flexible(
+                                    child: FitOneLine(
+                                      child: Text(
+                                        chips[i].label,
+                                        style: GoogleFonts.inter(
+                                          fontSize: 10, // Compact chip size
+                                          fontWeight: FontWeight.w600,
+                                          color: iconColor,
+                                        ),
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -511,12 +517,16 @@ class PrimaryButton extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
-              'Continue',
-              style: GoogleFonts.inter(
-                fontSize: 16.5,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
+            Flexible(
+              child: FitOneLine(
+                child: Text(
+                  'Continue',
+                  style: GoogleFonts.inter(
+                    fontSize: 16.5,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
               ),
             ),
             const SizedBox(width: 8),

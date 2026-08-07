@@ -4,7 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../providers/app_state_provider.dart';
 import '../utils/constants.dart';
 import '../utils/profile_l10n.dart';
-import '../services/centralized_translator.dart';
+import '../utils/responsive.dart';
 import 'otp_screen.dart';
 import 'navigation_mode_screen.dart';
 
@@ -327,12 +327,16 @@ class _LoginScreenState extends State<LoginScreen> {
               : Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(
-                      l('send_otp'),
-                      style: GoogleFonts.inter(
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                    Flexible(
+                      child: FitOneLine(
+                        child: Text(
+                          l('send_otp'),
+                          style: GoogleFonts.inter(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -400,7 +404,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           if (mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text('${CentralizedTranslator.instance.translate('Error')}: $e'),
+                                content: Text('${ProfileL10n.t('error', isTa)}: $e'),
                                 backgroundColor: AppConstants.errorColor,
                               ),
                             );
@@ -418,12 +422,16 @@ class _LoginScreenState extends State<LoginScreen> {
                   children: [
                     const GoogleIcon(size: 18),
                     const SizedBox(width: 10),
-                    Text(
-                      'Google',
-                      style: GoogleFonts.inter(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF475569), // Slate 600
+                    Flexible(
+                      child: FitOneLine(
+                        child: Text(
+                          'Google',
+                          style: GoogleFonts.inter(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF475569), // Slate 600
+                          ),
+                        ),
                       ),
                     ),
                   ],
@@ -452,12 +460,16 @@ class _LoginScreenState extends State<LoginScreen> {
                       size: 20,
                     ),
                     const SizedBox(width: 8),
-                    Text(
-                      'Apple',
-                      style: GoogleFonts.inter(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF475569), // Slate 600
+                    Flexible(
+                      child: FitOneLine(
+                        child: Text(
+                          'Apple',
+                          style: GoogleFonts.inter(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF475569), // Slate 600
+                          ),
+                        ),
                       ),
                     ),
                   ],

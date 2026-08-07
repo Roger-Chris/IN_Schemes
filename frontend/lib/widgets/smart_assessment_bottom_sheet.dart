@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../providers/app_state_provider.dart';
 import '../models/user_profile.dart';
 import '../services/centralized_translator.dart';
+import '../utils/responsive.dart';
 
 /// Pre-localized questionnaire node for UI rendering.
 class LocalizedQuestionNode {
@@ -386,7 +387,8 @@ class _SmartAssessmentBottomSheetState extends State<SmartAssessmentBottomSheet>
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
+              Flexible(
+                child: Row(
                 children: [
                   Container(
                     padding: widget.cardType == 'state' ? EdgeInsets.zero : const EdgeInsets.all(6),
@@ -418,15 +420,19 @@ class _SmartAssessmentBottomSheetState extends State<SmartAssessmentBottomSheet>
                           ),
                   ),
                   const SizedBox(width: 8),
-                  Text(
-                    cardTitleLocalized,
-                    style: GoogleFonts.poppins(
-                      fontSize: isTamil ? 13.0 : 14.0,
-                      fontWeight: FontWeight.bold,
-                      color: const Color(0xFF0F172A),
+                  Flexible(
+                    child: Text(
+                      cardTitleLocalized,
+                      softWrap: true,
+                      style: GoogleFonts.poppins(
+                        fontSize: isTamil ? 13.0 : 14.0,
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF0F172A),
+                      ),
                     ),
                   ),
                 ],
+                ),
               ),
               IconButton(
                 icon: const Icon(Icons.close, size: 20),
@@ -551,29 +557,37 @@ class _SmartAssessmentBottomSheetState extends State<SmartAssessmentBottomSheet>
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               if (_questionHistory.isNotEmpty)
-                TextButton.icon(
-                  onPressed: _goBack,
-                  icon: const Icon(Icons.arrow_back, size: 16),
-                  label: Text(
-                    backLabel,
-                    style: GoogleFonts.inter(
-                      fontSize: isTamil ? 11.0 : 12.0,
-                      fontWeight: FontWeight.bold,
+                Flexible(
+                  child: TextButton.icon(
+                    onPressed: _goBack,
+                    icon: const Icon(Icons.arrow_back, size: 16),
+                    label: FitOneLine(
+                      child: Text(
+                        backLabel,
+                        style: GoogleFonts.inter(
+                          fontSize: isTamil ? 11.0 : 12.0,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
+                    style: TextButton.styleFrom(foregroundColor: const Color(0xFF64748B)),
                   ),
-                  style: TextButton.styleFrom(foregroundColor: const Color(0xFF64748B)),
                 )
               else
                 const SizedBox.shrink(),
-              TextButton(
-                onPressed: _submitAnswers,
-                style: TextButton.styleFrom(foregroundColor: themeColor),
-                child: Text(
-                  skipLabel,
-                  style: GoogleFonts.inter(
-                    fontSize: isTamil ? 11.0 : 12.0,
-                    fontWeight: FontWeight.bold,
-                    decoration: TextDecoration.underline,
+              Flexible(
+                child: TextButton(
+                  onPressed: _submitAnswers,
+                  style: TextButton.styleFrom(foregroundColor: themeColor),
+                  child: FitOneLine(
+                    child: Text(
+                      skipLabel,
+                      style: GoogleFonts.inter(
+                        fontSize: isTamil ? 11.0 : 12.0,
+                        fontWeight: FontWeight.bold,
+                        decoration: TextDecoration.underline,
+                      ),
+                    ),
                   ),
                 ),
               ),

@@ -7,6 +7,9 @@ import '../../utils/constants.dart';
 import '../../services/centralized_translator.dart';
 import '../../main.dart';
 import '../../utils/permission_helper.dart';
+import '../../utils/responsive.dart';
+import '../../utils/profile_l10n.dart';
+import '../../l10n/l10n.dart';
 import 'package:geolocator/geolocator.dart';
 import 'eligibility_results_screen.dart';
 
@@ -491,7 +494,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('${CentralizedTranslator.instance.translate('Failed to fetch location')}: $e'),
+            content: Text('${ProfileL10n.t('failed_fetch_location', Provider.of<AppProvider>(context, listen: false).selectedLanguage == 'ta')}: $e'),
             backgroundColor: AppConstants.errorColor,
           ),
         );
@@ -508,8 +511,8 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   void _saveProfile() async {
     if (_selectedDob == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please select your Date of Birth'),
+        SnackBar(
+          content: Text(context.l10n.validationSelectDob),
           backgroundColor: AppConstants.errorColor,
         ),
       );
@@ -717,12 +720,15 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                             ),
                           ),
                           const SizedBox(width: 14),
-                          Text(
-                            'Complete Your Profile',
-                            style: GoogleFonts.poppins(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: const Color(0xFF0F172A),
+                          Flexible(
+                            child: Text(
+                              'Complete Your Profile',
+                              softWrap: true,
+                              style: GoogleFonts.poppins(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: const Color(0xFF0F172A),
+                              ),
                             ),
                           ),
                         ],
@@ -749,20 +755,29 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text(
-                                  'Profile Completion',
-                                  style: GoogleFonts.inter(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
-                                    color: const Color(0xFF1E3A8A),
+                                Flexible(
+                                  child: Text(
+                                    'Profile Completion',
+                                    softWrap: true,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                      color: const Color(0xFF1E3A8A),
+                                    ),
                                   ),
                                 ),
-                                Text(
-                                  '${provider.profileCompletionPercentage}%',
-                                  style: GoogleFonts.inter(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
-                                    color: const Color(0xFF1E3A8A),
+                                const SizedBox(width: 8),
+                                Flexible(
+                                  child: FitOneLine(
+                                    alignment: Alignment.centerRight,
+                                    child: Text(
+                                      '${provider.profileCompletionPercentage}%',
+                                      style: GoogleFonts.inter(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        color: const Color(0xFF1E3A8A),
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ],
@@ -1488,12 +1503,16 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Text(
-                                      'Save & Continue',
-                                      style: GoogleFonts.inter(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white,
+                                    Flexible(
+                                      child: FitOneLine(
+                                        child: Text(
+                                          'Save & Continue',
+                                          style: GoogleFonts.inter(
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white,
+                                          ),
+                                        ),
                                       ),
                                     ),
                                     const SizedBox(width: 8),

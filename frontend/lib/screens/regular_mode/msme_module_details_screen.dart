@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../providers/app_state_provider.dart';
+import '../../utils/responsive.dart';
+import '../../services/centralized_translator.dart';
+import '../../widgets/standard_page_header.dart';
 import 'discover_results_screen.dart';
 
 class MSMEModuleDetailsScreen extends StatefulWidget {
@@ -187,24 +190,12 @@ class _MSMEModuleDetailsScreenState extends State<MSMEModuleDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isTa = Provider.of<AppProvider>(context).selectedLanguage == 'ta';
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF1E293B)),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        title: Text(
-          widget.title,
-          style: GoogleFonts.poppins(
-            color: const Color(0xFF1E293B),
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
-          ),
-        ),
-        centerTitle: false,
+      appBar: StandardPageHeader(
+        title: isTa ? CentralizedTranslator.instance.translate(widget.title) : widget.title,
+        elevation: 1,
       ),
       body: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
@@ -353,20 +344,27 @@ class _MSMEModuleDetailsScreenState extends State<MSMEModuleDetailsScreen> {
             children: [
               Icon(Icons.stars_rounded, color: widget.iconColor, size: 20),
               const SizedBox(width: 8),
-              Text(
-                'WHAT THE USER GETS',
-                style: GoogleFonts.inter(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color: widget.iconColor,
-                  letterSpacing: 1.1,
+              Flexible(
+                child: Text(
+                  Provider.of<AppProvider>(context, listen: false).selectedLanguage == 'ta'
+                      ? 'பயனர் பெறும் நன்மைகள்'
+                      : 'WHAT THE USER GETS',
+                  softWrap: true,
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: widget.iconColor,
+                    letterSpacing: 1.1,
+                  ),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 10),
           Text(
-            valueText,
+            Provider.of<AppProvider>(context, listen: false).selectedLanguage == 'ta'
+                ? CentralizedTranslator.instance.translate(valueText)
+                : valueText,
             style: GoogleFonts.inter(
               fontSize: 13.5,
               color: const Color(0xFF1E293B),
@@ -416,7 +414,7 @@ class _MSMEModuleDetailsScreenState extends State<MSMEModuleDetailsScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Interactive Tools & Actions',
+              provider.selectedLanguage == 'ta' ? 'ஊடாடும் கருவிகள் & நடவடிக்கைகள்' : 'Interactive Tools & Actions',
               style: GoogleFonts.poppins(
                 fontSize: 15,
                 fontWeight: FontWeight.bold,
@@ -425,7 +423,9 @@ class _MSMEModuleDetailsScreenState extends State<MSMEModuleDetailsScreen> {
             ),
             const SizedBox(height: 12),
             Text(
-              'Complete your profile or explore schemes with the search engine to get smart matching results.',
+              provider.selectedLanguage == 'ta'
+                  ? 'உங்கள் சுயவிவரத்தை பூர்த்தி செய்து அல்லது தேடுபொறி மூலம் திட்டங்களை ஆராய்ந்து பொருத்தமான முடிவுகளைப் பெறுங்கள்.'
+                  : 'Complete your profile or explore schemes with the search engine to get smart matching results.',
               style: GoogleFonts.inter(
                 fontSize: 12.5,
                 color: const Color(0xFF64748B),
@@ -451,7 +451,7 @@ class _MSMEModuleDetailsScreenState extends State<MSMEModuleDetailsScreen> {
                       Navigator.of(context).pop(); // Dismiss detail
                     },
                     child: Text(
-                      'Search Schemes',
+                      provider.selectedLanguage == 'ta' ? 'திட்டங்களை தேடுக' : 'Search Schemes',
                       style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold),
                     ),
                   ),
@@ -472,7 +472,7 @@ class _MSMEModuleDetailsScreenState extends State<MSMEModuleDetailsScreen> {
                       Navigator.of(context).pop();
                     },
                     child: Text(
-                      'Complete Profile',
+                      provider.selectedLanguage == 'ta' ? 'சுயவிவரத்தை பூர்த்தி செய்க' : 'Complete Profile',
                       style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold),
                     ),
                   ),
@@ -486,6 +486,7 @@ class _MSMEModuleDetailsScreenState extends State<MSMEModuleDetailsScreen> {
   }
 
   Widget _buildFinanceInteractivePanel() {
+    final isTa = Provider.of<AppProvider>(context, listen: false).selectedLanguage == 'ta';
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(
@@ -498,7 +499,7 @@ class _MSMEModuleDetailsScreenState extends State<MSMEModuleDetailsScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Find Funding Options',
+              isTa ? CentralizedTranslator.instance.translate('Find Funding Options') : 'Find Funding Options',
               style: GoogleFonts.poppins(
                 fontSize: 15,
                 fontWeight: FontWeight.bold,
@@ -507,7 +508,9 @@ class _MSMEModuleDetailsScreenState extends State<MSMEModuleDetailsScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Instantly search our database for credit support, collateral-free business loans, and SIDBI programs.',
+              isTa
+                  ? CentralizedTranslator.instance.translate('Instantly search our database for credit support, collateral-free business loans, and SIDBI programs.')
+                  : 'Instantly search our database for credit support, collateral-free business loans, and SIDBI programs.',
               style: GoogleFonts.inter(
                 fontSize: 12.5,
                 color: const Color(0xFF64748B),
@@ -543,9 +546,13 @@ class _MSMEModuleDetailsScreenState extends State<MSMEModuleDetailsScreen> {
                   children: [
                     const Icon(Icons.currency_rupee, size: 16),
                     const SizedBox(width: 8),
-                    Text(
-                      'Search MSME Loans & Funding',
-                      style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold),
+                    Flexible(
+                      child: FitOneLine(
+                        child: Text(
+                          isTa ? CentralizedTranslator.instance.translate('Search MSME Loans & Funding') : 'Search MSME Loans & Funding',
+                          style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold),
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -575,7 +582,9 @@ class _MSMEModuleDetailsScreenState extends State<MSMEModuleDetailsScreen> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    'Delayed Payment Interest Calculator',
+                    Provider.of<AppProvider>(context, listen: false).selectedLanguage == 'ta'
+                        ? 'தாமதமான செலுத்துகை வட்டி கால்குலேட்டர்'
+                        : 'Delayed Payment Interest Calculator',
                     style: GoogleFonts.poppins(
                       fontSize: 15,
                       fontWeight: FontWeight.bold,
@@ -587,7 +596,9 @@ class _MSMEModuleDetailsScreenState extends State<MSMEModuleDetailsScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Under the MSMED Act Section 15/16, buyers must pay 3x the RBI Bank Rate as compound interest with monthly rests for delays exceeding 45 days.',
+              Provider.of<AppProvider>(context, listen: false).selectedLanguage == 'ta'
+                  ? 'MSMED சட்டம் பிரிவு 15/16-ன் கீழ், 45 நாட்களுக்கு மேல் தாமதமாகும் செலுத்துகைகளுக்கு வாங்குபவர்கள் RBI வங்கி வீதத்தை விட 3 மடங்கு கூட்டு வட்டியை செலுத்த வேண்டும்.'
+                  : 'Under the MSMED Act Section 15/16, buyers must pay 3x the RBI Bank Rate as compound interest with monthly rests for delays exceeding 45 days.',
               style: GoogleFonts.inter(
                 fontSize: 12,
                 color: const Color(0xFF64748B),
@@ -600,7 +611,9 @@ class _MSMEModuleDetailsScreenState extends State<MSMEModuleDetailsScreen> {
               children: [
                 Expanded(
                   child: Text(
-                    'Invoice Amount (₹)',
+                    Provider.of<AppProvider>(context, listen: false).selectedLanguage == 'ta'
+                        ? 'இன்வாய்ஸ் தொகை (₹)'
+                        : 'Invoice Amount (₹)',
                     style: GoogleFonts.inter(
                       fontSize: 11,
                       fontWeight: FontWeight.bold,
@@ -611,7 +624,9 @@ class _MSMEModuleDetailsScreenState extends State<MSMEModuleDetailsScreen> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    'Days Delayed (Post 45d)',
+                    Provider.of<AppProvider>(context, listen: false).selectedLanguage == 'ta'
+                        ? 'தாமதமான நாட்கள் (45 நாட்களுக்கு பின்)'
+                        : 'Days Delayed (Post 45d)',
                     style: GoogleFonts.inter(
                       fontSize: 11,
                       fontWeight: FontWeight.bold,
@@ -667,13 +682,24 @@ class _MSMEModuleDetailsScreenState extends State<MSMEModuleDetailsScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        'Interest Rate (3x Bank Rate):',
-                        style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF475569), fontWeight: FontWeight.w500),
+                      Flexible(
+                        child: Text(
+                          Provider.of<AppProvider>(context, listen: false).selectedLanguage == 'ta'
+                              ? 'வட்டி விகிதம் (3x வங்கி வீதம்):'
+                              : 'Interest Rate (3x Bank Rate):',
+                          softWrap: true,
+                          style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF475569), fontWeight: FontWeight.w500),
+                        ),
                       ),
-                      Text(
-                        '${(_annualRate * 100).toStringAsFixed(2)}% p.a.',
-                        style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.bold, color: const Color(0xFF0F172A)),
+                      const SizedBox(width: 8),
+                      Flexible(
+                        child: FitOneLine(
+                          alignment: Alignment.centerRight,
+                          child: Text(
+                            '${(_annualRate * 100).toStringAsFixed(2)}% p.a.',
+                            style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.bold, color: const Color(0xFF0F172A)),
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -681,13 +707,24 @@ class _MSMEModuleDetailsScreenState extends State<MSMEModuleDetailsScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        'Calculated Interest:',
-                        style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF475569), fontWeight: FontWeight.w500),
+                      Flexible(
+                        child: Text(
+                          Provider.of<AppProvider>(context, listen: false).selectedLanguage == 'ta'
+                              ? 'கணக்கிடப்பட்ட வட்டி:'
+                              : 'Calculated Interest:',
+                          softWrap: true,
+                          style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF475569), fontWeight: FontWeight.w500),
+                        ),
                       ),
-                      Text(
-                        '₹${_calculatedInterest.toStringAsFixed(0)}',
-                        style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold, color: const Color(0xFFDC2626)),
+                      const SizedBox(width: 8),
+                      Flexible(
+                        child: FitOneLine(
+                          alignment: Alignment.centerRight,
+                          child: Text(
+                            '₹${_calculatedInterest.toStringAsFixed(0)}',
+                            style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold, color: const Color(0xFFDC2626)),
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -695,13 +732,24 @@ class _MSMEModuleDetailsScreenState extends State<MSMEModuleDetailsScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        'Total Claimable Amount:',
-                        style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold, color: const Color(0xFF0F172A)),
+                      Flexible(
+                        child: Text(
+                          Provider.of<AppProvider>(context, listen: false).selectedLanguage == 'ta'
+                              ? 'மொத்த உரிமைக்கோரக்கூடிய தொகை:'
+                              : 'Total Claimable Amount:',
+                          softWrap: true,
+                          style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold, color: const Color(0xFF0F172A)),
+                        ),
                       ),
-                      Text(
-                        '₹${_totalAmount.toStringAsFixed(0)}',
-                        style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.bold, color: widget.iconColor),
+                      const SizedBox(width: 8),
+                      Flexible(
+                        child: FitOneLine(
+                          alignment: Alignment.centerRight,
+                          child: Text(
+                            '₹${_totalAmount.toStringAsFixed(0)}',
+                            style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.bold, color: widget.iconColor),
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -715,6 +763,7 @@ class _MSMEModuleDetailsScreenState extends State<MSMEModuleDetailsScreen> {
   }
 
   Widget _buildExportInteractivePanel() {
+    final isTa = Provider.of<AppProvider>(context, listen: false).selectedLanguage == 'ta';
     int checkedCount = _exportChecklist.where((item) => item['checked'] == true).length;
     double progress = checkedCount / _exportChecklist.length;
 
@@ -730,7 +779,7 @@ class _MSMEModuleDetailsScreenState extends State<MSMEModuleDetailsScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Export Readiness Assessment',
+              isTa ? CentralizedTranslator.instance.translate('Export Readiness Assessment') : 'Export Readiness Assessment',
               style: GoogleFonts.poppins(
                 fontSize: 15,
                 fontWeight: FontWeight.bold,
@@ -739,7 +788,9 @@ class _MSMEModuleDetailsScreenState extends State<MSMEModuleDetailsScreen> {
             ),
             const SizedBox(height: 4),
             Text(
-              'Complete this checklist to identify missing links for international trade registration.',
+              isTa
+                  ? CentralizedTranslator.instance.translate('Complete this checklist to identify missing links for international trade registration.')
+                  : 'Complete this checklist to identify missing links for international trade registration.',
               style: GoogleFonts.inter(
                 fontSize: 11.5,
                 color: const Color(0xFF64748B),
@@ -773,6 +824,8 @@ class _MSMEModuleDetailsScreenState extends State<MSMEModuleDetailsScreen> {
             const SizedBox(height: 12),
             ...List.generate(_exportChecklist.length, (index) {
               final item = _exportChecklist[index];
+              final qText = isTa ? CentralizedTranslator.instance.translate(item['question'] as String) : item['question'] as String;
+              final tipText = isTa ? CentralizedTranslator.instance.translate(item['tip'] as String) : item['tip'] as String;
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -781,7 +834,7 @@ class _MSMEModuleDetailsScreenState extends State<MSMEModuleDetailsScreen> {
                     contentPadding: EdgeInsets.zero,
                     dense: true,
                     title: Text(
-                      item['question'],
+                      qText,
                       style: GoogleFonts.inter(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
@@ -813,7 +866,7 @@ class _MSMEModuleDetailsScreenState extends State<MSMEModuleDetailsScreen> {
                             const SizedBox(width: 6),
                             Expanded(
                               child: Text(
-                                item['tip'],
+                                tipText,
                                 style: GoogleFonts.inter(
                                   fontSize: 10.5,
                                   color: const Color(0xFFB45309),
@@ -835,6 +888,7 @@ class _MSMEModuleDetailsScreenState extends State<MSMEModuleDetailsScreen> {
   }
 
   Widget _buildTredsInteractivePanel() {
+    final isTa = Provider.of<AppProvider>(context, listen: false).selectedLanguage == 'ta';
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(
@@ -847,7 +901,7 @@ class _MSMEModuleDetailsScreenState extends State<MSMEModuleDetailsScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'TReDS Invoice Discounting Flow',
+              isTa ? CentralizedTranslator.instance.translate('TReDS Invoice Discounting Flow') : 'TReDS Invoice Discounting Flow',
               style: GoogleFonts.poppins(
                 fontSize: 15,
                 fontWeight: FontWeight.bold,
@@ -878,7 +932,7 @@ class _MSMEModuleDetailsScreenState extends State<MSMEModuleDetailsScreen> {
                           borderRadius: BorderRadius.circular(24),
                         ),
                         child: Text(
-                          'Step ${idx + 1}',
+                          isTa ? 'படி ${idx + 1}' : 'Step ${idx + 1}',
                           style: GoogleFonts.inter(
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
@@ -903,7 +957,9 @@ class _MSMEModuleDetailsScreenState extends State<MSMEModuleDetailsScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    _tredsSteps[_tredsStepIndex]['title']!,
+                    isTa
+                        ? CentralizedTranslator.instance.translate(_tredsSteps[_tredsStepIndex]['title']!)
+                        : _tredsSteps[_tredsStepIndex]['title']!,
                     style: GoogleFonts.poppins(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
@@ -912,7 +968,9 @@ class _MSMEModuleDetailsScreenState extends State<MSMEModuleDetailsScreen> {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    _tredsSteps[_tredsStepIndex]['desc']!,
+                    isTa
+                        ? CentralizedTranslator.instance.translate(_tredsSteps[_tredsStepIndex]['desc']!)
+                        : _tredsSteps[_tredsStepIndex]['desc']!,
                     style: GoogleFonts.inter(
                       fontSize: 12,
                       color: const Color(0xFF334155),
@@ -927,7 +985,9 @@ class _MSMEModuleDetailsScreenState extends State<MSMEModuleDetailsScreen> {
                       const SizedBox(width: 6),
                       Expanded(
                         child: Text(
-                          _tredsSteps[_tredsStepIndex]['action']!,
+                          isTa
+                              ? CentralizedTranslator.instance.translate(_tredsSteps[_tredsStepIndex]['action']!)
+                              : _tredsSteps[_tredsStepIndex]['action']!,
                           style: GoogleFonts.inter(
                             fontSize: 10.5,
                             fontStyle: FontStyle.italic,
@@ -948,6 +1008,7 @@ class _MSMEModuleDetailsScreenState extends State<MSMEModuleDetailsScreen> {
   }
 
   Widget _buildCsrInteractivePanel() {
+    final isTa = Provider.of<AppProvider>(context, listen: false).selectedLanguage == 'ta';
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(
@@ -960,7 +1021,7 @@ class _MSMEModuleDetailsScreenState extends State<MSMEModuleDetailsScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Explore CSR & Technology Clusters',
+              isTa ? CentralizedTranslator.instance.translate('Explore CSR & Technology Clusters') : 'Explore CSR & Technology Clusters',
               style: GoogleFonts.poppins(
                 fontSize: 15,
                 fontWeight: FontWeight.bold,
@@ -969,7 +1030,9 @@ class _MSMEModuleDetailsScreenState extends State<MSMEModuleDetailsScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Search for schemes offering cluster development, technology upgrades, and incubator grants.',
+              isTa
+                  ? CentralizedTranslator.instance.translate('Search for schemes offering cluster development, technology upgrades, and incubator grants.')
+                  : 'Search for schemes offering cluster development, technology upgrades, and incubator grants.',
               style: GoogleFonts.inter(
                 fontSize: 12.5,
                 color: const Color(0xFF64748B),
@@ -1005,9 +1068,13 @@ class _MSMEModuleDetailsScreenState extends State<MSMEModuleDetailsScreen> {
                   children: [
                     const Icon(Icons.hub, size: 16),
                     const SizedBox(width: 8),
-                    Text(
-                      'Search Cluster / Tech Schemes',
-                      style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold),
+                    Flexible(
+                      child: FitOneLine(
+                        child: Text(
+                          isTa ? CentralizedTranslator.instance.translate('Search Cluster / Tech Schemes') : 'Search Cluster / Tech Schemes',
+                          style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold),
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -1020,6 +1087,7 @@ class _MSMEModuleDetailsScreenState extends State<MSMEModuleDetailsScreen> {
   }
 
   Widget _buildGovtInteractivePanel() {
+    final isTa = Provider.of<AppProvider>(context, listen: false).selectedLanguage == 'ta';
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(
@@ -1032,7 +1100,7 @@ class _MSMEModuleDetailsScreenState extends State<MSMEModuleDetailsScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Government Authorities Tree',
+              isTa ? CentralizedTranslator.instance.translate('Government Authorities Tree') : 'Government Authorities Tree',
               style: GoogleFonts.poppins(
                 fontSize: 15,
                 fontWeight: FontWeight.bold,
@@ -1042,9 +1110,9 @@ class _MSMEModuleDetailsScreenState extends State<MSMEModuleDetailsScreen> {
             const SizedBox(height: 12),
             Row(
               children: [
-                _buildGovtTabHeader(0, 'Central'),
-                _buildGovtTabHeader(1, 'State'),
-                _buildGovtTabHeader(2, 'District'),
+                _buildGovtTabHeader(0, isTa ? CentralizedTranslator.instance.translate('Central') : 'Central'),
+                _buildGovtTabHeader(1, isTa ? CentralizedTranslator.instance.translate('State') : 'State'),
+                _buildGovtTabHeader(2, isTa ? CentralizedTranslator.instance.translate('District') : 'District'),
               ],
             ),
             const SizedBox(height: 16),
@@ -1089,6 +1157,7 @@ class _MSMEModuleDetailsScreenState extends State<MSMEModuleDetailsScreen> {
   }
 
   Widget _buildGovtTabContent() {
+    final isTa = Provider.of<AppProvider>(context, listen: false).selectedLanguage == 'ta';
     String name = '';
     String roles = '';
     String details = '';
@@ -1105,6 +1174,12 @@ class _MSMEModuleDetailsScreenState extends State<MSMEModuleDetailsScreen> {
       name = 'District Industries Centre (DIC)';
       roles = '• Nodal agency at the grass-roots level providing Udyam registration assistance.\n• Recommends loan approvals to banks under PMEGP.\n• Performs spot verification of industrial units for subsidy release.\n• Resolves local vendor issues via Micro & Small Enterprises Facilitation Council (MSEFC).';
       details = 'Each district in India has a DIC, headed by a General Manager.';
+    }
+
+    if (isTa) {
+      name = CentralizedTranslator.instance.translate(name);
+      roles = CentralizedTranslator.instance.translate(roles);
+      details = CentralizedTranslator.instance.translate(details);
     }
 
     return Container(
@@ -1180,7 +1255,9 @@ class _MSMEModuleDetailsScreenState extends State<MSMEModuleDetailsScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Search Support Institutions',
+              Provider.of<AppProvider>(context, listen: false).selectedLanguage == 'ta'
+                  ? 'ஆதரவு நிறுவனங்களைத் தேடுக'
+                  : 'Search Support Institutions',
               style: GoogleFonts.poppins(
                 fontSize: 15,
                 fontWeight: FontWeight.bold,
@@ -1197,7 +1274,9 @@ class _MSMEModuleDetailsScreenState extends State<MSMEModuleDetailsScreen> {
                   });
                 },
                 decoration: InputDecoration(
-                  hintText: 'Search SIDBI, NSIC, DIC...',
+                  hintText: Provider.of<AppProvider>(context, listen: false).selectedLanguage == 'ta'
+                      ? 'SIDBI, NSIC, DIC தேடுக...'
+                      : 'Search SIDBI, NSIC, DIC...',
                   hintStyle: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF94A3B8)),
                   prefixIcon: const Icon(Icons.search, size: 16),
                   contentPadding: EdgeInsets.zero,
@@ -1214,6 +1293,11 @@ class _MSMEModuleDetailsScreenState extends State<MSMEModuleDetailsScreen> {
                 itemCount: filtered.length,
                 itemBuilder: (context, index) {
                   final inst = filtered[index];
+                  final isTa = Provider.of<AppProvider>(context, listen: false).selectedLanguage == 'ta';
+                  final roleText = isTa ? CentralizedTranslator.instance.translate(inst['role']) : inst['role'];
+                  final servicesText = isTa ? CentralizedTranslator.instance.translate(inst['services']) : inst['services'];
+                  final schemesText = isTa ? CentralizedTranslator.instance.translate(inst['schemes']) : inst['schemes'];
+
                   return Container(
                     margin: const EdgeInsets.only(bottom: 8),
                     decoration: BoxDecoration(
@@ -1233,7 +1317,7 @@ class _MSMEModuleDetailsScreenState extends State<MSMEModuleDetailsScreen> {
                           ),
                         ),
                         subtitle: Text(
-                          inst['fullName'],
+                          isTa ? CentralizedTranslator.instance.translate(inst['fullName']) : inst['fullName'],
                           style: GoogleFonts.inter(
                             fontSize: 11,
                             color: const Color(0xFF64748B),
@@ -1243,11 +1327,11 @@ class _MSMEModuleDetailsScreenState extends State<MSMEModuleDetailsScreen> {
                         tilePadding: const EdgeInsets.symmetric(horizontal: 12),
                         childrenPadding: const EdgeInsets.all(12),
                         children: [
-                          _buildExpansionItem('Role', inst['role']),
+                          _buildExpansionItem(isTa ? 'பங்கு' : 'Role', roleText),
                           const SizedBox(height: 6),
-                          _buildExpansionItem('Key Services', inst['services']),
+                          _buildExpansionItem(isTa ? 'முக்கிய சேவைகள்' : 'Key Services', servicesText),
                           const SizedBox(height: 6),
-                          _buildExpansionItem('Top Schemes', inst['schemes']),
+                          _buildExpansionItem(isTa ? 'முதன்மை திட்டங்கள்' : 'Top Schemes', schemesText),
                         ],
                       ),
                     ),
@@ -1276,12 +1360,15 @@ class _MSMEModuleDetailsScreenState extends State<MSMEModuleDetailsScreen> {
               ),
             ),
             const SizedBox(width: 6),
-            Text(
-              label,
-              style: GoogleFonts.inter(
-                fontSize: 11,
-                fontWeight: FontWeight.bold,
-                color: const Color(0xFF475569),
+            Flexible(
+              child: Text(
+                label,
+                softWrap: true,
+                style: GoogleFonts.inter(
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                  color: const Color(0xFF475569),
+                ),
               ),
             ),
           ],
@@ -1392,11 +1479,16 @@ class _MSMEModuleDetailsScreenState extends State<MSMEModuleDetailsScreen> {
         break;
     }
 
+    final isTa = Provider.of<AppProvider>(context, listen: false).selectedLanguage == 'ta';
+    final localizedFeatures = isTa
+        ? features.map((f) => CentralizedTranslator.instance.translate(f)).toList()
+        : features;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Main Features Inside',
+          isTa ? 'முதன்மை அம்சங்கள்' : 'Main Features Inside',
           style: GoogleFonts.poppins(
             fontSize: 16.5,
             fontWeight: FontWeight.bold,
@@ -1404,7 +1496,7 @@ class _MSMEModuleDetailsScreenState extends State<MSMEModuleDetailsScreen> {
           ),
         ),
         const SizedBox(height: 12),
-        ...features.map((feature) {
+        ...localizedFeatures.map((feature) {
           return Padding(
             padding: const EdgeInsets.only(bottom: 10),
             child: Row(
@@ -1423,10 +1515,10 @@ class _MSMEModuleDetailsScreenState extends State<MSMEModuleDetailsScreen> {
                   child: Text(
                     feature,
                     style: GoogleFonts.inter(
-                      fontSize: 12.5,
+                      fontSize: 13,
                       color: const Color(0xFF334155),
                       height: 1.4,
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ),

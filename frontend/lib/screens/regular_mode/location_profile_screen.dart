@@ -5,6 +5,7 @@ import 'package:geocoding/geocoding.dart';
 import 'about_you_profile_screen.dart';
 import 'package:provider/provider.dart';
 import '../../providers/app_state_provider.dart';
+import '../../utils/responsive.dart';
 
 class LocationProfileScreen extends StatefulWidget {
   const LocationProfileScreen({super.key});
@@ -188,12 +189,14 @@ class _LocationProfileScreenState extends State<LocationProfileScreen> {
                           icon: const Icon(Icons.arrow_back, color: kSlate800, size: 24),
                           onPressed: () => Navigator.maybePop(context),
                         ),
-                        Text(
-                          'Complete Your Profile',
-                          style: GoogleFonts.poppins(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: kSlate900,
+                        FlexText(
+                          child: Text(
+                            'Complete Your Profile',
+                            style: GoogleFonts.poppins(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: kSlate900,
+                            ),
                           ),
                         ),
                         const SizedBox(width: 40), // Balance centering
@@ -439,12 +442,16 @@ class _LocationProfileScreenState extends State<LocationProfileScreen> {
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      Text(
-                                        'Continue',
-                                        style: GoogleFonts.inter(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.white,
+                                      Flexible(
+                                        child: FitOneLine(
+                                          child: Text(
+                                            'Continue',
+                                            style: GoogleFonts.inter(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.white,
+                                            ),
+                                          ),
                                         ),
                                       ),
                                       const SizedBox(width: 8),

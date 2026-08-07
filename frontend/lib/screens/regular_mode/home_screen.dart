@@ -7,6 +7,8 @@ import '../../l10n/l10n.dart';
 import '../../models/scheme_model.dart';
 import '../../models/localized_scheme.dart';
 import '../../services/scheme_repository.dart';
+import '../../services/centralized_translator.dart';
+import '../../utils/responsive.dart';
 import '../../widgets/voice_assistant_overlay.dart';
 
 import 'scheme_details_screen.dart';
@@ -843,6 +845,11 @@ class _HomeScreenState extends State<HomeScreen> {
       displaySubtitle = parts[1];
     }
 
+    final provider = Provider.of<AppProvider>(context);
+    final isTa = provider.selectedLanguage == 'ta';
+    final transTitle = isTa ? CentralizedTranslator.instance.translate(displayTitle) : displayTitle;
+    final transSubtitle = isTa ? CentralizedTranslator.instance.translate(displaySubtitle) : displaySubtitle;
+
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -886,7 +893,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
-                        badgeText,
+                        isTa ? CentralizedTranslator.instance.translateTag(badgeText) : badgeText,
                         style: GoogleFonts.inter(
                           fontSize: 9,
                           fontWeight: FontWeight.bold,
@@ -896,7 +903,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      displayTitle,
+                      transTitle,
                       style: GoogleFonts.poppins(
                         fontSize: _scaledFontSize(13.0),
                         fontWeight: _scaledFontWeight(FontWeight.bold),
@@ -906,10 +913,10 @@ class _HomeScreenState extends State<HomeScreen> {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    if (displaySubtitle.isNotEmpty) ...[
+                    if (transSubtitle.isNotEmpty) ...[
                       const SizedBox(height: 4),
                       Text(
-                        displaySubtitle,
+                        transSubtitle,
                         style: GoogleFonts.inter(
                           fontSize: _scaledFontSize(9.5),
                           color: const Color(0xFF475569),
@@ -1271,6 +1278,7 @@ class _HomeScreenState extends State<HomeScreen> {
               final item = items[index];
               final Scheme? schemeObj = item['scheme'] as Scheme?;
               final isBookmarked = item['isBookmarked'] as bool;
+              final isTa = provider.selectedLanguage == 'ta';
 
               final double screenWidth = MediaQuery.of(context).size.width;
               final double spacing = 12.0;
@@ -1343,15 +1351,20 @@ class _HomeScreenState extends State<HomeScreen> {
                               color: const Color(0xFFDCFCE7),
                               borderRadius: BorderRadius.circular(6),
                             ),
-                            child: Text(
-                              item['match'] as String,
-                              style: GoogleFonts.inter(
-                                color: const Color(0xFF15803D),
-                                fontSize: 9.5,
-                                fontWeight: FontWeight.bold,
+                            child: FitOneLine(
+                              child: Text(
+                                isTa
+                                    ? (item['match'] as String).replaceAll('Match', 'பொருத்தம்')
+                                    : (item['match'] as String),
+                                style: GoogleFonts.inter(
+                                  color: const Color(0xFF15803D),
+                                  fontSize: 9.5,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
                           ),
+                          const SizedBox(width: 6),
                           GestureDetector(
                             onTap: () {
                               final sCode = item['schemeCode'] as String;
@@ -1410,9 +1423,14 @@ class _HomeScreenState extends State<HomeScreen> {
                       // Chips Row
                       Builder(
                         builder: (context) {
-                          final chipsList = List<String>.from(
+                          final rawChipsList = List<String>.from(
                             item['chips'] as List<String>,
                           )..sort((a, b) => a.length.compareTo(b.length));
+                          final chipsList = isTa
+                              ? rawChipsList
+                                  .map((t) => CentralizedTranslator.instance.translateTag(t))
+                                  .toList()
+                              : rawChipsList;
                           return Wrap(
                             spacing: 4,
                             runSpacing: 4,

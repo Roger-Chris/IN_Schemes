@@ -11,6 +11,7 @@ import 'discover_results_screen.dart';
 import '../../engine/recommendation_engine.dart';
 import '../../l10n/l10n.dart';
 import '../../services/centralized_translator.dart';
+import '../../utils/responsive.dart';
 
 String _getLocalizedTagOrCategory(String text, String langCode) {
   if (langCode != 'ta') return text;
@@ -596,12 +597,15 @@ class SearchScreenState extends State<SearchScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          context.l10n.searchTitle,
-          style: GoogleFonts.poppins(
-            fontSize: _scaledFontSize(18.0),
-            fontWeight: _scaledFontWeight(FontWeight.bold),
-            color: const Color(0xFF0F172A),
+        Flexible(
+          child: Text(
+            context.l10n.searchTitle,
+            softWrap: true,
+            style: GoogleFonts.poppins(
+              fontSize: _scaledFontSize(18.0),
+              fontWeight: _scaledFontWeight(FontWeight.bold),
+              color: const Color(0xFF0F172A),
+            ),
           ),
         ),
         GestureDetector(
@@ -708,12 +712,15 @@ class SearchScreenState extends State<SearchScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              context.l10n.quickFiltersHeader,
-              style: GoogleFonts.poppins(
-                fontSize: _scaledFontSize(12.5),
-                fontWeight: _scaledFontWeight(FontWeight.bold),
-                color: const Color(0xFF0F172A),
+            Flexible(
+              child: Text(
+                context.l10n.quickFiltersHeader,
+                softWrap: true,
+                style: GoogleFonts.poppins(
+                  fontSize: _scaledFontSize(12.5),
+                  fontWeight: _scaledFontWeight(FontWeight.bold),
+                  color: const Color(0xFF0F172A),
+                ),
               ),
             ),
             PopupMenuButton<String>(
@@ -736,12 +743,15 @@ class SearchScreenState extends State<SearchScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        context.l10n.sortMatchPercent,
-                        style: GoogleFonts.inter(
-                          fontSize: _scaledFontSize(12),
-                          fontWeight: _currentSort == 'Match %' ? FontWeight.bold : FontWeight.normal,
-                          color: _currentSort == 'Match %' ? const Color(0xFF2563EB) : const Color(0xFF1E293B),
+                      Flexible(
+                        child: Text(
+                          context.l10n.sortMatchPercent,
+                          softWrap: true,
+                          style: GoogleFonts.inter(
+                            fontSize: _scaledFontSize(12),
+                            fontWeight: _currentSort == 'Match %' ? FontWeight.bold : FontWeight.normal,
+                            color: _currentSort == 'Match %' ? const Color(0xFF2563EB) : const Color(0xFF1E293B),
+                          ),
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -755,12 +765,15 @@ class SearchScreenState extends State<SearchScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        context.l10n.sortNameAsc,
-                        style: GoogleFonts.inter(
-                          fontSize: _scaledFontSize(12),
-                          fontWeight: _currentSort == 'Scheme Name (A-Z)' ? FontWeight.bold : FontWeight.normal,
-                          color: _currentSort == 'Scheme Name (A-Z)' ? const Color(0xFF2563EB) : const Color(0xFF1E293B),
+                      Flexible(
+                        child: Text(
+                          context.l10n.sortNameAsc,
+                          softWrap: true,
+                          style: GoogleFonts.inter(
+                            fontSize: _scaledFontSize(12),
+                            fontWeight: _currentSort == 'Scheme Name (A-Z)' ? FontWeight.bold : FontWeight.normal,
+                            color: _currentSort == 'Scheme Name (A-Z)' ? const Color(0xFF2563EB) : const Color(0xFF1E293B),
+                          ),
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -774,12 +787,15 @@ class SearchScreenState extends State<SearchScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        context.l10n.sortNameDesc,
-                        style: GoogleFonts.inter(
-                          fontSize: _scaledFontSize(12),
-                          fontWeight: _currentSort == 'Scheme Name (Z-A)' ? FontWeight.bold : FontWeight.normal,
-                          color: _currentSort == 'Scheme Name (Z-A)' ? const Color(0xFF2563EB) : const Color(0xFF1E293B),
+                      Flexible(
+                        child: Text(
+                          context.l10n.sortNameDesc,
+                          softWrap: true,
+                          style: GoogleFonts.inter(
+                            fontSize: _scaledFontSize(12),
+                            fontWeight: _currentSort == 'Scheme Name (Z-A)' ? FontWeight.bold : FontWeight.normal,
+                            color: _currentSort == 'Scheme Name (Z-A)' ? const Color(0xFF2563EB) : const Color(0xFF1E293B),
+                          ),
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -791,12 +807,16 @@ class SearchScreenState extends State<SearchScreen> {
               ],
               child: Row(
                 children: [
-                  Text(
-                    '${context.l10n.sortByPrefix} $_currentSort',
-                    style: GoogleFonts.inter(
-                      fontSize: _scaledFontSize(11),
-                      fontWeight: _scaledFontWeight(FontWeight.bold),
-                      color: const Color(0xFF2563EB),
+                  Flexible(
+                    child: FitOneLine(
+                      child: Text(
+                        '${context.l10n.sortByPrefix} $_currentSort',
+                        style: GoogleFonts.inter(
+                          fontSize: _scaledFontSize(11),
+                          fontWeight: _scaledFontWeight(FontWeight.bold),
+                          color: const Color(0xFF2563EB),
+                        ),
+                      ),
                     ),
                   ),
                   const Icon(

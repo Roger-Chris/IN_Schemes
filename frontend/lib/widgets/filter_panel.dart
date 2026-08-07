@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../providers/app_state_provider.dart';
 import '../utils/constants.dart';
+import '../utils/responsive.dart';
+import '../l10n/l10n.dart';
 
 class FilterPanel extends StatefulWidget {
   final VoidCallback? onApplied;
@@ -163,33 +165,44 @@ class _FilterPanelState extends State<FilterPanel> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'Filter Schemes',
-                  style: GoogleFonts.poppins(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: const Color(0xFF0F172A),
+                Flexible(
+                  child: Text(
+                    'Filter Schemes',
+                    softWrap: true,
+                    style: GoogleFonts.poppins(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF0F172A),
+                    ),
                   ),
                 ),
-                GestureDetector(
-                  onTap: _resetFilters,
-                  child: Row(
-                    children: [
-                      Text(
-                        'Clear All',
-                        style: GoogleFonts.inter(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: const Color(0xFF2563EB),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: GestureDetector(
+                    onTap: _resetFilters,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Flexible(
+                          child: FitOneLine(
+                            child: Text(
+                              context.l10n.filterClearAll,
+                              style: GoogleFonts.inter(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: const Color(0xFF2563EB),
+                              ),
+                            ),
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 4),
-                      const Icon(
-                        Icons.refresh,
-                        size: 14,
-                        color: Color(0xFF2563EB),
-                      ),
-                    ],
+                        const SizedBox(width: 4),
+                        const Icon(
+                          Icons.refresh,
+                          size: 14,
+                          color: Color(0xFF2563EB),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],
@@ -217,7 +230,7 @@ class _FilterPanelState extends State<FilterPanel> {
                             icon: Icons.location_on_outlined,
                             iconColor: const Color(0xFF2563EB),
                             iconBgColor: const Color(0xFFEFF6FF),
-                            label: 'State',
+                            label: context.l10n.filterState,
                             value: _state,
                             items: ['All', 'Tamil Nadu', 'Karnataka', 'Kerala', 'Maharashtra', 'Delhi'],
                             onChanged: (val) => setState(() => _state = val ?? 'All'),
@@ -227,7 +240,7 @@ class _FilterPanelState extends State<FilterPanel> {
                             icon: Icons.apartment_outlined,
                             iconColor: const Color(0xFF2563EB),
                             iconBgColor: const Color(0xFFEFF6FF),
-                            label: 'District',
+                            label: context.l10n.filterDistrict,
                             value: _district,
                             items: ['All', 'Chennai', 'Bangalore', 'Cochin', 'Mumbai', 'New Delhi'],
                             onChanged: (val) => setState(() => _district = val ?? 'All'),
@@ -249,7 +262,7 @@ class _FilterPanelState extends State<FilterPanel> {
                             icon: Icons.account_balance_outlined,
                             iconColor: const Color(0xFF7C3AED),
                             iconBgColor: const Color(0xFFF5F3FF),
-                            label: 'Ministry',
+                            label: context.l10n.filterMinistry,
                             value: _ministry,
                             items: ['All', 'Ministry of MSME', 'Ministry of Agriculture', 'Ministry of Finance', 'Ministry of Education'],
                             onChanged: (val) => setState(() => _ministry = val ?? 'All'),
@@ -259,7 +272,7 @@ class _FilterPanelState extends State<FilterPanel> {
                             icon: Icons.folder_open_outlined,
                             iconColor: const Color(0xFF7C3AED),
                             iconBgColor: const Color(0xFFF5F3FF),
-                            label: 'Department',
+                            label: context.l10n.filterDepartment,
                             value: _department,
                             items: ['All', 'Dept of MSME Development', 'Dept of Agriculture Cooperation', 'Dept of Higher Education'],
                             onChanged: (val) => setState(() => _department = val ?? 'All'),
@@ -276,7 +289,7 @@ class _FilterPanelState extends State<FilterPanel> {
                           icon: Icons.grid_view_outlined,
                           iconColor: const Color(0xFF16A34A),
                           iconBgColor: const Color(0xFFF0FDF4),
-                          label: 'Category',
+                          label: context.l10n.filterCategory,
                           value: _category,
                           items: ['All', 'Business & MSME', 'Startup', 'Finance', 'Women & Child Welfare', 'Artisan'],
                           onChanged: (val) => setState(() => _category = val ?? 'All'),
@@ -297,7 +310,7 @@ class _FilterPanelState extends State<FilterPanel> {
                           icon: Icons.wallet_outlined,
                           iconColor: const Color(0xFFEA580C),
                           iconBgColor: const Color(0xFFFFF7ED),
-                          label: 'Annual Income',
+                          label: context.l10n.labelAnnualIncome,
                           value: _income,
                           items: ['All', 'Under ₹1 Lakh', 'Under ₹5 Lakhs', 'Under ₹10 Lakhs', 'Under ₹50 Lakhs'],
                           onChanged: (val) => setState(() => _income = val ?? 'All'),
@@ -315,7 +328,7 @@ class _FilterPanelState extends State<FilterPanel> {
                             icon: Icons.person_outline,
                             iconColor: const Color(0xFFDB2777),
                             iconBgColor: const Color(0xFFFDF2F8),
-                            label: 'Gender',
+                            label: context.l10n.labelGender,
                             value: _gender,
                             items: ['All', 'Female', 'Male', 'Transgender'],
                             onChanged: (val) => setState(() => _gender = val ?? 'All'),
@@ -325,7 +338,7 @@ class _FilterPanelState extends State<FilterPanel> {
                             icon: Icons.calendar_month_outlined,
                             iconColor: const Color(0xFF0D9488),
                             iconBgColor: const Color(0xFFF0FDFA),
-                            label: 'Age',
+                            label: context.l10n.labelAge,
                             value: _age,
                             items: ['All', 'Under 18', '18 - 35', '36 - 60', 'Above 60'],
                             onChanged: (val) => setState(() => _age = val ?? 'All'),
@@ -344,7 +357,7 @@ class _FilterPanelState extends State<FilterPanel> {
                             icon: Icons.people_outline,
                             iconColor: const Color(0xFF7C3AED),
                             iconBgColor: const Color(0xFFF5F3FF),
-                            label: 'Community',
+                            label: context.l10n.labelCommunity,
                             value: _community,
                             items: ['All', 'General', 'OBC', 'EWS', 'SC', 'ST'],
                             onChanged: (val) => setState(() => _community = val ?? 'All'),
@@ -354,7 +367,7 @@ class _FilterPanelState extends State<FilterPanel> {
                             icon: Icons.business_center_outlined,
                             iconColor: const Color(0xFF2563EB),
                             iconBgColor: const Color(0xFFEFF6FF),
-                            label: 'Occupation',
+                            label: context.l10n.labelOccupation,
                             value: _occupation,
                             items: ['All', 'Unemployed', 'Student', 'Farmer', 'Self Employed', 'Salaried'],
                             onChanged: (val) => setState(() => _occupation = val ?? 'All'),
@@ -373,7 +386,7 @@ class _FilterPanelState extends State<FilterPanel> {
                             icon: Icons.school_outlined,
                             iconColor: const Color(0xFF16A34A),
                             iconBgColor: const Color(0xFFF0FDF4),
-                            label: 'Education',
+                            label: context.l10n.labelEducation,
                             value: _education,
                             items: ['All', 'Under 10th', '12th Pass', 'Graduate', 'Post Graduate'],
                             onChanged: (val) => setState(() => _education = val ?? 'All'),
@@ -383,7 +396,7 @@ class _FilterPanelState extends State<FilterPanel> {
                             icon: Icons.workspace_premium_outlined,
                             iconColor: const Color(0xFFEA580C),
                             iconBgColor: const Color(0xFFFFF7ED),
-                            label: 'First Generation Graduate',
+                            label: context.l10n.labelFirstGenGraduate,
                             value: _firstGen,
                             onChanged: (val) => setState(() => _firstGen = val),
                           ),
@@ -399,7 +412,7 @@ class _FilterPanelState extends State<FilterPanel> {
                           icon: Icons.accessible_outlined,
                           iconColor: const Color(0xFF7C3AED),
                           iconBgColor: const Color(0xFFF5F3FF),
-                          label: 'Disability',
+                          label: context.l10n.labelDisability,
                           value: _disability,
                           items: ['All', 'None', 'Locomotor', 'Visual', 'Hearing', 'Other'],
                           onChanged: (val) => setState(() => _disability = val ?? 'All'),
@@ -419,7 +432,7 @@ class _FilterPanelState extends State<FilterPanel> {
                             icon: Icons.check_circle_outline,
                             iconColor: const Color(0xFF2563EB),
                             iconBgColor: const Color(0xFFEFF6FF),
-                            label: 'Scheme Status',
+                            label: context.l10n.filterSchemeStatus,
                             value: _schemeStatus,
                             items: ['All', 'Active', 'Closed'],
                             onChanged: (val) => setState(() => _schemeStatus = val ?? 'All'),
@@ -429,7 +442,7 @@ class _FilterPanelState extends State<FilterPanel> {
                             icon: Icons.language_outlined,
                             iconColor: const Color(0xFF16A34A),
                             iconBgColor: const Color(0xFFF0FDF4),
-                            label: 'Online / Offline',
+                            label: context.l10n.filterOnlineOffline,
                             value: _onlineOffline,
                             items: ['All', 'Online Application', 'Offline Application'],
                             onChanged: (val) => setState(() => _onlineOffline = val ?? 'All'),
@@ -446,7 +459,7 @@ class _FilterPanelState extends State<FilterPanel> {
                           icon: Icons.account_balance_outlined,
                           iconColor: const Color(0xFF7C3AED),
                           iconBgColor: const Color(0xFFF5F3FF),
-                          label: 'Central / State Scheme',
+                          label: context.l10n.filterCentralStateScheme,
                           value: _schemeType,
                           items: ['All', 'Central Government', 'State Government'],
                           onChanged: (val) => setState(() => _schemeType = val ?? 'All'),

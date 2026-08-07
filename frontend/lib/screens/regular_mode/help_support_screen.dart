@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../utils/constants.dart';
 import '../../services/centralized_translator.dart';
+import '../../l10n/l10n.dart';
 
 class HelpSupportScreen extends StatefulWidget {
   final String initialMode; // 'faq', 'contact', 'both'
@@ -347,7 +348,7 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                       fontSize: 14,
                     ),
                     decoration: InputDecoration(
-                      labelText: 'Category',
+                      labelText: context.l10n.filterCategory,
                       labelStyle: const TextStyle(color: Color(0xFF64748B)),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -384,8 +385,8 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                       fontSize: 14,
                     ),
                     decoration: InputDecoration(
-                      labelText: 'Contact Email Address',
-                      hintText: 'Enter your email for follow-up',
+                      labelText: context.l10n.helpContactEmailLabel,
+                      hintText: context.l10n.helpContactEmailHint,
                       labelStyle: const TextStyle(color: Color(0xFF64748B)),
                       hintStyle: const TextStyle(color: Color(0xFF94A3B8)),
                       enabledBorder: OutlineInputBorder(
@@ -407,8 +408,8 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                       fontSize: 14,
                     ),
                     decoration: InputDecoration(
-                      labelText: 'Description',
-                      hintText: 'Describe the issue in detail...',
+                      labelText: context.l10n.helpDescriptionLabel,
+                      hintText: context.l10n.helpDescriptionHint,
                       alignLabelWithHint: true,
                       labelStyle: const TextStyle(color: Color(0xFF64748B)),
                       hintStyle: const TextStyle(color: Color(0xFF94A3B8)),
@@ -625,8 +626,8 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                       fontSize: 14,
                     ),
                     decoration: InputDecoration(
-                      labelText: 'Your suggestions',
-                      hintText: 'What can we do better?',
+                      labelText: context.l10n.helpSuggestionsLabel,
+                      hintText: context.l10n.helpSuggestionsHint,
                       labelStyle: const TextStyle(color: Color(0xFF64748B)),
                       hintStyle: const TextStyle(color: Color(0xFF94A3B8)),
                       enabledBorder: OutlineInputBorder(
@@ -767,16 +768,19 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                         ),
                       ),
                       const SizedBox(width: 16),
-                      Text(
-                        widget.initialMode == 'faq'
-                            ? 'Help & FAQ'
-                            : widget.initialMode == 'contact'
-                                ? 'Contact Us'
-                                : 'Help & Support',
-                        style: GoogleFonts.poppins(
-                          fontSize: 20.0,
-                          fontWeight: FontWeight.bold,
-                          color: const Color(0xFF0F172A),
+                      Flexible(
+                        child: Text(
+                          widget.initialMode == 'faq'
+                              ? 'Help & FAQ'
+                              : widget.initialMode == 'contact'
+                                  ? 'Contact Us'
+                                  : 'Help & Support',
+                          softWrap: true,
+                          style: GoogleFonts.poppins(
+                            fontSize: 20.0,
+                            fontWeight: FontWeight.bold,
+                            color: const Color(0xFF0F172A),
+                          ),
                         ),
                       ),
                     ],

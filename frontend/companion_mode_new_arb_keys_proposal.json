@@ -1,0 +1,870 @@
+{
+  "companionVoiceUnavailableRetry": {
+    "en": "Voice service is unavailable. Tap retry.",
+    "ta": "குரல் சேவை கிடைக்கவில்லை. மீண்டும் முயற்சிக்க தட்டவும்.",
+    "sourceFile": "lib/screens/companion_mode/saarthi_home_screen.dart",
+    "sourceLine": 230,
+    "context": "Companion voice error when the cloud voice controller is unavailable"
+  },
+  "companionSignInRetryVoice": {
+    "en": "Please sign in again, then retry voice.",
+    "ta": "மீண்டும் உள்நுழைந்து, குரல் அம்சத்தை மீண்டும் முயற்சிக்கவும்.",
+    "sourceFile": "lib/screens/companion_mode/saarthi_home_screen.dart",
+    "sourceLine": 286,
+    "context": "Cloud voice connect error when the session/auth token failed"
+  },
+  "companionCheckInternetRetryVoice": {
+    "en": "Check your internet, then retry voice.",
+    "ta": "உங்கள் இணைய இணைப்பைச் சரிபார்த்து, குரல் அம்சத்தை மீண்டும் முயற்சிக்கவும்.",
+    "sourceFile": "lib/screens/companion_mode/saarthi_home_screen.dart",
+    "sourceLine": 291,
+    "context": "Cloud voice connect error for network failures"
+  },
+  "companionVoiceConnectFailedRetry": {
+    "en": "Voice service could not connect. Tap retry.",
+    "ta": "குரல் சேவையை இணைக்க முடியவில்லை. மீண்டும் முயற்சிக்க தட்டவும்.",
+    "sourceFile": "lib/screens/companion_mode/saarthi_home_screen.dart",
+    "sourceLine": 293,
+    "context": "Generic cloud voice connect failure fallback message"
+  },
+  "companionGenericErrorRetry": {
+    "en": "An error occurred. Please try again.",
+    "ta": "பிழை ஏற்பட்டது. மீண்டும் முயற்சிக்கவும்.",
+    "sourceFile": "lib/screens/companion_mode/saarthi_home_screen.dart",
+    "sourceLine": 615,
+    "context": "Fallback assistant chat message when the session enters an error phase"
+  },
+  "companionConnectionNeedsAttention": {
+    "en": "Connection needs attention",
+    "ta": "இணைப்பில் சிக்கல் உள்ளது",
+    "sourceFile": "lib/screens/companion_mode/saarthi_home_screen.dart",
+    "sourceLine": 878,
+    "context": "Status label shown near the Saarthi avatar when there is a connection error"
+  },
+  "companionConnectingShort": {
+    "en": "Connecting",
+    "ta": "இணைக்கிறது",
+    "sourceFile": "lib/screens/companion_mode/saarthi_home_screen.dart",
+    "sourceLine": 879,
+    "context": "Short status label used both under the avatar and in the connection pill while retrying cloud voice"
+  },
+  "companionListeningToYou": {
+    "en": "Listening to you",
+    "ta": "உங்களைக் கேட்கிறது",
+    "sourceFile": "lib/screens/companion_mode/saarthi_home_screen.dart",
+    "sourceLine": 882,
+    "context": "Status label shown while the mic is actively listening (also reused at line 2185)"
+  },
+  "companionCheckingYourDetails": {
+    "en": "Checking your details",
+    "ta": "உங்கள் விவரங்களை சரிபார்க்கிறது",
+    "sourceFile": "lib/screens/companion_mode/saarthi_home_screen.dart",
+    "sourceLine": 884,
+    "context": "Status label during the 'processing' voice state"
+  },
+  "companionSpeakingNow": {
+    "en": "Speaking now",
+    "ta": "இப்போது பேசுகிறது",
+    "sourceFile": "lib/screens/companion_mode/saarthi_home_screen.dart",
+    "sourceLine": 886,
+    "context": "Status label while Saarthi is speaking a reply"
+  },
+  "companionReadyToHelp": {
+    "en": "Ready to help",
+    "ta": "உதவ தயார்",
+    "sourceFile": "lib/screens/companion_mode/saarthi_home_screen.dart",
+    "sourceLine": 888,
+    "context": "Default/idle status label under the Saarthi avatar"
+  },
+  "companionVoiceConnected": {
+    "en": "Voice connected",
+    "ta": "குரல் இணைக்கப்பட்டது",
+    "sourceFile": "lib/screens/companion_mode/saarthi_home_screen.dart",
+    "sourceLine": 1207,
+    "context": "Connection pill badge shown when cloud voice is active"
+  },
+  "companionVoiceOffline": {
+    "en": "Voice offline",
+    "ta": "குரல் இணைப்பு இல்லை",
+    "sourceFile": "lib/screens/companion_mode/saarthi_home_screen.dart",
+    "sourceLine": 1210,
+    "context": "Connection pill badge shown when cloud voice is not connected"
+  },
+  "companionIntroPrefix": {
+    "en": "I'm",
+    "ta": "நான்",
+    "sourceFile": "lib/screens/companion_mode/saarthi_home_screen.dart",
+    "sourceLine": 1305,
+    "context": "First TextSpan of the idle-state intro sentence 'I'm Saarthi, your AI companion...' (brand name 'Saarthi' stays as a separate literal span, not translated)"
+  },
+  "companionIntroSuffix": {
+    "en": ", your AI companion for\nMSME success.",
+    "ta": ", MSME வெற்றிக்கான\nஉங்கள் AI துணை.",
+    "sourceFile": "lib/screens/companion_mode/saarthi_home_screen.dart",
+    "sourceLine": 1313,
+    "context": "Third TextSpan of the idle-state intro sentence, following the 'Saarthi' brand span"
+  },
+  "companionEmptyStateHint": {
+    "en": "Tell me what support you need. I will ask one detail at a time.",
+    "ta": "உங்களுக்கு என்ன உதவி தேவை என்று சொல்லுங்கள். நான் ஒரு விவரத்தை மட்டும் ஒவ்வொரு முறையும் கேட்பேன்.",
+    "sourceFile": "lib/screens/companion_mode/saarthi_home_screen.dart",
+    "sourceLine": 1349,
+    "context": "Subtitle under the empty conversation-transcript state"
+  },
+  "companionScrollToLatest": {
+    "en": "Latest",
+    "ta": "சமீபத்தியது",
+    "sourceFile": "lib/screens/companion_mode/saarthi_home_screen.dart",
+    "sourceLine": 1381,
+    "context": "'Scroll to latest message' floating button label (currently routed through CentralizedTranslator, the wrong mechanism for UI chrome text)"
+  },
+  "companionSpeakingBadge": {
+    "en": "Speaking",
+    "ta": "பேசுகிறது",
+    "sourceFile": "lib/screens/companion_mode/saarthi_home_screen.dart",
+    "sourceLine": 1536,
+    "context": "Small waveform badge label on an assistant chat bubble while it is being spoken aloud"
+  },
+  "companionRankedResultsCaption": {
+    "en": "Ranked from the details you shared. Final eligibility is confirmed by the department.",
+    "ta": "நீங்கள் பகிர்ந்த விவரங்களின் அடிப்படையில் வரிசைப்படுத்தப்பட்டது. இறுதி தகுதியை சம்பந்தப்பட்ட துறை உறுதிப்படுத்தும்.",
+    "sourceFile": "lib/screens/companion_mode/saarthi_home_screen.dart",
+    "sourceLine": 1587,
+    "context": "Caption under the 'Recommended for you' heading in scheme results"
+  },
+  "companionReviewMatch": {
+    "en": "Review match",
+    "ta": "பொருத்தத்தை சரிபார்க்கவும்",
+    "sourceFile": "lib/screens/companion_mode/saarthi_home_screen.dart",
+    "sourceLine": 1734,
+    "context": "Badge on a scheme card when no numeric match confidence is available"
+  },
+  "companionOfficialSourceChecked": {
+    "en": "Official source checked",
+    "ta": "அதிகாரப்பூர்வ மூலம் சரிபார்க்கப்பட்டது",
+    "sourceFile": "lib/screens/companion_mode/saarthi_home_screen.dart",
+    "sourceLine": 1775,
+    "context": "Verification line on a scheme card when verified and no source-confidence detail is available"
+  },
+  "companionOfficialSourceCheckedConfidence": {
+    "en": "Official source checked · {confidence} confidence",
+    "ta": "அதிகாரப்பூர்வ மூலம் சரிபார்க்கப்பட்டது · {confidence} நம்பகத்தன்மை",
+    "sourceFile": "lib/screens/companion_mode/saarthi_home_screen.dart",
+    "sourceLine": 1776,
+    "context": "Verification line with a capitalized source-confidence word interpolated (e.g. 'High'); {confidence} placeholder replaces the Dart-side capitalization logic"
+  },
+  "companionVerifyWithDepartment": {
+    "en": "Verify with the department",
+    "ta": "துறையிடம் உறுதிப்படுத்தவும்",
+    "sourceFile": "lib/screens/companion_mode/saarthi_home_screen.dart",
+    "sourceLine": 1777,
+    "context": "Verification line on a scheme card when not verified"
+  },
+  "companionViewEligibility": {
+    "en": "View eligibility",
+    "ta": "தகுதியை காண்க",
+    "sourceFile": "lib/screens/companion_mode/saarthi_home_screen.dart",
+    "sourceLine": 1788,
+    "context": "CTA link on a compact scheme result card, distinct in meaning from the existing 'tabEligibility' tab label"
+  },
+  "companionYouTimestampLabel": {
+    "en": "You  {time}",
+    "ta": "நீங்கள்  {time}",
+    "sourceFile": "lib/screens/companion_mode/saarthi_home_screen.dart",
+    "sourceLine": 1416,
+    "context": "Sender label above a user chat bubble, e.g. 'You  14:05' (double space between word and time is intentional existing spacing)"
+  },
+  "companionAiTimestampLabel": {
+    "en": "MSS Saarthi  {time}",
+    "ta": "MSS Saarthi  {time}",
+    "sourceFile": "lib/screens/companion_mode/saarthi_home_screen.dart",
+    "sourceLine": 1487,
+    "context": "Sender label above an assistant chat bubble; brand name 'MSS Saarthi' intentionally identical in both locales"
+  },
+  "companionAskAnything": {
+    "en": "Ask Saarthi anything...",
+    "ta": "Saarthi-டம் எதுவும் கேளுங்கள்...",
+    "sourceFile": "lib/screens/companion_mode/saarthi_home_screen.dart",
+    "sourceLine": 1885,
+    "context": "Title on the 'Ask Saarthi' entry card before starting a conversation"
+  },
+  "companionTapToSpeakHint": {
+    "en": "Tap below and speak your question",
+    "ta": "கீழே தட்டி உங்கள் கேள்வியைப் பேசுங்கள்",
+    "sourceFile": "lib/screens/companion_mode/saarthi_home_screen.dart",
+    "sourceLine": 1894,
+    "context": "Subtitle under the 'Ask Saarthi anything...' entry card"
+  },
+  "companionRetryVoice": {
+    "en": "Retry voice",
+    "ta": "குரலை மீண்டும் முயற்சிக்கவும்",
+    "sourceFile": "lib/screens/companion_mode/saarthi_home_screen.dart",
+    "sourceLine": 1940,
+    "context": "Button label to retry the cloud voice connection after an error"
+  },
+  "companionSecureLiveSession": {
+    "en": "Secure live voice session",
+    "ta": "பாதுகாப்பான நேரடி குரல் அமர்வு",
+    "sourceFile": "lib/screens/companion_mode/saarthi_home_screen.dart",
+    "sourceLine": 1961,
+    "context": "Small disclosure line under voice controls when cloud voice is active"
+  },
+  "companionLiveConnectionRequired": {
+    "en": "Live voice connection required",
+    "ta": "நேரடி குரல் இணைப்பு தேவை",
+    "sourceFile": "lib/screens/companion_mode/saarthi_home_screen.dart",
+    "sourceLine": 1962,
+    "context": "Small disclosure line under voice controls when cloud voice is not active"
+  },
+  "companionStartSpeakingSemantic": {
+    "en": "Start speaking to Saarthi",
+    "ta": "Saarthi-டம் பேசத் தொடங்குங்கள்",
+    "sourceFile": "lib/screens/companion_mode/saarthi_home_screen.dart",
+    "sourceLine": 1981,
+    "context": "Semantics/accessibility label on the primary 'start conversation' button"
+  },
+  "companionTapToSpeak": {
+    "en": "Tap to speak",
+    "ta": "பேச தட்டவும்",
+    "sourceFile": "lib/screens/companion_mode/saarthi_home_screen.dart",
+    "sourceLine": 2000,
+    "context": "Visible label on the primary 'start conversation' button"
+  },
+  "companionStop": {
+    "en": "Stop",
+    "ta": "நிறுத்து",
+    "sourceFile": "lib/screens/companion_mode/saarthi_home_screen.dart",
+    "sourceLine": 2068,
+    "context": "Primary voice-control button label while listening"
+  },
+  "companionInterrupt": {
+    "en": "Interrupt",
+    "ta": "இடைமறிக்க",
+    "sourceFile": "lib/screens/companion_mode/saarthi_home_screen.dart",
+    "sourceLine": 2070,
+    "context": "Primary voice-control button label while Saarthi is speaking"
+  },
+  "companionSpeak": {
+    "en": "Speak",
+    "ta": "பேசு",
+    "sourceFile": "lib/screens/companion_mode/saarthi_home_screen.dart",
+    "sourceLine": 2071,
+    "context": "Primary voice-control button label in the default/idle state"
+  },
+  "companionEnd": {
+    "en": "End",
+    "ta": "முடி",
+    "sourceFile": "lib/screens/companion_mode/saarthi_home_screen.dart",
+    "sourceLine": 2126,
+    "context": "'End conversation' control button label"
+  },
+  "companionVoiceNotConnected": {
+    "en": "Voice is not connected",
+    "ta": "குரல் இணைக்கப்படவில்லை",
+    "sourceFile": "lib/screens/companion_mode/saarthi_home_screen.dart",
+    "sourceLine": 2181,
+    "context": "Accessible voice-status banner text when there is a connection error"
+  },
+  "companionConnectingSecurely": {
+    "en": "Connecting securely",
+    "ta": "பாதுகாப்பாக இணைக்கிறது",
+    "sourceFile": "lib/screens/companion_mode/saarthi_home_screen.dart",
+    "sourceLine": 2182,
+    "context": "Accessible voice-status banner text while retrying the cloud connection"
+  },
+  "companionFindingBestMatch": {
+    "en": "Finding the best match",
+    "ta": "சிறந்த பொருத்தத்தைத் தேடுகிறது",
+    "sourceFile": "lib/screens/companion_mode/saarthi_home_screen.dart",
+    "sourceLine": 2187,
+    "context": "Accessible voice-status banner text during the 'processing' state"
+  },
+  "companionSaarthiIsSpeaking": {
+    "en": "Saarthi is speaking",
+    "ta": "Saarthi பேசுகிறது",
+    "sourceFile": "lib/screens/companion_mode/saarthi_home_screen.dart",
+    "sourceLine": 2189,
+    "context": "Accessible voice-status banner text while Saarthi speaks a reply"
+  },
+  "companionReadyShort": {
+    "en": "Ready",
+    "ta": "தயார்",
+    "sourceFile": "lib/screens/companion_mode/saarthi_home_screen.dart",
+    "sourceLine": 2191,
+    "context": "Accessible voice-status banner default/idle text"
+  },
+  "welcomeMeetPrefix": {
+    "en": "Meet",
+    "ta": "அறிமுகம்",
+    "sourceFile": "lib/screens/companion_mode/saarthi_welcome_screen.dart",
+    "sourceLine": 119,
+    "context": "First line of the hero heading 'Meet / Saarthi' on the companion onboarding screen"
+  },
+  "welcomeIntroLine1": {
+    "en": "I'm Saarthi, your smart assistant.",
+    "ta": "நான் Saarthi, உங்கள் ஸ்மார்ட் உதவியாளர்.",
+    "sourceFile": "lib/screens/companion_mode/saarthi_welcome_screen.dart",
+    "sourceLine": 200,
+    "context": "Bold line inside the speech-bubble card on the onboarding hero"
+  },
+  "welcomeIntroLine2": {
+    "en": "I'll help you discover the right schemes, explain everything simply, and guide you at every step.",
+    "ta": "சரியான திட்டங்களை கண்டறியவும், அனைத்தையும் எளிமையாக விளக்கவும், ஒவ்வொரு படியிலும் வழிகாட்டவும் நான் உதவுவேன்.",
+    "sourceFile": "lib/screens/companion_mode/saarthi_welcome_screen.dart",
+    "sourceLine": 209,
+    "context": "Body text inside the speech-bubble card on the onboarding hero"
+  },
+  "welcomeSectionHeader": {
+    "en": "Saarthi can help you with",
+    "ta": "Saarthi உங்களுக்கு உதவக்கூடியவை",
+    "sourceFile": "lib/screens/companion_mode/saarthi_welcome_screen.dart",
+    "sourceLine": 244,
+    "context": "Section header above the four feature cards"
+  },
+  "welcomeFeatureTalkNaturally": {
+    "en": "Talk Naturally",
+    "ta": "இயல்பாக பேசுங்கள்",
+    "sourceFile": "lib/screens/companion_mode/saarthi_welcome_screen.dart",
+    "sourceLine": 266,
+    "context": "Feature card title"
+  },
+  "welcomeFeatureFindSchemes": {
+    "en": "Find Right Schemes",
+    "ta": "சரியான திட்டங்களை கண்டறியுங்கள்",
+    "sourceFile": "lib/screens/companion_mode/saarthi_welcome_screen.dart",
+    "sourceLine": 273,
+    "context": "Feature card title"
+  },
+  "welcomeFeatureBusinessRoadmap": {
+    "en": "Business Roadmap",
+    "ta": "வணிக திட்டப் பாதை",
+    "sourceFile": "lib/screens/companion_mode/saarthi_welcome_screen.dart",
+    "sourceLine": 284,
+    "context": "Feature card title"
+  },
+  "welcomeFeatureApplicationSupport": {
+    "en": "Application Support",
+    "ta": "விண்ணப்ப ஆதரவு",
+    "sourceFile": "lib/screens/companion_mode/saarthi_welcome_screen.dart",
+    "sourceLine": 291,
+    "context": "Feature card title"
+  },
+  "welcomeChooseLanguage": {
+    "en": "Choose Language",
+    "ta": "மொழியைத் தேர்வு செய்க",
+    "sourceFile": "lib/screens/companion_mode/saarthi_welcome_screen.dart",
+    "sourceLine": 315,
+    "context": "Section header above the language selection cards"
+  },
+  "welcomeChooseLanguageSubtitle": {
+    "en": "Choose your preferred language so Saarthi can talk to you better.",
+    "ta": "Saarthi உங்களுடன் சிறப்பாக பேச, உங்கள் விருப்ப மொழியைத் தேர்வு செய்யவும்.",
+    "sourceFile": "lib/screens/companion_mode/saarthi_welcome_screen.dart",
+    "sourceLine": 328,
+    "context": "Subtitle under the 'Choose Language' section header"
+  },
+  "welcomeVoiceLabel": {
+    "en": "Voice",
+    "ta": "குரல்",
+    "sourceFile": "lib/screens/companion_mode/saarthi_welcome_screen.dart",
+    "sourceLine": 361,
+    "context": "Label preceding the Natural/Clear voice choice chips"
+  },
+  "welcomeVoiceNatural": {
+    "en": "Natural",
+    "ta": "இயல்பான",
+    "sourceFile": "lib/screens/companion_mode/saarthi_welcome_screen.dart",
+    "sourceLine": 370,
+    "context": "Voice style choice chip (currently routed through CentralizedTranslator, the wrong mechanism)"
+  },
+  "welcomeVoiceClear": {
+    "en": "Clear",
+    "ta": "தெளிவான",
+    "sourceFile": "lib/screens/companion_mode/saarthi_welcome_screen.dart",
+    "sourceLine": 376,
+    "context": "Voice style choice chip (currently routed through CentralizedTranslator, the wrong mechanism)"
+  },
+  "welcomePreviewVoiceTooltip": {
+    "en": "Preview in English and Tamil",
+    "ta": "ஆங்கிலம் மற்றும் தமிழில் முன்னோட்டம் காண்க",
+    "sourceFile": "lib/screens/companion_mode/saarthi_welcome_screen.dart",
+    "sourceLine": 382,
+    "context": "Tooltip on the voice-preview play button"
+  },
+  "welcomeChangeAnytimeNote": {
+    "en": "You can change this anytime in settings.",
+    "ta": "இதை நீங்கள் எப்போது வேண்டுமானாலும் அமைப்புகளில் மாற்றலாம்.",
+    "sourceFile": "lib/screens/companion_mode/saarthi_welcome_screen.dart",
+    "sourceLine": 408,
+    "context": "Info banner under the language/voice selection section"
+  },
+  "welcomeLetsBegin": {
+    "en": "Let's Begin",
+    "ta": "தொடங்குவோம்",
+    "sourceFile": "lib/screens/companion_mode/saarthi_welcome_screen.dart",
+    "sourceLine": 469,
+    "context": "Primary CTA button at the bottom of onboarding"
+  },
+  "companionDialogBarrierLabel": {
+    "en": "Talk to Saarthi",
+    "ta": "Saarthi-டம் பேசுங்கள்",
+    "sourceFile": "lib/screens/companion_mode/companion_voice_agent_launcher.dart",
+    "sourceLine": 24,
+    "context": "Accessibility barrierLabel announced by screen readers for the voice overlay's modal barrier"
+  },
+  "voiceLanguageAuto": {
+    "en": "Auto",
+    "ta": "தானியக்கம்",
+    "sourceFile": "lib/widgets/voice_assistant_overlay.dart",
+    "sourceLine": 169,
+    "context": "Language badge shown before a spoken language has been detected"
+  },
+  "voiceStatusSpeaking": {
+    "en": "Speaking...",
+    "ta": "பேசுகிறது...",
+    "sourceFile": "lib/widgets/voice_assistant_overlay.dart",
+    "sourceLine": 173,
+    "context": "Header status label; Tamil text already existed inline as a ternary and is reused verbatim here"
+  },
+  "voiceStatusListening": {
+    "en": "Listening...",
+    "ta": "கேட்கிறது...",
+    "sourceFile": "lib/widgets/voice_assistant_overlay.dart",
+    "sourceLine": 174,
+    "context": "Header status label; Tamil text already existed inline as a ternary and is reused verbatim here"
+  },
+  "voiceStatusProcessing": {
+    "en": "Processing...",
+    "ta": "செயலாக்குகிறது...",
+    "sourceFile": "lib/widgets/voice_assistant_overlay.dart",
+    "sourceLine": 176,
+    "context": "Header status label; Tamil text already existed inline as a ternary and is reused verbatim here"
+  },
+  "voiceStatusUnderstanding": {
+    "en": "Understanding...",
+    "ta": "புரிந்துகொள்கிறது...",
+    "sourceFile": "lib/widgets/voice_assistant_overlay.dart",
+    "sourceLine": 180,
+    "context": "Header status label; Tamil text already existed inline as a ternary and is reused verbatim here"
+  },
+  "voiceStatusOneQuestion": {
+    "en": "One question",
+    "ta": "ஒரு கேள்வி",
+    "sourceFile": "lib/widgets/voice_assistant_overlay.dart",
+    "sourceLine": 182,
+    "context": "Header status label; Tamil text already existed inline as a ternary and is reused verbatim here"
+  },
+  "voiceStatusMatchesFound": {
+    "en": "Matches found",
+    "ta": "திட்டங்கள் கிடைத்தன",
+    "sourceFile": "lib/widgets/voice_assistant_overlay.dart",
+    "sourceLine": 184,
+    "context": "Header status label; Tamil text already existed inline as a ternary and is reused verbatim here"
+  },
+  "voiceStatusNeedsMoreDetail": {
+    "en": "Needs more detail",
+    "ta": "மேலும் தகவல் தேவை",
+    "sourceFile": "lib/widgets/voice_assistant_overlay.dart",
+    "sourceLine": 186,
+    "context": "Header status label; Tamil text already existed inline as a ternary and is reused verbatim here"
+  },
+  "voiceStatusFinding": {
+    "en": "Finding...",
+    "ta": "தேடுகிறது...",
+    "sourceFile": "lib/widgets/voice_assistant_overlay.dart",
+    "sourceLine": 188,
+    "context": "Header status label for the legacy (non-conversational) search path; no Tamil branch existed in code"
+  },
+  "voiceStatusFoundCount": {
+    "en": "Found {count}",
+    "ta": "{count} கிடைத்தன",
+    "sourceFile": "lib/widgets/voice_assistant_overlay.dart",
+    "sourceLine": 189,
+    "context": "Header status label showing the legacy search result count"
+  },
+  "voiceStatusReadyLegacy": {
+    "en": "Ready",
+    "ta": "தயார்",
+    "sourceFile": "lib/widgets/voice_assistant_overlay.dart",
+    "sourceLine": 190,
+    "context": "Header status label default state; Tamil text already existed inline as a ternary and is reused verbatim here"
+  },
+  "voiceRecommendedBySaarthiReason": {
+    "en": "Recommended by Saarthi from the verified catalog",
+    "ta": "சரிபார்க்கப்பட்ட பட்டியலிலிருந்து Saarthi பரிந்துரைத்தது",
+    "sourceFile": "lib/widgets/voice_assistant_overlay.dart",
+    "sourceLine": 375,
+    "context": "Synthetic 'reasons' entry attached to cloud-sourced scheme results"
+  },
+  "voiceRecognitionUnavailable": {
+    "en": "Voice recognition is not available on this device.",
+    "ta": "இந்த சாதனத்தில் குரல் அடையாளம் காணும் வசதி இல்லை.",
+    "sourceFile": "lib/widgets/voice_assistant_overlay.dart",
+    "sourceLine": 570,
+    "context": "Message shown when local speech recognition capabilities are unavailable"
+  },
+  "voiceRecognitionStartFailed": {
+    "en": "Voice recognition could not start. Please try again.",
+    "ta": "குரல் அடையாளம் காணும் செயல்பாட்டைத் தொடங்க முடியவில்லை. மீண்டும் முயற்சிக்கவும்.",
+    "sourceFile": "lib/widgets/voice_assistant_overlay.dart",
+    "sourceLine": 603,
+    "context": "Message shown when starting local speech recognition throws"
+  },
+  "voiceSearchFailed": {
+    "en": "I could not search right now. Please try again.",
+    "ta": "இப்போது தேட முடியவில்லை. மீண்டும் முயற்சிக்கவும்.",
+    "sourceFile": "lib/widgets/voice_assistant_overlay.dart",
+    "sourceLine": 679,
+    "context": "Message shown when the legacy scheme search call throws"
+  },
+  "voiceUseValue": {
+    "en": "Use value",
+    "ta": "மதிப்பைப் பயன்படுத்து",
+    "sourceFile": "lib/widgets/voice_assistant_overlay.dart",
+    "sourceLine": 947,
+    "context": "Confirm button in the eligibility-fact edit dialog (currently routed through CentralizedTranslator)"
+  },
+  "voiceReviewProfileUpdates": {
+    "en": "Review profile updates",
+    "ta": "சுயவிவர புதுப்பிப்புகளை சரிபார்க்கவும்",
+    "sourceFile": "lib/widgets/voice_assistant_overlay.dart",
+    "sourceLine": 984,
+    "context": "Title of the dialog for reviewing facts before saving them to the profile"
+  },
+  "voiceKeepSessionOnly": {
+    "en": "Keep session only",
+    "ta": "இந்த அமர்விற்கு மட்டும் வைத்திரு",
+    "sourceFile": "lib/widgets/voice_assistant_overlay.dart",
+    "sourceLine": 1013,
+    "context": "Dialog action button to decline saving facts to the profile (currently routed through CentralizedTranslator)"
+  },
+  "voiceSaveConfirmed": {
+    "en": "Save confirmed",
+    "ta": "உறுதிசெய்தவற்றை சேமி",
+    "sourceFile": "lib/widgets/voice_assistant_overlay.dart",
+    "sourceLine": 1026,
+    "context": "Dialog action button to save confirmed facts to the profile (currently routed through CentralizedTranslator)"
+  },
+  "voiceProfileSavedMessage": {
+    "en": "Confirmed details saved to your profile.",
+    "ta": "உறுதிசெய்யப்பட்ட விவரங்கள் உங்கள் சுயவிவரத்தில் சேமிக்கப்பட்டன.",
+    "sourceFile": "lib/widgets/voice_assistant_overlay.dart",
+    "sourceLine": 1037,
+    "context": "Confirmation message after saving reviewed facts to the profile"
+  },
+  "voiceCloudDisclosure": {
+    "en": "Live audio is processed securely. This app does not save audio or raw transcripts.",
+    "ta": "நேரடி ஒலி பாதுகாப்பாக செயலாக்கப்படுகிறது. இந்த செயலி ஒலி அல்லது மூல எழுத்துப் பிரதிகளை சேமிக்காது.",
+    "sourceFile": "lib/widgets/voice_assistant_overlay.dart",
+    "sourceLine": 1206,
+    "context": "Privacy disclosure shown under the header while cloud voice is active"
+  },
+  "voiceNoConfidentMatch": {
+    "en": "No confident scheme match yet. Tell me a little more about your situation.",
+    "ta": "நம்பகமான பொருத்தம் கிடைக்கவில்லை. உங்கள் நிலையை வேறு வார்த்தைகளில் சொல்லுங்கள்.",
+    "sourceFile": "lib/widgets/voice_assistant_overlay.dart",
+    "sourceLine": 1270,
+    "context": "Message shown when no confident scheme match is found yet; Tamil text already existed inline as a ternary and is reused verbatim here"
+  },
+  "voiceHeaderTalkToSaarthi": {
+    "en": "Talk to Saarthi",
+    "ta": "Saarthi-டம் பேசுங்கள்",
+    "sourceFile": "lib/widgets/voice_assistant_overlay.dart",
+    "sourceLine": 1339,
+    "context": "Overlay header title when surface is the companion ('_isCompanion') variant; the regular-mode 'Ask IN AI' half of this ternary is out of scope for this workstream"
+  },
+  "voiceUnmute": {
+    "en": "Unmute",
+    "ta": "ஒலியை இயக்கு",
+    "sourceFile": "lib/widgets/voice_assistant_overlay.dart",
+    "sourceLine": 1379,
+    "context": "Tooltip on the mute/unmute icon button while cloud voice is active, muted state"
+  },
+  "voiceMute": {
+    "en": "Mute",
+    "ta": "ஒலியடக்கு",
+    "sourceFile": "lib/widgets/voice_assistant_overlay.dart",
+    "sourceLine": 1379,
+    "context": "Tooltip on the mute/unmute icon button while cloud voice is active, unmuted state"
+  },
+  "voiceCancelAssistantTooltip": {
+    "en": "Cancel assistant",
+    "ta": "உதவியாளரை ரத்து செய்",
+    "sourceFile": "lib/widgets/voice_assistant_overlay.dart",
+    "sourceLine": 1392,
+    "context": "Tooltip on the overlay's close button"
+  },
+  "voiceTellMeNaturally": {
+    "en": "Tell me your situation naturally...",
+    "ta": "உங்கள் நிலையை இயல்பாக சொல்லுங்கள்...",
+    "sourceFile": "lib/widgets/voice_assistant_overlay.dart",
+    "sourceLine": 1416,
+    "context": "Placeholder text in the listening area before any transcript exists; Tamil text already existed inline as a ternary and is reused verbatim here"
+  },
+  "voiceSuggestionBusinessLoans": {
+    "en": "Business loans",
+    "ta": "வணிகக் கடன்கள்",
+    "sourceFile": "lib/widgets/voice_assistant_overlay.dart",
+    "sourceLine": 1438,
+    "context": "Suggestion chip shown before the user has spoken"
+  },
+  "voiceSuggestionCollegeScholarship": {
+    "en": "College scholarship",
+    "ta": "கல்லூரி உதவித்தொகை",
+    "sourceFile": "lib/widgets/voice_assistant_overlay.dart",
+    "sourceLine": 1439,
+    "context": "Suggestion chip shown before the user has spoken"
+  },
+  "voiceSuggestionFarmerSubsidy": {
+    "en": "Farmer subsidy",
+    "ta": "விவசாயி மானியம்",
+    "sourceFile": "lib/widgets/voice_assistant_overlay.dart",
+    "sourceLine": 1440,
+    "context": "Suggestion chip shown before the user has spoken"
+  },
+  "voiceStopListeningSemantic": {
+    "en": "Stop listening",
+    "ta": "கேட்பதை நிறுத்து",
+    "sourceFile": "lib/widgets/voice_assistant_overlay.dart",
+    "sourceLine": 1476,
+    "context": "Semantics label on the main mic toggle button while listening"
+  },
+  "voiceStartListeningSemantic": {
+    "en": "Start listening",
+    "ta": "கேட்கத் தொடங்கு",
+    "sourceFile": "lib/widgets/voice_assistant_overlay.dart",
+    "sourceLine": 1476,
+    "context": "Semantics label on the main mic toggle button while not listening"
+  },
+  "voiceTypeToSaarthiHint": {
+    "en": "Type to Saarthi...",
+    "ta": "Saarthi-க்கு தட்டச்சு செய்யுங்கள்...",
+    "sourceFile": "lib/widgets/voice_assistant_overlay.dart",
+    "sourceLine": 1520,
+    "context": "Text field hint on the companion surface's keyboard-mode input"
+  },
+  "voiceSendMessageTooltip": {
+    "en": "Send message",
+    "ta": "செய்தியை அனுப்பு",
+    "sourceFile": "lib/widgets/voice_assistant_overlay.dart",
+    "sourceLine": 1535,
+    "context": "Tooltip on the send icon button next to the typed-input field"
+  },
+  "voiceLanguageSemantic": {
+    "en": "Voice language {language}",
+    "ta": "குரல் மொழி {language}",
+    "sourceFile": "lib/widgets/voice_assistant_overlay.dart",
+    "sourceLine": 1566,
+    "context": "Semantics label on the auto-detected language badge; {language} is either 'English', 'தமிழ்' or the Auto label"
+  },
+  "voiceWhatIUnderstood": {
+    "en": "What I understood",
+    "ta": "நான் புரிந்துகொண்டது",
+    "sourceFile": "lib/widgets/voice_assistant_overlay.dart",
+    "sourceLine": 1635,
+    "context": "Header above the eligibility-fact chips; Tamil text already existed inline as a ternary and is reused verbatim here"
+  },
+  "voiceRepeatQuestionTooltip": {
+    "en": "Repeat question",
+    "ta": "கேள்வியை மீண்டும் சொல்",
+    "sourceFile": "lib/widgets/voice_assistant_overlay.dart",
+    "sourceLine": 1721,
+    "context": "Tooltip on the speaker icon next to a follow-up question"
+  },
+  "voiceSpeechOutputUnavailable": {
+    "en": "Speech output is unavailable; tap the microphone to answer.",
+    "ta": "குரல் வெளியீடு கிடைக்கவில்லை; பதிலளிக்க மைக்ரோஃபோனைத் தட்டவும்.",
+    "sourceFile": "lib/widgets/voice_assistant_overlay.dart",
+    "sourceLine": 1766,
+    "context": "Notice under a follow-up question when TTS is unavailable for the current language"
+  },
+  "voiceSchemesSuitedToSituation": {
+    "en": "Schemes suited to your situation",
+    "ta": "உங்களுக்கு பொருத்தமான திட்டங்கள்",
+    "sourceFile": "lib/widgets/voice_assistant_overlay.dart",
+    "sourceLine": 1792,
+    "context": "Header above conversational scheme recommendations; Tamil text already existed inline as a ternary and is reused verbatim here"
+  },
+  "voiceViewAllResults": {
+    "en": "View all",
+    "ta": "அனைத்தையும் காண்க",
+    "sourceFile": "lib/widgets/voice_assistant_overlay.dart",
+    "sourceLine": 1803,
+    "context": "Button next to conversational scheme results, scoped to this results list (currently routed through CentralizedTranslator); not proposed as a rewire of the app-wide 'viewAll' ARB key ('View All') since the source literal is not byte-identical and the ARB owner may prefer to consolidate"
+  },
+  "voiceReviewAndSaveDetails": {
+    "en": "Review and save confirmed details",
+    "ta": "உறுதிசெய்யப்பட்ட விவரங்களை சரிபார்த்து சேமிக்கவும்",
+    "sourceFile": "lib/widgets/voice_assistant_overlay.dart",
+    "sourceLine": 1817,
+    "context": "Button to open the profile-review dialog (currently routed through CentralizedTranslator)"
+  },
+  "voiceOpenOfficialSource": {
+    "en": "Open official source",
+    "ta": "அதிகாரப்பூர்வ மூலத்தைத் திற",
+    "sourceFile": "lib/widgets/voice_assistant_overlay.dart",
+    "sourceLine": 1877,
+    "context": "Link label under an assistant reply when a source label was not provided"
+  },
+  "voiceGroundingChecking": {
+    "en": "Checking official sources…",
+    "ta": "அதிகாரப்பூர்வ மூலங்களை சரிபார்க்கிறது…",
+    "sourceFile": "lib/widgets/voice_assistant_overlay.dart",
+    "sourceLine": 1897,
+    "context": "Online-grounding status title while a background source check is in progress"
+  },
+  "voiceGroundingFoundSources": {
+    "en": "Grounded online · {count} official {sources}",
+    "ta": "ஆன்லைனில் உறுதிசெய்யப்பட்டது · {count} அதிகாரப்பூர்வ {sources}",
+    "sourceFile": "lib/widgets/voice_assistant_overlay.dart",
+    "sourceLine": 1899,
+    "context": "Online-grounding status title when sources were found; {sources} is the Dart-side singular/plural word ('source'/'sources') - ARB owner may want to localize that word too via a plural-aware ICU message instead of a raw placeholder"
+  },
+  "voiceGroundingUnavailable": {
+    "en": "Offline · using private on-device knowledge",
+    "ta": "ஆஃப்லைன் · தனியார் சாதன அறிவைப் பயன்படுத்துகிறது",
+    "sourceFile": "lib/widgets/voice_assistant_overlay.dart",
+    "sourceLine": 1901,
+    "context": "Online-grounding status title when the device is offline"
+  },
+  "voiceGroundingNoSources": {
+    "en": "Official page unavailable · using the verified local catalog",
+    "ta": "அதிகாரப்பூர்வ பக்கம் கிடைக்கவில்லை · சரிபார்க்கப்பட்ட உள்ளூர் பட்டியலைப் பயன்படுத்துகிறது",
+    "sourceFile": "lib/widgets/voice_assistant_overlay.dart",
+    "sourceLine": 1903,
+    "context": "Online-grounding status title when no sources were found online"
+  },
+  "voiceGroundingPrivacyNote": {
+    "en": "Only the topic and official links are checked. Your statement and profile stay on this device.",
+    "ta": "தலைப்பு மற்றும் அதிகாரப்பூர்வ இணைப்புகள் மட்டுமே சரிபார்க்கப்படுகின்றன. உங்கள் கூற்றும் சுயவிவரமும் இந்த சாதனத்திலேயே இருக்கும்.",
+    "sourceFile": "lib/widgets/voice_assistant_overlay.dart",
+    "sourceLine": 2018,
+    "context": "Privacy footnote under the online-grounding card"
+  },
+  "voiceCouldNotOpenSource": {
+    "en": "Could not open the official source.",
+    "ta": "அதிகாரப்பூர்வ மூலத்தைத் திறக்க முடியவில்லை.",
+    "sourceFile": "lib/widgets/voice_assistant_overlay.dart",
+    "sourceLine": 2037,
+    "context": "Error message when launching an external source URL fails"
+  },
+  "voiceMatchStrong": {
+    "en": "Strong match",
+    "ta": "வலுவான பொருத்தம்",
+    "sourceFile": "lib/widgets/voice_assistant_overlay.dart",
+    "sourceLine": 2044,
+    "context": "Recommendation badge label"
+  },
+  "voiceMatchLikely": {
+    "en": "Likely match",
+    "ta": "சாத்தியமான பொருத்தம்",
+    "sourceFile": "lib/widgets/voice_assistant_overlay.dart",
+    "sourceLine": 2045,
+    "context": "Recommendation badge label"
+  },
+  "voiceMatchNeedsConfirmation": {
+    "en": "Needs confirmation",
+    "ta": "உறுதிப்படுத்தல் தேவை",
+    "sourceFile": "lib/widgets/voice_assistant_overlay.dart",
+    "sourceLine": 2046,
+    "context": "Recommendation badge label"
+  },
+  "voiceMatchNotSuitable": {
+    "en": "Not suitable",
+    "ta": "பொருந்தாது",
+    "sourceFile": "lib/widgets/voice_assistant_overlay.dart",
+    "sourceLine": 2047,
+    "context": "Recommendation badge label"
+  },
+  "voiceMatchNoConfident": {
+    "en": "No confident match",
+    "ta": "நம்பகமான பொருத்தம் இல்லை",
+    "sourceFile": "lib/widgets/voice_assistant_overlay.dart",
+    "sourceLine": 2048,
+    "context": "Recommendation badge label"
+  },
+  "voiceWhyThisFits": {
+    "en": "Why this fits: {reasons}",
+    "ta": "இது ஏன் பொருந்துகிறது: {reasons}",
+    "sourceFile": "lib/widgets/voice_assistant_overlay.dart",
+    "sourceLine": 2112,
+    "context": "Result-line prefix before the joined list of matching reasons"
+  },
+  "voiceStillConfirm": {
+    "en": "Still confirm: {requirements}",
+    "ta": "இன்னும் உறுதிப்படுத்த வேண்டியவை: {requirements}",
+    "sourceFile": "lib/widgets/voice_assistant_overlay.dart",
+    "sourceLine": 2118,
+    "context": "Result-line prefix before the joined list of unknown requirements"
+  },
+  "voiceSourceVerified": {
+    "en": "Current official source verified",
+    "ta": "தற்போதைய அதிகாரப்பூர்வ மூலம் சரிபார்க்கப்பட்டது",
+    "sourceFile": "lib/widgets/voice_assistant_overlay.dart",
+    "sourceLine": 2126,
+    "context": "Result-line trust note for a trusted recommendation"
+  },
+  "voiceSourceUnverified": {
+    "en": "Uncertain or historical — verify before applying",
+    "ta": "நிச்சயமற்றது அல்லது பழையது — விண்ணப்பிக்கும் முன் உறுதிப்படுத்தவும்",
+    "sourceFile": "lib/widgets/voice_assistant_overlay.dart",
+    "sourceLine": 2127,
+    "context": "Result-line trust note for an untrusted/historical recommendation"
+  },
+  "voiceBestMatchingSchemes": {
+    "en": "Best matching schemes",
+    "ta": "உங்களுக்கான சிறந்த திட்டங்கள்",
+    "sourceFile": "lib/widgets/voice_assistant_overlay.dart",
+    "sourceLine": 2170,
+    "context": "Header above legacy (non-conversational) search results; Tamil text already existed inline as a ternary and is reused verbatim here"
+  },
+  "voiceFactLabelState": {
+    "en": "State",
+    "ta": "மாநிலம்",
+    "sourceFile": "lib/widgets/voice_assistant_overlay.dart",
+    "sourceLine": 2217,
+    "context": "Eligibility-fact chip/dialog label for the user's state of residence. Deliberately NOT wired to the existing 'filterState' ARB key: filterState's Tamil value is 'மாநில அரசு' (State Government), the wrong sense for a geographic-state field label"
+  },
+  "voiceFactLabelSituation": {
+    "en": "Situation",
+    "ta": "நிலைமை",
+    "sourceFile": "lib/widgets/voice_assistant_overlay.dart",
+    "sourceLine": 2222,
+    "context": "Eligibility-fact chip/dialog label for EligibilityFactKey.occupation (label text is 'Situation', not 'Occupation', so it does not match the ARB 'labelOccupation' key)"
+  },
+  "voiceFactLabelMaritalStatus": {
+    "en": "Marital status",
+    "ta": "திருமண நிலை",
+    "sourceFile": "lib/widgets/voice_assistant_overlay.dart",
+    "sourceLine": 2225,
+    "context": "Eligibility-fact chip/dialog label"
+  },
+  "voiceFactLabelSector": {
+    "en": "Sector",
+    "ta": "தொழில்துறை",
+    "sourceFile": "lib/widgets/voice_assistant_overlay.dart",
+    "sourceLine": 2228,
+    "context": "Eligibility-fact chip/dialog label for business sector; kept distinct from ARB 'labelIndustry' (Tamil 'துறை') to avoid ambiguity between the two English words"
+  },
+  "voiceFactLabelFundingNeed": {
+    "en": "Funding need",
+    "ta": "நிதி தேவை",
+    "sourceFile": "lib/widgets/voice_assistant_overlay.dart",
+    "sourceLine": 2229,
+    "context": "Eligibility-fact chip/dialog label; worded differently from ARB 'labelFundingRequired' ('Funding Required')"
+  },
+  "voiceFactLabelLandholding": {
+    "en": "Landholding",
+    "ta": "நில உடைமை",
+    "sourceFile": "lib/widgets/voice_assistant_overlay.dart",
+    "sourceLine": 2230,
+    "context": "Eligibility-fact chip/dialog label"
+  },
+  "voiceFactConflictFormat": {
+    "en": "{value} (profile: {conflictingValue})",
+    "ta": "{value} (சுயவிவரம்: {conflictingValue})",
+    "sourceFile": "lib/widgets/voice_assistant_overlay.dart",
+    "sourceLine": 2249,
+    "context": "Fact-chip display value when the spoken value conflicts with the saved profile value"
+  }
+}

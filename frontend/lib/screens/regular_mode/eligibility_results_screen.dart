@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../widgets/gradient_scaffold.dart';
 import '../../widgets/scheme_card.dart';
+import '../../widgets/standard_page_header.dart';
 import '../../providers/app_state_provider.dart';
+import '../../services/centralized_translator.dart';
+import '../../l10n/l10n.dart';
+import '../../utils/responsive.dart';
 import 'scheme_details_screen.dart';
 
 class EligibilityResultsScreen extends StatelessWidget {
@@ -12,6 +15,7 @@ class EligibilityResultsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<AppProvider>(context);
+    final isTa = provider.selectedLanguage == 'ta';
     final allMatches = provider.recommendedSchemes;
 
     // Eligible schemes are those with a match score > 0%
@@ -19,57 +23,32 @@ class EligibilityResultsScreen extends StatelessWidget {
         .where((entry) => entry.value.score > 0)
         .toList();
 
-    return GradientScaffold(
-      appBar: AppBar(
-        title: Text(
-          'Eligibility Results',
-          style: GoogleFonts.poppins(
-            color: const Color(0xFF0F172A),
-            fontWeight: FontWeight.bold,
-            fontSize: 18.0,
-          ),
-        ),
-        centerTitle: false,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF0F172A)),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
+    return Scaffold(
+      backgroundColor: const Color(0xFFF8FAFC),
+      appBar: StandardPageHeader(
+        title: isTa ? CentralizedTranslator.instance.translate('Eligibility Results') : 'Eligibility Results',
+        elevation: 1,
         actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16.0, top: 8.0, bottom: 8.0),
-            child: Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                border: Border.all(color: const Color(0xFFE2E8F0)),
-                borderRadius: BorderRadius.circular(10),
-                color: Colors.white,
-              ),
-              child: IconButton(
-                padding: EdgeInsets.zero,
-                icon: const Icon(
-                  Icons.share_outlined,
-                  size: 20,
-                  color: Color(0xFF2563EB),
-                ),
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        provider.selectedLanguage == 'ta'
-                            ? 'தகுதி முடிவுகள் பகிரப்படுகின்றன...'
-                            : 'Sharing eligibility results...',
-                      ),
-                      duration: const Duration(seconds: 1),
-                    ),
-                  );
-                },
-              ),
+          IconButton(
+            icon: const Icon(
+              Icons.share_outlined,
+              size: 20,
+              color: Color(0xFF2563EB),
             ),
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    provider.selectedLanguage == 'ta'
+                        ? 'தகுதி முடிவுகள் பகிரப்படுகின்றன...'
+                        : 'Sharing eligibility results...',
+                  ),
+                  duration: const Duration(seconds: 1),
+                ),
+              );
+            },
           ),
+          const SizedBox(width: 8),
         ],
       ),
       body: Column(
@@ -139,12 +118,15 @@ class EligibilityResultsScreen extends StatelessWidget {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          'Recommended Schemes',
-                          style: GoogleFonts.poppins(
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                            color: const Color(0xFF0F172A),
+                        Flexible(
+                          child: Text(
+                            'Recommended Schemes',
+                            softWrap: true,
+                            style: GoogleFonts.poppins(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xFF0F172A),
+                            ),
                           ),
                         ),
                         TextButton(
@@ -157,13 +139,18 @@ class EligibilityResultsScreen extends StatelessWidget {
                             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           ),
                           child: Row(
+                            mainAxisSize: MainAxisSize.min,
                             children: [
-                              Text(
-                                'View All',
-                                style: GoogleFonts.inter(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                  color: const Color(0xFF137C47),
+                              Flexible(
+                                child: FitOneLine(
+                                  child: Text(
+                                    context.l10n.viewAll,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                      color: const Color(0xFF137C47),
+                                    ),
+                                  ),
                                 ),
                               ),
                               const SizedBox(width: 2),
@@ -321,11 +308,14 @@ class EligibilityResultsScreen extends StatelessWidget {
                       color: Color(0xFF64748B),
                     ),
                     const SizedBox(width: 4),
-                    Text(
-                      'Your information is secure and private',
-                      style: GoogleFonts.inter(
-                        fontSize: 11,
-                        color: const Color(0xFF64748B),
+                    Flexible(
+                      child: Text(
+                        'Your information is secure and private',
+                        softWrap: true,
+                        style: GoogleFonts.inter(
+                          fontSize: 11,
+                          color: const Color(0xFF64748B),
+                        ),
                       ),
                     ),
                   ],

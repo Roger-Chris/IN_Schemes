@@ -6,6 +6,7 @@ import '../../providers/app_state_provider.dart';
 import '../../services/voice_agent_preferences.dart';
 import '../../services/voice_agent_preview_service.dart';
 import '../../services/centralized_translator.dart';
+import '../../utils/responsive.dart';
 
 class SaarthiWelcomeScreen extends StatefulWidget {
   const SaarthiWelcomeScreen({super.key});
@@ -309,12 +310,15 @@ class _SaarthiWelcomeScreenState extends State<SaarthiWelcomeScreen> {
                                       size: 20,
                                     ),
                                     const SizedBox(width: 8),
-                                    Text(
-                                      "Choose Language",
-                                      style: GoogleFonts.inter(
-                                        fontSize: 14.5,
-                                        fontWeight: FontWeight.bold,
-                                        color: kDarkSlate,
+                                    Flexible(
+                                      child: Text(
+                                        "Choose Language",
+                                        softWrap: true,
+                                        style: GoogleFonts.inter(
+                                          fontSize: 14.5,
+                                          fontWeight: FontWeight.bold,
+                                          color: kDarkSlate,
+                                        ),
                                       ),
                                     ),
                                   ],
@@ -399,11 +403,14 @@ class _SaarthiWelcomeScreenState extends State<SaarthiWelcomeScreen> {
                                       size: 14,
                                     ),
                                     const SizedBox(width: 6),
-                                    Text(
-                                      "You can change this anytime in settings.",
-                                      style: GoogleFonts.inter(
-                                        fontSize: 11,
-                                        color: kSlate500,
+                                    Flexible(
+                                      child: Text(
+                                        "You can change this anytime in settings.",
+                                        softWrap: true,
+                                        style: GoogleFonts.inter(
+                                          fontSize: 11,
+                                          color: kSlate500,
+                                        ),
                                       ),
                                     ),
                                   ],
@@ -456,11 +463,15 @@ class _SaarthiWelcomeScreenState extends State<SaarthiWelcomeScreen> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Text(
-                                "Let's Begin",
-                                style: GoogleFonts.inter(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
+                              Flexible(
+                                child: FitOneLine(
+                                  child: Text(
+                                    "Let's Begin",
+                                    style: GoogleFonts.inter(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
                                 ),
                               ),
                               const SizedBox(width: 8),
@@ -560,19 +571,21 @@ class _SaarthiWelcomeScreenState extends State<SaarthiWelcomeScreen> {
           children: [
             // Rounded character circle
             Container(
-              width: 44,
-              height: 44,
+              width: adaptiveSize(context, base: 44, min: 31, max: 44),
+              height: adaptiveSize(context, base: 44, min: 31, max: 44),
               alignment: Alignment.center,
               decoration: BoxDecoration(
                 color: circleBg,
                 shape: BoxShape.circle,
               ),
-              child: Text(
-                circleChar,
-                style: GoogleFonts.inter(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: circleTextColor,
+              child: FitOneLine(
+                child: Text(
+                  circleChar,
+                  style: GoogleFonts.inter(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: circleTextColor,
+                  ),
                 ),
               ),
             ),
