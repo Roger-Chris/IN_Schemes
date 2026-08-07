@@ -1115,8 +1115,20 @@ class _MSMEModuleDetailsScreenState extends State<MSMEModuleDetailsScreen> {
                 ),
                 onPressed: () async {
                   final Uri url = Uri.parse('https://www.udyamregistration.gov.in/');
-                  if (await canLaunchUrl(url)) {
-                    await launchUrl(url, mode: LaunchMode.externalApplication);
+                  try {
+                    final launched = await launchUrl(
+                      url,
+                      mode: LaunchMode.externalApplication,
+                    );
+                    if (!launched) {
+                      await launchUrl(url, mode: LaunchMode.platformDefault);
+                    }
+                  } catch (_) {
+                    try {
+                      await launchUrl(url, mode: LaunchMode.platformDefault);
+                    } catch (e) {
+                      debugPrint('Could not launch Udyam URL: $e');
+                    }
                   }
                 },
               ),
