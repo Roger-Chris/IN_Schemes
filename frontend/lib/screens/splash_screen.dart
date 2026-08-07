@@ -17,7 +17,8 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
+class _SplashScreenState extends State<SplashScreen>
+    with SingleTickerProviderStateMixin {
   Timer? _navigationTimer;
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
@@ -50,17 +51,17 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     // Auto navigate after 3.2 seconds
     _navigationTimer = Timer(const Duration(milliseconds: 3200), () async {
       if (!mounted) return;
-      
+
       final provider = Provider.of<AppProvider>(context, listen: false);
       final cache = SessionCacheService.instance;
-      
+
       // Load preference details from cache
       final lang = await cache.getLanguage();
       final profile = await cache.loadProfile();
-      
+
       // Validate Supabase session (instant offline check)
       var session = Supabase.instance.client.auth.currentSession;
-      
+
       if (session != null) {
         try {
           // Perform a server-side validation to check if the user was deleted/disabled
@@ -69,20 +70,26 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
             session = null;
           }
         } on AuthException catch (authErr) {
-          debugPrint('[SplashScreen] Auth exception during session validation: $authErr');
+          debugPrint(
+            '[SplashScreen] Auth exception during session validation: $authErr',
+          );
           final statusStr = authErr.statusCode ?? '';
-          if (statusStr == '400' || statusStr == '403' || statusStr == '404' || 
-              authErr.message.toLowerCase().contains('user') || 
+          if (statusStr == '400' ||
+              statusStr == '403' ||
+              statusStr == '404' ||
+              authErr.message.toLowerCase().contains('user') ||
               authErr.message.toLowerCase().contains('invalid')) {
             session = null;
           }
         } catch (e) {
-          debugPrint('[SplashScreen] Non-auth exception during session validation: $e');
+          debugPrint(
+            '[SplashScreen] Non-auth exception during session validation: $e',
+          );
         }
       }
-      
+
       if (!mounted) return;
-      
+
       if (session != null && profile != null && profile.profileCompleted) {
         // Instant routing based on local cache
         provider.updateTabIndex(0);
@@ -95,7 +102,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
         try {
           await Supabase.instance.client.auth.signOut();
         } catch (_) {}
-        
+
         if (!mounted) return;
         if (lang == null) {
           Navigator.of(context).pushReplacement(
@@ -130,14 +137,14 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
               fit: BoxFit.cover,
             ),
           ),
-          
+
           // 2. Animated Content
           Positioned.fill(
             child: SafeArea(
               child: Column(
                 children: [
-                   const Spacer(flex: 2),
-                  
+                  const Spacer(flex: 2),
+
                   // Brand Logo centered
                   AnimatedBuilder(
                     animation: _controller,
@@ -180,9 +187,9 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                       ),
                     ),
                   ),
-                  
+
                   const Spacer(flex: 5),
-                  
+
                   // Loading Section at the bottom overlaying the blue wave
                   FadeTransition(
                     opacity: _fadeAnimation,
@@ -195,7 +202,9 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                             borderRadius: BorderRadius.all(Radius.circular(10)),
                             child: LinearProgressIndicator(
                               minHeight: 4,
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.white,
+                              ),
                               backgroundColor: Colors.white24,
                             ),
                           ),

@@ -14,7 +14,8 @@ class UserProfile {
   String educationLevel; // School, Diploma, Undergraduate, Postgraduate, Ph.D.
   bool firstGenGraduate;
   double annualIncome;
-  String employmentStatus; // Student, Farmer, Salaried, Self-employed, Business Owner, Homemaker, Unemployed, Retired, Other
+  String
+  employmentStatus; // Student, Farmer, Salaried, Self-employed, Business Owner, Homemaker, Unemployed, Retired, Other
 
   // Extended Profile Fields
   bool profileCompleted;
@@ -25,7 +26,7 @@ class UserProfile {
   String area;
   String village;
   String qualification;
-  
+
   // Business fields (stored in startup_profiles mapping)
   bool existingBusiness;
   String businessStage; // Idea, Prototype, Registered, Operational, Expansion
@@ -64,7 +65,7 @@ class UserProfile {
     this.firstGenGraduate = false,
     this.annualIncome = 0.0,
     this.employmentStatus = 'Student',
-    
+
     // Default initializations for extended fields
     this.profileCompleted = false,
     this.disability = 'None',
@@ -148,8 +149,11 @@ class UserProfile {
       'district': district,
       'pincode': pinCode,
       'is_profile_complete': profileCompleted,
-      'last_login_at': lastLoginTime?.toIso8601String() ?? DateTime.now().toIso8601String(),
-      'dob': dob?.toIso8601String().split('T')[0], // yyyy-MM-dd format for DATE type
+      'last_login_at':
+          lastLoginTime?.toIso8601String() ?? DateTime.now().toIso8601String(),
+      'dob': dob?.toIso8601String().split(
+        'T',
+      )[0], // yyyy-MM-dd format for DATE type
       'gender': gender,
       'disability': disability,
       'veteran': veteran,
@@ -164,7 +168,8 @@ class UserProfile {
       'notifications': notificationsEnabled,
       'theme': theme,
       'phone': mobile,
-      'updated_at': updatedAt?.toIso8601String() ?? DateTime.now().toIso8601String(),
+      'updated_at':
+          updatedAt?.toIso8601String() ?? DateTime.now().toIso8601String(),
     };
   }
 
@@ -184,9 +189,18 @@ class UserProfile {
       religion: json['religion'] ?? '',
       educationLevel: json['educationLevel'] ?? 'Undergraduate',
       firstGenGraduate: json['firstGenGraduate'] ?? false,
-      annualIncome: (json['annualIncome'] ?? json['annual_income'] ?? 0.0).toDouble(),
-      employmentStatus: json['employmentStatus'] ?? json['applicant_type'] ?? json['employment'] ?? 'Student',
-      profileCompleted: json['profileCompleted'] ?? json['profile_completed'] ?? json['is_profile_complete'] ?? false,
+      annualIncome: (json['annualIncome'] ?? json['annual_income'] ?? 0.0)
+          .toDouble(),
+      employmentStatus:
+          json['employmentStatus'] ??
+          json['applicant_type'] ??
+          json['employment'] ??
+          'Student',
+      profileCompleted:
+          json['profileCompleted'] ??
+          json['profile_completed'] ??
+          json['is_profile_complete'] ??
+          false,
       disability: json['disability'] ?? 'None',
       veteran: json['veteran'] ?? false,
       house: json['house'] ?? '',
@@ -194,27 +208,43 @@ class UserProfile {
       area: json['area'] ?? '',
       village: json['village'] ?? '',
       qualification: json['qualification'] ?? 'Undergraduate',
-      existingBusiness: json['existingBusiness'] ?? json['business_registered'] ?? false,
+      existingBusiness:
+          json['existingBusiness'] ?? json['business_registered'] ?? false,
       businessStage: json['businessStage'] ?? json['business_stage'] ?? 'Idea',
-      businessIndustry: json['businessIndustry'] ?? json['industry'] ?? 'Technology',
-      fundingRequired: (json['fundingRequired'] ?? json['funding_required_amount'] ?? 0.0).toDouble(),
-      registrationNumbers: json['registrationNumbers'] ?? json['registration_numbers'] ?? '',
-      googleUserId: json['googleUserId'] ?? json['id'] ?? json['google_user_id'] ?? '',
+      businessIndustry:
+          json['businessIndustry'] ?? json['industry'] ?? 'Technology',
+      fundingRequired:
+          (json['fundingRequired'] ?? json['funding_required_amount'] ?? 0.0)
+              .toDouble(),
+      registrationNumbers:
+          json['registrationNumbers'] ?? json['registration_numbers'] ?? '',
+      googleUserId:
+          json['googleUserId'] ?? json['id'] ?? json['google_user_id'] ?? '',
       emailVerified: json['emailVerified'] ?? json['email_verified'] ?? false,
       provider: json['provider'] ?? 'google',
-      lastLoginTime: json['lastLoginTime'] != null 
-          ? DateTime.tryParse(json['lastLoginTime']) 
-          : (json['last_login_time'] != null 
-              ? DateTime.tryParse(json['last_login_time']) 
-              : (json['last_login_at'] != null ? DateTime.tryParse(json['last_login_at']) : null)),
+      lastLoginTime: json['lastLoginTime'] != null
+          ? DateTime.tryParse(json['lastLoginTime'])
+          : (json['last_login_time'] != null
+                ? DateTime.tryParse(json['last_login_time'])
+                : (json['last_login_at'] != null
+                      ? DateTime.tryParse(json['last_login_at'])
+                      : null)),
       language: json['language'] ?? 'en',
-      notificationsEnabled: json['notificationsEnabled'] ?? json['notifications'] ?? true,
+      notificationsEnabled:
+          json['notificationsEnabled'] ?? json['notifications'] ?? true,
       theme: json['theme'] ?? 'light',
-      profilePhoto: json['profilePhoto'] ?? json['photo_url'] ?? json['profile_photo_url'] ?? '',
-      navigationMode: json['navigationMode'] ?? json['navigation_mode'] ?? 'regular',
-      updatedAt: json['updatedAt'] != null 
-          ? DateTime.tryParse(json['updatedAt']) 
-          : (json['updated_at'] != null ? DateTime.tryParse(json['updated_at']) : null),
+      profilePhoto:
+          json['profilePhoto'] ??
+          json['photo_url'] ??
+          json['profile_photo_url'] ??
+          '',
+      navigationMode:
+          json['navigationMode'] ?? json['navigation_mode'] ?? 'regular',
+      updatedAt: json['updatedAt'] != null
+          ? DateTime.tryParse(json['updatedAt'])
+          : (json['updated_at'] != null
+                ? DateTime.tryParse(json['updated_at'])
+                : null),
     );
   }
 
@@ -306,7 +336,8 @@ class UserProfile {
     if (dob == null) return 25; // Default fallback age
     final now = DateTime.now();
     int age = now.year - dob!.year;
-    if (now.month < dob!.month || (now.month == dob!.month && now.day < dob!.day)) {
+    if (now.month < dob!.month ||
+        (now.month == dob!.month && now.day < dob!.day)) {
       age--;
     }
     return age;

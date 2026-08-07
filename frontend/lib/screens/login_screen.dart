@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../providers/app_state_provider.dart';
 import '../utils/constants.dart';
 import '../utils/profile_l10n.dart';
+import '../utils/responsive.dart';
 import 'navigation_mode_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -216,12 +217,16 @@ class _LoginScreenState extends State<LoginScreen> {
               children: [
                 const GoogleIcon(size: 18),
                 const SizedBox(width: 10),
-                Text(
-                  l('continue_with_google'),
-                  style: GoogleFonts.inter(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFF475569), // Slate 600
+                Flexible(
+                  child: FitOneLine(
+                    child: Text(
+                      l('continue_with_google'),
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF475569), // Slate 600
+                      ),
+                    ),
                   ),
                 ),
               ],

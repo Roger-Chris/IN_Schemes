@@ -21,7 +21,11 @@ class PrivacyPolicyScreen extends StatelessWidget {
         elevation: 0,
         scrolledUnderElevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: kSlate900, size: 20),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: kSlate900,
+            size: 20,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
@@ -55,7 +59,9 @@ class PrivacyPolicyScreen extends StatelessWidget {
                     end: Alignment.bottomRight,
                   ),
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: kPrimaryBlue.withValues(alpha: 0.18)),
+                  border: Border.all(
+                    color: kPrimaryBlue.withValues(alpha: 0.18),
+                  ),
                 ),
                 child: Row(
                   children: [
@@ -66,7 +72,11 @@ class PrivacyPolicyScreen extends StatelessWidget {
                         color: kPrimaryBlue,
                         borderRadius: BorderRadius.circular(14),
                       ),
-                      child: const Icon(Icons.shield_rounded, color: Colors.white, size: 28),
+                      child: const Icon(
+                        Icons.shield_rounded,
+                        color: Colors.white,
+                        size: 28,
+                      ),
                     ),
                     const SizedBox(width: 14),
                     Expanded(
@@ -180,7 +190,11 @@ class PrivacyPolicyScreen extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        const Icon(Icons.mark_email_read_outlined, color: kPrimaryBlue, size: 20),
+                        const Icon(
+                          Icons.mark_email_read_outlined,
+                          color: kPrimaryBlue,
+                          size: 20,
+                        ),
                         const SizedBox(width: 8),
                         Text(
                           'Have Privacy Questions?',
@@ -291,7 +305,11 @@ class TermsConditionsScreen extends StatelessWidget {
         elevation: 0,
         scrolledUnderElevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: kSlate900, size: 20),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: kSlate900,
+            size: 20,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
@@ -325,7 +343,9 @@ class TermsConditionsScreen extends StatelessWidget {
                     end: Alignment.bottomRight,
                   ),
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: kPrimaryBlue.withValues(alpha: 0.18)),
+                  border: Border.all(
+                    color: kPrimaryBlue.withValues(alpha: 0.18),
+                  ),
                 ),
                 child: Row(
                   children: [
@@ -336,7 +356,11 @@ class TermsConditionsScreen extends StatelessWidget {
                         color: kPrimaryBlue,
                         borderRadius: BorderRadius.circular(14),
                       ),
-                      child: const Icon(Icons.gavel_rounded, color: Colors.white, size: 28),
+                      child: const Icon(
+                        Icons.gavel_rounded,
+                        color: Colors.white,
+                        size: 28,
+                      ),
                     ),
                     const SizedBox(width: 14),
                     Expanded(
@@ -436,7 +460,11 @@ class TermsConditionsScreen extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        const Icon(Icons.check_circle_outline_rounded, color: kPrimaryBlue, size: 20),
+                        const Icon(
+                          Icons.check_circle_outline_rounded,
+                          color: kPrimaryBlue,
+                          size: 20,
+                        ),
                         const SizedBox(width: 8),
                         Text(
                           'Terms Agreement',

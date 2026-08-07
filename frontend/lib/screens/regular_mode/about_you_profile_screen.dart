@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../providers/app_state_provider.dart';
+import '../../utils/profile_l10n.dart';
 import '../../main.dart';
+import '../../utils/responsive.dart';
 
 class AboutYouProfileScreen extends StatefulWidget {
   const AboutYouProfileScreen({super.key});
@@ -21,60 +23,77 @@ class _AboutYouProfileScreenState extends State<AboutYouProfileScreen> {
   static const Color kSlate500 = Color(0xFF64748B);
   static const Color kBorderGrey = Color(0xFFE2E8F0);
 
-  // List of roles data
-  final List<RoleModel> _roles = [
+  // List of roles data. title/subtitle are localized at build time (see
+  // _buildRoles) since ProfileL10n.t() needs the current locale, which
+  // isn't known yet at field-initializer time.
+  List<RoleModel> _buildRoles(String Function(String) l) => [
     RoleModel(
       id: 'student',
-      title: 'Student',
-      subtitle: 'Looking for learning, innovation and startup opportunities.',
+      title: l('student'),
+      subtitle: l('student_subtitle'),
       imagePath: 'assets/images/roles/student.webp',
       icon: Icons.school_outlined,
       color: const Color(0xFF3B82F6),
     ),
     RoleModel(
       id: 'entrepreneur',
-      title: 'Aspiring Entrepreneur',
-      subtitle: 'I have an idea and want to start a business.',
+      title: l('aspiring_entrepreneur'),
+      subtitle: l('aspiring_entrepreneur_subtitle'),
       imagePath: 'assets/images/roles/entrepreneur.webp',
       icon: Icons.lightbulb_outline,
       color: const Color(0xFFF59E0B),
     ),
     RoleModel(
       id: 'existing_business',
-      title: 'Existing Business',
-      subtitle: 'I already run a registered or unregistered business.',
+      title: l('existing_business'),
+      subtitle: l('existing_business_subtitle'),
       imagePath: 'assets/images/roles/business.webp',
       icon: Icons.business_center_outlined,
       color: const Color(0xFF6366F1),
     ),
     RoleModel(
       id: 'msme',
-      title: 'MSME Owner',
-      subtitle: 'I own a micro, small or medium enterprise.',
+      title: l('msme_owner'),
+      subtitle: l('msme_owner_subtitle'),
       imagePath: 'assets/images/roles/msme.webp',
       icon: Icons.storefront_outlined,
       color: const Color(0xFF10B981),
     ),
     RoleModel(
       id: 'farmer',
-      title: 'Farmer',
-      subtitle: 'I am involved in farming or agriculture.',
+      title: l('farmer'),
+      subtitle: l('farmer_subtitle'),
       imagePath: 'assets/images/roles/farmer.webp',
       icon: Icons.agriculture_outlined,
       color: const Color(0xFF14B8A6),
     ),
     RoleModel(
       id: 'artisan',
-      title: 'Artisan / SHG Member',
-      subtitle: 'I am an artisan or part of a Self Help Group.',
+      title: l('artisan_shg'),
+      subtitle: l('artisan_shg_subtitle'),
       imagePath: 'assets/images/roles/artisan.webp',
       icon: Icons.palette_outlined,
       color: const Color(0xFFEC4899),
     ),
   ];
 
+  static String _canonicalRoleTitle(String roleId) => switch (roleId) {
+    'student' => 'Student',
+    'entrepreneur' => 'Aspiring Entrepreneur',
+    'existing_business' => 'Existing Business',
+    'msme' => 'MSME Owner',
+    'farmer' => 'Farmer',
+    'artisan' => 'Artisan / SHG Member',
+    _ => roleId,
+  };
+
   @override
   Widget build(BuildContext context) {
+    final isTa = context.select<AppProvider, bool>(
+      (provider) => provider.selectedLanguage == 'ta',
+    );
+    String l(String key) => ProfileL10n.t(key, isTa);
+    final roles = _buildRoles(l);
     return Scaffold(
       backgroundColor: Colors.white,
       body: Stack(
@@ -100,15 +119,21 @@ class _AboutYouProfileScreenState extends State<AboutYouProfileScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         IconButton(
-                          icon: const Icon(Icons.arrow_back, color: kSlate800, size: 24),
+                          icon: const Icon(
+                            Icons.arrow_back,
+                            color: kSlate800,
+                            size: 24,
+                          ),
                           onPressed: () => Navigator.maybePop(context),
                         ),
-                        Text(
-                          'Complete Your Profile',
-                          style: GoogleFonts.poppins(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: kSlate900,
+                        FlexText(
+                          child: Text(
+                            l('complete_your_profile'),
+                            style: GoogleFonts.poppins(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: kSlate900,
+                            ),
                           ),
                         ),
                         const SizedBox(width: 40), // Balance centering
@@ -119,7 +144,9 @@ class _AboutYouProfileScreenState extends State<AboutYouProfileScreen> {
                     // Main Card Container (Expanded to take remaining space)
                     Expanded(
                       child: Container(
-                        padding: const EdgeInsets.all(16.0), // Tight card padding
+                        padding: const EdgeInsets.all(
+                          16.0,
+                        ), // Tight card padding
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(24),
@@ -139,22 +166,29 @@ class _AboutYouProfileScreenState extends State<AboutYouProfileScreen> {
                               child: SingleChildScrollView(
                                 physics: const BouncingScrollPhysics(),
                                 child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
                                   children: [
                                     // Progress Stepper & Header Group
                                     Row(
                                       children: [
-                                        Expanded(child: _buildProgressSegment(true)),
+                                        Expanded(
+                                          child: _buildProgressSegment(true),
+                                        ),
                                         const SizedBox(width: 4),
-                                        Expanded(child: _buildProgressSegment(true)),
+                                        Expanded(
+                                          child: _buildProgressSegment(true),
+                                        ),
                                         const SizedBox(width: 4),
-                                        Expanded(child: _buildProgressSegment(true)),
+                                        Expanded(
+                                          child: _buildProgressSegment(true),
+                                        ),
                                       ],
                                     ),
                                     const SizedBox(height: 8),
                                     Center(
                                       child: Text(
-                                        '3/3 Complete',
+                                        l('step_3_of_3'),
                                         style: GoogleFonts.inter(
                                           fontSize: 13,
                                           fontWeight: FontWeight.w600,
@@ -166,7 +200,7 @@ class _AboutYouProfileScreenState extends State<AboutYouProfileScreen> {
 
                                     // Header Text
                                     Text(
-                                      'Tell Us About You',
+                                      l('tell_us_about_you'),
                                       textAlign: TextAlign.center,
                                       style: GoogleFonts.poppins(
                                         fontSize: 20,
@@ -176,7 +210,7 @@ class _AboutYouProfileScreenState extends State<AboutYouProfileScreen> {
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
-                                      'Choose the option that best describes you.',
+                                      l('about_you_subtitle'),
                                       textAlign: TextAlign.center,
                                       style: GoogleFonts.inter(
                                         fontSize: 13,
@@ -188,17 +222,26 @@ class _AboutYouProfileScreenState extends State<AboutYouProfileScreen> {
                                     // 2x3 Grid Area (non-scrollable itself, scrolls with parent)
                                     GridView.builder(
                                       shrinkWrap: true,
-                                      physics: const NeverScrollableScrollPhysics(),
-                                      itemCount: _roles.length,
-                                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                                        crossAxisCount: 2,
-                                        crossAxisSpacing: 12,
-                                        mainAxisSpacing: 12,
-                                        childAspectRatio: 0.88, // Balanced compact aspect ratio
-                                      ),
+                                      physics:
+                                          const NeverScrollableScrollPhysics(),
+                                      itemCount: roles.length,
+                                      gridDelegate:
+                                          SliverGridDelegateWithFixedCrossAxisCount(
+                                            crossAxisCount: 2,
+                                            crossAxisSpacing: 12,
+                                            mainAxisSpacing: 12,
+                                            childAspectRatio:
+                                                MediaQuery.sizeOf(
+                                                      context,
+                                                    ).width <
+                                                    360
+                                                ? 0.78
+                                                : 0.88,
+                                          ),
                                       itemBuilder: (context, index) {
-                                        final role = _roles[index];
-                                        final isSelected = _selectedRole == role.id;
+                                        final role = roles[index];
+                                        final isSelected =
+                                            _selectedRole == role.id;
 
                                         return _buildRoleCard(role, isSelected);
                                       },
@@ -212,7 +255,9 @@ class _AboutYouProfileScreenState extends State<AboutYouProfileScreen> {
                             // Sticky Action Button (Bottom of card, outside scrollable area)
                             ElevatedButton(
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: _selectedRole != null ? kPrimaryBlue : Colors.grey.shade300,
+                                backgroundColor: _selectedRole != null
+                                    ? kPrimaryBlue
+                                    : Colors.grey.shade300,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
@@ -220,12 +265,15 @@ class _AboutYouProfileScreenState extends State<AboutYouProfileScreen> {
                                 elevation: 0,
                               ),
                               onPressed: () async {
-                                if (_selectedRole == null) {
+                                final selectedRole = _selectedRole;
+                                if (selectedRole == null) {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
                                       content: Text(
-                                        'Please select your role to complete profile setup.',
-                                        style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+                                        l('about_you_subtitle'),
+                                        style: GoogleFonts.inter(
+                                          fontWeight: FontWeight.w600,
+                                        ),
                                       ),
                                       backgroundColor: const Color(0xFFDC2626),
                                       behavior: SnackBarBehavior.floating,
@@ -234,14 +282,17 @@ class _AboutYouProfileScreenState extends State<AboutYouProfileScreen> {
                                   return;
                                 }
 
-                                final provider = Provider.of<AppProvider>(context, listen: false);
-                                final selectedRoleModel = _roles.firstWhere((r) => r.id == _selectedRole);
-                                final roleTitle = selectedRoleModel.title;
-
-                                final updatedProfile = provider.profile.copyWith(
-                                  employmentStatus: roleTitle,
-                                  profileCompleted: true,
+                                final provider = Provider.of<AppProvider>(
+                                  context,
+                                  listen: false,
                                 );
+                                final updatedProfile = provider.profile
+                                    .copyWith(
+                                      employmentStatus: _canonicalRoleTitle(
+                                        selectedRole,
+                                      ),
+                                      profileCompleted: true,
+                                    );
 
                                 await provider.updateProfile(updatedProfile);
 
@@ -256,18 +307,26 @@ class _AboutYouProfileScreenState extends State<AboutYouProfileScreen> {
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Text(
-                                    'Continue',
-                                    style: GoogleFonts.inter(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                      color: _selectedRole != null ? Colors.white : Colors.grey.shade500,
+                                  Flexible(
+                                    child: FitOneLine(
+                                      child: Text(
+                                        l('continue'),
+                                        style: GoogleFonts.inter(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: _selectedRole != null
+                                              ? Colors.white
+                                              : Colors.grey.shade500,
+                                        ),
+                                      ),
                                     ),
                                   ),
                                   const SizedBox(width: 8),
                                   Icon(
                                     Icons.arrow_forward,
-                                    color: _selectedRole != null ? Colors.white : Colors.grey.shade500,
+                                    color: _selectedRole != null
+                                        ? Colors.white
+                                        : Colors.grey.shade500,
                                     size: 20,
                                   ),
                                 ],
@@ -320,14 +379,14 @@ class _AboutYouProfileScreenState extends State<AboutYouProfileScreen> {
                     color: kPrimaryBlue.withValues(alpha: 0.1),
                     blurRadius: 8,
                     offset: const Offset(0, 3),
-                  )
+                  ),
                 ]
               : [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: 0.02),
                     blurRadius: 4,
                     offset: const Offset(0, 2),
-                  )
+                  ),
                 ],
         ),
         child: Column(
@@ -349,11 +408,7 @@ class _AboutYouProfileScreenState extends State<AboutYouProfileScreen> {
                 ),
                 alignment: Alignment.center,
                 child: isSelected
-                    ? const Icon(
-                        Icons.check,
-                        color: Colors.white,
-                        size: 10,
-                      )
+                    ? const Icon(Icons.check, color: Colors.white, size: 10)
                     : null,
               ),
             ),
@@ -373,11 +428,7 @@ class _AboutYouProfileScreenState extends State<AboutYouProfileScreen> {
                         color: role.color.withValues(alpha: 0.1),
                         shape: BoxShape.circle,
                       ),
-                      child: Icon(
-                        role.icon,
-                        color: role.color,
-                        size: 22,
-                      ),
+                      child: Icon(role.icon, color: role.color, size: 22),
                     );
                   },
                 ),
@@ -389,6 +440,8 @@ class _AboutYouProfileScreenState extends State<AboutYouProfileScreen> {
             Text(
               role.title,
               textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
               style: GoogleFonts.inter(
                 fontSize: 13,
                 fontWeight: FontWeight.bold,

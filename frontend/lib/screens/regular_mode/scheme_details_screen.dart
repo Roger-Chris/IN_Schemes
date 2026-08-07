@@ -9,6 +9,7 @@ import '../../providers/app_state_provider.dart';
 import '../../utils/constants.dart';
 import '../../l10n/l10n.dart';
 import '../../services/centralized_translator.dart';
+import '../../utils/responsive.dart';
 import '../../utils/emblem_helper.dart';
 
 class SchemeDetailsScreen extends StatefulWidget {
@@ -128,11 +129,9 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
   Future<void> _openOfficialUrl(String value) async {
     if (!_isSafeWebUrl(value)) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(context.l10n.noVerifiedLink),
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(context.l10n.noVerifiedLink)));
       return;
     }
 
@@ -141,9 +140,9 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
       mode: LaunchMode.externalApplication,
     );
     if (!opened && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(context.l10n.couldNotOpenWebsite)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(context.l10n.couldNotOpenWebsite)));
     }
   }
 
@@ -162,7 +161,9 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
   Widget build(BuildContext context) {
     final rawScheme = _detailedScheme ?? widget.scheme;
     final provider = Provider.of<AppProvider>(context);
-    final LocalizedScheme scheme = rawScheme.toLocalized(provider.selectedLanguage);
+    final LocalizedScheme scheme = rawScheme.toLocalized(
+      provider.selectedLanguage,
+    );
 
     debugPrint('\n========== [SCHEME DETAILS LOCALIZATION TRACE] ==========');
     debugPrint('Selected App Language: ${provider.selectedLanguage}');
@@ -170,16 +171,24 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
     debugPrint('Raw Scheme En Title: ${rawScheme.name}');
     debugPrint('Raw Scheme Ta Title: ${rawScheme.nameTa}');
     debugPrint('Localized Widget Title: ${scheme.name}');
-    debugPrint('Localized Widget Overview: ${scheme.overview.length > 50 ? "${scheme.overview.substring(0, 47)}..." : scheme.overview}');
-    debugPrint('Localized Widget Benefits: ${scheme.benefits.length > 50 ? "${scheme.benefits.substring(0, 47)}..." : scheme.benefits}');
+    debugPrint(
+      'Localized Widget Overview: ${scheme.overview.length > 50 ? "${scheme.overview.substring(0, 47)}..." : scheme.overview}',
+    );
+    debugPrint(
+      'Localized Widget Benefits: ${scheme.benefits.length > 50 ? "${scheme.benefits.substring(0, 47)}..." : scheme.benefits}',
+    );
     if (scheme.documents.isNotEmpty) {
       debugPrint('Localized Widget First Doc: ${scheme.documents.first.name}');
     }
     if (scheme.requiredServices.isNotEmpty) {
-      debugPrint('Localized Widget First Service: ${scheme.requiredServices.first.name}');
+      debugPrint(
+        'Localized Widget First Service: ${scheme.requiredServices.first.name}',
+      );
     }
     if (scheme.applicationProcess.isNotEmpty) {
-      debugPrint('Localized Widget First Step: ${scheme.applicationProcess.first}');
+      debugPrint(
+        'Localized Widget First Step: ${scheme.applicationProcess.first}',
+      );
     }
     debugPrint('=========================================================\n');
 
@@ -198,7 +207,14 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                   backgroundColor: Colors.white,
                   elevation: 0,
                   scrolledUnderElevation: 0,
-                  automaticallyImplyLeading: false,
+                  leading: IconButton(
+                    icon: const Icon(
+                      Icons.arrow_back,
+                      color: Color(0xFF0F172A),
+                      size: 22,
+                    ),
+                    onPressed: () => Navigator.of(context).maybePop(),
+                  ),
                   title: Text(
                     context.l10n.schemeDetailsTitle,
                     style: GoogleFonts.poppins(
@@ -247,7 +263,9 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                         physics: const BouncingScrollPhysics(),
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         child: Row(
-                          children: List.generate(_getTabs(context).length, (index) {
+                          children: List.generate(_getTabs(context).length, (
+                            index,
+                          ) {
                             final bool isSelected = _activeTabIndex == index;
                             return GestureDetector(
                               onTap: () {
@@ -472,9 +490,7 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
 
   Widget _buildSchemeHighlightsCard(LocalizedScheme scheme) {
     final matches = [
-      scheme.governmentLevel.isNotEmpty
-          ? scheme.governmentLevel
-          : '',
+      scheme.governmentLevel.isNotEmpty ? scheme.governmentLevel : '',
       scheme.state,
       scheme.sector,
       scheme.targetBeneficiary,
@@ -504,12 +520,15 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                 size: 16,
               ),
               const SizedBox(width: 6),
-              Text(
-                context.l10n.schemeAtAGlance,
-                style: GoogleFonts.poppins(
-                  fontSize: 13.0,
-                  fontWeight: FontWeight.bold,
-                  color: const Color(0xFF0F172A),
+              Flexible(
+                child: Text(
+                  context.l10n.schemeAtAGlance,
+                  softWrap: true,
+                  style: GoogleFonts.poppins(
+                    fontSize: 13.0,
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF0F172A),
+                  ),
                 ),
               ),
             ],
@@ -665,7 +684,9 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
       children: [
         Text(
           scheme.benefits.isEmpty
-              ? CentralizedTranslator.instance.translate('Benefit details are available from the official source.')
+              ? CentralizedTranslator.instance.translate(
+                  'Benefit details are available from the official source.',
+                )
               : scheme.benefits,
           style: GoogleFonts.inter(
             color: const Color(0xFF64748B),
@@ -690,7 +711,10 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                       width: cardWidth,
                       height: cardHeight,
                       margin: const EdgeInsets.only(right: 12, bottom: 4),
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 8,
+                      ),
                       decoration: BoxDecoration(
                         color: card["bg"] as Color,
                         borderRadius: BorderRadius.circular(12),
@@ -865,7 +889,9 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
-                        document.isMandatory ? context.l10n.badgeRequired : document.mandatory,
+                        document.isMandatory
+                            ? context.l10n.badgeRequired
+                            : document.mandatory,
                         style: GoogleFonts.inter(
                           color: document.isMandatory
                               ? const Color(0xFFB91C1C)
@@ -909,14 +935,13 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                   ),
                 ),
               (() {
-                final docLink = AppConstants.documentLinks.entries.firstWhere(
-                  (entry) {
-                    final key = entry.key.toLowerCase();
-                    final name = document.name.toLowerCase();
-                    return name.contains(key) || key.contains(name);
-                  },
-                  orElse: () => const MapEntry('', ''),
-                ).value;
+                final docLink = AppConstants.documentLinks.entries.firstWhere((
+                  entry,
+                ) {
+                  final key = entry.key.toLowerCase();
+                  final name = document.name.toLowerCase();
+                  return name.contains(key) || key.contains(name);
+                }, orElse: () => const MapEntry('', '')).value;
 
                 if (docLink.isNotEmpty) {
                   return Padding(
@@ -927,7 +952,10 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                         onTap: () => _openOfficialUrl(docLink),
                         borderRadius: BorderRadius.circular(4),
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
@@ -937,12 +965,16 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
                                 color: Color(0xFF2563EB),
                               ),
                               const SizedBox(width: 4),
-                              Text(
-                                context.l10n.getDocumentOnline,
-                                style: GoogleFonts.inter(
-                                  color: const Color(0xFF2563EB),
-                                  fontSize: 10.5,
-                                  fontWeight: FontWeight.bold,
+                              Flexible(
+                                child: FitOneLine(
+                                  child: Text(
+                                    context.l10n.getDocumentOnline,
+                                    style: GoogleFonts.inter(
+                                      color: const Color(0xFF2563EB),
+                                      fontSize: 10.5,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
                                 ),
                               ),
                             ],
@@ -1023,19 +1055,21 @@ class _SchemeDetailsScreenState extends State<SchemeDetailsScreen> {
             Column(
               children: [
                 Container(
-                  width: 24,
-                  height: 24,
+                  width: adaptiveSize(context, base: 24, min: 20, max: 24),
+                  height: adaptiveSize(context, base: 24, min: 20, max: 24),
                   decoration: const BoxDecoration(
                     color: Color(0xFFEFF6FF),
                     shape: BoxShape.circle,
                   ),
                   alignment: Alignment.center,
-                  child: Text(
-                    "${index + 1}",
-                    style: GoogleFonts.poppins(
-                      color: const Color(0xFF2563EB),
-                      fontSize: 10.5,
-                      fontWeight: FontWeight.bold,
+                  child: FitOneLine(
+                    child: Text(
+                      "${index + 1}",
+                      style: GoogleFonts.poppins(
+                        color: const Color(0xFF2563EB),
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
@@ -1186,12 +1220,7 @@ class _HeroSection extends StatelessWidget {
                     ],
                   ),
                   padding: EdgeInsets.zero,
-                  child: ClipOval(
-                    child: _buildSchemeLogo(
-                      scheme,
-                      size: 120,
-                    ),
-                  ),
+                  child: ClipOval(child: _buildSchemeLogo(scheme, size: 120)),
                 ),
               ),
             ),
@@ -1338,7 +1367,9 @@ class _HeroSection extends StatelessWidget {
                                 style: GoogleFonts.inter(fontSize: 10),
                                 children: [
                                   TextSpan(
-                                    text: context.l10n.matchPercentageFormat(96),
+                                    text: context.l10n.matchPercentageFormat(
+                                      96,
+                                    ),
                                     style: const TextStyle(
                                       fontWeight: FontWeight.bold,
                                       color: Color(0xFF2563EB),
@@ -1346,7 +1377,9 @@ class _HeroSection extends StatelessWidget {
                                   ),
                                   TextSpan(
                                     text: " • ${context.l10n.highlyRelevant}",
-                                    style: const TextStyle(color: Color(0xFF64748B)),
+                                    style: const TextStyle(
+                                      color: Color(0xFF64748B),
+                                    ),
                                   ),
                                 ],
                               ),
@@ -1548,7 +1581,9 @@ class _BottomActionBar extends StatelessWidget {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        isBookmarked ? context.l10n.savedSchemeButton : context.l10n.saveSchemeButton,
+                        isBookmarked
+                            ? context.l10n.savedSchemeButton
+                            : context.l10n.saveSchemeButton,
                         style: GoogleFonts.inter(
                           color: const Color(0xFF2563EB),
                           fontWeight: FontWeight.bold,

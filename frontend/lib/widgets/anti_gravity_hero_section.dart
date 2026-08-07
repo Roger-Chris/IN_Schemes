@@ -1,19 +1,18 @@
 import 'package:flutter/material.dart';
 import '../services/centralized_translator.dart';
+import '../utils/responsive.dart';
 
 class AntiGravityHeroSection extends StatefulWidget {
   final int activeDotIndex;
-  
-  const AntiGravityHeroSection({
-    super.key,
-    this.activeDotIndex = 0,
-  });
+
+  const AntiGravityHeroSection({super.key, this.activeDotIndex = 0});
 
   @override
   State<AntiGravityHeroSection> createState() => _AntiGravityHeroSectionState();
 }
 
-class _AntiGravityHeroSectionState extends State<AntiGravityHeroSection> with TickerProviderStateMixin {
+class _AntiGravityHeroSectionState extends State<AntiGravityHeroSection>
+    with TickerProviderStateMixin {
   late AnimationController _floatController;
   late Animation<double> _floatAnimation;
 
@@ -53,22 +52,14 @@ class _AntiGravityHeroSectionState extends State<AntiGravityHeroSection> with Ti
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [
-                    Color(0xFFE8F3FC), 
-                    Color(0xFFF4F9FF),
-                    Colors.white,
-                  ],
+                  colors: [Color(0xFFE8F3FC), Color(0xFFF4F9FF), Colors.white],
                 ),
               ),
             ),
           ),
 
           // Layer 2: Soft Blurry Clouds (Using MaskFilter.blur for soft dispersed clouds)
-          Positioned.fill(
-            child: CustomPaint(
-              painter: SoftCloudPainter(),
-            ),
-          ),
+          Positioned.fill(child: CustomPaint(painter: SoftCloudPainter())),
 
           // Layer 3: The India Map & Logo Floating Group
           Positioned.fill(
@@ -89,13 +80,31 @@ class _AntiGravityHeroSectionState extends State<AntiGravityHeroSection> with Ti
                     Opacity(
                       opacity: 0.05,
                       child: Container(
-                        width: 200,
-                        height: 200,
+                        width: adaptiveSize(
+                          context,
+                          base: 200,
+                          min: 140,
+                          max: 200,
+                        ),
+                        height: adaptiveSize(
+                          context,
+                          base: 200,
+                          min: 140,
+                          max: 200,
+                        ),
                         decoration: BoxDecoration(
                           border: Border.all(color: Colors.blueGrey, width: 2),
                           shape: BoxShape.circle,
                         ),
-                        child: Center(child: Text(CentralizedTranslator.instance.translate('SVG Map Here'))),
+                        child: Center(
+                          child: FitOneLine(
+                            child: Text(
+                              CentralizedTranslator.instance.translate(
+                                'SVG Map Here',
+                              ),
+                            ),
+                          ),
+                        ),
                       ),
                     ),
 
@@ -107,8 +116,8 @@ class _AntiGravityHeroSectionState extends State<AntiGravityHeroSection> with Ti
                         shape: BoxShape.circle,
                         gradient: RadialGradient(
                           colors: [
-                            const Color(0xFF8BB4F6).withValues(alpha: 0.2), 
-                            Colors.transparent
+                            const Color(0xFF8BB4F6).withValues(alpha: 0.2),
+                            Colors.transparent,
                           ],
                         ),
                       ),
@@ -127,22 +136,34 @@ class _AntiGravityHeroSectionState extends State<AntiGravityHeroSection> with Ti
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Container(width: 12, height: 1.5, color: Colors.orange),
+                            Container(
+                              width: 12,
+                              height: 1.5,
+                              color: Colors.orange,
+                            ),
                             const SizedBox(width: 6),
-                            const Text(
-                              'Discover every Government Scheme in India',
-                              style: TextStyle(
-                                fontSize: 8.0,
-                                fontWeight: FontWeight.w600,
-                                color: Color(0xFF475569),
+                            Flexible(
+                              child: FitOneLine(
+                                child: const Text(
+                                  'Discover every Government Scheme in India',
+                                  style: TextStyle(
+                                    fontSize: 8.0,
+                                    fontWeight: FontWeight.w600,
+                                    color: Color(0xFF475569),
+                                  ),
+                                ),
                               ),
                             ),
                             const SizedBox(width: 6),
-                            Container(width: 12, height: 1.5, color: Colors.green),
+                            Container(
+                              width: 12,
+                              height: 1.5,
+                              color: Colors.green,
+                            ),
                           ],
                         ),
                         const SizedBox(height: 16),
-                        
+
                         // Onboarding indicator
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -156,7 +177,9 @@ class _AntiGravityHeroSectionState extends State<AntiGravityHeroSection> with Ti
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 color: isActive
-                                    ? const Color(0xFF1644A6) // Primary blue accent
+                                    ? const Color(
+                                        0xFF1644A6,
+                                      ) // Primary blue accent
                                     : const Color(0xFFCBD5E1), // Neutral grey
                               ),
                             );
@@ -183,12 +206,12 @@ class SoftCloudPainter extends CustomPainter {
       ..color = Colors.white.withValues(alpha: 0.55)
       ..style = PaintingStyle.fill
       // This MaskFilter ensures the shapes render as soft clouds, not hard shapes
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 40); 
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 40);
 
     // Cloud Top Left
     canvas.drawCircle(Offset(size.width * 0.1, size.height * 0.2), 60, paint);
     canvas.drawCircle(Offset(size.width * 0.2, size.height * 0.1), 50, paint);
-    
+
     // Cloud Top Right
     canvas.drawCircle(Offset(size.width * 0.8, size.height * 0.25), 70, paint);
     canvas.drawCircle(Offset(size.width * 0.9, size.height * 0.15), 60, paint);

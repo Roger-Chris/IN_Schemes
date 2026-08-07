@@ -5,6 +5,7 @@ import '../models/scheme_model.dart';
 import '../models/localized_scheme.dart';
 import '../engine/recommendation_engine.dart';
 import '../providers/app_state_provider.dart';
+import '../services/centralized_translator.dart';
 import '../utils/emblem_helper.dart';
 
 class SchemeCard extends StatelessWidget {
@@ -156,9 +157,15 @@ class SchemeCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<AppProvider>(context);
+    final isTa = provider.selectedLanguage == 'ta';
     final locScheme = scheme.toLocalized(provider.selectedLanguage);
-    final tags = List<String>.from(_getOtherTags(locScheme))
+    final rawTags = List<String>.from(_getOtherTags(locScheme))
       ..sort((a, b) => a.length.compareTo(b.length));
+    final tags = isTa
+        ? rawTags
+              .map((t) => CentralizedTranslator.instance.translateTag(t))
+              .toList()
+        : rawTags;
 
     final department = locScheme.sponsoringBody.isNotEmpty
         ? locScheme.sponsoringBody
@@ -208,12 +215,7 @@ class SchemeCard extends StatelessWidget {
                     ),
                   ),
                   padding: EdgeInsets.zero,
-                  child: ClipOval(
-                    child: _buildSchemeLogo(
-                      scheme,
-                      size: 64,
-                    ),
-                  ),
+                  child: ClipOval(child: _buildSchemeLogo(scheme, size: 64)),
                 ),
                 const SizedBox(width: 12),
 
@@ -230,10 +232,14 @@ class SchemeCard extends StatelessWidget {
                             child: Text(
                               locScheme.name,
                               style: GoogleFonts.poppins(
-                                fontSize: provider.selectedLanguage == 'ta' ? 12.0 : 13.0,
+                                fontSize: provider.selectedLanguage == 'ta'
+                                    ? 12.0
+                                    : 13.0,
                                 fontWeight: FontWeight.bold,
                                 color: const Color(0xFF0F172A),
-                                height: provider.selectedLanguage == 'ta' ? 1.35 : 1.2,
+                                height: provider.selectedLanguage == 'ta'
+                                    ? 1.35
+                                    : 1.2,
                               ),
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
@@ -324,7 +330,9 @@ class SchemeCard extends StatelessWidget {
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Icon(
-                            isBookmarked ? Icons.bookmark : Icons.bookmark_border,
+                            isBookmarked
+                                ? Icons.bookmark
+                                : Icons.bookmark_border,
                             color: const Color(0xFF2563EB),
                             size: 16,
                           ),

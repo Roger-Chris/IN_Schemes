@@ -5,7 +5,8 @@ import '../models/user_profile.dart';
 
 class SessionCacheService {
   SessionCacheService._privateConstructor();
-  static final SessionCacheService instance = SessionCacheService._privateConstructor();
+  static final SessionCacheService instance =
+      SessionCacheService._privateConstructor();
 
   // Cache keys
   static const String _keyProfile = 'userProfile';
@@ -69,7 +70,9 @@ class SessionCacheService {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.clear();
-      debugPrint('[SessionCacheService] All session and preference data cleared.');
+      debugPrint(
+        '[SessionCacheService] All session and preference data cleared.',
+      );
     } catch (e) {
       debugPrint('[SessionCacheService] Error clearing session: $e');
     }
@@ -93,7 +96,10 @@ class SessionCacheService {
   Future<void> updateLastProfileSync() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(_keyLastProfileSync, DateTime.now().toIso8601String());
+      await prefs.setString(
+        _keyLastProfileSync,
+        DateTime.now().toIso8601String(),
+      );
     } catch (e) {
       debugPrint('[SessionCacheService] Error updating last sync time: $e');
     }

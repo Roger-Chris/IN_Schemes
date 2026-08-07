@@ -765,4 +765,669 @@ class AppLocalizationsTa extends AppLocalizations {
 
   @override
   String get badgeConditional => 'நிபந்தனைக்குட்பட்டது';
+
+  @override
+  String get filterDistrict => 'மாவட்டம்';
+
+  @override
+  String get filterMinistry => 'அமைச்சகம்';
+
+  @override
+  String get filterDepartment => 'துறை';
+
+  @override
+  String get filterCategory => 'பிரிவு';
+
+  @override
+  String get labelCommunity => 'சமூகம்';
+
+  @override
+  String get labelOccupation => 'தொழில்';
+
+  @override
+  String get labelEducation => 'கல்வி';
+
+  @override
+  String get labelFirstGenGraduate => 'முதல் தலைமுறை பட்டதாரி';
+
+  @override
+  String get labelDisability => 'மாற்றுத்திறனாளி நிலை';
+
+  @override
+  String get filterSchemeStatus => 'திட்ட நிலை';
+
+  @override
+  String get filterOnlineOffline => 'ஆன்லைன் / ஆஃப்லைன்';
+
+  @override
+  String get filterCentralStateScheme => 'மத்திய / மாநில திட்டம்';
+
+  @override
+  String get filterClearAll => 'அனைத்தையும் நீக்கு';
+
+  @override
+  String get validationSelectDob =>
+      'தயவுசெய்து உங்கள் பிறந்த தேதியைத் தேர்ந்தெடுக்கவும்';
+
+  @override
+  String get notifTooltipMarkRead => 'தேர்ந்தெடுக்கப்பட்டவற்றை படித்ததாக குறி';
+
+  @override
+  String get notifTooltipDeleteSelected => 'தேர்ந்தெடுக்கப்பட்டவற்றை நீக்கு';
+
+  @override
+  String get notifNewSchemeAlertsTitle => 'புதிய திட்ட அறிவிப்புகள்';
+
+  @override
+  String get notifNewSchemeAlertsSubtitle =>
+      'புதிதாக அறிமுகப்படுத்தப்பட்ட திட்டங்கள் குறித்து தெரிந்துகொள்ளுங்கள்';
+
+  @override
+  String get notifDeadlineRemindersTitle => 'காலக்கெடு நினைவூட்டல்கள்';
+
+  @override
+  String get notifDeadlineRemindersSubtitle =>
+      'முக்கியமான விண்ணப்ப காலக்கெடுக்களை தவறவிடாதீர்கள்';
+
+  @override
+  String get notifGovtUpdatesTitle => 'அரசு புதுப்பிப்புகள்';
+
+  @override
+  String get notifGovtUpdatesSubtitle =>
+      'முக்கிய அறிவிப்புகள் மற்றும் புதுப்பிப்புகள்';
+
+  @override
+  String get notifProfileRemindersTitle => 'சுயவிவரம் பூர்த்தி நினைவூட்டல்கள்';
+
+  @override
+  String get notifProfileRemindersSubtitle =>
+      'சிறந்த பரிந்துரைகளைப் பெற உங்கள் சுயவிவரத்தை பூர்த்தி செய்யுங்கள்';
+
+  @override
+  String get navChooseYourPrefix => 'உங்கள் ';
+
+  @override
+  String get navExperienceSuffix => 'அனுபவத்தைத் தேர்ந்தெடுக்கவும்';
+
+  @override
+  String get navRegularNavigationTitle => 'வழக்கமான வழிசெலுத்தல்';
+
+  @override
+  String get navModeRegularSubtitle => 'செயலியை சுயாதீனமாக உலாவி ஆராயுங்கள்.';
+
+  @override
+  String get navAiCompanionTitle => 'AI துணைவர்';
+
+  @override
+  String get navModeCompanionSubtitle =>
+      'உங்கள் AI உங்களை படிப்படியாக வழிநடத்தட்டும்.';
+
+  @override
+  String get navSwitchAnytimeTitle => 'எப்போது வேண்டுமானாலும் மாறலாம்';
+
+  @override
+  String get settingsRegularSubtitle =>
+      'வழக்கமான தெளிவான பட்டியல் மற்றும் தாவல் காட்சி அமைப்பு';
+
+  @override
+  String get settingsCompanionTitle => 'AI துணைவர் (சாரதி)';
+
+  @override
+  String get settingsCompanionSubtitle =>
+      'குரல்-முதன்மையிலான AI வழிகாட்டப்பட்ட உரையாடல் காட்சி';
+
+  @override
+  String get navSwitchAnytimeDesc =>
+      'அமைவுகளிலிருந்து உங்கள் வழிசெலுத்தல் பயன்முறையை பின்னர் மாற்றலாம்.';
+
+  @override
+  String get helpContactEmailLabel => 'தொடர்பு மின்னஞ்சல் முகவரி';
+
+  @override
+  String get helpContactEmailHint =>
+      'பின்தொடர்தலுக்கு உங்கள் மின்னஞ்சலை உள்ளிடவும்';
+
+  @override
+  String get helpDescriptionLabel => 'விவரம்';
+
+  @override
+  String get helpDescriptionHint => 'சிக்கலை விரிவாக விவரிக்கவும்...';
+
+  @override
+  String get helpSuggestionsLabel => 'உங்கள் பரிந்துரைகள்';
+
+  @override
+  String get helpSuggestionsHint => 'நாங்கள் எதை சிறப்பாக செய்யலாம்?';
+
+  @override
+  String get companionVoiceUnavailableRetry =>
+      'குரல் சேவை கிடைக்கவில்லை. மீண்டும் முயற்சிக்க தட்டவும்.';
+
+  @override
+  String get companionSignInRetryVoice =>
+      'மீண்டும் உள்நுழைந்து, குரல் அம்சத்தை மீண்டும் முயற்சிக்கவும்.';
+
+  @override
+  String get companionCheckInternetRetryVoice =>
+      'உங்கள் இணைய இணைப்பைச் சரிபார்த்து, குரல் அம்சத்தை மீண்டும் முயற்சிக்கவும்.';
+
+  @override
+  String get companionVoiceConnectFailedRetry =>
+      'குரல் சேவையை இணைக்க முடியவில்லை. மீண்டும் முயற்சிக்க தட்டவும்.';
+
+  @override
+  String get companionGenericErrorRetry =>
+      'பிழை ஏற்பட்டது. மீண்டும் முயற்சிக்கவும்.';
+
+  @override
+  String get companionConnectionNeedsAttention => 'இணைப்பில் சிக்கல் உள்ளது';
+
+  @override
+  String get companionConnectingShort => 'இணைக்கிறது';
+
+  @override
+  String get companionListeningToYou => 'உங்களைக் கேட்கிறது';
+
+  @override
+  String get companionCheckingYourDetails => 'உங்கள் விவரங்களை சரிபார்க்கிறது';
+
+  @override
+  String get companionSpeakingNow => 'இப்போது பேசுகிறது';
+
+  @override
+  String get companionReadyToHelp => 'உதவ தயார்';
+
+  @override
+  String get companionVoiceConnected => 'குரல் இணைக்கப்பட்டது';
+
+  @override
+  String get companionVoiceOffline => 'குரல் இணைப்பு இல்லை';
+
+  @override
+  String get companionIntroPrefix => 'நான்';
+
+  @override
+  String get companionIntroSuffix => ', MSME வெற்றிக்கான\nஉங்கள் AI துணை.';
+
+  @override
+  String get companionEmptyStateHint =>
+      'உங்களுக்கு என்ன உதவி தேவை என்று சொல்லுங்கள். நான் ஒரு விவரத்தை மட்டும் ஒவ்வொரு முறையும் கேட்பேன்.';
+
+  @override
+  String get companionScrollToLatest => 'சமீபத்தியது';
+
+  @override
+  String get companionSpeakingBadge => 'பேசுகிறது';
+
+  @override
+  String get companionRankedResultsCaption =>
+      'நீங்கள் பகிர்ந்த விவரங்களின் அடிப்படையில் வரிசைப்படுத்தப்பட்டது. இறுதி தகுதியை சம்பந்தப்பட்ட துறை உறுதிப்படுத்தும்.';
+
+  @override
+  String get companionReviewMatch => 'பொருத்தத்தை சரிபார்க்கவும்';
+
+  @override
+  String get companionOfficialSourceChecked =>
+      'அதிகாரப்பூர்வ மூலம் சரிபார்க்கப்பட்டது';
+
+  @override
+  String companionOfficialSourceCheckedConfidence(Object confidence) {
+    return 'அதிகாரப்பூர்வ மூலம் சரிபார்க்கப்பட்டது · $confidence நம்பகத்தன்மை';
+  }
+
+  @override
+  String get companionVerifyWithDepartment => 'துறையிடம் உறுதிப்படுத்தவும்';
+
+  @override
+  String get companionViewEligibility => 'தகுதியை காண்க';
+
+  @override
+  String companionYouTimestampLabel(Object time) {
+    return 'நீங்கள்  $time';
+  }
+
+  @override
+  String companionAiTimestampLabel(Object time) {
+    return 'MSS Saarthi  $time';
+  }
+
+  @override
+  String get companionAskAnything => 'Saarthi-டம் எதுவும் கேளுங்கள்...';
+
+  @override
+  String get companionTapToSpeakHint =>
+      'கீழே தட்டி உங்கள் கேள்வியைப் பேசுங்கள்';
+
+  @override
+  String get companionRetryVoice => 'குரலை மீண்டும் முயற்சிக்கவும்';
+
+  @override
+  String get companionSecureLiveSession => 'பாதுகாப்பான நேரடி குரல் அமர்வு';
+
+  @override
+  String get companionLiveConnectionRequired => 'நேரடி குரல் இணைப்பு தேவை';
+
+  @override
+  String get companionStartSpeakingSemantic => 'Saarthi-டம் பேசத் தொடங்குங்கள்';
+
+  @override
+  String get companionTapToSpeak => 'பேச தட்டவும்';
+
+  @override
+  String get companionStop => 'நிறுத்து';
+
+  @override
+  String get companionInterrupt => 'இடைமறிக்க';
+
+  @override
+  String get companionSpeak => 'பேசு';
+
+  @override
+  String get companionEnd => 'முடி';
+
+  @override
+  String get companionVoiceNotConnected => 'குரல் இணைக்கப்படவில்லை';
+
+  @override
+  String get companionConnectingSecurely => 'பாதுகாப்பாக இணைக்கிறது';
+
+  @override
+  String get companionFindingBestMatch => 'சிறந்த பொருத்தத்தைத் தேடுகிறது';
+
+  @override
+  String get companionSaarthiIsSpeaking => 'Saarthi பேசுகிறது';
+
+  @override
+  String get companionReadyShort => 'தயார்';
+
+  @override
+  String get welcomeMeetPrefix => 'அறிமுகம்';
+
+  @override
+  String get welcomeIntroLine1 => 'நான் Saarthi, உங்கள் ஸ்மார்ட் உதவியாளர்.';
+
+  @override
+  String get welcomeIntroLine2 =>
+      'சரியான திட்டங்களை கண்டறியவும், அனைத்தையும் எளிமையாக விளக்கவும், ஒவ்வொரு படியிலும் வழிகாட்டவும் நான் உதவுவேன்.';
+
+  @override
+  String get welcomeSectionHeader => 'Saarthi உங்களுக்கு உதவக்கூடியவை';
+
+  @override
+  String get welcomeFeatureTalkNaturally => 'இயல்பாக பேசுங்கள்';
+
+  @override
+  String get welcomeFeatureFindSchemes => 'சரியான திட்டங்களை கண்டறியுங்கள்';
+
+  @override
+  String get welcomeFeatureBusinessRoadmap => 'வணிக திட்டப் பாதை';
+
+  @override
+  String get welcomeFeatureApplicationSupport => 'விண்ணப்ப ஆதரவு';
+
+  @override
+  String get welcomeChooseLanguage => 'மொழியைத் தேர்வு செய்க';
+
+  @override
+  String get welcomeChooseLanguageSubtitle =>
+      'Saarthi உங்களுடன் சிறப்பாக பேச, உங்கள் விருப்ப மொழியைத் தேர்வு செய்யவும்.';
+
+  @override
+  String get welcomeVoiceLabel => 'குரல்';
+
+  @override
+  String get welcomeVoiceNatural => 'இயல்பான';
+
+  @override
+  String get welcomeVoiceClear => 'தெளிவான';
+
+  @override
+  String get welcomePreviewVoiceTooltip =>
+      'ஆங்கிலம் மற்றும் தமிழில் முன்னோட்டம் காண்க';
+
+  @override
+  String get welcomeChangeAnytimeNote =>
+      'இதை நீங்கள் எப்போது வேண்டுமானாலும் அமைப்புகளில் மாற்றலாம்.';
+
+  @override
+  String get welcomeLetsBegin => 'தொடங்குவோம்';
+
+  @override
+  String get voiceLanguageAuto => 'தானியக்கம்';
+
+  @override
+  String get voiceStatusSpeaking => 'பேசுகிறது...';
+
+  @override
+  String get voiceStatusListening => 'கேட்கிறது...';
+
+  @override
+  String get voiceStatusProcessing => 'செயலாக்குகிறது...';
+
+  @override
+  String get voiceStatusUnderstanding => 'புரிந்துகொள்கிறது...';
+
+  @override
+  String get voiceStatusOneQuestion => 'ஒரு கேள்வி';
+
+  @override
+  String get voiceStatusMatchesFound => 'திட்டங்கள் கிடைத்தன';
+
+  @override
+  String get voiceStatusNeedsMoreDetail => 'மேலும் தகவல் தேவை';
+
+  @override
+  String get voiceStatusFinding => 'தேடுகிறது...';
+
+  @override
+  String voiceStatusFoundCount(Object count) {
+    return '$count கிடைத்தன';
+  }
+
+  @override
+  String get voiceRecommendedBySaarthiReason =>
+      'சரிபார்க்கப்பட்ட பட்டியலிலிருந்து Saarthi பரிந்துரைத்தது';
+
+  @override
+  String get voiceRecognitionUnavailable =>
+      'இந்த சாதனத்தில் குரல் அடையாளம் காணும் வசதி இல்லை.';
+
+  @override
+  String get voiceRecognitionStartFailed =>
+      'குரல் அடையாளம் காணும் செயல்பாட்டைத் தொடங்க முடியவில்லை. மீண்டும் முயற்சிக்கவும்.';
+
+  @override
+  String get voiceSearchFailed =>
+      'இப்போது தேட முடியவில்லை. மீண்டும் முயற்சிக்கவும்.';
+
+  @override
+  String get voiceUseValue => 'மதிப்பைப் பயன்படுத்து';
+
+  @override
+  String get voiceReviewProfileUpdates =>
+      'சுயவிவர புதுப்பிப்புகளை சரிபார்க்கவும்';
+
+  @override
+  String get voiceKeepSessionOnly => 'இந்த அமர்விற்கு மட்டும் வைத்திரு';
+
+  @override
+  String get voiceSaveConfirmed => 'உறுதிசெய்தவற்றை சேமி';
+
+  @override
+  String get voiceProfileSavedMessage =>
+      'உறுதிசெய்யப்பட்ட விவரங்கள் உங்கள் சுயவிவரத்தில் சேமிக்கப்பட்டன.';
+
+  @override
+  String get voiceCloudDisclosure =>
+      'நேரடி ஒலி பாதுகாப்பாக செயலாக்கப்படுகிறது. இந்த செயலி ஒலி அல்லது மூல எழுத்துப் பிரதிகளை சேமிக்காது.';
+
+  @override
+  String get voiceNoConfidentMatch =>
+      'நம்பகமான பொருத்தம் கிடைக்கவில்லை. உங்கள் நிலையை வேறு வார்த்தைகளில் சொல்லுங்கள்.';
+
+  @override
+  String get voiceHeaderTalkToSaarthi => 'Saarthi-டம் பேசுங்கள்';
+
+  @override
+  String get voiceUnmute => 'ஒலியை இயக்கு';
+
+  @override
+  String get voiceMute => 'ஒலியடக்கு';
+
+  @override
+  String get voiceCancelAssistantTooltip => 'உதவியாளரை ரத்து செய்';
+
+  @override
+  String get voiceTellMeNaturally => 'உங்கள் நிலையை இயல்பாக சொல்லுங்கள்...';
+
+  @override
+  String get voiceSuggestionBusinessLoans => 'வணிகக் கடன்கள்';
+
+  @override
+  String get voiceSuggestionCollegeScholarship => 'கல்லூரி உதவித்தொகை';
+
+  @override
+  String get voiceSuggestionFarmerSubsidy => 'விவசாயி மானியம்';
+
+  @override
+  String get voiceStopListeningSemantic => 'கேட்பதை நிறுத்து';
+
+  @override
+  String get voiceStartListeningSemantic => 'கேட்கத் தொடங்கு';
+
+  @override
+  String get voiceTypeToSaarthiHint => 'Saarthi-க்கு தட்டச்சு செய்யுங்கள்...';
+
+  @override
+  String get voiceSendMessageTooltip => 'செய்தியை அனுப்பு';
+
+  @override
+  String voiceLanguageSemantic(Object language) {
+    return 'குரல் மொழி $language';
+  }
+
+  @override
+  String get voiceWhatIUnderstood => 'நான் புரிந்துகொண்டது';
+
+  @override
+  String get voiceRepeatQuestionTooltip => 'கேள்வியை மீண்டும் சொல்';
+
+  @override
+  String get voiceSpeechOutputUnavailable =>
+      'குரல் வெளியீடு கிடைக்கவில்லை; பதிலளிக்க மைக்ரோஃபோனைத் தட்டவும்.';
+
+  @override
+  String get voiceSchemesSuitedToSituation =>
+      'உங்களுக்கு பொருத்தமான திட்டங்கள்';
+
+  @override
+  String get voiceViewAllResults => 'அனைத்தையும் காண்க';
+
+  @override
+  String get voiceReviewAndSaveDetails =>
+      'உறுதிசெய்யப்பட்ட விவரங்களை சரிபார்த்து சேமிக்கவும்';
+
+  @override
+  String get voiceOpenOfficialSource => 'அதிகாரப்பூர்வ மூலத்தைத் திற';
+
+  @override
+  String get voiceGroundingChecking => 'அதிகாரப்பூர்வ மூலங்களை சரிபார்க்கிறது…';
+
+  @override
+  String voiceGroundingFoundSources(Object count, Object sources) {
+    return 'ஆன்லைனில் உறுதிசெய்யப்பட்டது · $count அதிகாரப்பூர்வ $sources';
+  }
+
+  @override
+  String get voiceGroundingUnavailable =>
+      'ஆஃப்லைன் · தனியார் சாதன அறிவைப் பயன்படுத்துகிறது';
+
+  @override
+  String get voiceGroundingNoSources =>
+      'அதிகாரப்பூர்வ பக்கம் கிடைக்கவில்லை · சரிபார்க்கப்பட்ட உள்ளூர் பட்டியலைப் பயன்படுத்துகிறது';
+
+  @override
+  String get voiceGroundingPrivacyNote =>
+      'தலைப்பு மற்றும் அதிகாரப்பூர்வ இணைப்புகள் மட்டுமே சரிபார்க்கப்படுகின்றன. உங்கள் கூற்றும் சுயவிவரமும் இந்த சாதனத்திலேயே இருக்கும்.';
+
+  @override
+  String get voiceCouldNotOpenSource =>
+      'அதிகாரப்பூர்வ மூலத்தைத் திறக்க முடியவில்லை.';
+
+  @override
+  String get voiceMatchStrong => 'வலுவான பொருத்தம்';
+
+  @override
+  String get voiceMatchLikely => 'சாத்தியமான பொருத்தம்';
+
+  @override
+  String get voiceMatchNeedsConfirmation => 'உறுதிப்படுத்தல் தேவை';
+
+  @override
+  String get voiceMatchNotSuitable => 'பொருந்தாது';
+
+  @override
+  String get voiceMatchNoConfident => 'நம்பகமான பொருத்தம் இல்லை';
+
+  @override
+  String voiceWhyThisFits(Object reasons) {
+    return 'இது ஏன் பொருந்துகிறது: $reasons';
+  }
+
+  @override
+  String voiceStillConfirm(Object requirements) {
+    return 'இன்னும் உறுதிப்படுத்த வேண்டியவை: $requirements';
+  }
+
+  @override
+  String get voiceSourceVerified =>
+      'தற்போதைய அதிகாரப்பூர்வ மூலம் சரிபார்க்கப்பட்டது';
+
+  @override
+  String get voiceSourceUnverified =>
+      'நிச்சயமற்றது அல்லது பழையது — விண்ணப்பிக்கும் முன் உறுதிப்படுத்தவும்';
+
+  @override
+  String get voiceBestMatchingSchemes => 'உங்களுக்கான சிறந்த திட்டங்கள்';
+
+  @override
+  String get voiceFactLabelState => 'மாநிலம்';
+
+  @override
+  String get voiceFactLabelSituation => 'நிலைமை';
+
+  @override
+  String get voiceFactLabelMaritalStatus => 'திருமண நிலை';
+
+  @override
+  String get voiceFactLabelSector => 'தொழில்துறை';
+
+  @override
+  String get voiceFactLabelFundingNeed => 'நிதி தேவை';
+
+  @override
+  String get voiceFactLabelLandholding => 'நில உடைமை';
+
+  @override
+  String voiceFactConflictFormat(Object conflictingValue, Object value) {
+    return '$value (சுயவிவரம்: $conflictingValue)';
+  }
+
+  @override
+  String get calcUdyamClassifierTitle => 'உத்யம் MSME வகைப்படுத்தி';
+
+  @override
+  String get calcUdyamClassifierSub =>
+      'அதிகாரப்பூர்வ அரசு வழிகாட்டுதல்களின் கீழ் உங்கள் தொழிலை வகைப்படுத்துங்கள்.';
+
+  @override
+  String get calcInvestmentLabel => 'ஆலை & இயந்திரங்களில் முதலீடு';
+
+  @override
+  String get calcInvestmentHelper =>
+      'இயந்திரங்களின் அசல் கொள்முதல் மதிப்பை கோடிகளில் உள்ளிடவும்';
+
+  @override
+  String get calcTurnoverLabel => 'ஆண்டு விற்றுமுதல்';
+
+  @override
+  String get calcTurnoverHelper =>
+      'கடந்த நிதியாண்டின் மொத்த வருவாய்/விற்பனையை கோடிகளில் உள்ளிடவும்';
+
+  @override
+  String get calcClassificationResult => 'வகைப்பாட்டின் முடிவு';
+
+  @override
+  String get calcBtnCalculate => 'வகைப்பாட்டைக் கணக்கிடுக';
+
+  @override
+  String get calcGstTitle => 'GST / வரி கால்குலேட்டர்';
+
+  @override
+  String get calcGstSub =>
+      'CGST, SGST மற்றும் மொத்த இன்வாய்ஸ் தொகைகளைக் கணக்கிடுங்கள்.';
+
+  @override
+  String get calcBaseAmountLabel => 'அடிப்படைத் தொகை';
+
+  @override
+  String get calcBaseAmountHelper =>
+      'GSTக்கு முந்தைய பொருட்கள் அல்லது சேவைகளின் நிகர மதிப்பை உள்ளிடவும்';
+
+  @override
+  String get calcGstRateLabel => 'GST விகிதம் (%)';
+
+  @override
+  String get calcBasePrice => 'அடிப்படை விலை';
+
+  @override
+  String get calcTotalInvoice => 'மொத்த இன்வாய்ஸ்';
+
+  @override
+  String get calcBtnCalculateTax => 'வரியைக் கணக்கிடுக';
+
+  @override
+  String get calcEmiTitle => 'தொழில் கடன் EMI கால்குலேட்டர்';
+
+  @override
+  String get calcEmiSub =>
+      'உங்கள் தொழில் கடனுக்கான மாதாந்திர தவணைகளைக் கணக்கிடுங்கள்.';
+
+  @override
+  String get calcLoanAmountLabel => 'கடன் தொகை';
+
+  @override
+  String get calcLoanAmountHelper =>
+      'தேவையான மொத்த தொழில் கடன் தொகையை உள்ளிடவும்';
+
+  @override
+  String get calcInterestRateLabel => 'வட்டி விகிதம் (% ஆண்டுக்கு)';
+
+  @override
+  String get calcTenureLabel => 'கால அளவு (மாதங்களில்)';
+
+  @override
+  String get calcBtnCalculateEmi => 'EMI கணக்கிடுக';
+
+  @override
+  String get calcDpiitTitle => 'DPIIT அங்கீகார சரிபார்ப்புப் பட்டியல்';
+
+  @override
+  String get calcDpiitSub =>
+      'DPIIT விதிகளின் கீழ் உங்கள் தொழில் ஸ்டார்ட்அப்பாக தகுதி பெறுகிறதா என்பதை மதிப்பிடுங்கள்.';
+
+  @override
+  String get calcValuationTitle => 'விதை நிலை மதிப்பீடு கணக்கிடுபவர்';
+
+  @override
+  String get calcValuationSub =>
+      'MRR மற்றும் வளர்ச்சியின் அடிப்படையில் விதை நிலை மதிப்பீட்டு வரம்பைக் கணக்கிடுங்கள்.';
+
+  @override
+  String get calcDocChecklistTitle => 'தொழில் தொடக்க ஆவணப் பட்டியல்';
+
+  @override
+  String get calcDocChecklistSub =>
+      'இந்தியாவில் ஒரு தொழிலைப் பதிவு செய்து இயக்குவதற்கான அத்தியாவசிய ஆவணங்கள்.';
+
+  @override
+  String get notifToastSelectedRead =>
+      'தேர்ந்தெடுக்கப்பட்ட அறிவிப்புகள் படித்ததாகக் குறிக்கப்பட்டன';
+
+  @override
+  String get notifToastSelectedDeleted =>
+      'தேர்ந்தெடுக்கப்பட்ட அறிவிப்புகள் நீக்கப்பட்டன';
+
+  @override
+  String get notifToastAllRead =>
+      'அனைத்து அறிவிப்புகளும் படித்ததாகக் குறிக்கப்பட்டன';
+
+  @override
+  String get notifToastAllDeleted => 'அனைத்து அறிவிப்புகளும் நீக்கப்பட்டன';
+
+  @override
+  String get notifToastFilterOpened => 'வடிகட்டி விருப்பங்கள் திறக்கப்பட்டன';
+
+  @override
+  String get retryVoice => 'மீண்டும் குரலை முயற்சிக்கவும்';
 }

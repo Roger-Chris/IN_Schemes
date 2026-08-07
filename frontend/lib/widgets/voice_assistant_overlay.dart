@@ -8,6 +8,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../models/scheme_model.dart';
+import '../models/localized_scheme.dart';
 import '../models/user_profile.dart';
 import '../services/assistant_session_controller.dart';
 import '../services/edge_slm_understanding_engine.dart';
@@ -20,6 +21,8 @@ import '../services/speech_output_controller.dart';
 import '../services/voice_recognition_controller.dart';
 import '../services/voice_agent_controller.dart';
 import '../services/centralized_translator.dart';
+import '../utils/responsive.dart';
+import '../l10n/l10n.dart';
 
 enum _VoiceAssistantPhase {
   starting,
@@ -1051,7 +1054,7 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
           side: const BorderSide(color: Color(0xFFE2E8F0)),
         ),
         title: Text(
-          'Edit ${_factLabel(fact.key)}',
+          'Edit ${_factLabel(context, fact.key)}',
           style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
         ),
         content: TextField(
@@ -1067,7 +1070,7 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
             style: TextButton.styleFrom(
               foregroundColor: const Color(0xFF64748B),
             ),
-            child: Text(CentralizedTranslator.instance.translate('Cancel')),
+            child: Text(context.l10n.dialogCancel),
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(controller.text),
@@ -1127,7 +1130,7 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
                   (fact) => ListTile(
                     dense: true,
                     contentPadding: EdgeInsets.zero,
-                    title: Text(_factLabel(fact.key)),
+                    title: Text(_factLabel(context, fact.key)),
                     subtitle: Text(fact.value),
                     trailing: const Icon(
                       Icons.check_circle,
@@ -1506,15 +1509,18 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
                     ),
                     const SizedBox(width: 5),
                     Flexible(
-                      child: Text(
-                        _statusLabel,
-                        key: const Key('voice-live-status'),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.inter(
-                          color: _statusColor,
-                          fontSize: 10.5,
-                          fontWeight: FontWeight.w600,
+                      child: FitOneLine(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          _statusLabel,
+                          key: const Key('voice-live-status'),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.inter(
+                            color: _statusColor,
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                     ),
@@ -1631,6 +1637,9 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
                     : _isListening
                     ? 'Stop listening'
                     : 'Start listening',
+                hint: 'Double tap to control the microphone',
+                onTap: _toggleListening,
+                excludeSemantics: true,
                 child: IconButton.filled(
                   key: const Key('voice-primary-control'),
                   onPressed: _toggleListening,
@@ -1961,7 +1970,7 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
                         : const Color(0xFF60A5FA),
                   ),
                   label: Text(
-                    '${_factLabel(fact.key)}: ${_displayFactValue(fact)}',
+                    '${_factLabel(context, fact.key)}: ${_displayFactValue(fact)}',
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 11,
@@ -2147,12 +2156,17 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
             children: [
               Icon(Icons.auto_awesome, size: 15, color: _accent),
               const SizedBox(width: 6),
-              Text(
-                _isCompanion ? 'Saarthi' : 'Ask IN AI',
-                style: GoogleFonts.inter(
-                  color: Colors.white,
-                  fontSize: 11.5,
-                  fontWeight: FontWeight.w700,
+              Flexible(
+                child: FitOneLine(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    _isCompanion ? 'Saarthi' : 'Ask IN AI',
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -2378,7 +2392,7 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
                 children: [
                   Expanded(
                     child: Text(
-                      scheme.name,
+                      scheme.toLocalized(_presentInTamil ? 'ta' : 'en').name,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.inter(
@@ -2414,13 +2428,17 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
               if (recommendation.reasons.isNotEmpty)
                 _resultLine(
                   Icons.check_circle_outline,
-                  'Why this fits: ${recommendation.reasons.join(' • ')}',
+                  _presentInTamil
+                      ? 'ஏன் பொருந்துகிறது: ${recommendation.reasons.join(' • ')}'
+                      : 'Why this fits: ${recommendation.reasons.join(' • ')}',
                   const Color(0xFF86EFAC),
                 ),
               if (recommendation.unknownRequirements.isNotEmpty)
                 _resultLine(
                   Icons.help_outline,
-                  'Still confirm: ${recommendation.unknownRequirements.take(2).join(' • ')}',
+                  _presentInTamil
+                      ? 'சரிபார்க்க வேண்டியவை: ${recommendation.unknownRequirements.take(2).join(' • ')}'
+                      : 'Still confirm: ${recommendation.unknownRequirements.take(2).join(' • ')}',
                   const Color(0xFFFCD34D),
                 ),
               _resultLine(
@@ -2428,8 +2446,12 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
                     ? Icons.verified_outlined
                     : Icons.warning_amber_outlined,
                 recommendation.isTrusted
-                    ? 'Current official source verified'
-                    : 'Uncertain or historical — verify before applying',
+                    ? (_presentInTamil
+                          ? 'அதிகாரப்பூர்வ மூலத்தில் சரிபார்க்கப்பட்டது'
+                          : 'Current official source verified')
+                    : (_presentInTamil
+                          ? 'விண்ணப்பிக்கும் முன் சரிபார்க்கவும்'
+                          : 'Uncertain or historical — verify before applying'),
                 recommendation.isTrusted
                     ? const Color(0xFF93C5FD)
                     : const Color(0xFFFCA5A5),
@@ -2493,7 +2515,9 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
                     ),
                     tileColor: Colors.white.withValues(alpha: 0.055),
                     title: Text(
-                      match.scheme.name,
+                      match.scheme
+                          .toLocalized(_presentInTamil ? 'ta' : 'en')
+                          .name,
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 11,
@@ -2516,23 +2540,26 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay>
     );
   }
 
-  static String _factLabel(EligibilityFactKey key) => switch (key) {
-    EligibilityFactKey.age => 'Age',
-    EligibilityFactKey.state => 'State',
-    EligibilityFactKey.district => 'District',
-    EligibilityFactKey.annualIncome => 'Annual income',
-    EligibilityFactKey.gender => 'Gender',
-    EligibilityFactKey.community => 'Community',
-    EligibilityFactKey.occupation => 'Situation',
-    EligibilityFactKey.education => 'Education',
-    EligibilityFactKey.disability => 'Disability',
-    EligibilityFactKey.maritalStatus => 'Marital status',
-    EligibilityFactKey.studentStatus => 'Student',
-    EligibilityFactKey.businessStage => 'Business stage',
-    EligibilityFactKey.businessSector => 'Sector',
-    EligibilityFactKey.fundingNeed => 'Funding need',
-    EligibilityFactKey.landholding => 'Landholding',
-  };
+  static String _factLabel(BuildContext context, EligibilityFactKey key) {
+    final l10n = context.l10n;
+    return switch (key) {
+      EligibilityFactKey.age => l10n.labelAge,
+      EligibilityFactKey.state => 'State',
+      EligibilityFactKey.district => l10n.filterDistrict,
+      EligibilityFactKey.annualIncome => l10n.labelAnnualIncome,
+      EligibilityFactKey.gender => l10n.labelGender,
+      EligibilityFactKey.community => l10n.labelCommunity,
+      EligibilityFactKey.occupation => 'Situation',
+      EligibilityFactKey.education => l10n.labelEducation,
+      EligibilityFactKey.disability => l10n.labelDisability,
+      EligibilityFactKey.maritalStatus => 'Marital status',
+      EligibilityFactKey.studentStatus => l10n.empStudent,
+      EligibilityFactKey.businessStage => l10n.labelBusinessStage,
+      EligibilityFactKey.businessSector => 'Sector',
+      EligibilityFactKey.fundingNeed => 'Funding need',
+      EligibilityFactKey.landholding => 'Landholding',
+    };
+  }
 
   static String _displayFactValue(EligibilityFact fact) {
     if ({

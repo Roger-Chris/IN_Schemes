@@ -1,0 +1,26 @@
+{
+  "_meta": {
+    "catalog": "tax_catalog.json",
+    "purpose": "Stage 6 Tamil backfill — translations authored from catalog English source (canonical). NOT yet applied to the live Supabase catalog schema — see csr_catalog.ta.json _meta for the full rationale.",
+    "recordCount": 13,
+    "fieldsTranslated": ["name"],
+    "fieldsSkipped": ["description, guidance (empty for all 13 English source records)"],
+    "protectedAsIs": ["PAN and TAN kept untranslated per the ground rule never to translate ID/document identifiers"],
+    "reuse": ["name values for TAX000001/002/006/013 reuse the existing CentralizedTranslator dictionary entries verbatim for consistency (GST, Income Tax, Customs Duty, Income Tax Return)"]
+  },
+  "records": {
+    "TAX000001": { "name": "சரக்கு மற்றும் சேவை வரி (GST)" },
+    "TAX000002": { "name": "வருமான வரி" },
+    "TAX000003": { "name": "நிறுவன வரி" },
+    "TAX000004": { "name": "கலவை திட்டம் (Composition Scheme)" },
+    "TAX000005": { "name": "QRMP (காலாண்டு அறிக்கை, மாதாந்திர கட்டணம்)" },
+    "TAX000006": { "name": "சுங்க வரி" },
+    "TAX000007": { "name": "முத்திரைத் தீர்வை" },
+    "TAX000008": { "name": "மின்சார வரி" },
+    "TAX000009": { "name": "GST பதிவு" },
+    "TAX000010": { "name": "PAN" },
+    "TAX000011": { "name": "TAN" },
+    "TAX000012": { "name": "GST அறிக்கை தாக்கல்" },
+    "TAX000013": { "name": "வருமான வரி தாக்கல் அறிக்கை" }
+  }
+}

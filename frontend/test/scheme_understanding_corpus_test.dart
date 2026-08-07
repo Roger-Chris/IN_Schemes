@@ -32,8 +32,12 @@ void main() {
           questionsAsked: 5,
         ),
       );
-      if (row['answerable'] == false || result.noConfidentMatch || result.recommendations.isEmpty) {
-        if (row['answerable'] == false && !result.noConfidentMatch && result.recommendations.isNotEmpty) {
+      if (row['answerable'] == false ||
+          result.noConfidentMatch ||
+          result.recommendations.isEmpty) {
+        if (row['answerable'] == false &&
+            !result.noConfidentMatch &&
+            result.recommendations.isNotEmpty) {
           misses.add('false-positive: ${row['query']}');
         } else if (row['answerable'] == false) {
           hits++;
@@ -45,10 +49,16 @@ void main() {
       }
 
       answerable++;
-      final expected = RegExp(row['expected'] as String? ?? '', caseSensitive: false);
+      final expected = RegExp(
+        row['expected'] as String? ?? '',
+        caseSensitive: false,
+      );
       final searchable = result.recommendations
           .take(3)
-          .map((item) => '${item.scheme.id} ${item.scheme.schemeCode} ${item.scheme.name} ${item.scheme.sector} ${item.scheme.targetBeneficiary} ${item.scheme.overview} ${item.scheme.searchKeywords}')
+          .map(
+            (item) =>
+                '${item.scheme.id} ${item.scheme.schemeCode} ${item.scheme.name} ${item.scheme.sector} ${item.scheme.targetBeneficiary} ${item.scheme.overview} ${item.scheme.searchKeywords}',
+          )
           .join(' ');
       if (expected.hasMatch(searchable)) {
         hits++;

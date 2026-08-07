@@ -87,7 +87,11 @@ Future<void> showLocationServiceOffDialog(BuildContext context) async {
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.check_circle_rounded, color: Color(0xFF2563EB), size: 16),
+                      const Icon(
+                        Icons.check_circle_rounded,
+                        color: Color(0xFF2563EB),
+                        size: 16,
+                      ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
@@ -104,7 +108,11 @@ Future<void> showLocationServiceOffDialog(BuildContext context) async {
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      const Icon(Icons.check_circle_rounded, color: Color(0xFF2563EB), size: 16),
+                      const Icon(
+                        Icons.check_circle_rounded,
+                        color: Color(0xFF2563EB),
+                        size: 16,
+                      ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(

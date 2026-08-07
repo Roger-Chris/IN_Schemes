@@ -1,3 +1,4 @@
+// ignore_for_file: avoid_print
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frontend/models/localized_scheme.dart';
 import 'package:frontend/services/mss_catalog_bundle.dart';
@@ -19,10 +20,46 @@ void main() {
       final translator = CentralizedTranslator.instance;
 
       final Set<String> allowedAcronyms = {
-        'MSME', 'MSMES', 'PMEGP', 'SIDBI', 'NSIC', 'NABARD', 'GST', 'PAN', 'AADHAAR',
-        'CGTMSE', 'MUDRA', 'PMMY', 'NEEDS', 'UYEGP', 'TIIC', 'TNSDC', 'TNSIM',
-        'EDI', 'EDII', 'IIT', 'IIM', 'GSTIN', 'INR', 'FCRA', 'TAN', 'IEC',
-        'FSSAI', 'BIS', 'ISO', 'DGFT', 'DIC', 'KVIC', 'KVIB', 'Coir Board', 'R&D', 'IT', 'ITES', 'SC', 'ST', 'OBC'
+        'MSME',
+        'MSMES',
+        'PMEGP',
+        'SIDBI',
+        'NSIC',
+        'NABARD',
+        'GST',
+        'PAN',
+        'AADHAAR',
+        'CGTMSE',
+        'MUDRA',
+        'PMMY',
+        'NEEDS',
+        'UYEGP',
+        'TIIC',
+        'TNSDC',
+        'TNSIM',
+        'EDI',
+        'EDII',
+        'IIT',
+        'IIM',
+        'GSTIN',
+        'INR',
+        'FCRA',
+        'TAN',
+        'IEC',
+        'FSSAI',
+        'BIS',
+        'ISO',
+        'DGFT',
+        'DIC',
+        'KVIC',
+        'KVIB',
+        'Coir Board',
+        'R&D',
+        'IT',
+        'ITES',
+        'SC',
+        'ST',
+        'OBC',
       };
 
       final RegExp englishWordReg = RegExp(r'\b[A-Za-z]{2,}\b');
@@ -39,7 +76,9 @@ void main() {
           final word = match.group(0)!;
           final upperWord = word.toUpperCase();
           if (!allowedAcronyms.contains(upperWord)) {
-            untranslatedByField.putIfAbsent(fieldName, () => []).add('$word (Scheme: $schemeId)');
+            untranslatedByField
+                .putIfAbsent(fieldName, () => [])
+                .add('$word (Scheme: $schemeId)');
             allUntranslatedEnglishWords.add(word);
           }
         }
@@ -70,7 +109,11 @@ void main() {
         checkText('verificationStatus', loc.id, loc.verificationStatus);
         checkText('verificationNotes', loc.id, loc.verificationNotes);
         checkText('capitalSubsidyDetails', loc.id, loc.capitalSubsidyDetails);
-        checkText('interestSubventionDetails', loc.id, loc.interestSubventionDetails);
+        checkText(
+          'interestSubventionDetails',
+          loc.id,
+          loc.interestSubventionDetails,
+        );
         checkText('marginMoneyDetails', loc.id, loc.marginMoneyDetails);
         checkText('loanGuaranteeDetails', loc.id, loc.loanGuaranteeDetails);
         checkText('rawBenefitsDisplayText', loc.id, loc.rawBenefitsDisplayText);
@@ -149,9 +192,15 @@ void main() {
       print('======================================================');
       print(' UNTRANSLATED ENGLISH STRINGS AUDIT FINDINGS');
       print('======================================================');
-      print('Total Unique Untranslated Words Found: ${allUntranslatedEnglishWords.length}');
-      print('Fields with Untranslated Strings: ${untranslatedByField.keys.join(', ')}');
-      print('Sample Untranslated Words: ${allUntranslatedEnglishWords.take(50).join(', ')}');
+      print(
+        'Total Unique Untranslated Words Found: ${allUntranslatedEnglishWords.length}',
+      );
+      print(
+        'Fields with Untranslated Strings: ${untranslatedByField.keys.join(', ')}',
+      );
+      print(
+        'Sample Untranslated Words: ${allUntranslatedEnglishWords.take(50).join(', ')}',
+      );
       print('======================================================');
     });
   });

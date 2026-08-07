@@ -108,10 +108,15 @@ void main() {
     expect(matches, isNotEmpty);
     expect(
       matches.any(
-        (match) =>
-            '${match.scheme.name} ${match.scheme.sector} ${match.scheme.targetBeneficiary} ${match.scheme.overview} ${match.scheme.searchKeywords}'
-                .toLowerCase()
-                .contains(RegExp(r'farm|agri|crop|horticulture|farmer|vivasayi|வேளாண்|விவசாயி')),
+        (
+          match,
+        ) => '${match.scheme.name} ${match.scheme.sector} ${match.scheme.targetBeneficiary} ${match.scheme.overview} ${match.scheme.searchKeywords}'
+            .toLowerCase()
+            .contains(
+              RegExp(
+                r'farm|agri|crop|horticulture|farmer|vivasayi|வேளாண்|விவசாயி',
+              ),
+            ),
       ),
       isTrue,
     );

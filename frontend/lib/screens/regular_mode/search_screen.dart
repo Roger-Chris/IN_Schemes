@@ -11,6 +11,7 @@ import 'discover_results_screen.dart';
 import '../../engine/recommendation_engine.dart';
 import '../../l10n/l10n.dart';
 import '../../services/centralized_translator.dart';
+import '../../utils/responsive.dart';
 import '../../utils/emblem_helper.dart';
 
 String _getLocalizedTagOrCategory(String text, String langCode) {
@@ -77,8 +78,6 @@ class SearchScreenState extends State<SearchScreen> {
     }
   }
 
-
-
   void _applySorting() {
     if (_masterSearchResults.isEmpty) return;
 
@@ -93,11 +92,17 @@ class SearchScreenState extends State<SearchScreen> {
       });
     } else if (_currentSort == 'Scheme Name (A-Z)') {
       sorted.sort(
-        (a, b) => a.getName(provider.selectedLanguage).toLowerCase().compareTo(b.getName(provider.selectedLanguage).toLowerCase()),
+        (a, b) => a
+            .getName(provider.selectedLanguage)
+            .toLowerCase()
+            .compareTo(b.getName(provider.selectedLanguage).toLowerCase()),
       );
     } else if (_currentSort == 'Scheme Name (Z-A)') {
       sorted.sort(
-        (a, b) => b.getName(provider.selectedLanguage).toLowerCase().compareTo(a.getName(provider.selectedLanguage).toLowerCase()),
+        (a, b) => b
+            .getName(provider.selectedLanguage)
+            .toLowerCase()
+            .compareTo(a.getName(provider.selectedLanguage).toLowerCase()),
       );
     }
 
@@ -129,7 +134,9 @@ class SearchScreenState extends State<SearchScreen> {
       final recs = await SchemeRepository.instance.getRecommendedSchemes(
         provider.profile,
       );
-      final hint = await SchemeRepository.instance.getDynamicSearchHint(provider.selectedLanguage);
+      final hint = await SchemeRepository.instance.getDynamicSearchHint(
+        provider.selectedLanguage,
+      );
 
       if (mounted) {
         setState(() {
@@ -236,7 +243,9 @@ class SearchScreenState extends State<SearchScreen> {
     try {
       List<Scheme> results;
       final String normalQuery = searchTerm.toLowerCase().trim();
-      if (_activeFilter == 'For Me' || normalQuery == 'suitable schemes' || normalQuery == 'for me') {
+      if (_activeFilter == 'For Me' ||
+          normalQuery == 'suitable schemes' ||
+          normalQuery == 'for me') {
         results = await SchemeRepository.instance.getRecommendedSchemes(
           provider.profile,
         );
@@ -269,7 +278,9 @@ class SearchScreenState extends State<SearchScreen> {
         filteredResults = results.where((scheme) {
           final type = scheme.schemeType.toLowerCase();
           final category = scheme.category.toLowerCase();
-          final fullText = '${scheme.name} ${scheme.shortName} ${scheme.schemeType} ${scheme.category} ${scheme.sector} ${scheme.searchKeywords} ${scheme.overview}'.toLowerCase();
+          final fullText =
+              '${scheme.name} ${scheme.shortName} ${scheme.schemeType} ${scheme.category} ${scheme.sector} ${scheme.searchKeywords} ${scheme.overview}'
+                  .toLowerCase();
           return type.contains('loan') ||
               category.contains('loan') ||
               category.contains('credit') ||
@@ -284,27 +295,38 @@ class SearchScreenState extends State<SearchScreen> {
         }).toList();
       } else if (_activeFilter == 'Udyam') {
         filteredResults = results.where((scheme) {
-          final reqDocs = scheme.requiredDocuments.map((d) => d.toLowerCase()).join(' ');
+          final reqDocs = scheme.requiredDocuments
+              .map((d) => d.toLowerCase())
+              .join(' ');
           final desc = scheme.searchKeywords.toLowerCase();
-          return reqDocs.contains('udyam') || desc.contains('udyam') || desc.contains('udyam registration');
+          return reqDocs.contains('udyam') ||
+              desc.contains('udyam') ||
+              desc.contains('udyam registration');
         }).toList();
       } else if (_activeFilter == 'Startup') {
         filteredResults = results.where((scheme) {
           final desc = scheme.searchKeywords.toLowerCase();
           final cat = scheme.category.toLowerCase();
-          return desc.contains('startup') || cat.contains('startup') || desc.contains('dpiit');
+          return desc.contains('startup') ||
+              cat.contains('startup') ||
+              desc.contains('dpiit');
         }).toList();
       } else if (_activeFilter == 'Subsidy') {
         filteredResults = results.where((scheme) {
           final type = scheme.schemeType.toLowerCase();
           final cat = scheme.category.toLowerCase();
           final desc = scheme.searchKeywords.toLowerCase();
-          return type.contains('subsidy') || cat.contains('subsidy') || desc.contains('subsidy');
+          return type.contains('subsidy') ||
+              cat.contains('subsidy') ||
+              desc.contains('subsidy');
         }).toList();
       } else if (_activeFilter == 'Collateral-Free') {
         filteredResults = results.where((scheme) {
           final desc = scheme.searchKeywords.toLowerCase();
-          return desc.contains('cgtmse') || desc.contains('mudra') || desc.contains('collateral free') || desc.contains('collateral-free');
+          return desc.contains('cgtmse') ||
+              desc.contains('mudra') ||
+              desc.contains('collateral free') ||
+              desc.contains('collateral-free');
         }).toList();
       }
 
@@ -316,11 +338,16 @@ class SearchScreenState extends State<SearchScreen> {
           if (locs.isNotEmpty) {
             bool matchesLoc = false;
             for (final loc in locs) {
-              if (loc == 'All India' && scheme.state.toLowerCase() == 'all india') {
+              if (loc == 'All India' &&
+                  scheme.state.toLowerCase() == 'all india') {
                 matchesLoc = true;
-              } else if (loc == 'Central' && scheme.governmentLevel.toLowerCase() == 'central') {
+              } else if (loc == 'Central' &&
+                  scheme.governmentLevel.toLowerCase() == 'central') {
                 matchesLoc = true;
-              } else if (loc == 'State' && (scheme.governmentLevel.toLowerCase() == 'state' || (scheme.state.isNotEmpty && scheme.state.toLowerCase() != 'all india'))) {
+              } else if (loc == 'State' &&
+                  (scheme.governmentLevel.toLowerCase() == 'state' ||
+                      (scheme.state.isNotEmpty &&
+                          scheme.state.toLowerCase() != 'all india'))) {
                 matchesLoc = true;
               }
             }
@@ -347,7 +374,8 @@ class SearchScreenState extends State<SearchScreen> {
             final kw = scheme.searchKeywords.toLowerCase();
             final name = scheme.name.toLowerCase();
             for (final stage in stages) {
-              if (kw.contains(stage.toLowerCase()) || name.contains(stage.toLowerCase())) {
+              if (kw.contains(stage.toLowerCase()) ||
+                  name.contains(stage.toLowerCase())) {
                 matchesStage = true;
               }
             }
@@ -362,7 +390,9 @@ class SearchScreenState extends State<SearchScreen> {
             final cat = scheme.category.toLowerCase();
             final ben = scheme.benefits.toLowerCase();
             for (final b in benefits) {
-              if (type.contains(b.toLowerCase()) || cat.contains(b.toLowerCase()) || ben.contains(b.toLowerCase())) {
+              if (type.contains(b.toLowerCase()) ||
+                  cat.contains(b.toLowerCase()) ||
+                  ben.contains(b.toLowerCase())) {
                 matchesBen = true;
               }
             }
@@ -389,7 +419,8 @@ class SearchScreenState extends State<SearchScreen> {
             final sponsor = scheme.sponsoringBody.toLowerCase();
             final issuer = scheme.issuingBody.toLowerCase();
             for (final auth in authorities) {
-              if (sponsor.contains(auth.toLowerCase()) || issuer.contains(auth.toLowerCase())) {
+              if (sponsor.contains(auth.toLowerCase()) ||
+                  issuer.contains(auth.toLowerCase())) {
                 matchesAuth = true;
               }
             }
@@ -579,11 +610,11 @@ class SearchScreenState extends State<SearchScreen> {
   Future<void> openFilterBottomSheet() async {
     final Map<String, List<String>>? selectedFilters =
         await showModalBottomSheet<Map<String, List<String>>>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => const FilterBottomSheet(),
-    );
+          context: context,
+          isScrollControlled: true,
+          backgroundColor: Colors.transparent,
+          builder: (context) => const FilterBottomSheet(),
+        );
     if (selectedFilters != null && mounted) {
       setState(() {
         _activeSearchFilters = selectedFilters;
@@ -597,12 +628,15 @@ class SearchScreenState extends State<SearchScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          context.l10n.searchTitle,
-          style: GoogleFonts.poppins(
-            fontSize: _scaledFontSize(18.0),
-            fontWeight: _scaledFontWeight(FontWeight.bold),
-            color: const Color(0xFF0F172A),
+        Flexible(
+          child: Text(
+            context.l10n.searchTitle,
+            softWrap: true,
+            style: GoogleFonts.poppins(
+              fontSize: _scaledFontSize(18.0),
+              fontWeight: _scaledFontWeight(FontWeight.bold),
+              color: const Color(0xFF0F172A),
+            ),
           ),
         ),
         GestureDetector(
@@ -646,7 +680,10 @@ class SearchScreenState extends State<SearchScreen> {
         controller: _searchController,
         focusNode: _searchFocusNode,
         onSubmitted: _triggerSearch,
-        style: GoogleFonts.inter(fontSize: _scaledFontSize(13), color: const Color(0xFF1E293B)),
+        style: GoogleFonts.inter(
+          fontSize: _scaledFontSize(13),
+          color: const Color(0xFF1E293B),
+        ),
         decoration: InputDecoration(
           hintText: context.l10n.searchPlaceholder,
           hintStyle: GoogleFonts.inter(
@@ -709,12 +746,15 @@ class SearchScreenState extends State<SearchScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              context.l10n.quickFiltersHeader,
-              style: GoogleFonts.poppins(
-                fontSize: _scaledFontSize(12.5),
-                fontWeight: _scaledFontWeight(FontWeight.bold),
-                color: const Color(0xFF0F172A),
+            Flexible(
+              child: Text(
+                context.l10n.quickFiltersHeader,
+                softWrap: true,
+                style: GoogleFonts.poppins(
+                  fontSize: _scaledFontSize(12.5),
+                  fontWeight: _scaledFontWeight(FontWeight.bold),
+                  color: const Color(0xFF0F172A),
+                ),
               ),
             ),
             PopupMenuButton<String>(
@@ -737,17 +777,28 @@ class SearchScreenState extends State<SearchScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        context.l10n.sortMatchPercent,
-                        style: GoogleFonts.inter(
-                          fontSize: _scaledFontSize(12),
-                          fontWeight: _currentSort == 'Match %' ? FontWeight.bold : FontWeight.normal,
-                          color: _currentSort == 'Match %' ? const Color(0xFF2563EB) : const Color(0xFF1E293B),
+                      Flexible(
+                        child: Text(
+                          context.l10n.sortMatchPercent,
+                          softWrap: true,
+                          style: GoogleFonts.inter(
+                            fontSize: _scaledFontSize(12),
+                            fontWeight: _currentSort == 'Match %'
+                                ? FontWeight.bold
+                                : FontWeight.normal,
+                            color: _currentSort == 'Match %'
+                                ? const Color(0xFF2563EB)
+                                : const Color(0xFF1E293B),
+                          ),
                         ),
                       ),
                       const SizedBox(width: 8),
                       if (_currentSort == 'Match %')
-                        const Icon(Icons.check, color: Color(0xFF2563EB), size: 14),
+                        const Icon(
+                          Icons.check,
+                          color: Color(0xFF2563EB),
+                          size: 14,
+                        ),
                     ],
                   ),
                 ),
@@ -756,17 +807,28 @@ class SearchScreenState extends State<SearchScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        context.l10n.sortNameAsc,
-                        style: GoogleFonts.inter(
-                          fontSize: _scaledFontSize(12),
-                          fontWeight: _currentSort == 'Scheme Name (A-Z)' ? FontWeight.bold : FontWeight.normal,
-                          color: _currentSort == 'Scheme Name (A-Z)' ? const Color(0xFF2563EB) : const Color(0xFF1E293B),
+                      Flexible(
+                        child: Text(
+                          context.l10n.sortNameAsc,
+                          softWrap: true,
+                          style: GoogleFonts.inter(
+                            fontSize: _scaledFontSize(12),
+                            fontWeight: _currentSort == 'Scheme Name (A-Z)'
+                                ? FontWeight.bold
+                                : FontWeight.normal,
+                            color: _currentSort == 'Scheme Name (A-Z)'
+                                ? const Color(0xFF2563EB)
+                                : const Color(0xFF1E293B),
+                          ),
                         ),
                       ),
                       const SizedBox(width: 8),
                       if (_currentSort == 'Scheme Name (A-Z)')
-                        const Icon(Icons.check, color: Color(0xFF2563EB), size: 14),
+                        const Icon(
+                          Icons.check,
+                          color: Color(0xFF2563EB),
+                          size: 14,
+                        ),
                     ],
                   ),
                 ),
@@ -775,29 +837,44 @@ class SearchScreenState extends State<SearchScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        context.l10n.sortNameDesc,
-                        style: GoogleFonts.inter(
-                          fontSize: _scaledFontSize(12),
-                          fontWeight: _currentSort == 'Scheme Name (Z-A)' ? FontWeight.bold : FontWeight.normal,
-                          color: _currentSort == 'Scheme Name (Z-A)' ? const Color(0xFF2563EB) : const Color(0xFF1E293B),
+                      Flexible(
+                        child: Text(
+                          context.l10n.sortNameDesc,
+                          softWrap: true,
+                          style: GoogleFonts.inter(
+                            fontSize: _scaledFontSize(12),
+                            fontWeight: _currentSort == 'Scheme Name (Z-A)'
+                                ? FontWeight.bold
+                                : FontWeight.normal,
+                            color: _currentSort == 'Scheme Name (Z-A)'
+                                ? const Color(0xFF2563EB)
+                                : const Color(0xFF1E293B),
+                          ),
                         ),
                       ),
                       const SizedBox(width: 8),
                       if (_currentSort == 'Scheme Name (Z-A)')
-                        const Icon(Icons.check, color: Color(0xFF2563EB), size: 14),
+                        const Icon(
+                          Icons.check,
+                          color: Color(0xFF2563EB),
+                          size: 14,
+                        ),
                     ],
                   ),
                 ),
               ],
               child: Row(
                 children: [
-                  Text(
-                    '${context.l10n.sortByPrefix} $_currentSort',
-                    style: GoogleFonts.inter(
-                      fontSize: _scaledFontSize(11),
-                      fontWeight: _scaledFontWeight(FontWeight.bold),
-                      color: const Color(0xFF2563EB),
+                  Flexible(
+                    child: FitOneLine(
+                      child: Text(
+                        '${context.l10n.sortByPrefix} $_currentSort',
+                        style: GoogleFonts.inter(
+                          fontSize: _scaledFontSize(11),
+                          fontWeight: _scaledFontWeight(FontWeight.bold),
+                          color: const Color(0xFF2563EB),
+                        ),
+                      ),
                     ),
                   ),
                   const Icon(
@@ -1094,7 +1171,9 @@ class SearchScreenState extends State<SearchScreen> {
                   Text(
                     _isLoadingCounts
                         ? context.l10n.calculatingMatches
-                        : context.l10n.schemesMatchProfile(_matchingProfileCount),
+                        : context.l10n.schemesMatchProfile(
+                            _matchingProfileCount,
+                          ),
                     style: GoogleFonts.inter(
                       fontSize: _scaledFontSize(10.5),
                       color: const Color(0xFF64748B),
@@ -1211,7 +1290,8 @@ class SearchScreenState extends State<SearchScreen> {
           borderRadius: BorderRadius.circular(12),
           onTap: () async {
             final categoryTitle = category["title"] as String;
-            final schemes = await SchemeRepository.instance.getSchemesByCategory(categoryTitle);
+            final schemes = await SchemeRepository.instance
+                .getSchemesByCategory(categoryTitle);
             if (!mounted) return;
             Navigator.of(context).push(
               MaterialPageRoute(
@@ -1243,7 +1323,10 @@ class SearchScreenState extends State<SearchScreen> {
               ),
             ),
             title: Text(
-              _getLocalizedTagOrCategory(category["title"] as String, provider.selectedLanguage),
+              _getLocalizedTagOrCategory(
+                category["title"] as String,
+                provider.selectedLanguage,
+              ),
               style: GoogleFonts.inter(
                 fontSize: _scaledFontSize(12.5),
                 fontWeight: _scaledFontWeight(FontWeight.bold),
@@ -1456,12 +1539,7 @@ class _ResultSchemeCard extends StatelessWidget {
                       ),
                     ),
                     padding: EdgeInsets.zero,
-                    child: ClipOval(
-                      child: _buildSchemeLogo(
-                        scheme,
-                        size: 72,
-                      ),
-                    ),
+                    child: ClipOval(child: _buildSchemeLogo(scheme, size: 72)),
                   ),
                   const SizedBox(width: 16),
 
@@ -1484,7 +1562,12 @@ class _ResultSchemeCard extends StatelessWidget {
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: Text(
-                              context.l10n.matchScorePercent(RecommendationEngine.evaluate(provider.profile, scheme).percentage),
+                              context.l10n.matchScorePercent(
+                                RecommendationEngine.evaluate(
+                                  provider.profile,
+                                  scheme,
+                                ).percentage,
+                              ),
                               style: GoogleFonts.inter(
                                 color: const Color(0xFF2E7D32),
                                 fontSize: 7.5,
@@ -1498,9 +1581,13 @@ class _ResultSchemeCard extends StatelessWidget {
                         Text(
                           locScheme.name,
                           style: GoogleFonts.poppins(
-                            fontSize: provider.selectedLanguage == 'ta' ? 11.5 * 0.90 : 11.5,
+                            fontSize: provider.selectedLanguage == 'ta'
+                                ? 11.5 * 0.90
+                                : 11.5,
                             fontWeight: FontWeight.bold,
-                            height: provider.selectedLanguage == 'ta' ? 1.35 : 1.22,
+                            height: provider.selectedLanguage == 'ta'
+                                ? 1.35
+                                : 1.22,
                             color: const Color(0xFF0F172A),
                           ),
                           maxLines: 3,
@@ -1511,7 +1598,9 @@ class _ResultSchemeCard extends StatelessWidget {
                           Text(
                             subtitleText,
                             style: GoogleFonts.inter(
-                              fontSize: provider.selectedLanguage == 'ta' ? 9.5 * 0.90 : 9.5,
+                              fontSize: provider.selectedLanguage == 'ta'
+                                  ? 9.5 * 0.90
+                                  : 9.5,
                               color: const Color(0xFF64748B),
                               fontWeight: FontWeight.w500,
                               height: 1.3,
@@ -1538,9 +1627,14 @@ class _ResultSchemeCard extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(5),
                               ),
                               child: Text(
-                                _getLocalizedTagOrCategory(tag, provider.selectedLanguage),
+                                _getLocalizedTagOrCategory(
+                                  tag,
+                                  provider.selectedLanguage,
+                                ),
                                 style: GoogleFonts.inter(
-                                  fontSize: provider.selectedLanguage == 'ta' ? 8.5 * 0.90 : 8.5,
+                                  fontSize: provider.selectedLanguage == 'ta'
+                                      ? 8.5 * 0.90
+                                      : 8.5,
                                   fontWeight: FontWeight.bold,
                                   color: colors['text'],
                                 ),

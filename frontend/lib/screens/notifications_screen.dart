@@ -4,6 +4,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:frontend/providers/app_state_provider.dart';
 import 'package:frontend/utils/constants.dart';
 import 'package:frontend/services/centralized_translator.dart';
+import 'package:frontend/l10n/l10n.dart';
+import 'package:frontend/utils/responsive.dart';
 import 'regular_mode/basic_profile_screen.dart';
 
 class NotificationsScreen extends StatefulWidget {
@@ -189,12 +191,16 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      'View All',
-                      style: GoogleFonts.inter(
-                        color: const Color(0xFF2563EB),
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
+                    Flexible(
+                      child: FitOneLine(
+                        child: Text(
+                          context.l10n.viewAll,
+                          style: GoogleFonts.inter(
+                            color: const Color(0xFF2563EB),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                        ),
                       ),
                     ),
                     const SizedBox(width: 2),
@@ -612,39 +618,43 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 ),
               ),
               const SizedBox(width: 8),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        item['time'] ?? '',
-                        style: GoogleFonts.inter(
-                          fontSize: 10,
-                          color: const Color(0xFF94A3B8),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      if (!isRead)
-                        Container(
-                          width: 8,
-                          height: 8,
-                          decoration: const BoxDecoration(
-                            color: Color(0xFF2563EB),
-                            shape: BoxShape.circle,
+              Flexible(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        FitOneLine(
+                          child: Text(
+                            item['time'] ?? '',
+                            style: GoogleFonts.inter(
+                              fontSize: 10,
+                              color: const Color(0xFF94A3B8),
+                            ),
                           ),
                         ),
-                    ],
-                  ),
-                  const SizedBox(width: 6),
-                  const Icon(
-                    Icons.chevron_right,
-                    color: Color(0xFF94A3B8),
-                    size: 18,
-                  ),
-                ],
+                        const SizedBox(height: 8),
+                        if (!isRead)
+                          Container(
+                            width: 8,
+                            height: 8,
+                            decoration: const BoxDecoration(
+                              color: Color(0xFF2563EB),
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(width: 6),
+                    const Icon(
+                      Icons.chevron_right,
+                      color: Color(0xFF94A3B8),
+                      size: 18,
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
@@ -780,38 +790,42 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 ),
               ),
               const SizedBox(width: 8),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        item['time'] ?? '',
-                        style: GoogleFonts.inter(
-                          fontSize: 10,
-                          color: const Color(0xFF94A3B8),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      if (!isRead)
-                        Container(
-                          width: 8,
-                          height: 8,
-                          decoration: const BoxDecoration(
-                            color: Color(0xFF2563EB),
-                            shape: BoxShape.circle,
+              Flexible(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        FitOneLine(
+                          child: Text(
+                            item['time'] ?? '',
+                            style: GoogleFonts.inter(
+                              fontSize: 10,
+                              color: const Color(0xFF94A3B8),
+                            ),
                           ),
                         ),
-                    ],
-                  ),
-                  const SizedBox(width: 6),
-                  const Icon(
-                    Icons.chevron_right,
-                    color: Color(0xFF94A3B8),
-                    size: 18,
-                  ),
-                ],
+                        const SizedBox(height: 16),
+                        if (!isRead)
+                          Container(
+                            width: 8,
+                            height: 8,
+                            decoration: const BoxDecoration(
+                              color: Color(0xFF2563EB),
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(width: 6),
+                    const Icon(
+                      Icons.chevron_right,
+                      color: Color(0xFF94A3B8),
+                      size: 18,
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
@@ -871,15 +885,17 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                     color: Color(0xFF2563EB),
                     size: 22,
                   ),
-                  tooltip: 'Mark selected as read',
+                  tooltip: context.l10n.notifTooltipMarkRead,
                   onPressed: _selectedIds.isEmpty
                       ? null
                       : () {
                           provider.markNotificationsRead(_selectedIds.toList());
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
+                            SnackBar(
                               content: Text(
-                                'Selected notifications marked as read',
+                                CentralizedTranslator.instance.translate(
+                                  'Selected notifications marked as read',
+                                ),
                               ),
                             ),
                           );
@@ -895,14 +911,18 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                     color: Color(0xFFEF4444),
                     size: 22,
                   ),
-                  tooltip: 'Delete selected',
+                  tooltip: context.l10n.notifTooltipDeleteSelected,
                   onPressed: _selectedIds.isEmpty
                       ? null
                       : () {
                           provider.deleteNotifications(_selectedIds.toList());
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text(CentralizedTranslator.instance.translate('Selected notifications deleted')),
+                              content: Text(
+                                CentralizedTranslator.instance.translate(
+                                  'Selected notifications deleted',
+                                ),
+                              ),
                             ),
                           );
                           setState(() {
@@ -923,7 +943,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   onPressed: () {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text(CentralizedTranslator.instance.translate('Filter options opened')),
+                        content: Text(
+                          CentralizedTranslator.instance.translate(
+                            'Filter options opened',
+                          ),
+                        ),
                         duration: const Duration(milliseconds: 500),
                       ),
                     );
@@ -946,14 +970,22 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                       provider.markAllNotificationsRead();
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text(CentralizedTranslator.instance.translate('All notifications marked as read')),
+                          content: Text(
+                            CentralizedTranslator.instance.translate(
+                              'All notifications marked as read',
+                            ),
+                          ),
                         ),
                       );
                     } else if (value == 'delete_all') {
                       provider.deleteAllNotifications();
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text(CentralizedTranslator.instance.translate('All notifications deleted')),
+                          content: Text(
+                            CentralizedTranslator.instance.translate(
+                              'All notifications deleted',
+                            ),
+                          ),
                         ),
                       );
                     } else if (value == 'select') {
@@ -974,9 +1006,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                             size: 20,
                           ),
                           const SizedBox(width: 8),
-                          Text(
-                            'Mark all as read',
-                            style: GoogleFonts.inter(fontSize: 13.5),
+                          Flexible(
+                            child: Text(
+                              'Mark all as read',
+                              softWrap: true,
+                              style: GoogleFonts.inter(fontSize: 13.5),
+                            ),
                           ),
                         ],
                       ),
@@ -991,11 +1026,14 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                             size: 20,
                           ),
                           const SizedBox(width: 8),
-                          Text(
-                            'Delete all',
-                            style: GoogleFonts.inter(
-                              fontSize: 13.5,
-                              color: const Color(0xFFEF4444),
+                          Flexible(
+                            child: Text(
+                              'Delete all',
+                              softWrap: true,
+                              style: GoogleFonts.inter(
+                                fontSize: 13.5,
+                                color: const Color(0xFFEF4444),
+                              ),
                             ),
                           ),
                         ],
@@ -1011,9 +1049,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                             size: 20,
                           ),
                           const SizedBox(width: 8),
-                          Text(
-                            'Select',
-                            style: GoogleFonts.inter(fontSize: 13.5),
+                          Flexible(
+                            child: Text(
+                              'Select',
+                              softWrap: true,
+                              style: GoogleFonts.inter(fontSize: 13.5),
+                            ),
                           ),
                         ],
                       ),
@@ -1038,8 +1079,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                           _activeFilter == 'new_schemes') &&
                       newSchemes.isNotEmpty)
                     _buildSection(
-                      title: 'New Scheme Alerts',
-                      subtitle: 'Stay informed about newly launched schemes',
+                      title: context.l10n.notifNewSchemeAlertsTitle,
+                      subtitle: context.l10n.notifNewSchemeAlertsSubtitle,
                       headerIcon: Icons.notifications_active_outlined,
                       headerIconBg: const Color(0xFFE8F5E9),
                       headerIconColor: const Color(0xFF16A34A),
@@ -1061,8 +1102,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                           _activeFilter == 'reminders') &&
                       reminders.isNotEmpty)
                     _buildSection(
-                      title: 'Deadline Reminders',
-                      subtitle: "Don't miss important application deadlines",
+                      title: context.l10n.notifDeadlineRemindersTitle,
+                      subtitle: context.l10n.notifDeadlineRemindersSubtitle,
                       headerIcon: Icons.calendar_today_outlined,
                       headerIconBg: const Color(0xFFFFEBEE),
                       headerIconColor: const Color(0xFFD32F2F),
@@ -1083,8 +1124,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   if ((_activeFilter == 'All' || _activeFilter == 'updates') &&
                       updates.isNotEmpty)
                     _buildSection(
-                      title: 'Government Updates',
-                      subtitle: 'Important announcements and updates',
+                      title: context.l10n.notifGovtUpdatesTitle,
+                      subtitle: context.l10n.notifGovtUpdatesSubtitle,
                       headerIcon: Icons.campaign_outlined,
                       headerIconBg: const Color(0xFFEFF6FF),
                       headerIconColor: const Color(0xFF2563EB),
@@ -1105,9 +1146,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   if ((_activeFilter == 'All' || _activeFilter == 'profile') &&
                       profileAlerts.isNotEmpty)
                     _buildSection(
-                      title: 'Profile Completion Reminders',
-                      subtitle:
-                          'Complete your profile to get better recommendations',
+                      title: context.l10n.notifProfileRemindersTitle,
+                      subtitle: context.l10n.notifProfileRemindersSubtitle,
                       headerIcon: Icons.person_outline,
                       headerIconBg: const Color(0xFFF3E5F5),
                       headerIconColor: const Color(0xFF7B1FA2),

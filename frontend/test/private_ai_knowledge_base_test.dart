@@ -89,12 +89,19 @@ void main() {
         )!.relatedSchemeCodes.toSet();
         expect(
           result.recommendations.every((item) {
-            final digits = item.scheme.schemeCode.replaceAll(RegExp(r'[^0-9]'), '');
+            final digits = item.scheme.schemeCode.replaceAll(
+              RegExp(r'[^0-9]'),
+              '',
+            );
             return allowed.contains(item.scheme.schemeCode) ||
                 allowed.contains(item.scheme.id) ||
-                allowed.any((code) =>
-                    item.scheme.searchKeywords.toUpperCase().contains(code.toUpperCase()) ||
-                    (digits.isNotEmpty && code.contains(digits)));
+                allowed.any(
+                  (code) =>
+                      item.scheme.searchKeywords.toUpperCase().contains(
+                        code.toUpperCase(),
+                      ) ||
+                      (digits.isNotEmpty && code.contains(digits)),
+                );
           }),
           isTrue,
           reason: 'Unexpected scheme for ${edgeCase.value}',

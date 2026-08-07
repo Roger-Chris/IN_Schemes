@@ -6,6 +6,7 @@ import '../../providers/app_state_provider.dart';
 import '../../services/scheme_repository.dart';
 import '../../l10n/l10n.dart';
 import '../../services/centralized_translator.dart';
+import '../../utils/responsive.dart';
 
 import '../../widgets/filter_panel.dart';
 
@@ -19,7 +20,11 @@ String _getLocalizedCategoryOrMinistry(String text, String langCode) {
   final lower = text.toLowerCase().trim();
   if (lower.contains('msme')) return 'MSME (குறு, சிறு & நடுத்தர தொழில்கள்)';
   if (lower.contains('startup')) return 'ஸ்டார்ட்அப் & உறைவிடங்கள்';
-  if (lower.contains('loans & credit') || lower.contains('finance') || lower.contains('credit')) return 'கடன்கள் & கடன் ஆதரவு';
+  if (lower.contains('loans & credit') ||
+      lower.contains('finance') ||
+      lower.contains('credit')) {
+    return 'கடன்கள் & கடன் ஆதரவு';
+  }
   if (lower.contains('women')) return 'பெண் தொழில்முனைவோருக்கு';
   if (lower.contains('skill')) return 'திறன் மேம்பாடு';
   if (lower.contains('artisan')) return 'கைவினைஞர்கள்';
@@ -282,9 +287,8 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
         onApplied: () {
           Navigator.of(context).push(
             MaterialPageRoute(
-              builder: (_) => SearchResultsScreen(
-                title: _searchController.text,
-              ),
+              builder: (_) =>
+                  SearchResultsScreen(title: _searchController.text),
             ),
           );
         },
@@ -293,42 +297,58 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
   }
 
   void _onCategorySelected(String categoryName, AppProvider provider) {
-    SmartAssessmentBottomSheet.show(context, categoryName, 'category', () async {
-      final schemes = await SchemeRepository.instance.getSchemesByCategory(categoryName);
-      if (!mounted) return;
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) => DiscoverResultsScreen(
-            title: categoryName,
-            type: 'category',
-            initialSchemes: schemes,
-            isAssessmentCompleted: true,
+    SmartAssessmentBottomSheet.show(
+      context,
+      categoryName,
+      'category',
+      () async {
+        final schemes = await SchemeRepository.instance.getSchemesByCategory(
+          categoryName,
+        );
+        if (!mounted) return;
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => DiscoverResultsScreen(
+              title: categoryName,
+              type: 'category',
+              initialSchemes: schemes,
+              isAssessmentCompleted: true,
+            ),
           ),
-        ),
-      );
-    });
+        );
+      },
+    );
   }
 
   void _onMinistrySelected(String ministryName, AppProvider provider) {
-    SmartAssessmentBottomSheet.show(context, ministryName, 'ministry', () async {
-      final schemes = await SchemeRepository.instance.getSchemesByMinistry(ministryName);
-      if (!mounted) return;
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) => DiscoverResultsScreen(
-            title: ministryName,
-            type: 'ministry',
-            initialSchemes: schemes,
-            isAssessmentCompleted: true,
+    SmartAssessmentBottomSheet.show(
+      context,
+      ministryName,
+      'ministry',
+      () async {
+        final schemes = await SchemeRepository.instance.getSchemesByMinistry(
+          ministryName,
+        );
+        if (!mounted) return;
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => DiscoverResultsScreen(
+              title: ministryName,
+              type: 'ministry',
+              initialSchemes: schemes,
+              isAssessmentCompleted: true,
+            ),
           ),
-        ),
-      );
-    });
+        );
+      },
+    );
   }
 
   void _onStateSelected(String stateName, AppProvider provider) {
     SmartAssessmentBottomSheet.show(context, stateName, 'state', () async {
-      final schemes = await SchemeRepository.instance.getSchemesByState(stateName);
+      final schemes = await SchemeRepository.instance.getSchemesByState(
+        stateName,
+      );
       if (!mounted) return;
       Navigator.of(context).push(
         MaterialPageRoute(
@@ -547,7 +567,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                     // Section 1: By Category
                     _buildSectionHeader(
                       key: _categorySectionKey,
-                      title: 'By Category',
+                      title: context.l10n.browseByCategories,
                     ),
                     _buildCategoryHorizontalList(provider),
                     const SizedBox(height: 16),
@@ -555,7 +575,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                     // Section 2: By Ministry
                     _buildSectionHeader(
                       key: _ministrySectionKey,
-                      title: 'By Ministry',
+                      title: context.l10n.browseByMinistry,
                     ),
                     _buildMinistryHorizontalList(provider),
                     const SizedBox(height: 16),
@@ -563,7 +583,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                     // Section 3: By State
                     _buildSectionHeader(
                       key: _stateSectionKey,
-                      title: 'By State',
+                      title: context.l10n.browseByState,
                     ),
                     _buildStateHorizontalList(provider),
                     const SizedBox(height: 16),
@@ -626,7 +646,10 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
         itemCount: items.length,
         itemBuilder: (context, index) {
           final item = items[index];
-          final localizedTitle = _getLocalizedCategoryOrMinistry(item['title'] as String, provider.selectedLanguage);
+          final localizedTitle = _getLocalizedCategoryOrMinistry(
+            item['title'] as String,
+            provider.selectedLanguage,
+          );
           return GestureDetector(
             onTap: item['action'] as VoidCallback,
             child: Container(
@@ -682,12 +705,12 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     );
   }
 
-  Widget _buildSectionHeader({
-    required GlobalKey key,
-    required String title,
-  }) {
+  Widget _buildSectionHeader({required GlobalKey key, required String title}) {
     final provider = Provider.of<AppProvider>(context, listen: false);
-    final localizedTitle = _getLocalizedCategoryOrMinistry(title, provider.selectedLanguage);
+    final localizedTitle = _getLocalizedCategoryOrMinistry(
+      title,
+      provider.selectedLanguage,
+    );
 
     return Padding(
       key: key,
@@ -718,8 +741,13 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
           final item = _displayCategories[index];
           final String title = item['title'] as String;
           final int cnt = _dynamicCategoryCounts[title] ?? 0;
-          final String countStr = cnt > 0 ? context.l10n.schemeCountFormat(cnt) : item['count'] as String;
-          final String localizedTitle = _getLocalizedCategoryOrMinistry(title, provider.selectedLanguage);
+          final String countStr = cnt > 0
+              ? context.l10n.schemeCountFormat(cnt)
+              : item['count'] as String;
+          final String localizedTitle = _getLocalizedCategoryOrMinistry(
+            title,
+            provider.selectedLanguage,
+          );
           final IconData icon = item['icon'] as IconData;
 
           return Container(
@@ -763,7 +791,9 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.poppins(
-                        fontSize: provider.selectedLanguage == 'ta' ? 10.0 : 10.5,
+                        fontSize: provider.selectedLanguage == 'ta'
+                            ? 10.0
+                            : 10.5,
                         fontWeight: FontWeight.bold,
                         color: const Color(0xFF0F172A),
                         height: provider.selectedLanguage == 'ta' ? 1.3 : 1.2,
@@ -800,8 +830,13 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
           final item = _displayMinistries[index];
           final String title = item['title'] as String;
           final int cnt = _dynamicCategoryCounts[title] ?? 0;
-          final String countStr = cnt > 0 ? context.l10n.schemeCountFormat(cnt) : item['count'] as String;
-          final String localizedTitle = _getLocalizedCategoryOrMinistry(title, provider.selectedLanguage);
+          final String countStr = cnt > 0
+              ? context.l10n.schemeCountFormat(cnt)
+              : item['count'] as String;
+          final String localizedTitle = _getLocalizedCategoryOrMinistry(
+            title,
+            provider.selectedLanguage,
+          );
 
           return Container(
             width: 134,
@@ -867,7 +902,9 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.poppins(
-                        fontSize: provider.selectedLanguage == 'ta' ? 10.0 : 10.5,
+                        fontSize: provider.selectedLanguage == 'ta'
+                            ? 10.0
+                            : 10.5,
                         fontWeight: FontWeight.bold,
                         color: const Color(0xFF0F172A),
                         height: provider.selectedLanguage == 'ta' ? 1.3 : 1.2,
@@ -894,7 +931,10 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
 
   String _getStateMapAsset(String stateName) {
     final rawPath = _getStateMapAssetRaw(stateName);
-    return rawPath.replaceAll('assets/images/States and UTs/', 'assets/images/States assets/');
+    return rawPath.replaceAll(
+      'assets/images/States and UTs/',
+      'assets/images/States assets/',
+    );
   }
 
   String _getStateMapAssetRaw(String stateName) {
@@ -973,8 +1013,13 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
           final item = _displayStates[index];
           final String title = item['title'] as String;
           final int cnt = _dynamicCategoryCounts[title] ?? 0;
-          final String countStr = cnt > 0 ? context.l10n.schemeCountFormat(cnt) : item['count'] as String;
-          final String localizedTitle = _getLocalizedCategoryOrMinistry(title, provider.selectedLanguage);
+          final String countStr = cnt > 0
+              ? context.l10n.schemeCountFormat(cnt)
+              : item['count'] as String;
+          final String localizedTitle = _getLocalizedCategoryOrMinistry(
+            title,
+            provider.selectedLanguage,
+          );
 
           return Container(
             width: 134,
@@ -1018,7 +1063,9 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.poppins(
-                        fontSize: provider.selectedLanguage == 'ta' ? 10.0 : 10.5,
+                        fontSize: provider.selectedLanguage == 'ta'
+                            ? 10.0
+                            : 10.5,
                         fontWeight: FontWeight.bold,
                         color: const Color(0xFF0F172A),
                       ),
@@ -1041,8 +1088,6 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
       ),
     );
   }
-
-
 
   void _showAllCategoriesBottomSheet(
     BuildContext context,
@@ -1089,12 +1134,15 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          'All Categories',
-                          style: GoogleFonts.poppins(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: const Color(0xFF0F172A),
+                        FlexText(
+                          child: Text(
+                            'All Categories',
+                            softWrap: true,
+                            style: GoogleFonts.poppins(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xFF0F172A),
+                            ),
                           ),
                         ),
                         IconButton(
@@ -1287,12 +1335,15 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      'All Ministries',
-                      style: GoogleFonts.poppins(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xFF0F172A),
+                    FlexText(
+                      child: Text(
+                        'All Ministries',
+                        softWrap: true,
+                        style: GoogleFonts.poppins(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF0F172A),
+                        ),
                       ),
                     ),
                     IconButton(
@@ -1415,12 +1466,15 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      'All States & UTs',
-                      style: GoogleFonts.poppins(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xFF0F172A),
+                    FlexText(
+                      child: Text(
+                        'All States & UTs',
+                        softWrap: true,
+                        style: GoogleFonts.poppins(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF0F172A),
+                        ),
                       ),
                     ),
                     IconButton(
@@ -1474,15 +1528,22 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
   }
 
   Widget _buildBusinessUtilitiesSection() {
+    final provider = Provider.of<AppProvider>(context, listen: false);
+    final isTa = provider.selectedLanguage == 'ta';
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: Text(
-            "Business Utilities & Tools",
+            isTa
+                ? CentralizedTranslator.instance.translate(
+                    'Business Utilities & Tools',
+                  )
+                : 'Business Utilities & Tools',
             style: GoogleFonts.poppins(
-              fontSize: 15,
+              fontSize: isTa ? 14.0 : 15.0,
               fontWeight: FontWeight.bold,
               color: const Color(0xFF0F172A),
             ),
@@ -1498,44 +1559,94 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
             children: [
               _buildUtilityCard(
                 icon: Icons.domain_verification,
-                title: "Udyam Classifier",
-                desc: "Check MSME tier",
+                title: isTa
+                    ? CentralizedTranslator.instance.translate(
+                        'Udyam Classifier',
+                      )
+                    : 'Udyam Classifier',
+                desc: isTa
+                    ? CentralizedTranslator.instance.translate(
+                        'Check MSME tier',
+                      )
+                    : 'Check MSME tier',
                 onTap: _openUdyamClassifier,
               ),
               _buildUtilityCard(
                 icon: Icons.calculate_outlined,
-                title: "Subsidy Estimator",
-                desc: "Machinery subsidies",
+                title: isTa
+                    ? CentralizedTranslator.instance.translate(
+                        'Subsidy Estimator',
+                      )
+                    : 'Subsidy Estimator',
+                desc: isTa
+                    ? CentralizedTranslator.instance.translate(
+                        'Machinery subsidies',
+                      )
+                    : 'Machinery subsidies',
                 onTap: _openSubsidyEstimator,
               ),
               _buildUtilityCard(
                 icon: Icons.percent_outlined,
-                title: "GST Calculator",
-                desc: "Compute GST invoice",
+                title: isTa
+                    ? CentralizedTranslator.instance.translate('GST Calculator')
+                    : 'GST Calculator',
+                desc: isTa
+                    ? CentralizedTranslator.instance.translate(
+                        'Compute GST invoice',
+                      )
+                    : 'Compute GST invoice',
                 onTap: _openGstCalculator,
               ),
               _buildUtilityCard(
                 icon: Icons.monetization_on_outlined,
-                title: "EMI Calculator",
-                desc: "Calculate loan EMIs",
+                title: isTa
+                    ? CentralizedTranslator.instance.translate('EMI Calculator')
+                    : 'EMI Calculator',
+                desc: isTa
+                    ? CentralizedTranslator.instance.translate(
+                        'Calculate loan EMIs',
+                      )
+                    : 'Calculate loan EMIs',
                 onTap: _openEmiCalculator,
               ),
               _buildUtilityCard(
                 icon: Icons.rocket_launch_outlined,
-                title: "DPIIT Eligibility",
-                desc: "Check startup criteria",
+                title: isTa
+                    ? CentralizedTranslator.instance.translate(
+                        'DPIIT Eligibility',
+                      )
+                    : 'DPIIT Eligibility',
+                desc: isTa
+                    ? CentralizedTranslator.instance.translate(
+                        'Check startup criteria',
+                      )
+                    : 'Check startup criteria',
                 onTap: _openDpiitChecklist,
               ),
               _buildUtilityCard(
                 icon: Icons.trending_up_outlined,
-                title: "Valuation Estimator",
-                desc: "Seed valuation ranges",
+                title: isTa
+                    ? CentralizedTranslator.instance.translate(
+                        'Valuation Estimator',
+                      )
+                    : 'Valuation Estimator',
+                desc: isTa
+                    ? CentralizedTranslator.instance.translate(
+                        'Seed valuation ranges',
+                      )
+                    : 'Seed valuation ranges',
                 onTap: _openValuationEstimator,
               ),
               _buildUtilityCard(
                 icon: Icons.rule_folder_outlined,
-                title: "Doc Checklist",
-                desc: "Business setup docs",
+                title: isTa
+                    ? CentralizedTranslator.instance.translate('Doc Checklist')
+                    : 'Doc Checklist',
+                desc: isTa
+                    ? CentralizedTranslator.instance.translate(
+                        'Business setup docs',
+                      )
+                    : 'Business setup docs',
                 onTap: _openDocumentChecklist,
               ),
             ],
@@ -1604,6 +1715,9 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
   }
 
   void _openUdyamClassifier() {
+    final isTa =
+        Provider.of<AppProvider>(context, listen: false).selectedLanguage ==
+        'ta';
     final investmentController = TextEditingController();
     final turnoverController = TextEditingController();
     String result = '';
@@ -1662,7 +1776,11 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Udyam MSME Classifier',
+                              isTa
+                                  ? CentralizedTranslator.instance.translate(
+                                      'Udyam MSME Classifier',
+                                    )
+                                  : 'Udyam MSME Classifier',
                               style: GoogleFonts.poppins(
                                 fontSize: 14,
                                 fontWeight: FontWeight.bold,
@@ -1670,7 +1788,11 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                               ),
                             ),
                             Text(
-                              'Classify your business under official government guidelines.',
+                              isTa
+                                  ? CentralizedTranslator.instance.translate(
+                                      'Classify your business under official government guidelines.',
+                                    )
+                                  : 'Classify your business under official government guidelines.',
                               style: GoogleFonts.inter(
                                 fontSize: 10,
                                 color: const Color(0xFF64748B),
@@ -1681,69 +1803,141 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                       ),
                       IconButton(
                         onPressed: () => Navigator.pop(context),
-                        icon: const Icon(Icons.close, size: 18, color: Color(0xFF64748B)),
+                        icon: const Icon(
+                          Icons.close,
+                          size: 18,
+                          color: Color(0xFF64748B),
+                        ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 20),
                   Text(
-                    'Investment in Plant & Machinery',
-                    style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.bold, color: const Color(0xFF334155)),
+                    isTa
+                        ? CentralizedTranslator.instance.translate(
+                            'Investment in Plant & Machinery',
+                          )
+                        : 'Investment in Plant & Machinery',
+                    style: GoogleFonts.inter(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF334155),
+                    ),
                   ),
                   const SizedBox(height: 6),
                   TextField(
                     controller: investmentController,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
                     decoration: InputDecoration(
                       filled: true,
                       fillColor: const Color(0xFFF8FAFC),
                       hintText: '0.5',
-                      hintStyle: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF94A3B8)),
+                      hintStyle: GoogleFonts.inter(
+                        fontSize: 12,
+                        color: const Color(0xFF94A3B8),
+                      ),
                       prefixText: '₹ ',
-                      suffixText: 'Cr',
-                      helperText: 'Enter original purchase value of machinery in Crores',
-                      helperStyle: GoogleFonts.inter(fontSize: 9, color: const Color(0xFF64748B)),
-                      suffixStyle: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: const Color(0xFF64748B)),
-                      prefixStyle: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A)),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      suffixText: isTa ? 'கோடி' : 'Cr',
+                      helperText: isTa
+                          ? CentralizedTranslator.instance.translate(
+                              'Enter original purchase value of machinery in Crores',
+                            )
+                          : 'Enter original purchase value of machinery in Crores',
+                      helperStyle: GoogleFonts.inter(
+                        fontSize: 9,
+                        color: const Color(0xFF64748B),
+                      ),
+                      suffixStyle: GoogleFonts.inter(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF64748B),
+                      ),
+                      prefixStyle: GoogleFonts.inter(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF0F172A),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 10,
+                      ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Color(0xFF2563EB), width: 1.5),
+                        borderSide: const BorderSide(
+                          color: Color(0xFF2563EB),
+                          width: 1.5,
+                        ),
                       ),
                     ),
                   ),
                   const SizedBox(height: 14),
                   Text(
-                    'Annual Turnover',
-                    style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.bold, color: const Color(0xFF334155)),
+                    isTa
+                        ? CentralizedTranslator.instance.translate(
+                            'Annual Turnover',
+                          )
+                        : 'Annual Turnover',
+                    style: GoogleFonts.inter(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF334155),
+                    ),
                   ),
                   const SizedBox(height: 6),
                   TextField(
                     controller: turnoverController,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
                     decoration: InputDecoration(
                       filled: true,
                       fillColor: const Color(0xFFF8FAFC),
                       hintText: '3.0',
-                      hintStyle: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF94A3B8)),
+                      hintStyle: GoogleFonts.inter(
+                        fontSize: 12,
+                        color: const Color(0xFF94A3B8),
+                      ),
                       prefixText: '₹ ',
-                      suffixText: 'Cr',
-                      helperText: 'Enter total revenue/sales of last financial year in Crores',
-                      helperStyle: GoogleFonts.inter(fontSize: 9, color: const Color(0xFF64748B)),
-                      suffixStyle: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: const Color(0xFF64748B)),
-                      prefixStyle: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A)),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      suffixText: isTa ? 'கோடி' : 'Cr',
+                      helperText: isTa
+                          ? CentralizedTranslator.instance.translate(
+                              'Enter total revenue/sales of last financial year in Crores',
+                            )
+                          : 'Enter total revenue/sales of last financial year in Crores',
+                      helperStyle: GoogleFonts.inter(
+                        fontSize: 9,
+                        color: const Color(0xFF64748B),
+                      ),
+                      suffixStyle: GoogleFonts.inter(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF64748B),
+                      ),
+                      prefixStyle: GoogleFonts.inter(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF0F172A),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 10,
+                      ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Color(0xFF2563EB), width: 1.5),
+                        borderSide: const BorderSide(
+                          color: Color(0xFF2563EB),
+                          width: 1.5,
+                        ),
                       ),
                     ),
                   ),
@@ -1754,7 +1948,9 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                       decoration: BoxDecoration(
                         color: resultColor.withValues(alpha: 0.05),
                         borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: resultColor.withValues(alpha: 0.2)),
+                        border: Border.all(
+                          color: resultColor.withValues(alpha: 0.2),
+                        ),
                       ),
                       child: IntrinsicHeight(
                         child: Row(
@@ -1771,12 +1967,20 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                             ),
                             Expanded(
                               child: Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 12,
+                                ),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      'Classification Result',
+                                      isTa
+                                          ? CentralizedTranslator.instance
+                                                .translate(
+                                                  'Classification Result',
+                                                )
+                                          : 'Classification Result',
                                       style: GoogleFonts.inter(
                                         fontSize: 9.5,
                                         fontWeight: FontWeight.bold,
@@ -1786,7 +1990,10 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
-                                      result,
+                                      isTa
+                                          ? CentralizedTranslator.instance
+                                                .translate(result)
+                                          : result,
                                       style: GoogleFonts.poppins(
                                         fontSize: 13,
                                         fontWeight: FontWeight.bold,
@@ -1796,7 +2003,10 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                                     if (subResult.isNotEmpty) ...[
                                       const SizedBox(height: 4),
                                       Text(
-                                        subResult,
+                                        isTa
+                                            ? CentralizedTranslator.instance
+                                                  .translate(subResult)
+                                            : subResult,
                                         style: GoogleFonts.inter(
                                           fontSize: 10,
                                           color: const Color(0xFF475569),
@@ -1818,13 +2028,16 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                     height: 44,
                     child: ElevatedButton(
                       onPressed: () {
-                        final double invest = double.tryParse(investmentController.text) ?? 0;
-                        final double turn = double.tryParse(turnoverController.text) ?? 0;
+                        final double invest =
+                            double.tryParse(investmentController.text) ?? 0;
+                        final double turn =
+                            double.tryParse(turnoverController.text) ?? 0;
 
                         if (invest <= 0 || turn <= 0) {
                           setModalState(() {
                             result = 'Invalid Input';
-                            subResult = 'Please enter valid values greater than 0';
+                            subResult =
+                                'Please enter valid values greater than 0';
                             resultColor = const Color(0xFFDC2626);
                           });
                           return;
@@ -1847,18 +2060,28 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
 
                         setModalState(() {
                           result = category;
-                          subResult = 'Limits: Micro (≤1cr / ≤5cr) | Small (≤10cr / ≤50cr) | Medium (≤50cr / ≤250cr)';
+                          subResult =
+                              'Limits: Micro (≤1cr / ≤5cr) | Small (≤10cr / ≤50cr) | Medium (≤50cr / ≤250cr)';
                         });
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF2563EB),
                         foregroundColor: Colors.white,
                         elevation: 0,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
                       child: Text(
-                        'Calculate Classification',
-                        style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 12.5),
+                        isTa
+                            ? CentralizedTranslator.instance.translate(
+                                'Calculate Classification',
+                              )
+                            : 'Calculate Classification',
+                        style: GoogleFonts.inter(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12.5,
+                        ),
                       ),
                     ),
                   ),
@@ -1872,6 +2095,9 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
   }
 
   void _openGstCalculator() {
+    final isTa =
+        Provider.of<AppProvider>(context, listen: false).selectedLanguage ==
+        'ta';
     final amountController = TextEditingController();
     double gstPercentage = 18.0;
     double baseVal = 0.0;
@@ -1932,56 +2158,112 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'GST / Tax Calculator',
+                              isTa
+                                  ? CentralizedTranslator.instance.translate(
+                                      'GST / Tax Calculator',
+                                    )
+                                  : 'GST / Tax Calculator',
                               style: GoogleFonts.poppins(
-                                  fontSize: 14, fontWeight: FontWeight.bold, color: const Color(0xFF0F172A)),
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: const Color(0xFF0F172A),
+                              ),
                             ),
                             Text(
-                              'Calculate CGST, SGST, and Total invoice amounts.',
-                              style: GoogleFonts.inter(fontSize: 10, color: const Color(0xFF64748B)),
+                              isTa
+                                  ? CentralizedTranslator.instance.translate(
+                                      'Calculate CGST, SGST, and Total invoice amounts.',
+                                    )
+                                  : 'Calculate CGST, SGST, and Total invoice amounts.',
+                              style: GoogleFonts.inter(
+                                fontSize: 10,
+                                color: const Color(0xFF64748B),
+                              ),
                             ),
                           ],
                         ),
                       ),
                       IconButton(
                         onPressed: () => Navigator.pop(context),
-                        icon: const Icon(Icons.close, size: 18, color: Color(0xFF64748B)),
+                        icon: const Icon(
+                          Icons.close,
+                          size: 18,
+                          color: Color(0xFF64748B),
+                        ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 20),
                   Text(
-                    'Base Amount',
-                    style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.bold, color: const Color(0xFF334155)),
+                    isTa
+                        ? CentralizedTranslator.instance.translate(
+                            'Base Amount',
+                          )
+                        : 'Base Amount',
+                    style: GoogleFonts.inter(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF334155),
+                    ),
                   ),
                   const SizedBox(height: 6),
                   TextField(
                     controller: amountController,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
                     decoration: InputDecoration(
                       filled: true,
                       fillColor: const Color(0xFFF8FAFC),
                       hintText: '50000',
-                      hintStyle: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF94A3B8)),
+                      hintStyle: GoogleFonts.inter(
+                        fontSize: 12,
+                        color: const Color(0xFF94A3B8),
+                      ),
                       prefixText: '₹ ',
-                      helperText: 'Enter net value of goods or services before GST',
-                      helperStyle: GoogleFonts.inter(fontSize: 9, color: const Color(0xFF64748B)),
-                      prefixStyle: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A)),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      helperText: isTa
+                          ? CentralizedTranslator.instance.translate(
+                              'Enter net value of goods or services before GST',
+                            )
+                          : 'Enter net value of goods or services before GST',
+                      helperStyle: GoogleFonts.inter(
+                        fontSize: 9,
+                        color: const Color(0xFF64748B),
+                      ),
+                      prefixStyle: GoogleFonts.inter(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF0F172A),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 10,
+                      ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Color(0xFF2563EB), width: 1.5),
+                        borderSide: const BorderSide(
+                          color: Color(0xFF2563EB),
+                          width: 1.5,
+                        ),
                       ),
                     ),
                   ),
                   const SizedBox(height: 14),
                   Text(
-                    'GST Rate (%)',
-                    style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.bold, color: const Color(0xFF334155)),
+                    isTa
+                        ? CentralizedTranslator.instance.translate(
+                            'GST Rate (%)',
+                          )
+                        : 'GST Rate (%)',
+                    style: GoogleFonts.inter(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF334155),
+                    ),
                   ),
                   const SizedBox(height: 8),
                   Row(
@@ -1997,14 +2279,20 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                                 '$rate%',
                                 style: GoogleFonts.inter(
                                   fontSize: 11.5,
-                                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                                  color: isSelected ? const Color(0xFF2563EB) : const Color(0xFF475569),
+                                  fontWeight: isSelected
+                                      ? FontWeight.bold
+                                      : FontWeight.normal,
+                                  color: isSelected
+                                      ? const Color(0xFF2563EB)
+                                      : const Color(0xFF475569),
                                 ),
                               ),
                             ),
                             selected: isSelected,
                             onSelected: (val) {
-                              if (val) setModalState(() => gstPercentage = rate);
+                              if (val) {
+                                setModalState(() => gstPercentage = rate);
+                              }
                             },
                             selectedColor: const Color(0xFFEFF6FF),
                             backgroundColor: Colors.white,
@@ -2013,7 +2301,9 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10),
                               side: BorderSide(
-                                color: isSelected ? const Color(0xFF2563EB) : const Color(0xFFE2E8F0),
+                                color: isSelected
+                                    ? const Color(0xFF2563EB)
+                                    : const Color(0xFFE2E8F0),
                                 width: isSelected ? 1.5 : 1,
                               ),
                             ),
@@ -2033,8 +2323,14 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                         border: Border.all(color: const Color(0xFFFCA5A5)),
                       ),
                       child: Text(
-                        error,
-                        style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFFB91C1C), fontWeight: FontWeight.w600),
+                        isTa
+                            ? CentralizedTranslator.instance.translate(error)
+                            : error,
+                        style: GoogleFonts.inter(
+                          fontSize: 11,
+                          color: const Color(0xFFB91C1C),
+                          fontWeight: FontWeight.w600,
+                        ),
                         textAlign: TextAlign.center,
                       ),
                     ),
@@ -2053,8 +2349,33 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(CentralizedTranslator.instance.translate('Base Price'), style: GoogleFonts.inter(fontSize: 11.5, color: const Color(0xFF475569))),
-                              Text('₹ ${baseVal.toStringAsFixed(2)}', style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A))),
+                              Flexible(
+                                child: Text(
+                                  isTa
+                                      ? CentralizedTranslator.instance
+                                            .translate('Base Price')
+                                      : 'Base Price',
+                                  softWrap: true,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 11.5,
+                                    color: const Color(0xFF475569),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Flexible(
+                                child: FitOneLine(
+                                  alignment: Alignment.centerRight,
+                                  child: Text(
+                                    '₹ ${baseVal.toStringAsFixed(2)}',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      color: const Color(0xFF0F172A),
+                                    ),
+                                  ),
+                                ),
+                              ),
                             ],
                           ),
                           const Padding(
@@ -2064,16 +2385,60 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text('CGST (${(gstPercentage / 2).toStringAsFixed(1)}%)', style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF475569))),
-                              Text('₹ ${cgstVal.toStringAsFixed(2)}', style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A))),
+                              Flexible(
+                                child: Text(
+                                  'CGST (${(gstPercentage / 2).toStringAsFixed(1)}%)',
+                                  softWrap: true,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 11,
+                                    color: const Color(0xFF475569),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Flexible(
+                                child: FitOneLine(
+                                  alignment: Alignment.centerRight,
+                                  child: Text(
+                                    '₹ ${cgstVal.toStringAsFixed(2)}',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      color: const Color(0xFF0F172A),
+                                    ),
+                                  ),
+                                ),
+                              ),
                             ],
                           ),
                           const SizedBox(height: 4),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text('SGST (${(gstPercentage / 2).toStringAsFixed(1)}%)', style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF475569))),
-                              Text('₹ ${sgstVal.toStringAsFixed(2)}', style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A))),
+                              Flexible(
+                                child: Text(
+                                  'SGST (${(gstPercentage / 2).toStringAsFixed(1)}%)',
+                                  softWrap: true,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 11,
+                                    color: const Color(0xFF475569),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Flexible(
+                                child: FitOneLine(
+                                  alignment: Alignment.centerRight,
+                                  child: Text(
+                                    '₹ ${sgstVal.toStringAsFixed(2)}',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      color: const Color(0xFF0F172A),
+                                    ),
+                                  ),
+                                ),
+                              ),
                             ],
                           ),
                           const Padding(
@@ -2083,8 +2448,34 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(CentralizedTranslator.instance.translate('Total Invoice'), style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.bold, color: const Color(0xFF1E293B))),
-                              Text('₹ ${totalVal.toStringAsFixed(2)}', style: GoogleFonts.poppins(fontSize: 13.5, fontWeight: FontWeight.bold, color: const Color(0xFF2563EB))),
+                              Flexible(
+                                child: Text(
+                                  isTa
+                                      ? CentralizedTranslator.instance
+                                            .translate('Total Invoice')
+                                      : 'Total Invoice',
+                                  softWrap: true,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                    color: const Color(0xFF1E293B),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Flexible(
+                                child: FitOneLine(
+                                  alignment: Alignment.centerRight,
+                                  child: Text(
+                                    '₹ ${totalVal.toStringAsFixed(2)}',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 13.5,
+                                      fontWeight: FontWeight.bold,
+                                      color: const Color(0xFF2563EB),
+                                    ),
+                                  ),
+                                ),
+                              ),
                             ],
                           ),
                         ],
@@ -2097,7 +2488,8 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                     height: 44,
                     child: ElevatedButton(
                       onPressed: () {
-                        final double base = double.tryParse(amountController.text) ?? 0;
+                        final double base =
+                            double.tryParse(amountController.text) ?? 0;
                         if (base <= 0) {
                           setModalState(() {
                             error = 'Please enter a valid base amount';
@@ -2118,11 +2510,20 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                         backgroundColor: const Color(0xFF2563EB),
                         foregroundColor: Colors.white,
                         elevation: 0,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
                       child: Text(
-                        'Calculate Tax',
-                        style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 12.5),
+                        isTa
+                            ? CentralizedTranslator.instance.translate(
+                                'Calculate Tax',
+                              )
+                            : 'Calculate Tax',
+                        style: GoogleFonts.inter(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12.5,
+                        ),
                       ),
                     ),
                   ),
@@ -2206,43 +2607,72 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                             ),
                             Text(
                               'Calculate monthly payments for your business loan.',
-                              style: GoogleFonts.inter(fontSize: 10, color: const Color(0xFF64748B)),
+                              style: GoogleFonts.inter(
+                                fontSize: 10,
+                                color: const Color(0xFF64748B),
+                              ),
                             ),
                           ],
                         ),
                       ),
                       IconButton(
                         onPressed: () => Navigator.pop(context),
-                        icon: const Icon(Icons.close, size: 18, color: Color(0xFF64748B)),
+                        icon: const Icon(
+                          Icons.close,
+                          size: 18,
+                          color: Color(0xFF64748B),
+                        ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 20),
                   Text(
                     'Loan Amount',
-                    style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.bold, color: const Color(0xFF334155)),
+                    style: GoogleFonts.inter(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF334155),
+                    ),
                   ),
                   const SizedBox(height: 6),
                   TextField(
                     controller: loanController,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
                     decoration: InputDecoration(
                       filled: true,
                       fillColor: const Color(0xFFF8FAFC),
                       hintText: '500000',
-                      hintStyle: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF94A3B8)),
+                      hintStyle: GoogleFonts.inter(
+                        fontSize: 12,
+                        color: const Color(0xFF94A3B8),
+                      ),
                       prefixText: '₹ ',
                       helperText: 'Enter total business loan sum required',
-                      helperStyle: GoogleFonts.inter(fontSize: 9, color: const Color(0xFF64748B)),
-                      prefixStyle: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A)),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      helperStyle: GoogleFonts.inter(
+                        fontSize: 9,
+                        color: const Color(0xFF64748B),
+                      ),
+                      prefixStyle: GoogleFonts.inter(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF0F172A),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 10,
+                      ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Color(0xFF2563EB), width: 1.5),
+                        borderSide: const BorderSide(
+                          color: Color(0xFF2563EB),
+                          width: 1.5,
+                        ),
                       ),
                     ),
                   ),
@@ -2255,28 +2685,49 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                           children: [
                             Text(
                               'Interest Rate (% p.a.)',
-                              style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.bold, color: const Color(0xFF334155)),
+                              style: GoogleFonts.inter(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: const Color(0xFF334155),
+                              ),
                             ),
                             const SizedBox(height: 6),
                             TextField(
                               controller: rateController,
-                              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                              keyboardType:
+                                  const TextInputType.numberWithOptions(
+                                    decimal: true,
+                                  ),
                               decoration: InputDecoration(
                                 filled: true,
                                 fillColor: const Color(0xFFF8FAFC),
                                 hintText: '9.5',
-                                hintStyle: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF94A3B8)),
+                                hintStyle: GoogleFonts.inter(
+                                  fontSize: 12,
+                                  color: const Color(0xFF94A3B8),
+                                ),
                                 suffixText: '%',
                                 helperText: 'Enter annual rate',
-                                helperStyle: GoogleFonts.inter(fontSize: 9, color: const Color(0xFF64748B)),
-                                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                                helperStyle: GoogleFonts.inter(
+                                  fontSize: 9,
+                                  color: const Color(0xFF64748B),
+                                ),
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 14,
+                                  vertical: 10,
+                                ),
                                 enabledBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
-                                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                                  borderSide: const BorderSide(
+                                    color: Color(0xFFE2E8F0),
+                                  ),
                                 ),
                                 focusedBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
-                                  borderSide: const BorderSide(color: Color(0xFF2563EB), width: 1.5),
+                                  borderSide: const BorderSide(
+                                    color: Color(0xFF2563EB),
+                                    width: 1.5,
+                                  ),
                                 ),
                               ),
                             ),
@@ -2290,7 +2741,11 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                           children: [
                             Text(
                               'Tenure (Months)',
-                              style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.bold, color: const Color(0xFF334155)),
+                              style: GoogleFonts.inter(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: const Color(0xFF334155),
+                              ),
                             ),
                             const SizedBox(height: 6),
                             TextField(
@@ -2300,18 +2755,32 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                                 filled: true,
                                 fillColor: const Color(0xFFF8FAFC),
                                 hintText: '60',
-                                hintStyle: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF94A3B8)),
+                                hintStyle: GoogleFonts.inter(
+                                  fontSize: 12,
+                                  color: const Color(0xFF94A3B8),
+                                ),
                                 suffixText: 'Mo',
                                 helperText: 'Enter term in months',
-                                helperStyle: GoogleFonts.inter(fontSize: 9, color: const Color(0xFF64748B)),
-                                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                                helperStyle: GoogleFonts.inter(
+                                  fontSize: 9,
+                                  color: const Color(0xFF64748B),
+                                ),
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 14,
+                                  vertical: 10,
+                                ),
                                 enabledBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
-                                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                                  borderSide: const BorderSide(
+                                    color: Color(0xFFE2E8F0),
+                                  ),
                                 ),
                                 focusedBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
-                                  borderSide: const BorderSide(color: Color(0xFF2563EB), width: 1.5),
+                                  borderSide: const BorderSide(
+                                    color: Color(0xFF2563EB),
+                                    width: 1.5,
+                                  ),
                                 ),
                               ),
                             ),
@@ -2332,7 +2801,11 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                       ),
                       child: Text(
                         error,
-                        style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFFB91C1C), fontWeight: FontWeight.w600),
+                        style: GoogleFonts.inter(
+                          fontSize: 11,
+                          color: const Color(0xFFB91C1C),
+                          fontWeight: FontWeight.w600,
+                        ),
                         textAlign: TextAlign.center,
                       ),
                     ),
@@ -2351,8 +2824,33 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(CentralizedTranslator.instance.translate('Monthly EMI'), style: GoogleFonts.inter(fontSize: 11.5, fontWeight: FontWeight.bold, color: const Color(0xFF1E293B))),
-                              Text('₹ ${emiVal.toStringAsFixed(2)}', style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.bold, color: const Color(0xFF2563EB))),
+                              Flexible(
+                                child: Text(
+                                  CentralizedTranslator.instance.translate(
+                                    'Monthly EMI',
+                                  ),
+                                  softWrap: true,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.bold,
+                                    color: const Color(0xFF1E293B),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Flexible(
+                                child: FitOneLine(
+                                  alignment: Alignment.centerRight,
+                                  child: Text(
+                                    '₹ ${emiVal.toStringAsFixed(2)}',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                      color: const Color(0xFF2563EB),
+                                    ),
+                                  ),
+                                ),
+                              ),
                             ],
                           ),
                           const Padding(
@@ -2362,16 +2860,64 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(CentralizedTranslator.instance.translate('Principal Amount'), style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF475569))),
-                              Text('₹ ${principalVal.toStringAsFixed(2)}', style: GoogleFonts.poppins(fontSize: 11.5, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A))),
+                              Flexible(
+                                child: Text(
+                                  CentralizedTranslator.instance.translate(
+                                    'Principal Amount',
+                                  ),
+                                  softWrap: true,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 11,
+                                    color: const Color(0xFF475569),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Flexible(
+                                child: FitOneLine(
+                                  alignment: Alignment.centerRight,
+                                  child: Text(
+                                    '₹ ${principalVal.toStringAsFixed(2)}',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 11.5,
+                                      fontWeight: FontWeight.w600,
+                                      color: const Color(0xFF0F172A),
+                                    ),
+                                  ),
+                                ),
+                              ),
                             ],
                           ),
                           const SizedBox(height: 4),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(CentralizedTranslator.instance.translate('Total Interest Payable'), style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF475569))),
-                              Text('₹ ${interestVal.toStringAsFixed(2)}', style: GoogleFonts.poppins(fontSize: 11.5, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A))),
+                              Flexible(
+                                child: Text(
+                                  CentralizedTranslator.instance.translate(
+                                    'Total Interest Payable',
+                                  ),
+                                  softWrap: true,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 11,
+                                    color: const Color(0xFF475569),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Flexible(
+                                child: FitOneLine(
+                                  alignment: Alignment.centerRight,
+                                  child: Text(
+                                    '₹ ${interestVal.toStringAsFixed(2)}',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 11.5,
+                                      fontWeight: FontWeight.w600,
+                                      color: const Color(0xFF0F172A),
+                                    ),
+                                  ),
+                                ),
+                              ),
                             ],
                           ),
                           const Padding(
@@ -2381,8 +2927,32 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(CentralizedTranslator.instance.translate('Total Amount (Principal + Int)'), style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF475569))),
-                              Text('₹ ${totalVal.toStringAsFixed(2)}', style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.bold, color: const Color(0xFF0F172A))),
+                              Flexible(
+                                child: Text(
+                                  CentralizedTranslator.instance.translate(
+                                    'Total Amount (Principal + Int)',
+                                  ),
+                                  softWrap: true,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 11,
+                                    color: const Color(0xFF475569),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Flexible(
+                                child: FitOneLine(
+                                  alignment: Alignment.centerRight,
+                                  child: Text(
+                                    '₹ ${totalVal.toStringAsFixed(2)}',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                      color: const Color(0xFF0F172A),
+                                    ),
+                                  ),
+                                ),
+                              ),
                             ],
                           ),
                         ],
@@ -2395,9 +2965,12 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                     height: 44,
                     child: ElevatedButton(
                       onPressed: () {
-                        final double p = double.tryParse(loanController.text) ?? 0;
-                        final double annualRate = double.tryParse(rateController.text) ?? 0;
-                        final double n = double.tryParse(tenureController.text) ?? 0;
+                        final double p =
+                            double.tryParse(loanController.text) ?? 0;
+                        final double annualRate =
+                            double.tryParse(rateController.text) ?? 0;
+                        final double n =
+                            double.tryParse(tenureController.text) ?? 0;
 
                         if (p <= 0 || annualRate <= 0 || n <= 0) {
                           setModalState(() {
@@ -2408,7 +2981,8 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                         }
 
                         final double r = (annualRate / 12) / 100;
-                        final double emi = (p * r * pow(1 + r, n)) / (pow(1 + r, n) - 1);
+                        final double emi =
+                            (p * r * pow(1 + r, n)) / (pow(1 + r, n) - 1);
                         final double totalPayable = emi * n;
                         final double totalInterest = totalPayable - p;
 
@@ -2424,11 +2998,16 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                         backgroundColor: const Color(0xFF2563EB),
                         foregroundColor: Colors.white,
                         elevation: 0,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
                       child: Text(
                         'Calculate EMI',
-                        style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 12.5),
+                        style: GoogleFonts.inter(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12.5,
+                        ),
                       ),
                     ),
                   ),
@@ -2510,14 +3089,21 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                             ),
                             Text(
                               'Evaluate if your business qualifies as a startup under DPIIT rules.',
-                              style: GoogleFonts.inter(fontSize: 10, color: const Color(0xFF64748B)),
+                              style: GoogleFonts.inter(
+                                fontSize: 10,
+                                color: const Color(0xFF64748B),
+                              ),
                             ),
                           ],
                         ),
                       ),
                       IconButton(
                         onPressed: () => Navigator.pop(context),
-                        icon: const Icon(Icons.close, size: 18, color: Color(0xFF64748B)),
+                        icon: const Icon(
+                          Icons.close,
+                          size: 18,
+                          color: Color(0xFF64748B),
+                        ),
                       ),
                     ],
                   ),
@@ -2530,41 +3116,107 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                     child: Column(
                       children: [
                         CheckboxListTile(
-                          title: Text(CentralizedTranslator.instance.translate('Registered as Pvt Ltd / LLP / Partnership'), style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600)),
-                          subtitle: Text(CentralizedTranslator.instance.translate('Must be registered in India'), style: const TextStyle(fontSize: 9.5)),
+                          title: Text(
+                            CentralizedTranslator.instance.translate(
+                              'Registered as Pvt Ltd / LLP / Partnership',
+                            ),
+                            style: const TextStyle(
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          subtitle: Text(
+                            CentralizedTranslator.instance.translate(
+                              'Must be registered in India',
+                            ),
+                            style: const TextStyle(fontSize: 9.5),
+                          ),
                           value: isPvtLtdOrLlp,
                           activeColor: const Color(0xFF2563EB),
-                          onChanged: (val) => setModalState(() => isPvtLtdOrLlp = val ?? false),
+                          onChanged: (val) =>
+                              setModalState(() => isPvtLtdOrLlp = val ?? false),
                           controlAffinity: ListTileControlAffinity.leading,
-                          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+                          shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.vertical(
+                              top: Radius.circular(16),
+                            ),
+                          ),
                         ),
                         const Divider(height: 1, color: Color(0xFFE2E8F0)),
                         CheckboxListTile(
-                          title: Text(CentralizedTranslator.instance.translate('Incorporation age is under 10 years'), style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600)),
-                          subtitle: Text(CentralizedTranslator.instance.translate('From incorporation date'), style: const TextStyle(fontSize: 9.5)),
+                          title: Text(
+                            CentralizedTranslator.instance.translate(
+                              'Incorporation age is under 10 years',
+                            ),
+                            style: const TextStyle(
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          subtitle: Text(
+                            CentralizedTranslator.instance.translate(
+                              'From incorporation date',
+                            ),
+                            style: const TextStyle(fontSize: 9.5),
+                          ),
                           value: isUnder10Years,
                           activeColor: const Color(0xFF2563EB),
-                          onChanged: (val) => setModalState(() => isUnder10Years = val ?? false),
+                          onChanged: (val) => setModalState(
+                            () => isUnder10Years = val ?? false,
+                          ),
                           controlAffinity: ListTileControlAffinity.leading,
                         ),
                         const Divider(height: 1, color: Color(0xFFE2E8F0)),
                         CheckboxListTile(
-                          title: Text(CentralizedTranslator.instance.translate('Annual turnover has never exceeded ₹100 Cr'), style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600)),
-                          subtitle: Text(CentralizedTranslator.instance.translate('For any financial year'), style: const TextStyle(fontSize: 9.5)),
+                          title: Text(
+                            CentralizedTranslator.instance.translate(
+                              'Annual turnover has never exceeded ₹100 Cr',
+                            ),
+                            style: const TextStyle(
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          subtitle: Text(
+                            CentralizedTranslator.instance.translate(
+                              'For any financial year',
+                            ),
+                            style: const TextStyle(fontSize: 9.5),
+                          ),
                           value: turnoverUnder100Cr,
                           activeColor: const Color(0xFF2563EB),
-                          onChanged: (val) => setModalState(() => turnoverUnder100Cr = val ?? false),
+                          onChanged: (val) => setModalState(
+                            () => turnoverUnder100Cr = val ?? false,
+                          ),
                           controlAffinity: ListTileControlAffinity.leading,
                         ),
                         const Divider(height: 1, color: Color(0xFFE2E8F0)),
                         CheckboxListTile(
-                          title: Text(CentralizedTranslator.instance.translate('Working towards innovation/scaling'), style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600)),
-                          subtitle: Text(CentralizedTranslator.instance.translate('Developing new products/processes'), style: const TextStyle(fontSize: 9.5)),
+                          title: Text(
+                            CentralizedTranslator.instance.translate(
+                              'Working towards innovation/scaling',
+                            ),
+                            style: const TextStyle(
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          subtitle: Text(
+                            CentralizedTranslator.instance.translate(
+                              'Developing new products/processes',
+                            ),
+                            style: const TextStyle(fontSize: 9.5),
+                          ),
                           value: isInnovative,
                           activeColor: const Color(0xFF2563EB),
-                          onChanged: (val) => setModalState(() => isInnovative = val ?? false),
+                          onChanged: (val) =>
+                              setModalState(() => isInnovative = val ?? false),
                           controlAffinity: ListTileControlAffinity.leading,
-                          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(bottom: Radius.circular(16))),
+                          shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.vertical(
+                              bottom: Radius.circular(16),
+                            ),
+                          ),
                         ),
                       ],
                     ),
@@ -2576,14 +3228,18 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                       decoration: BoxDecoration(
                         color: resultColor.withValues(alpha: 0.05),
                         borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: resultColor.withValues(alpha: 0.2)),
+                        border: Border.all(
+                          color: resultColor.withValues(alpha: 0.2),
+                        ),
                       ),
                       child: Padding(
                         padding: const EdgeInsets.all(12.0),
                         child: Row(
                           children: [
                             Icon(
-                              resultColor == const Color(0xFF047857) ? Icons.check_circle : Icons.cancel,
+                              resultColor == const Color(0xFF047857)
+                                  ? Icons.check_circle
+                                  : Icons.cancel,
                               color: resultColor,
                               size: 18,
                             ),
@@ -2609,13 +3265,19 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                     height: 44,
                     child: ElevatedButton(
                       onPressed: () {
-                        final eligible = isPvtLtdOrLlp && isUnder10Years && turnoverUnder100Cr && isInnovative;
+                        final eligible =
+                            isPvtLtdOrLlp &&
+                            isUnder10Years &&
+                            turnoverUnder100Cr &&
+                            isInnovative;
                         setModalState(() {
                           if (eligible) {
-                            result = 'Highly Eligible for DPIIT Startup India Recognition!';
+                            result =
+                                'Highly Eligible for DPIIT Startup India Recognition!';
                             resultColor = const Color(0xFF0D9488); // Teal Green
                           } else {
-                            result = 'Not Eligible. Startups must satisfy all 4 criteria to qualify.';
+                            result =
+                                'Not Eligible. Startups must satisfy all 4 criteria to qualify.';
                             resultColor = const Color(0xFFDC2626); // Red
                           }
                         });
@@ -2624,11 +3286,16 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                         backgroundColor: const Color(0xFF2563EB),
                         foregroundColor: Colors.white,
                         elevation: 0,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
                       child: Text(
                         'Check Eligibility',
-                        style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 12.5),
+                        style: GoogleFonts.inter(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12.5,
+                        ),
                       ),
                     ),
                   ),
@@ -2662,7 +3329,9 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
         return StatefulBuilder(
           builder: (context, setModalState) {
             String formatVal(double val) {
-              if (val >= 10000000) return '₹ ${(val / 10000000).toStringAsFixed(2)} Crores';
+              if (val >= 10000000) {
+                return '₹ ${(val / 10000000).toStringAsFixed(2)} Crores';
+              }
               return '₹ ${(val / 100000).toStringAsFixed(2)} Lakhs';
             }
 
@@ -2717,21 +3386,32 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                             ),
                             Text(
                               'Get a ballpark pre-seed/seed valuation range based on MRR.',
-                              style: GoogleFonts.inter(fontSize: 10, color: const Color(0xFF64748B)),
+                              style: GoogleFonts.inter(
+                                fontSize: 10,
+                                color: const Color(0xFF64748B),
+                              ),
                             ),
                           ],
                         ),
                       ),
                       IconButton(
                         onPressed: () => Navigator.pop(context),
-                        icon: const Icon(Icons.close, size: 18, color: Color(0xFF64748B)),
+                        icon: const Icon(
+                          Icons.close,
+                          size: 18,
+                          color: Color(0xFF64748B),
+                        ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 20),
                   Text(
                     'Monthly Recurring Revenue (MRR)',
-                    style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.bold, color: const Color(0xFF334155)),
+                    style: GoogleFonts.inter(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF334155),
+                    ),
                   ),
                   const SizedBox(height: 6),
                   TextField(
@@ -2741,19 +3421,35 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                       filled: true,
                       fillColor: const Color(0xFFF8FAFC),
                       hintText: '200000',
-                      hintStyle: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF94A3B8)),
+                      hintStyle: GoogleFonts.inter(
+                        fontSize: 12,
+                        color: const Color(0xFF94A3B8),
+                      ),
                       prefixText: '₹ ',
                       helperText: 'Enter monthly revenue in Rupees',
-                      helperStyle: GoogleFonts.inter(fontSize: 9, color: const Color(0xFF64748B)),
-                      prefixStyle: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A)),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      helperStyle: GoogleFonts.inter(
+                        fontSize: 9,
+                        color: const Color(0xFF64748B),
+                      ),
+                      prefixStyle: GoogleFonts.inter(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF0F172A),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 10,
+                      ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Color(0xFF2563EB), width: 1.5),
+                        borderSide: const BorderSide(
+                          color: Color(0xFF2563EB),
+                          width: 1.5,
+                        ),
                       ),
                     ),
                   ),
@@ -2766,28 +3462,49 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                           children: [
                             Text(
                               'MoM Growth (%)',
-                              style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.bold, color: const Color(0xFF334155)),
+                              style: GoogleFonts.inter(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: const Color(0xFF334155),
+                              ),
                             ),
                             const SizedBox(height: 6),
                             TextField(
                               controller: growthController,
-                              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                              keyboardType:
+                                  const TextInputType.numberWithOptions(
+                                    decimal: true,
+                                  ),
                               decoration: InputDecoration(
                                 filled: true,
                                 fillColor: const Color(0xFFF8FAFC),
                                 hintText: '15',
-                                hintStyle: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF94A3B8)),
+                                hintStyle: GoogleFonts.inter(
+                                  fontSize: 12,
+                                  color: const Color(0xFF94A3B8),
+                                ),
                                 suffixText: '%',
                                 helperText: 'Enter month-on-month rate',
-                                helperStyle: GoogleFonts.inter(fontSize: 9, color: const Color(0xFF64748B)),
-                                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                                helperStyle: GoogleFonts.inter(
+                                  fontSize: 9,
+                                  color: const Color(0xFF64748B),
+                                ),
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 14,
+                                  vertical: 10,
+                                ),
                                 enabledBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
-                                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                                  borderSide: const BorderSide(
+                                    color: Color(0xFFE2E8F0),
+                                  ),
                                 ),
                                 focusedBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
-                                  borderSide: const BorderSide(color: Color(0xFF2563EB), width: 1.5),
+                                  borderSide: const BorderSide(
+                                    color: Color(0xFF2563EB),
+                                    width: 1.5,
+                                  ),
                                 ),
                               ),
                             ),
@@ -2801,7 +3518,11 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                           children: [
                             Text(
                               'Business Sector',
-                              style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.bold, color: const Color(0xFF334155)),
+                              style: GoogleFonts.inter(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: const Color(0xFF334155),
+                              ),
                             ),
                             const SizedBox(height: 6),
                             DropdownButtonFormField<String>(
@@ -2811,15 +3532,34 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                                 fillColor: const Color(0xFFF8FAFC),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
-                                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                                  borderSide: const BorderSide(
+                                    color: Color(0xFFE2E8F0),
+                                  ),
                                 ),
-                                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 10,
+                                ),
                               ),
-                              items: ['SaaS / Tech', 'E-commerce', 'Fintech', 'AgriTech'].map((String sector) {
-                                return DropdownMenuItem<String>(value: sector, child: Text(sector, style: const TextStyle(fontSize: 12)));
-                              }).toList(),
+                              items:
+                                  [
+                                    'SaaS / Tech',
+                                    'E-commerce',
+                                    'Fintech',
+                                    'AgriTech',
+                                  ].map((String sector) {
+                                    return DropdownMenuItem<String>(
+                                      value: sector,
+                                      child: Text(
+                                        sector,
+                                        style: const TextStyle(fontSize: 12),
+                                      ),
+                                    );
+                                  }).toList(),
                               onChanged: (val) {
-                                if (val != null) setModalState(() => selectedSector = val);
+                                if (val != null) {
+                                  setModalState(() => selectedSector = val);
+                                }
                               },
                             ),
                           ],
@@ -2839,7 +3579,11 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                       ),
                       child: Text(
                         error,
-                        style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFFB91C1C), fontWeight: FontWeight.w600),
+                        style: GoogleFonts.inter(
+                          fontSize: 11,
+                          color: const Color(0xFFB91C1C),
+                          fontWeight: FontWeight.w600,
+                        ),
                         textAlign: TextAlign.center,
                       ),
                     ),
@@ -2858,8 +3602,33 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(CentralizedTranslator.instance.translate('Valuation Range'), style: GoogleFonts.inter(fontSize: 11.5, fontWeight: FontWeight.bold, color: const Color(0xFF1E293B))),
-                              Text('${formatVal(lowEstimate)} - ${formatVal(highEstimate)}', style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.bold, color: const Color(0xFF2563EB))),
+                              Flexible(
+                                child: Text(
+                                  CentralizedTranslator.instance.translate(
+                                    'Valuation Range',
+                                  ),
+                                  softWrap: true,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.bold,
+                                    color: const Color(0xFF1E293B),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Flexible(
+                                child: FitOneLine(
+                                  alignment: Alignment.centerRight,
+                                  child: Text(
+                                    '${formatVal(lowEstimate)} - ${formatVal(highEstimate)}',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.bold,
+                                      color: const Color(0xFF2563EB),
+                                    ),
+                                  ),
+                                ),
+                              ),
                             ],
                           ),
                           const Padding(
@@ -2869,16 +3638,64 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(CentralizedTranslator.instance.translate('Calculated ARR'), style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF475569))),
-                              Text('₹ ${(arrVal / 100000).toStringAsFixed(1)} Lakhs', style: GoogleFonts.poppins(fontSize: 11.5, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A))),
+                              Flexible(
+                                child: Text(
+                                  CentralizedTranslator.instance.translate(
+                                    'Calculated ARR',
+                                  ),
+                                  softWrap: true,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 11,
+                                    color: const Color(0xFF475569),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Flexible(
+                                child: FitOneLine(
+                                  alignment: Alignment.centerRight,
+                                  child: Text(
+                                    '₹ ${(arrVal / 100000).toStringAsFixed(1)} Lakhs',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 11.5,
+                                      fontWeight: FontWeight.w600,
+                                      color: const Color(0xFF0F172A),
+                                    ),
+                                  ),
+                                ),
+                              ),
                             ],
                           ),
                           const SizedBox(height: 4),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(CentralizedTranslator.instance.translate('Applied ARR Multiple'), style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF475569))),
-                              Text('${appliedMultiple.toStringAsFixed(1)}x', style: GoogleFonts.poppins(fontSize: 11.5, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A))),
+                              Flexible(
+                                child: Text(
+                                  CentralizedTranslator.instance.translate(
+                                    'Applied ARR Multiple',
+                                  ),
+                                  softWrap: true,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 11,
+                                    color: const Color(0xFF475569),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Flexible(
+                                child: FitOneLine(
+                                  alignment: Alignment.centerRight,
+                                  child: Text(
+                                    '${appliedMultiple.toStringAsFixed(1)}x',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 11.5,
+                                      fontWeight: FontWeight.w600,
+                                      color: const Color(0xFF0F172A),
+                                    ),
+                                  ),
+                                ),
+                              ),
                             ],
                           ),
                         ],
@@ -2891,8 +3708,10 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                     height: 44,
                     child: ElevatedButton(
                       onPressed: () {
-                        final double mrr = double.tryParse(mrrController.text) ?? 0;
-                        final double growth = double.tryParse(growthController.text) ?? 0;
+                        final double mrr =
+                            double.tryParse(mrrController.text) ?? 0;
+                        final double growth =
+                            double.tryParse(growthController.text) ?? 0;
 
                         if (mrr <= 0) {
                           setModalState(() {
@@ -2926,11 +3745,16 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                         backgroundColor: const Color(0xFF2563EB),
                         foregroundColor: Colors.white,
                         elevation: 0,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
                       child: Text(
                         'Estimate Valuation',
-                        style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 12.5),
+                        style: GoogleFonts.inter(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12.5,
+                        ),
                       ),
                     ),
                   ),
@@ -2951,7 +3775,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
       'MOA & AOA Drafting',
       'Certificate of Incorporation (COI)',
       'Company PAN & TAN Cards',
-      'Corporate Bank Account'
+      'Corporate Bank Account',
     ];
 
     showModalBottomSheet(
@@ -3015,21 +3839,32 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                             ),
                             Text(
                               'Checklist of documents needed to set up your business.',
-                              style: GoogleFonts.inter(fontSize: 10, color: const Color(0xFF64748B)),
+                              style: GoogleFonts.inter(
+                                fontSize: 10,
+                                color: const Color(0xFF64748B),
+                              ),
                             ),
                           ],
                         ),
                       ),
                       IconButton(
                         onPressed: () => Navigator.pop(context),
-                        icon: const Icon(Icons.close, size: 18, color: Color(0xFF64748B)),
+                        icon: const Icon(
+                          Icons.close,
+                          size: 18,
+                          color: Color(0xFF64748B),
+                        ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 20),
                   Text(
                     'Business Entity Type',
-                    style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.bold, color: const Color(0xFF334155)),
+                    style: GoogleFonts.inter(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF334155),
+                    ),
                   ),
                   const SizedBox(height: 6),
                   DropdownButtonFormField<String>(
@@ -3041,11 +3876,26 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                         borderRadius: BorderRadius.circular(12),
                         borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
                       ),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 10,
+                      ),
                     ),
-                    items: ['Private Limited', 'Partnership', 'One Person Company (OPC)', 'LLP'].map((String type) {
-                      return DropdownMenuItem<String>(value: type, child: Text(type, style: const TextStyle(fontSize: 12)));
-                    }).toList(),
+                    items:
+                        [
+                          'Private Limited',
+                          'Partnership',
+                          'One Person Company (OPC)',
+                          'LLP',
+                        ].map((String type) {
+                          return DropdownMenuItem<String>(
+                            value: type,
+                            child: Text(
+                              type,
+                              style: const TextStyle(fontSize: 12),
+                            ),
+                          );
+                        }).toList(),
                     onChanged: (val) {
                       if (val != null) {
                         setModalState(() {
@@ -3056,7 +3906,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                               'Deed Registration with Registrar',
                               'PAN & TAN cards of Firm',
                               'Firm Bank Account',
-                              'GST Registration (Optional)'
+                              'GST Registration (Optional)',
                             ];
                           } else if (val == 'LLP') {
                             checklist = [
@@ -3064,7 +3914,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                               'FiLLiP Form (LLP Incorporation)',
                               'LLP Agreement Drafting',
                               'LLP PAN & TAN Cards',
-                              'LLP Bank Account'
+                              'LLP Bank Account',
                             ];
                           } else {
                             checklist = [
@@ -3073,7 +3923,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                               'MOA & AOA Drafting',
                               'Certificate of Incorporation (COI)',
                               'Company PAN & TAN Cards',
-                              'Corporate Bank Account'
+                              'Corporate Bank Account',
                             ];
                           }
                         });
@@ -3083,7 +3933,11 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                   const SizedBox(height: 20),
                   Text(
                     'Required Documents',
-                    style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.bold, color: const Color(0xFF334155)),
+                    style: GoogleFonts.inter(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF334155),
+                    ),
                   ),
                   const SizedBox(height: 8),
                   ConstrainedBox(
@@ -3094,7 +3948,10 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                       itemBuilder: (context, index) {
                         return Container(
                           margin: const EdgeInsets.symmetric(vertical: 4.0),
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
                           decoration: BoxDecoration(
                             color: const Color(0xFFF8FAFC),
                             borderRadius: BorderRadius.circular(10),
@@ -3102,7 +3959,11 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                           ),
                           child: Row(
                             children: [
-                              const Icon(Icons.check_circle, color: Color(0xFF2563EB), size: 16),
+                              const Icon(
+                                Icons.check_circle,
+                                color: Color(0xFF2563EB),
+                                size: 16,
+                              ),
                               const SizedBox(width: 10),
                               Expanded(
                                 child: Text(
@@ -3130,11 +3991,16 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                         backgroundColor: const Color(0xFF2563EB),
                         foregroundColor: Colors.white,
                         elevation: 0,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
                       child: Text(
                         'Close Checklist',
-                        style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 12.5),
+                        style: GoogleFonts.inter(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12.5,
+                        ),
                       ),
                     ),
                   ),
@@ -3217,74 +4083,129 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                             ),
                             Text(
                               'Estimate capital subsidies and net loan commitments for machinery.',
-                              style: GoogleFonts.inter(fontSize: 10, color: const Color(0xFF64748B)),
+                              style: GoogleFonts.inter(
+                                fontSize: 10,
+                                color: const Color(0xFF64748B),
+                              ),
                             ),
                           ],
                         ),
                       ),
                       IconButton(
                         onPressed: () => Navigator.pop(context),
-                        icon: const Icon(Icons.close, size: 18, color: Color(0xFF64748B)),
+                        icon: const Icon(
+                          Icons.close,
+                          size: 18,
+                          color: Color(0xFF64748B),
+                        ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 20),
                   Text(
                     'Project / Machinery Cost (Lakhs)',
-                    style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.bold, color: const Color(0xFF334155)),
+                    style: GoogleFonts.inter(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF334155),
+                    ),
                   ),
                   const SizedBox(height: 6),
                   TextField(
                     controller: costController,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
                     decoration: InputDecoration(
                       filled: true,
                       fillColor: const Color(0xFFF8FAFC),
                       hintText: '25',
-                      hintStyle: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF94A3B8)),
+                      hintStyle: GoogleFonts.inter(
+                        fontSize: 12,
+                        color: const Color(0xFF94A3B8),
+                      ),
                       prefixText: '₹ ',
                       suffixText: 'Lakhs',
                       helperText: 'Enter machinery or project cost in Lakhs',
-                      helperStyle: GoogleFonts.inter(fontSize: 9, color: const Color(0xFF64748B)),
-                      suffixStyle: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: const Color(0xFF64748B)),
-                      prefixStyle: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A)),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      helperStyle: GoogleFonts.inter(
+                        fontSize: 9,
+                        color: const Color(0xFF64748B),
+                      ),
+                      suffixStyle: GoogleFonts.inter(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF64748B),
+                      ),
+                      prefixStyle: GoogleFonts.inter(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF0F172A),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 10,
+                      ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Color(0xFF2563EB), width: 1.5),
+                        borderSide: const BorderSide(
+                          color: Color(0xFF2563EB),
+                          width: 1.5,
+                        ),
                       ),
                     ),
                   ),
                   const SizedBox(height: 14),
                   Text(
                     'Expected Subsidy Percentage (%)',
-                    style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.bold, color: const Color(0xFF334155)),
+                    style: GoogleFonts.inter(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF334155),
+                    ),
                   ),
                   const SizedBox(height: 6),
                   TextField(
                     controller: subsidyController,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
                     decoration: InputDecoration(
                       filled: true,
                       fillColor: const Color(0xFFF8FAFC),
                       hintText: '15',
-                      hintStyle: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF94A3B8)),
+                      hintStyle: GoogleFonts.inter(
+                        fontSize: 12,
+                        color: const Color(0xFF94A3B8),
+                      ),
                       suffixText: '%',
                       helperText: 'Enter expected subsidy rate percentage',
-                      helperStyle: GoogleFonts.inter(fontSize: 9, color: const Color(0xFF64748B)),
-                      suffixStyle: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: const Color(0xFF64748B)),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      helperStyle: GoogleFonts.inter(
+                        fontSize: 9,
+                        color: const Color(0xFF64748B),
+                      ),
+                      suffixStyle: GoogleFonts.inter(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF64748B),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 10,
+                      ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Color(0xFF2563EB), width: 1.5),
+                        borderSide: const BorderSide(
+                          color: Color(0xFF2563EB),
+                          width: 1.5,
+                        ),
                       ),
                     ),
                   ),
@@ -3300,7 +4221,11 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                       ),
                       child: Text(
                         error,
-                        style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFFB91C1C), fontWeight: FontWeight.w600),
+                        style: GoogleFonts.inter(
+                          fontSize: 11,
+                          color: const Color(0xFFB91C1C),
+                          fontWeight: FontWeight.w600,
+                        ),
                         textAlign: TextAlign.center,
                       ),
                     ),
@@ -3319,16 +4244,62 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(CentralizedTranslator.instance.translate('Original Project Cost'), style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF475569))),
-                              Text('₹ ${costVal.toStringAsFixed(2)} Lakhs', style: GoogleFonts.poppins(fontSize: 11.5, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A))),
+                              Flexible(
+                                child: Text(
+                                  CentralizedTranslator.instance.translate(
+                                    'Original Project Cost',
+                                  ),
+                                  softWrap: true,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 11,
+                                    color: const Color(0xFF475569),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Flexible(
+                                child: FitOneLine(
+                                  alignment: Alignment.centerRight,
+                                  child: Text(
+                                    '₹ ${costVal.toStringAsFixed(2)} Lakhs',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 11.5,
+                                      fontWeight: FontWeight.w600,
+                                      color: const Color(0xFF0F172A),
+                                    ),
+                                  ),
+                                ),
+                              ),
                             ],
                           ),
                           const SizedBox(height: 4),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text('${CentralizedTranslator.instance.translate('Expected Subsidy')} (${subsidyPercentVal.toStringAsFixed(1)}%)', style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF475569))),
-                              Text('₹ ${subsidyAmountVal.toStringAsFixed(2)} Lakhs', style: GoogleFonts.poppins(fontSize: 11.5, fontWeight: FontWeight.bold, color: const Color(0xFF0D9488))),
+                              Flexible(
+                                child: Text(
+                                  '${CentralizedTranslator.instance.translate('Expected Subsidy')} (${subsidyPercentVal.toStringAsFixed(1)}%)',
+                                  softWrap: true,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 11,
+                                    color: const Color(0xFF475569),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Flexible(
+                                child: FitOneLine(
+                                  alignment: Alignment.centerRight,
+                                  child: Text(
+                                    '₹ ${subsidyAmountVal.toStringAsFixed(2)} Lakhs',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 11.5,
+                                      fontWeight: FontWeight.bold,
+                                      color: const Color(0xFF0D9488),
+                                    ),
+                                  ),
+                                ),
+                              ),
                             ],
                           ),
                           const Padding(
@@ -3338,8 +4309,33 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(CentralizedTranslator.instance.translate('Net Cost to Business'), style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.bold, color: const Color(0xFF1E293B))),
-                              Text('₹ ${netCostVal.toStringAsFixed(2)} Lakhs', style: GoogleFonts.poppins(fontSize: 13.5, fontWeight: FontWeight.bold, color: const Color(0xFF2563EB))),
+                              Flexible(
+                                child: Text(
+                                  CentralizedTranslator.instance.translate(
+                                    'Net Cost to Business',
+                                  ),
+                                  softWrap: true,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                    color: const Color(0xFF1E293B),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Flexible(
+                                child: FitOneLine(
+                                  alignment: Alignment.centerRight,
+                                  child: Text(
+                                    '₹ ${netCostVal.toStringAsFixed(2)} Lakhs',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 13.5,
+                                      fontWeight: FontWeight.bold,
+                                      color: const Color(0xFF2563EB),
+                                    ),
+                                  ),
+                                ),
+                              ),
                             ],
                           ),
                         ],
@@ -3352,12 +4348,15 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                     height: 44,
                     child: ElevatedButton(
                       onPressed: () {
-                        final double cost = double.tryParse(costController.text) ?? 0;
-                        final double percent = double.tryParse(subsidyController.text) ?? 0;
+                        final double cost =
+                            double.tryParse(costController.text) ?? 0;
+                        final double percent =
+                            double.tryParse(subsidyController.text) ?? 0;
 
                         if (cost <= 0 || percent <= 0 || percent > 100) {
                           setModalState(() {
-                            error = 'Please enter valid values (Subsidy % must be between 0 and 100)';
+                            error =
+                                'Please enter valid values (Subsidy % must be between 0 and 100)';
                             costVal = 0;
                           });
                           return;
@@ -3378,11 +4377,16 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                         backgroundColor: const Color(0xFF2563EB),
                         foregroundColor: Colors.white,
                         elevation: 0,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
                       child: Text(
                         'Calculate Subsidy',
-                        style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 12.5),
+                        style: GoogleFonts.inter(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12.5,
+                        ),
                       ),
                     ),
                   ),

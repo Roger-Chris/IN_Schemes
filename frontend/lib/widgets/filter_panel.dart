@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../providers/app_state_provider.dart';
 import '../utils/constants.dart';
+import '../utils/responsive.dart';
+import '../l10n/l10n.dart';
 
 class FilterPanel extends StatefulWidget {
   final VoidCallback? onApplied;
@@ -19,7 +21,7 @@ class _FilterPanelState extends State<FilterPanel> {
   late String _ministry;
   late String _department;
   late String _category;
-  
+
   late String _income;
   late String _gender;
   late String _age;
@@ -28,7 +30,7 @@ class _FilterPanelState extends State<FilterPanel> {
   late String _education;
   late bool _firstGen;
   late String _disability;
-  
+
   late String _schemeStatus;
   late String _onlineOffline;
   late String _schemeType;
@@ -37,14 +39,14 @@ class _FilterPanelState extends State<FilterPanel> {
   void initState() {
     super.initState();
     final provider = Provider.of<AppProvider>(context, listen: false);
-    
+
     // Initialize state from existing provider filters or defaults (defaulting to 'All')
     _state = provider.filters['state'] ?? 'All';
     _district = provider.filters['district'] ?? 'All';
     _ministry = provider.filters['ministry'] ?? 'All';
     _department = provider.filters['department'] ?? 'All';
     _category = provider.filters['category'] ?? 'All';
-    
+
     _income = provider.filters['income'] ?? 'All';
     _gender = provider.filters['gender'] ?? 'All';
     _age = provider.filters['age'] ?? 'All';
@@ -53,7 +55,7 @@ class _FilterPanelState extends State<FilterPanel> {
     _education = provider.filters['education'] ?? 'All';
     _firstGen = provider.filters['firstGen'] == true;
     _disability = provider.filters['disability'] ?? 'All';
-    
+
     _schemeStatus = provider.filters['schemeStatus'] ?? 'All';
     _onlineOffline = provider.filters['onlineOffline'] ?? 'All';
     _schemeType = provider.filters['schemeType'] ?? 'All';
@@ -66,7 +68,7 @@ class _FilterPanelState extends State<FilterPanel> {
     provider.updateFilter('ministry', _ministry);
     provider.updateFilter('department', _department);
     provider.updateFilter('category', _category);
-    
+
     provider.updateFilter('income', _income);
     provider.updateFilter('gender', _gender);
     provider.updateFilter('age', _age);
@@ -75,11 +77,11 @@ class _FilterPanelState extends State<FilterPanel> {
     provider.updateFilter('education', _education);
     provider.updateFilter('firstGen', _firstGen);
     provider.updateFilter('disability', _disability);
-    
+
     provider.updateFilter('schemeStatus', _schemeStatus);
     provider.updateFilter('onlineOffline', _onlineOffline);
     provider.updateFilter('schemeType', _schemeType);
-    
+
     Navigator.pop(context);
     if (widget.onApplied != null) {
       widget.onApplied!();
@@ -93,7 +95,7 @@ class _FilterPanelState extends State<FilterPanel> {
       _ministry = 'All';
       _department = 'All';
       _category = 'All';
-      
+
       _income = 'All';
       _gender = 'All';
       _age = 'All';
@@ -102,7 +104,7 @@ class _FilterPanelState extends State<FilterPanel> {
       _education = 'All';
       _firstGen = false;
       _disability = 'All';
-      
+
       _schemeStatus = 'All';
       _onlineOffline = 'All';
       _schemeType = 'All';
@@ -116,7 +118,7 @@ class _FilterPanelState extends State<FilterPanel> {
     if (_ministry != 'All') count++;
     if (_department != 'All') count++;
     if (_category != 'All') count++;
-    
+
     if (_income != 'All') count++;
     if (_gender != 'All') count++;
     if (_age != 'All') count++;
@@ -125,7 +127,7 @@ class _FilterPanelState extends State<FilterPanel> {
     if (_education != 'All') count++;
     if (_firstGen) count++;
     if (_disability != 'All') count++;
-    
+
     if (_schemeStatus != 'All') count++;
     if (_onlineOffline != 'All') count++;
     if (_schemeType != 'All') count++;
@@ -156,46 +158,57 @@ class _FilterPanelState extends State<FilterPanel> {
               ),
             ),
           ),
-          
+
           // Header Row
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'Filter Schemes',
-                  style: GoogleFonts.poppins(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: const Color(0xFF0F172A),
+                Flexible(
+                  child: Text(
+                    'Filter Schemes',
+                    softWrap: true,
+                    style: GoogleFonts.poppins(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF0F172A),
+                    ),
                   ),
                 ),
-                GestureDetector(
-                  onTap: _resetFilters,
-                  child: Row(
-                    children: [
-                      Text(
-                        'Clear All',
-                        style: GoogleFonts.inter(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: const Color(0xFF2563EB),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: GestureDetector(
+                    onTap: _resetFilters,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Flexible(
+                          child: FitOneLine(
+                            child: Text(
+                              context.l10n.filterClearAll,
+                              style: GoogleFonts.inter(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: const Color(0xFF2563EB),
+                              ),
+                            ),
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 4),
-                      const Icon(
-                        Icons.refresh,
-                        size: 14,
-                        color: Color(0xFF2563EB),
-                      ),
-                    ],
+                        const SizedBox(width: 4),
+                        const Icon(
+                          Icons.refresh,
+                          size: 14,
+                          color: Color(0xFF2563EB),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],
             ),
           ),
-          
+
           const Divider(height: 1, color: Color(0xFFE2E8F0)),
 
           // Scrollable Filter Form Fields
@@ -208,7 +221,10 @@ class _FilterPanelState extends State<FilterPanel> {
                   // 1. Location Section
                   _buildSectionHeader('Location'),
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 4,
+                    ),
                     child: IntrinsicHeight(
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -217,20 +233,36 @@ class _FilterPanelState extends State<FilterPanel> {
                             icon: Icons.location_on_outlined,
                             iconColor: const Color(0xFF2563EB),
                             iconBgColor: const Color(0xFFEFF6FF),
-                            label: 'State',
+                            label: context.l10n.filterState,
                             value: _state,
-                            items: ['All', 'Tamil Nadu', 'Karnataka', 'Kerala', 'Maharashtra', 'Delhi'],
-                            onChanged: (val) => setState(() => _state = val ?? 'All'),
+                            items: [
+                              'All',
+                              'Tamil Nadu',
+                              'Karnataka',
+                              'Kerala',
+                              'Maharashtra',
+                              'Delhi',
+                            ],
+                            onChanged: (val) =>
+                                setState(() => _state = val ?? 'All'),
                           ),
                           const SizedBox(width: 10),
                           _buildDropdownCell(
                             icon: Icons.apartment_outlined,
                             iconColor: const Color(0xFF2563EB),
                             iconBgColor: const Color(0xFFEFF6FF),
-                            label: 'District',
+                            label: context.l10n.filterDistrict,
                             value: _district,
-                            items: ['All', 'Chennai', 'Bangalore', 'Cochin', 'Mumbai', 'New Delhi'],
-                            onChanged: (val) => setState(() => _district = val ?? 'All'),
+                            items: [
+                              'All',
+                              'Chennai',
+                              'Bangalore',
+                              'Cochin',
+                              'Mumbai',
+                              'New Delhi',
+                            ],
+                            onChanged: (val) =>
+                                setState(() => _district = val ?? 'All'),
                           ),
                         ],
                       ),
@@ -240,7 +272,10 @@ class _FilterPanelState extends State<FilterPanel> {
                   // 2. Organization Section
                   _buildSectionHeader('Organization'),
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 4,
+                    ),
                     child: IntrinsicHeight(
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -249,40 +284,66 @@ class _FilterPanelState extends State<FilterPanel> {
                             icon: Icons.account_balance_outlined,
                             iconColor: const Color(0xFF7C3AED),
                             iconBgColor: const Color(0xFFF5F3FF),
-                            label: 'Ministry',
+                            label: context.l10n.filterMinistry,
                             value: _ministry,
-                            items: ['All', 'Ministry of MSME', 'Ministry of Agriculture', 'Ministry of Finance', 'Ministry of Education'],
-                            onChanged: (val) => setState(() => _ministry = val ?? 'All'),
+                            items: [
+                              'All',
+                              'Ministry of MSME',
+                              'Ministry of Agriculture',
+                              'Ministry of Finance',
+                              'Ministry of Education',
+                            ],
+                            onChanged: (val) =>
+                                setState(() => _ministry = val ?? 'All'),
                           ),
                           const SizedBox(width: 10),
                           _buildDropdownCell(
                             icon: Icons.folder_open_outlined,
                             iconColor: const Color(0xFF7C3AED),
                             iconBgColor: const Color(0xFFF5F3FF),
-                            label: 'Department',
+                            label: context.l10n.filterDepartment,
                             value: _department,
-                            items: ['All', 'Dept of MSME Development', 'Dept of Agriculture Cooperation', 'Dept of Higher Education'],
-                            onChanged: (val) => setState(() => _department = val ?? 'All'),
+                            items: [
+                              'All',
+                              'Dept of MSME Development',
+                              'Dept of Agriculture Cooperation',
+                              'Dept of Higher Education',
+                            ],
+                            onChanged: (val) =>
+                                setState(() => _department = val ?? 'All'),
                           ),
                         ],
                       ),
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 4,
+                    ),
                     child: Row(
                       children: [
                         _buildDropdownCell(
                           icon: Icons.grid_view_outlined,
                           iconColor: const Color(0xFF16A34A),
                           iconBgColor: const Color(0xFFF0FDF4),
-                          label: 'Category',
+                          label: context.l10n.filterCategory,
                           value: _category,
-                          items: ['All', 'Business & MSME', 'Startup', 'Finance', 'Women & Child Welfare', 'Artisan'],
-                          onChanged: (val) => setState(() => _category = val ?? 'All'),
+                          items: [
+                            'All',
+                            'Business & MSME',
+                            'Startup',
+                            'Finance',
+                            'Women & Child Welfare',
+                            'Artisan',
+                          ],
+                          onChanged: (val) =>
+                              setState(() => _category = val ?? 'All'),
                         ),
                         const SizedBox(width: 10),
-                        const Expanded(child: SizedBox()), // Push to left, take exactly half width
+                        const Expanded(
+                          child: SizedBox(),
+                        ), // Push to left, take exactly half width
                       ],
                     ),
                   ),
@@ -290,23 +351,36 @@ class _FilterPanelState extends State<FilterPanel> {
                   // 3. Personal Details Section
                   _buildSectionHeader('Personal Details'),
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 4,
+                    ),
                     child: Row(
                       children: [
                         _buildDropdownCell(
                           icon: Icons.wallet_outlined,
                           iconColor: const Color(0xFFEA580C),
                           iconBgColor: const Color(0xFFFFF7ED),
-                          label: 'Annual Income',
+                          label: context.l10n.labelAnnualIncome,
                           value: _income,
-                          items: ['All', 'Under ₹1 Lakh', 'Under ₹5 Lakhs', 'Under ₹10 Lakhs', 'Under ₹50 Lakhs'],
-                          onChanged: (val) => setState(() => _income = val ?? 'All'),
+                          items: [
+                            'All',
+                            'Under ₹1 Lakh',
+                            'Under ₹5 Lakhs',
+                            'Under ₹10 Lakhs',
+                            'Under ₹50 Lakhs',
+                          ],
+                          onChanged: (val) =>
+                              setState(() => _income = val ?? 'All'),
                         ),
                       ],
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 4,
+                    ),
                     child: IntrinsicHeight(
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -315,27 +389,38 @@ class _FilterPanelState extends State<FilterPanel> {
                             icon: Icons.person_outline,
                             iconColor: const Color(0xFFDB2777),
                             iconBgColor: const Color(0xFFFDF2F8),
-                            label: 'Gender',
+                            label: context.l10n.labelGender,
                             value: _gender,
                             items: ['All', 'Female', 'Male', 'Transgender'],
-                            onChanged: (val) => setState(() => _gender = val ?? 'All'),
+                            onChanged: (val) =>
+                                setState(() => _gender = val ?? 'All'),
                           ),
                           const SizedBox(width: 10),
                           _buildDropdownCell(
                             icon: Icons.calendar_month_outlined,
                             iconColor: const Color(0xFF0D9488),
                             iconBgColor: const Color(0xFFF0FDFA),
-                            label: 'Age',
+                            label: context.l10n.labelAge,
                             value: _age,
-                            items: ['All', 'Under 18', '18 - 35', '36 - 60', 'Above 60'],
-                            onChanged: (val) => setState(() => _age = val ?? 'All'),
+                            items: [
+                              'All',
+                              'Under 18',
+                              '18 - 35',
+                              '36 - 60',
+                              'Above 60',
+                            ],
+                            onChanged: (val) =>
+                                setState(() => _age = val ?? 'All'),
                           ),
                         ],
                       ),
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 4,
+                    ),
                     child: IntrinsicHeight(
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -344,27 +429,39 @@ class _FilterPanelState extends State<FilterPanel> {
                             icon: Icons.people_outline,
                             iconColor: const Color(0xFF7C3AED),
                             iconBgColor: const Color(0xFFF5F3FF),
-                            label: 'Community',
+                            label: context.l10n.labelCommunity,
                             value: _community,
                             items: ['All', 'General', 'OBC', 'EWS', 'SC', 'ST'],
-                            onChanged: (val) => setState(() => _community = val ?? 'All'),
+                            onChanged: (val) =>
+                                setState(() => _community = val ?? 'All'),
                           ),
                           const SizedBox(width: 10),
                           _buildDropdownCell(
                             icon: Icons.business_center_outlined,
                             iconColor: const Color(0xFF2563EB),
                             iconBgColor: const Color(0xFFEFF6FF),
-                            label: 'Occupation',
+                            label: context.l10n.labelOccupation,
                             value: _occupation,
-                            items: ['All', 'Unemployed', 'Student', 'Farmer', 'Self Employed', 'Salaried'],
-                            onChanged: (val) => setState(() => _occupation = val ?? 'All'),
+                            items: [
+                              'All',
+                              'Unemployed',
+                              'Student',
+                              'Farmer',
+                              'Self Employed',
+                              'Salaried',
+                            ],
+                            onChanged: (val) =>
+                                setState(() => _occupation = val ?? 'All'),
                           ),
                         ],
                       ),
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 4,
+                    ),
                     child: IntrinsicHeight(
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -373,17 +470,24 @@ class _FilterPanelState extends State<FilterPanel> {
                             icon: Icons.school_outlined,
                             iconColor: const Color(0xFF16A34A),
                             iconBgColor: const Color(0xFFF0FDF4),
-                            label: 'Education',
+                            label: context.l10n.labelEducation,
                             value: _education,
-                            items: ['All', 'Under 10th', '12th Pass', 'Graduate', 'Post Graduate'],
-                            onChanged: (val) => setState(() => _education = val ?? 'All'),
+                            items: [
+                              'All',
+                              'Under 10th',
+                              '12th Pass',
+                              'Graduate',
+                              'Post Graduate',
+                            ],
+                            onChanged: (val) =>
+                                setState(() => _education = val ?? 'All'),
                           ),
                           const SizedBox(width: 10),
                           _buildSwitchCell(
                             icon: Icons.workspace_premium_outlined,
                             iconColor: const Color(0xFFEA580C),
                             iconBgColor: const Color(0xFFFFF7ED),
-                            label: 'First Generation Graduate',
+                            label: context.l10n.labelFirstGenGraduate,
                             value: _firstGen,
                             onChanged: (val) => setState(() => _firstGen = val),
                           ),
@@ -392,17 +496,28 @@ class _FilterPanelState extends State<FilterPanel> {
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 4,
+                    ),
                     child: Row(
                       children: [
                         _buildDropdownCell(
                           icon: Icons.accessible_outlined,
                           iconColor: const Color(0xFF7C3AED),
                           iconBgColor: const Color(0xFFF5F3FF),
-                          label: 'Disability',
+                          label: context.l10n.labelDisability,
                           value: _disability,
-                          items: ['All', 'None', 'Locomotor', 'Visual', 'Hearing', 'Other'],
-                          onChanged: (val) => setState(() => _disability = val ?? 'All'),
+                          items: [
+                            'All',
+                            'None',
+                            'Locomotor',
+                            'Visual',
+                            'Hearing',
+                            'Other',
+                          ],
+                          onChanged: (val) =>
+                              setState(() => _disability = val ?? 'All'),
                         ),
                       ],
                     ),
@@ -410,7 +525,10 @@ class _FilterPanelState extends State<FilterPanel> {
                   // 4. Scheme Preferences Section
                   _buildSectionHeader('Scheme Preferences'),
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 4,
+                    ),
                     child: IntrinsicHeight(
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -419,44 +537,58 @@ class _FilterPanelState extends State<FilterPanel> {
                             icon: Icons.check_circle_outline,
                             iconColor: const Color(0xFF2563EB),
                             iconBgColor: const Color(0xFFEFF6FF),
-                            label: 'Scheme Status',
+                            label: context.l10n.filterSchemeStatus,
                             value: _schemeStatus,
                             items: ['All', 'Active', 'Closed'],
-                            onChanged: (val) => setState(() => _schemeStatus = val ?? 'All'),
+                            onChanged: (val) =>
+                                setState(() => _schemeStatus = val ?? 'All'),
                           ),
                           const SizedBox(width: 10),
                           _buildDropdownCell(
                             icon: Icons.language_outlined,
                             iconColor: const Color(0xFF16A34A),
                             iconBgColor: const Color(0xFFF0FDF4),
-                            label: 'Online / Offline',
+                            label: context.l10n.filterOnlineOffline,
                             value: _onlineOffline,
-                            items: ['All', 'Online Application', 'Offline Application'],
-                            onChanged: (val) => setState(() => _onlineOffline = val ?? 'All'),
+                            items: [
+                              'All',
+                              'Online Application',
+                              'Offline Application',
+                            ],
+                            onChanged: (val) =>
+                                setState(() => _onlineOffline = val ?? 'All'),
                           ),
                         ],
                       ),
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 4,
+                    ),
                     child: Row(
                       children: [
                         _buildDropdownCell(
                           icon: Icons.account_balance_outlined,
                           iconColor: const Color(0xFF7C3AED),
                           iconBgColor: const Color(0xFFF5F3FF),
-                          label: 'Central / State Scheme',
+                          label: context.l10n.filterCentralStateScheme,
                           value: _schemeType,
-                          items: ['All', 'Central Government', 'State Government'],
-                          onChanged: (val) => setState(() => _schemeType = val ?? 'All'),
+                          items: [
+                            'All',
+                            'Central Government',
+                            'State Government',
+                          ],
+                          onChanged: (val) =>
+                              setState(() => _schemeType = val ?? 'All'),
                         ),
                         const SizedBox(width: 10),
                         const Expanded(child: SizedBox()),
                       ],
                     ),
                   ),
-                  
+
                   const SizedBox(height: 24),
                 ],
               ),
@@ -473,9 +605,7 @@ class _FilterPanelState extends State<FilterPanel> {
             ),
             decoration: const BoxDecoration(
               color: Colors.white,
-              border: Border(
-                top: BorderSide(color: Color(0xFFE2E8F0)),
-              ),
+              border: Border(top: BorderSide(color: Color(0xFFE2E8F0))),
             ),
             child: Row(
               children: [
@@ -485,7 +615,9 @@ class _FilterPanelState extends State<FilterPanel> {
                     child: ElevatedButton(
                       onPressed: _resetFilters,
                       style: TextButton.styleFrom(
-                        backgroundColor: const Color(0xFFEFF6FF), // Light blue 50
+                        backgroundColor: const Color(
+                          0xFFEFF6FF,
+                        ), // Light blue 50
                         foregroundColor: const Color(0xFF2563EB), // Royal Blue
                         elevation: 0,
                         shape: RoundedRectangleBorder(
@@ -608,7 +740,11 @@ class _FilterPanelState extends State<FilterPanel> {
                     ],
                   ),
                 ),
-                const Icon(Icons.keyboard_arrow_down, size: 16, color: Color(0xFF94A3B8)),
+                const Icon(
+                  Icons.keyboard_arrow_down,
+                  size: 16,
+                  color: Color(0xFF94A3B8),
+                ),
               ],
             ),
             Positioned.fill(
@@ -633,14 +769,22 @@ class _FilterPanelState extends State<FilterPanel> {
                               item,
                               style: GoogleFonts.inter(
                                 fontSize: 13,
-                                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                                color: isSelected ? const Color(0xFF2563EB) : const Color(0xFF1E293B),
+                                fontWeight: isSelected
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
+                                color: isSelected
+                                    ? const Color(0xFF2563EB)
+                                    : const Color(0xFF1E293B),
                               ),
                             ),
                           ),
                           const SizedBox(width: 8),
                           if (isSelected)
-                            const Icon(Icons.check, color: Color(0xFF2563EB), size: 14),
+                            const Icon(
+                              Icons.check,
+                              color: Color(0xFF2563EB),
+                              size: 14,
+                            ),
                         ],
                       ),
                     );

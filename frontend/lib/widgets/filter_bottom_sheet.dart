@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../utils/responsive.dart';
+import '../l10n/l10n.dart';
 
 class FilterBottomSheet extends StatefulWidget {
   const FilterBottomSheet({super.key});
@@ -32,7 +34,14 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
       "icon": Icons.person_outline,
       "iconColor": const Color(0xFFE11D48),
       "iconBg": const Color(0xFFFFE4E6),
-      "options": ["Student", "Entrepreneur", "Business", "Farmer", "Women", "SHG"],
+      "options": [
+        "Student",
+        "Entrepreneur",
+        "Business",
+        "Farmer",
+        "Women",
+        "SHG",
+      ],
     },
     {
       "name": "Stage",
@@ -53,7 +62,14 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
       "icon": Icons.bar_chart_outlined,
       "iconColor": const Color(0xFF6D28D9),
       "iconBg": const Color(0xFFF5F3FF),
-      "options": ["Manufacturing", "Services", "Agriculture", "Technology", "Retail", "Others"],
+      "options": [
+        "Manufacturing",
+        "Services",
+        "Agriculture",
+        "Technology",
+        "Retail",
+        "Others",
+      ],
     },
     {
       "name": "Authority",
@@ -121,22 +137,31 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  "Filter Schemes",
-                  style: GoogleFonts.poppins(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: const Color(0xFF0F172A),
+                Flexible(
+                  child: Text(
+                    "Filter Schemes",
+                    softWrap: true,
+                    style: GoogleFonts.poppins(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF0F172A),
+                    ),
                   ),
                 ),
-                GestureDetector(
-                  onTap: _clearAll,
-                  child: Text(
-                    "Clear All",
-                    style: GoogleFonts.inter(
-                      color: const Color(0xFF2563EB),
-                      fontWeight: FontWeight.w600,
-                      fontSize: 14,
+                const SizedBox(width: 8),
+                Flexible(
+                  child: GestureDetector(
+                    onTap: _clearAll,
+                    child: FitOneLine(
+                      alignment: Alignment.centerRight,
+                      child: Text(
+                        context.l10n.filterClearAll,
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFF2563EB),
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -170,7 +195,12 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
 
           // 5. Bottom Action Bar
           Container(
-            padding: const EdgeInsets.only(left: 16, right: 16, top: 12, bottom: 12),
+            padding: const EdgeInsets.only(
+              left: 16,
+              right: 16,
+              top: 12,
+              bottom: 12,
+            ),
             decoration: const BoxDecoration(
               color: Colors.white,
               border: Border(
@@ -188,7 +218,10 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
                         child: OutlinedButton(
                           onPressed: _clearAll,
                           style: OutlinedButton.styleFrom(
-                            side: const BorderSide(color: Color(0xFF2563EB), width: 1.5),
+                            side: const BorderSide(
+                              color: Color(0xFF2563EB),
+                              width: 1.5,
+                            ),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
@@ -232,7 +265,6 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
                     ),
                   ],
                 ),
-
               ],
             ),
           ),
@@ -274,18 +306,13 @@ class _FilterCategoryCard extends StatelessWidget {
         border: Border.all(color: const Color(0xFFE2E8F0), width: 1),
       ),
       child: Theme(
-        data: Theme.of(context).copyWith(
-          dividerColor: Colors.transparent,
-        ),
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
         child: ExpansionTile(
           tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           leading: Container(
             width: 38,
             height: 38,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: iconBg,
-            ),
+            decoration: BoxDecoration(shape: BoxShape.circle, color: iconBg),
             alignment: Alignment.center,
             child: Icon(icon, color: iconColor, size: 20),
           ),
@@ -312,7 +339,12 @@ class _FilterCategoryCard extends StatelessWidget {
           ),
           children: [
             Padding(
-              padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16, top: 4),
+              padding: const EdgeInsets.only(
+                left: 16,
+                right: 16,
+                bottom: 16,
+                top: 4,
+              ),
               child: Align(
                 alignment: Alignment.topLeft,
                 child: Wrap(
@@ -325,8 +357,12 @@ class _FilterCategoryCard extends StatelessWidget {
                         opt,
                         style: GoogleFonts.inter(
                           fontSize: 13,
-                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                          color: isSelected ? const Color(0xFF2563EB) : const Color(0xFF0F172A),
+                          fontWeight: isSelected
+                              ? FontWeight.bold
+                              : FontWeight.normal,
+                          color: isSelected
+                              ? const Color(0xFF2563EB)
+                              : const Color(0xFF0F172A),
                         ),
                       ),
                       selected: isSelected,
@@ -337,7 +373,9 @@ class _FilterCategoryCard extends StatelessWidget {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(30),
                         side: BorderSide(
-                          color: isSelected ? const Color(0xFF2563EB) : const Color(0xFFE2E8F0),
+                          color: isSelected
+                              ? const Color(0xFF2563EB)
+                              : const Color(0xFFE2E8F0),
                           width: 1,
                         ),
                       ),

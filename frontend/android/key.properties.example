@@ -1,0 +1,5 @@
+# Copy this file to key.properties. Never commit key.properties or the keystore.
+storeFile=app/upload-keystore.jks
+storePassword=replace-with-a-secure-password
+keyAlias=upload
+keyPassword=replace-with-a-secure-password

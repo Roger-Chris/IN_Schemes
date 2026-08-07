@@ -9,6 +9,7 @@ import 'basic_profile_screen.dart';
 import 'help_support_screen.dart';
 import 'legal_screens.dart';
 import '../../widgets/custom_confirm_dialog.dart';
+import '../../utils/responsive.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -35,15 +36,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  void _showNavigationModePopup(
-    BuildContext context,
-    AppProvider provider,
-  ) {
+  void _showNavigationModePopup(BuildContext context, AppProvider provider) {
     showDialog(
       context: context,
       builder: (context) {
         return Dialog(
-          insetPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 16.0,
+            vertical: 24.0,
+          ),
           backgroundColor: Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(24),
@@ -81,7 +82,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.close_rounded, color: Color(0xFF94A3B8)),
+                      icon: const Icon(
+                        Icons.close_rounded,
+                        color: Color(0xFF94A3B8),
+                      ),
                       onPressed: () => Navigator.pop(context),
                     ),
                   ],
@@ -99,8 +103,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   context: context,
                   provider: provider,
                   mode: 'regular',
-                  title: 'Regular Navigation',
-                  subtitle: 'Traditional clean list and tab view layout',
+                  title: context.l10n.navRegularNavigationTitle,
+                  subtitle: context.l10n.settingsRegularSubtitle,
                   icon: Icons.layers_outlined,
                 ),
                 const SizedBox(height: 12),
@@ -108,8 +112,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   context: context,
                   provider: provider,
                   mode: 'companion',
-                  title: 'AI Companion (Saarthi)',
-                  subtitle: 'Voice-first AI guided conversational view',
+                  title: context.l10n.settingsCompanionTitle,
+                  subtitle: context.l10n.settingsCompanionSubtitle,
                   icon: Icons.chat_bubble_outline_rounded,
                 ),
               ],
@@ -138,8 +142,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              mode == 'companion' 
-                  ? 'Switched to AI Companion (Saarthi) Navigation' 
+              mode == 'companion'
+                  ? 'Switched to AI Companion (Saarthi) Navigation'
                   : 'Switched to Regular Navigation',
             ),
             backgroundColor: const Color(0xFF2563EB),
@@ -154,7 +158,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
           color: isSelected ? const Color(0xFFEFF6FF) : Colors.white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isSelected ? const Color(0xFF2563EB) : const Color(0xFFE2E8F0),
+            color: isSelected
+                ? const Color(0xFF2563EB)
+                : const Color(0xFFE2E8F0),
             width: 1.5,
           ),
         ),
@@ -162,7 +168,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
           children: [
             Icon(
               icon,
-              color: isSelected ? const Color(0xFF2563EB) : const Color(0xFF64748B),
+              color: isSelected
+                  ? const Color(0xFF2563EB)
+                  : const Color(0xFF64748B),
               size: 24,
             ),
             const SizedBox(width: 16),
@@ -175,7 +183,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     style: GoogleFonts.inter(
                       fontWeight: FontWeight.bold,
                       fontSize: 13,
-                      color: isSelected ? const Color(0xFF1E3A8A) : const Color(0xFF0F172A),
+                      color: isSelected
+                          ? const Color(0xFF1E3A8A)
+                          : const Color(0xFF0F172A),
                     ),
                   ),
                   const SizedBox(height: 2),
@@ -191,7 +201,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             Icon(
               isSelected ? Icons.check_circle_rounded : Icons.circle_outlined,
-              color: isSelected ? const Color(0xFF2563EB) : const Color(0xFFCBD5E1),
+              color: isSelected
+                  ? const Color(0xFF2563EB)
+                  : const Color(0xFFCBD5E1),
               size: 22,
             ),
           ],
@@ -251,7 +263,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     radius: 26,
                     backgroundColor: const Color(0xFFEFF6FF),
                     child: Text(
-                      provider.profile.name.isNotEmpty ? provider.profile.name[0].toUpperCase() : 'U',
+                      provider.profile.name.isNotEmpty
+                          ? provider.profile.name[0].toUpperCase()
+                          : 'U',
                       style: GoogleFonts.poppins(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -265,21 +279,29 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          provider.profile.name.isNotEmpty ? provider.profile.name : 'User',
+                          provider.profile.name.isNotEmpty
+                              ? provider.profile.name
+                              : 'User',
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: GoogleFonts.poppins(
-                            fontSize: provider.selectedLanguage == 'ta' ? 14.5 : 16.0,
+                            fontSize: provider.selectedLanguage == 'ta'
+                                ? 14.5
+                                : 16.0,
                             fontWeight: FontWeight.bold,
                             color: const Color(0xFF0F172A),
-                            height: provider.selectedLanguage == 'ta' ? 1.35 : 1.2,
+                            height: provider.selectedLanguage == 'ta'
+                                ? 1.35
+                                : 1.2,
                           ),
                         ),
                         const SizedBox(height: 2),
                         Text(
                           provider.profile.mobile.isNotEmpty
                               ? provider.profile.mobile
-                              : (provider.mobileNumber.isNotEmpty ? provider.mobileNumber : '+91'),
+                              : (provider.mobileNumber.isNotEmpty
+                                    ? provider.mobileNumber
+                                    : '+91'),
                           style: GoogleFonts.inter(
                             fontSize: 11.5,
                             color: const Color(0xFF64748B),
@@ -287,13 +309,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ),
                         const SizedBox(height: 6),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 3,
+                          ),
                           decoration: BoxDecoration(
                             color: const Color(0xFFEFF6FF),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
-                            context.l10n.profileCompletionFormat(provider.profileCompletionPercentage),
+                            context.l10n.profileCompletionFormat(
+                              provider.profileCompletionPercentage,
+                            ),
                             style: GoogleFonts.poppins(
                               fontSize: 9.5,
                               fontWeight: FontWeight.bold,
@@ -314,7 +341,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               _buildSettingRow(
                 icon: Icons.person_outline,
                 title: context.l10n.completeProfileTitle,
-                value: context.l10n.profileCompletionFormat(provider.profileCompletionPercentage),
+                value: context.l10n.profileCompletionFormat(
+                  provider.profileCompletionPercentage,
+                ),
                 onTap: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
@@ -427,7 +456,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 onTap: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (_) => const HelpSupportScreen(initialMode: 'faq'),
+                      builder: (_) =>
+                          const HelpSupportScreen(initialMode: 'faq'),
                     ),
                   );
                 },
@@ -438,7 +468,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 onTap: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (_) => const HelpSupportScreen(initialMode: 'contact'),
+                      builder: (_) =>
+                          const HelpSupportScreen(initialMode: 'contact'),
                     ),
                   );
                 },
@@ -566,12 +597,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   if (value != null)
-                    Text(
-                      value,
-                      style: GoogleFonts.inter(
-                        fontSize: 12.5,
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF64748B),
+                    Flexible(
+                      child: FitOneLine(
+                        alignment: Alignment.centerRight,
+                        child: Text(
+                          value,
+                          style: GoogleFonts.inter(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF64748B),
+                          ),
+                        ),
                       ),
                     ),
                   const SizedBox(width: 4),

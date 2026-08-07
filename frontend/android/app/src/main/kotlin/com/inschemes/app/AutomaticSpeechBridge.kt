@@ -1,6 +1,7 @@
 package com.inschemes.app
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -239,6 +240,7 @@ class AutomaticSpeechBridge(
         eventSink?.success(mapOf("sessionId" to sessionId, "type" to type) + values)
     }
 
+    @SuppressLint("InlinedApi")
     private inner class SessionListener(
         private val sessionId: Int,
         initialLanguage: String,

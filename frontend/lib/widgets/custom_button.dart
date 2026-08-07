@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../utils/constants.dart';
+import '../utils/responsive.dart';
 
 class CustomButton extends StatelessWidget {
   final String text;
@@ -38,13 +39,17 @@ class CustomButton extends StatelessWidget {
             ),
           )
         else
-          Text(
-            text,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: isSecondary ? AppConstants.primaryColor : Colors.white,
-              letterSpacing: 0.5,
+          Flexible(
+            child: FitOneLine(
+              child: Text(
+                text,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: isSecondary ? AppConstants.primaryColor : Colors.white,
+                  letterSpacing: 0.5,
+                ),
+              ),
             ),
           ),
       ],
@@ -57,7 +62,10 @@ class CustomButton extends StatelessWidget {
         gradient: isSecondary || onPressed == null
             ? null
             : const LinearGradient(
-                colors: [AppConstants.secondaryColor, AppConstants.primaryColor],
+                colors: [
+                  AppConstants.secondaryColor,
+                  AppConstants.primaryColor,
+                ],
                 begin: Alignment.centerLeft,
                 end: Alignment.centerRight,
               ),
@@ -76,7 +84,9 @@ class CustomButton extends StatelessWidget {
       ),
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
-          backgroundColor: isSecondary ? Colors.transparent : Colors.transparent,
+          backgroundColor: isSecondary
+              ? Colors.transparent
+              : Colors.transparent,
           shadowColor: Colors.transparent,
           disabledBackgroundColor: Colors.black.withValues(alpha: 0.05),
           shape: RoundedRectangleBorder(
