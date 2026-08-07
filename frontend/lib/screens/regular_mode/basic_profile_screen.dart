@@ -300,8 +300,6 @@ class _BasicProfileScreenState extends State<BasicProfileScreen> {
         Expanded(child: _buildProgressSegment(false)),
         const SizedBox(width: 4),
         Expanded(child: _buildProgressSegment(false)),
-        const SizedBox(width: 4),
-        Expanded(child: _buildProgressSegment(false)),
       ],
     );
   }
@@ -318,7 +316,7 @@ class _BasicProfileScreenState extends State<BasicProfileScreen> {
 
   Widget _buildProgressPill() {
     return Text(
-      '1/4 Complete',
+      '1/3 Complete',
       style: GoogleFonts.inter(
         fontSize: 13,
         fontWeight: FontWeight.w600,

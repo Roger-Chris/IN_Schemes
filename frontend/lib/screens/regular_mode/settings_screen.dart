@@ -5,7 +5,7 @@ import '../../providers/app_state_provider.dart';
 import '../../utils/constants.dart';
 import '../../l10n/l10n.dart';
 import 'language_selection_screen.dart';
-import 'profile_setup_screen.dart';
+import 'basic_profile_screen.dart';
 import 'help_support_screen.dart';
 import '../../widgets/custom_confirm_dialog.dart';
 
@@ -317,7 +317,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 onTap: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (_) => const ProfileSetupScreen(),
+                      builder: (_) => const BasicProfileScreen(),
                     ),
                   );
                 },

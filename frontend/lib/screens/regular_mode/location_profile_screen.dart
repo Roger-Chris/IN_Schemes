@@ -233,15 +233,13 @@ class _LocationProfileScreenState extends State<LocationProfileScreen> {
                                         const SizedBox(width: 4),
                                         Expanded(child: _buildProgressSegment(true)),
                                         const SizedBox(width: 4),
-                                        Expanded(child: _buildProgressSegment(false, isIntermediate: true)),
-                                        const SizedBox(width: 4),
                                         Expanded(child: _buildProgressSegment(false)),
                                       ],
                                     ),
                                     const SizedBox(height: 8),
                                     Center(
                                       child: Text(
-                                        '3/4 Complete',
+                                        '2/3 Complete',
                                         style: GoogleFonts.inter(
                                           fontSize: 13,
                                           fontWeight: FontWeight.w600,

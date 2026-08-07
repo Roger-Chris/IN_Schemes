@@ -14,7 +14,7 @@ import '../notifications_screen.dart';
 import '../login_screen.dart';
 import '../../widgets/smart_assessment_bottom_sheet.dart';
 import 'discover_results_screen.dart';
-import 'profile_setup_screen.dart';
+import 'basic_profile_screen.dart';
 import 'msme_module_details_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -566,7 +566,7 @@ class _HomeScreenState extends State<HomeScreen> {
       child: InkWell(
         onTap: () {
           Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => const ProfileSetupScreen()),
+            MaterialPageRoute(builder: (_) => const BasicProfileScreen()),
           );
         },
         borderRadius: BorderRadius.circular(16),

@@ -150,14 +150,12 @@ class _AboutYouProfileScreenState extends State<AboutYouProfileScreen> {
                                         Expanded(child: _buildProgressSegment(true)),
                                         const SizedBox(width: 4),
                                         Expanded(child: _buildProgressSegment(true)),
-                                        const SizedBox(width: 4),
-                                        Expanded(child: _buildProgressSegment(false)),
                                       ],
                                     ),
                                     const SizedBox(height: 8),
                                     Center(
                                       child: Text(
-                                        '3/4 Complete',
+                                        '3/3 Complete',
                                         style: GoogleFonts.inter(
                                           fontSize: 13,
                                           fontWeight: FontWeight.w600,
