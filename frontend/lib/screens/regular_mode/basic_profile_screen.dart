@@ -247,11 +247,29 @@ class _BasicProfileScreenState extends State<BasicProfileScreen> {
                                 elevation: 0,
                               ),
                               onPressed: () {
+                                final name = _nameController.text.trim();
+                                final email = _emailController.text.trim();
+                                final phone = _phoneController.text.trim();
+
+                                if (name.isEmpty || email.isEmpty || phone.isEmpty || _selectedGender.isEmpty || _selectedDob == null) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        'Please fill in all mandatory fields (Name, Email, Mobile, Gender, Date of Birth).',
+                                        style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+                                      ),
+                                      backgroundColor: const Color(0xFFDC2626),
+                                      behavior: SnackBarBehavior.floating,
+                                    ),
+                                  );
+                                  return;
+                                }
+
                                 final provider = Provider.of<AppProvider>(context, listen: false);
                                 provider.updateProfile(provider.profile.copyWith(
-                                  name: _nameController.text.trim(),
-                                  email: _emailController.text.trim(),
-                                  mobile: _phoneController.text.trim(),
+                                  name: name,
+                                  email: email,
+                                  mobile: phone,
                                   dob: _selectedDob,
                                   gender: _selectedGender,
                                 ));
@@ -300,8 +318,6 @@ class _BasicProfileScreenState extends State<BasicProfileScreen> {
         Expanded(child: _buildProgressSegment(false)),
         const SizedBox(width: 4),
         Expanded(child: _buildProgressSegment(false)),
-        const SizedBox(width: 4),
-        Expanded(child: _buildProgressSegment(false)),
       ],
     );
   }
@@ -318,7 +334,7 @@ class _BasicProfileScreenState extends State<BasicProfileScreen> {
 
   Widget _buildProgressPill() {
     return Text(
-      '1/4 Complete',
+      '1/3 Complete',
       style: GoogleFonts.inter(
         fontSize: 13,
         fontWeight: FontWeight.w600,

@@ -7,7 +7,7 @@ import 'package:path_provider/path_provider.dart';
 import '../providers/app_state_provider.dart';
 import '../utils/constants.dart';
 import '../l10n/l10n.dart';
-import 'regular_mode/profile_setup_screen.dart';
+import 'regular_mode/basic_profile_screen.dart';
 import 'regular_mode/language_selection_screen.dart';
 import 'regular_mode/settings_screen.dart';
 import 'regular_mode/help_support_screen.dart';
@@ -690,7 +690,7 @@ class ProfileScreen extends StatelessWidget {
                         onPressed: () {
                           Navigator.of(context).push(
                             MaterialPageRoute(
-                              builder: (_) => const ProfileSetupScreen(),
+                              builder: (_) => const BasicProfileScreen(),
                             ),
                           );
                         },

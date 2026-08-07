@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../providers/app_state_provider.dart';
 import 'discover_results_screen.dart';
 
@@ -86,6 +87,31 @@ class _MSMEModuleDetailsScreenState extends State<MSMEModuleDetailsScreen> {
       'title': '4. Funds Disbursal',
       'desc': 'Seller selects the best bid (lowest discount rate). Funds are credited to the Seller\'s bank account within 24-48 hours (T+1 or T+2) minus the discount.',
       'action': 'Seller gets instant working capital; Buyer pays the Bank on the due date.'
+    },
+  ];
+
+  // Udyam stepper current index & steps
+  int _udyamStepIndex = 0;
+  final List<Map<String, String>> _udyamSteps = [
+    {
+      'title': '1. Aadhaar & PAN Validation',
+      'desc': 'Enter entrepreneur Aadhaar Number & Name as per Aadhaar. Validate via OTP. Next, enter Organization Type & PAN details for automatic GSTIN verification.',
+      'action': 'Aadhaar OTP authentication & PAN details entry.'
+    },
+    {
+      'title': '2. Enterprise & Location Details',
+      'desc': 'Provide Enterprise Name, Plant/Unit Addresses, Official Email, Mobile Number, Bank Account Number, and IFSC Code.',
+      'action': 'Fill unit addresses, mobile, email & bank details.'
+    },
+    {
+      'title': '3. NIC Code & Investment Details',
+      'desc': 'Select Major Activity (Manufacturing / Service), search & select 2/4/5-digit NIC Codes, enter number of employees, and investment in Plant & Machinery.',
+      'action': 'Select NIC classification code & enter investment/turnover.'
+    },
+    {
+      'title': '4. Final Submit & e-Certificate',
+      'desc': 'Review summary, submit final OTP. A unique 16-digit Udyam Registration Number (URN) and e-Certificate with QR code are issued instantly with zero registration fee.',
+      'action': 'Final OTP submission; download instant e-Certificate.'
     },
   ];
 
@@ -329,6 +355,9 @@ class _MSMEModuleDetailsScreenState extends State<MSMEModuleDetailsScreen> {
       case 'institutions':
         valueText = 'Identify the right institutions (SIDBI, NSIC, DIC, KVIC, etc.) and explore their service catalogs, contact avenues, and programs.';
         break;
+      case 'udyam':
+        valueText = 'Complete official MSME Udyam registration for free to unlock priority sector bank loans, 15% capital subsidies, collateral-free credit (CGTMSE), and Government tender exemptions.';
+        break;
     }
 
     return Container(
@@ -397,6 +426,8 @@ class _MSMEModuleDetailsScreenState extends State<MSMEModuleDetailsScreen> {
         return _buildGovtInteractivePanel();
       case 'institutions':
         return _buildInstitutionsInteractivePanel();
+      case 'udyam':
+        return _buildUdyamInteractivePanel();
       default:
         return const SizedBox();
     }
@@ -947,6 +978,167 @@ class _MSMEModuleDetailsScreenState extends State<MSMEModuleDetailsScreen> {
     );
   }
 
+  Widget _buildUdyamInteractivePanel() {
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(color: Color(0xFFE2E8F0)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Udyam Registration Flow',
+              style: GoogleFonts.poppins(
+                fontSize: 15,
+                fontWeight: FontWeight.bold,
+                color: const Color(0xFF0F172A),
+              ),
+            ),
+            const SizedBox(height: 12),
+
+            // Step Selector Pills (Step 1, Step 2, Step 3, Step 4)
+            Container(
+              height: 48,
+              decoration: BoxDecoration(
+                color: const Color(0xFFF1F5F9),
+                borderRadius: BorderRadius.circular(24),
+              ),
+              child: Row(
+                children: List.generate(_udyamSteps.length, (idx) {
+                  final isSelected = idx == _udyamStepIndex;
+                  return Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _udyamStepIndex = idx;
+                        });
+                      },
+                      child: Container(
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: isSelected ? widget.iconColor : Colors.transparent,
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                        child: Text(
+                          'Step ${idx + 1}',
+                          style: GoogleFonts.inter(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: isSelected ? Colors.white : const Color(0xFF64748B),
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                }),
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Step Details Box
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: widget.themeColor.withValues(alpha: 0.04),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: widget.themeColor.withValues(alpha: 0.15)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    _udyamSteps[_udyamStepIndex]['title']!,
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: widget.iconColor,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    _udyamSteps[_udyamStepIndex]['desc']!,
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      color: const Color(0xFF334155),
+                      height: 1.45,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      const Icon(Icons.play_circle_outline_rounded, color: Color(0xFF64748B), size: 16),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          _udyamSteps[_udyamStepIndex]['action']!,
+                          style: GoogleFonts.inter(
+                            fontSize: 10.5,
+                            fontStyle: FontStyle.italic,
+                            color: const Color(0xFF64748B),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // Button to official Udyam portal
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: widget.iconColor,
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                ),
+                child: Text(
+                  'Go to Official Udyam Portal',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.inter(
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                onPressed: () async {
+                  final Uri url = Uri.parse('https://www.udyamregistration.gov.in/');
+                  try {
+                    final launched = await launchUrl(
+                      url,
+                      mode: LaunchMode.externalApplication,
+                    );
+                    if (!launched) {
+                      await launchUrl(url, mode: LaunchMode.platformDefault);
+                    }
+                  } catch (_) {
+                    try {
+                      await launchUrl(url, mode: LaunchMode.platformDefault);
+                    } catch (e) {
+                      debugPrint('Could not launch Udyam URL: $e');
+                    }
+                  }
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildCsrInteractivePanel() {
     return Card(
       elevation: 0,
@@ -1388,6 +1580,16 @@ class _MSMEModuleDetailsScreenState extends State<MSMEModuleDetailsScreen> {
           'KVIC (Khadi and Village Industries Commission) rural projects',
           'TIIC, StartupTN, FaMeTN, SIPCOT regional service descriptions',
           'Program services catalog & contact application routes'
+        ];
+        break;
+      case 'udyam':
+        features = [
+          '100% Free & Paperless Instant Portal Registration',
+          'Lifetime Validity with QR Code e-Certificate',
+          'Automatic CGTMSE Collateral-Free Credit & TReDS Eligibility',
+          'Exemption from Earnest Money Deposit (EMD) in Govt Tenders',
+          'Eligible for 15% CLCSS Technology & Capital Subsidies',
+          'Concessional Electricity & Patent Registration Fee Waiver'
         ];
         break;
     }

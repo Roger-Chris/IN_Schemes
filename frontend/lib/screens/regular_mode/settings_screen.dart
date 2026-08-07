@@ -5,8 +5,9 @@ import '../../providers/app_state_provider.dart';
 import '../../utils/constants.dart';
 import '../../l10n/l10n.dart';
 import 'language_selection_screen.dart';
-import 'profile_setup_screen.dart';
+import 'basic_profile_screen.dart';
 import 'help_support_screen.dart';
+import 'legal_screens.dart';
 import '../../widgets/custom_confirm_dialog.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -317,7 +318,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 onTap: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (_) => const ProfileSetupScreen(),
+                      builder: (_) => const BasicProfileScreen(),
                     ),
                   );
                 },
@@ -390,36 +391,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 icon: Icons.security,
                 title: context.l10n.privacyPolicySetting,
                 onTap: () {
-                  showDialog(
-                    context: context,
-                    builder: (context) => AlertDialog(
-                      backgroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                        side: const BorderSide(color: Color(0xFFE2E8F0)),
-                      ),
-                      title: Text(
-                        context.l10n.privacyPolicySetting,
-                        style: GoogleFonts.inter(fontWeight: FontWeight.bold),
-                      ),
-                      content: Text(
-                        context.l10n.privacyPolicyContent,
-                        style: GoogleFonts.inter(
-                          color: const Color(0xFF64748B),
-                        ),
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(context),
-                          child: Text(
-                            context.l10n.dialogDone,
-                            style: GoogleFonts.inter(
-                              fontWeight: FontWeight.bold,
-                              color: const Color(0xFF2563EB),
-                            ),
-                          ),
-                        ),
-                      ],
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const PrivacyPolicyScreen(),
                     ),
                   );
                 },
@@ -428,36 +402,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 icon: Icons.article_outlined,
                 title: context.l10n.termsConditionsSetting,
                 onTap: () {
-                  showDialog(
-                    context: context,
-                    builder: (context) => AlertDialog(
-                      backgroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                        side: const BorderSide(color: Color(0xFFE2E8F0)),
-                      ),
-                      title: Text(
-                        context.l10n.termsConditionsSetting,
-                        style: GoogleFonts.inter(fontWeight: FontWeight.bold),
-                      ),
-                      content: Text(
-                        context.l10n.termsConditionsContent,
-                        style: GoogleFonts.inter(
-                          color: const Color(0xFF64748B),
-                        ),
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(context),
-                          child: Text(
-                            context.l10n.dialogDone,
-                            style: GoogleFonts.inter(
-                              fontWeight: FontWeight.bold,
-                              color: const Color(0xFF2563EB),
-                            ),
-                          ),
-                        ),
-                      ],
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const TermsConditionsScreen(),
                     ),
                   );
                 },

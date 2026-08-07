@@ -52,6 +52,9 @@ class ProfileL10n {
     'step_2_of_4': '2/4 Complete',
     'step_3_of_4': '3/4 Complete',
     'step_4_of_4': '4/4 Complete',
+    'step_1_of_3': '1/3 Complete',
+    'step_2_of_3': '2/3 Complete',
+    'step_3_of_3': '3/3 Complete',
     'where_located': 'Where Are You Located?',
     'location_subtitle':
         'We use your location to recommend schemes available in your area.',
@@ -196,6 +199,9 @@ class ProfileL10n {
     'step_2_of_4': '2/4 முடிந்தது',
     'step_3_of_4': '3/4 முடிந்தது',
     'step_4_of_4': '4/4 முடிந்தது',
+    'step_1_of_3': '1/3 முடிந்தது',
+    'step_2_of_3': '2/3 முடிந்தது',
+    'step_3_of_3': '3/3 முடிந்தது',
     'where_located': 'நீங்கள் எங்கு வசிக்கிறீர்கள்?',
     'location_subtitle':
         'உங்கள் பகுதியில் கிடைக்கும் திட்டங்களை பரிந்துரைக்க உங்கள் இருப்பிடத்தைப் பயன்படுத்துகிறோம்.',

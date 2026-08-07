@@ -4,7 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:frontend/providers/app_state_provider.dart';
 import 'package:frontend/utils/constants.dart';
 import 'package:frontend/services/centralized_translator.dart';
-import 'regular_mode/profile_setup_screen.dart';
+import 'regular_mode/basic_profile_screen.dart';
 
 class NotificationsScreen extends StatefulWidget {
   final String? initialFilter;
@@ -685,7 +685,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           } else {
             provider.markNotificationRead(id);
             Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const ProfileSetupScreen()),
+              MaterialPageRoute(builder: (_) => const BasicProfileScreen()),
             );
           }
         },

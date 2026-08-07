@@ -8,7 +8,6 @@ import 'login_screen.dart';
 import '../providers/app_state_provider.dart';
 import '../services/session_cache_service.dart';
 import '../utils/constants.dart';
-import '../utils/permission_helper.dart';
 import '../main.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -27,11 +26,6 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        requestDefaultPermissions(context);
-      }
-    });
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1600),

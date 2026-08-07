@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../providers/app_state_provider.dart';
-import '../../utils/permission_helper.dart';
 import '../../main.dart';
 
 class AboutYouProfileScreen extends StatefulWidget {
@@ -150,14 +149,12 @@ class _AboutYouProfileScreenState extends State<AboutYouProfileScreen> {
                                         Expanded(child: _buildProgressSegment(true)),
                                         const SizedBox(width: 4),
                                         Expanded(child: _buildProgressSegment(true)),
-                                        const SizedBox(width: 4),
-                                        Expanded(child: _buildProgressSegment(false)),
                                       ],
                                     ),
                                     const SizedBox(height: 8),
                                     Center(
                                       child: Text(
-                                        '3/4 Complete',
+                                        '3/3 Complete',
                                         style: GoogleFonts.inter(
                                           fontSize: 13,
                                           fontWeight: FontWeight.w600,
@@ -222,31 +219,40 @@ class _AboutYouProfileScreenState extends State<AboutYouProfileScreen> {
                                 minimumSize: const Size.fromHeight(50),
                                 elevation: 0,
                               ),
-                              onPressed: _selectedRole != null
-                                  ? () async {
-                                      final provider = Provider.of<AppProvider>(context, listen: false);
-                                      final selectedRoleModel = _roles.firstWhere((r) => r.id == _selectedRole);
-                                      final roleTitle = selectedRoleModel.title;
+                              onPressed: () async {
+                                if (_selectedRole == null) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        'Please select your role to complete profile setup.',
+                                        style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+                                      ),
+                                      backgroundColor: const Color(0xFFDC2626),
+                                      behavior: SnackBarBehavior.floating,
+                                    ),
+                                  );
+                                  return;
+                                }
 
-                                      final updatedProfile = provider.profile.copyWith(
-                                        employmentStatus: roleTitle,
-                                        profileCompleted: true,
-                                      );
+                                final provider = Provider.of<AppProvider>(context, listen: false);
+                                final selectedRoleModel = _roles.firstWhere((r) => r.id == _selectedRole);
+                                final roleTitle = selectedRoleModel.title;
 
-                                      await provider.updateProfile(updatedProfile);
+                                final updatedProfile = provider.profile.copyWith(
+                                  employmentStatus: roleTitle,
+                                  profileCompleted: true,
+                                );
 
-                                      if (!context.mounted) return;
-                                      await requestDefaultPermissions(context);
+                                await provider.updateProfile(updatedProfile);
 
-                                      if (!context.mounted) return;
-                                      Navigator.of(context).pushAndRemoveUntil(
-                                        MaterialPageRoute(
-                                          builder: (_) => const MainTabsContainer(),
-                                        ),
-                                        (route) => false,
-                                      );
-                                    }
-                                  : null,
+                                if (!context.mounted) return;
+                                Navigator.of(context).pushAndRemoveUntil(
+                                  MaterialPageRoute(
+                                    builder: (_) => const MainTabsContainer(),
+                                  ),
+                                  (route) => false,
+                                );
+                              },
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [

@@ -14,7 +14,7 @@ import '../notifications_screen.dart';
 import '../login_screen.dart';
 import '../../widgets/smart_assessment_bottom_sheet.dart';
 import 'discover_results_screen.dart';
-import 'profile_setup_screen.dart';
+import 'basic_profile_screen.dart';
 import 'msme_module_details_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -566,7 +566,7 @@ class _HomeScreenState extends State<HomeScreen> {
       child: InkWell(
         onTap: () {
           Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => const ProfileSetupScreen()),
+            MaterialPageRoute(builder: (_) => const BasicProfileScreen()),
           );
         },
         borderRadius: BorderRadius.circular(16),
@@ -1104,6 +1104,42 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return GestureDetector(
       onTap: () async {
+        final lowerTitle = title.toLowerCase();
+
+        // 1. Register Udyam -> Opens interactive Udyam Registration module
+        if (lowerTitle.contains('udyam') || lowerTitle.contains('register udyam')) {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => const MSMEModuleDetailsScreen(
+                moduleId: 'udyam',
+                title: 'Register UDYAM',
+                description: 'Official MSME Registration Guide & Direct Portal Link',
+                icon: Icons.app_registration_rounded,
+                iconColor: Color(0xFF2563EB),
+                themeColor: Color(0xFFEFF6FF),
+              ),
+            ),
+          );
+          return;
+        }
+
+        // 2. Export Support -> Opens Export Readiness module
+        if (lowerTitle.contains('export')) {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => const MSMEModuleDetailsScreen(
+                moduleId: 'export',
+                title: 'Export Support',
+                description: 'Global Trade Readiness & Export Incentives',
+                icon: Icons.public_rounded,
+                iconColor: Color(0xFF047857),
+                themeColor: Color(0xFFECFDF5),
+              ),
+            ),
+          );
+          return;
+        }
+
         final schemes = await SchemeRepository.instance.getSchemesByCategory(title);
         if (!context.mounted) return;
         Navigator.of(context).push(
